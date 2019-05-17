@@ -1,0 +1,17 @@
+[package]
+name = "paperclip-openapi"
+version = "0.1.0"
+authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
+edition = "2018"
+
+[dependencies]
+failure = "0.1.5"
+failure_derive = "0.1.5"
+serde = "1.0.91"
+serde_derive = "1.0.91"
+serde_json = "1.0.39"
+serde_yaml = "0.8.9"
+
+[features]
+default = ["v2"]
+v2 = []
