@@ -1,15 +1,27 @@
 pub mod models;
 
-use self::models::{Api, ResolvedSchema, Schema};
-use std::io::Read;
+use self::models::{Api, RawSchema, ResolvedSchema};
+use crate::error::PaperClipError;
 
-pub type ApiSchemaV2 = Api<Schema>;
+use std::io::{Read, Seek, SeekFrom};
+
+pub type ApiSchemaV2 = Api<RawSchema>;
 
 pub type ResolvedApiSchemaV2 = Api<ResolvedSchema>;
 
-pub fn from_json_reader<R>(reader: R) -> Result<ApiSchemaV2, serde_json::Error>
+/// Deserialize the schema from the given reader. Currently, this only supports
+/// JSON and YAML formats.
+pub fn from_reader<R>(mut reader: R) -> Result<ApiSchemaV2, PaperClipError>
 where
-    R: Read,
+    R: Read + Seek,
 {
-    serde_json::from_reader(reader)
+    let mut buf = [0; 1];
+    reader.read_exact(&mut buf)?;
+    reader.seek(SeekFrom::Start(0))?;
+
+    if buf[0] == b'{' {
+        return Ok(serde_json::from_reader(reader)?);
+    }
+
+    Ok(serde_yaml::from_reader(reader)?)
 }

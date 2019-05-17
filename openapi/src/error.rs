@@ -1,3 +1,5 @@
+use std::io;
+
 macro_rules! impl_err_from {
     ($err:ident :: $type:ty > $variant:ident) => {
         impl From<$type> for $err {
@@ -16,4 +18,14 @@ pub type PaperClipResult<T> = Result<T, PaperClipError>;
 pub enum PaperClipError {
     #[fail(display = "Only relative URIs are supported at the moment.")]
     UnsupportedURI,
+    #[fail(display = "I/O error: {}", _0)]
+    Io(io::Error),
+    #[fail(display = "JSON error: {}", _0)]
+    Json(serde_json::Error),
+    #[fail(display = "YAML error: {}", _0)]
+    Yaml(serde_yaml::Error),
 }
+
+impl_err_from!(PaperClipError::io::Error > Io);
+impl_err_from!(PaperClipError::serde_json::Error > Json);
+impl_err_from!(PaperClipError::serde_yaml::Error > Yaml);

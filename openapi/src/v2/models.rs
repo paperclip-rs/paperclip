@@ -43,7 +43,7 @@ pub struct Api<Schema> {
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct Schema {
+pub struct RawSchema {
     #[serde(rename = "$ref", skip_serializing_if = "Option::is_none")]
     pub reference: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -55,12 +55,12 @@ pub struct Schema {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub format: Option<DataTypeFormat>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub properties: Option<BTreeMap<String, Box<Schema>>>,
+    pub properties: Option<BTreeMap<String, Box<RawSchema>>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub items: Option<Box<Schema>>,
+    pub items: Option<Box<RawSchema>>,
 }
 
-impl Api<Schema> {
+impl Api<RawSchema> {
     /// Consumes this API schema, resolves the references and returns
     /// the resolved schema.
     ///
@@ -68,7 +68,7 @@ impl Api<Schema> {
     /// substitutes the referenced IDs with the pointer to schema objects
     /// and returns the resolved object or an error if it encountered one.
     pub fn resolve(self) -> Result<Api<ResolvedSchema>, Error> {
-        panic!("resolver");
+        unimplemented!("resolver");
     }
 }
 
