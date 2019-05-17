@@ -1,17 +1,14 @@
 pub mod models;
+mod resolver;
 
-use self::models::{Api, RawSchema, ResolvedSchema};
+use self::models::{ApiSchema, RawDefinitions};
 use crate::error::PaperClipError;
 
 use std::io::{Read, Seek, SeekFrom};
 
-pub type ApiSchemaV2 = Api<RawSchema>;
-
-pub type ResolvedApiSchemaV2 = Api<ResolvedSchema>;
-
 /// Deserialize the schema from the given reader. Currently, this only supports
 /// JSON and YAML formats.
-pub fn from_reader<R>(mut reader: R) -> Result<ApiSchemaV2, PaperClipError>
+pub fn from_reader<R>(mut reader: R) -> Result<ApiSchema<RawDefinitions>, PaperClipError>
 where
     R: Read + Seek,
 {

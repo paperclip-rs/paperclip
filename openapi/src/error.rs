@@ -16,8 +16,15 @@ pub type PaperClipResult<T> = Result<T, PaperClipError>;
 /// Global error which encapsulates all related errors.
 #[derive(Debug, Fail)]
 pub enum PaperClipError {
-    #[fail(display = "Only relative URIs are supported at the moment.")]
-    UnsupportedURI,
+    #[fail(
+        display = "Invalid $ref URI: {}. Only relative URIs for definitions are supported right now.",
+        _0
+    )]
+    InvalidURI(String),
+    #[fail(display = "Definition missing: {}", _0)]
+    MissingDefinition(String),
+    #[fail(display = "Cyclic reference detected while resolving {}", _0)]
+    CyclicReference(String),
     #[fail(display = "I/O error: {}", _0)]
     Io(io::Error),
     #[fail(display = "JSON error: {}", _0)]

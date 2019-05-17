@@ -1,5 +1,7 @@
+use super::resolver::Resolver;
 use failure::Error;
 
+use std::cell::RefCell;
 use std::collections::BTreeMap;
 use std::rc::Rc;
 
@@ -37,15 +39,28 @@ pub enum DataTypeFormat {
 }
 
 #[derive(Debug, Deserialize)]
-pub struct Api<Schema> {
+pub struct ApiSchema<Defs> {
     pub swagger: Version,
-    pub definitions: BTreeMap<String, Schema>,
+    pub definitions: Defs,
+}
+
+pub type RawDefinitions = BTreeMap<String, Schema>;
+
+pub type ResolvedDefinitions = BTreeMap<String, Rc<RefCell<Schema>>>;
+
+#[derive(Clone, Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Reference {
+    Identifier(String),
+    Raw(Box<Schema>),
+    #[serde(skip)]
+    Resolved(Rc<RefCell<Schema>>),
 }
 
 #[derive(Clone, Debug, Deserialize)]
-pub struct RawSchema {
+pub struct Schema {
     #[serde(rename = "$ref", skip_serializing_if = "Option::is_none")]
-    pub reference: Option<String>,
+    pub reference: Option<Reference>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub title: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -55,30 +70,23 @@ pub struct RawSchema {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub format: Option<DataTypeFormat>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub properties: Option<BTreeMap<String, Box<RawSchema>>>,
+    pub properties: Option<BTreeMap<String, Reference>>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub items: Option<Box<RawSchema>>,
+    pub items: Option<Reference>,
 }
 
-impl Api<RawSchema> {
+impl ApiSchema<RawDefinitions> {
     /// Consumes this API schema, resolves the references and returns
     /// the resolved schema.
     ///
     /// This walks recursively, collects the referenced schema objects,
     /// substitutes the referenced IDs with the pointer to schema objects
     /// and returns the resolved object or an error if it encountered one.
-    pub fn resolve(self) -> Result<Api<ResolvedSchema>, Error> {
-        unimplemented!("resolver");
+    pub fn resolve(self) -> Result<ApiSchema<ResolvedDefinitions>, Error> {
+        let definitions = Resolver::from(self.definitions).resolve()?;
+        Ok(ApiSchema {
+            swagger: self.swagger,
+            definitions,
+        })
     }
-}
-
-#[derive(Debug, Clone)]
-pub struct ResolvedSchema {
-    pub reference: Option<Rc<ResolvedSchema>>,
-    pub title: Option<String>,
-    pub description: Option<String>,
-    pub data_type: Option<DataType>,
-    pub format: Option<DataTypeFormat>,
-    pub properties: Option<BTreeMap<String, Rc<ResolvedSchema>>>,
-    pub items: Option<Rc<ResolvedSchema>>,
 }

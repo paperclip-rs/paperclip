@@ -1,0 +1,1 @@
+**NOTE:** `k8s-v1.16.0-alpha.0-openapi-v2.json` was obtained from [kubernetes repository](https://github.com/kubernetes/kubernetes/tree/afd928b8bc81cea385eba4c94558373df7aeae75/api/openapi-spec). It seemed like an ideal candidate for testing.
