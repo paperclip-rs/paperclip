@@ -1,8 +1,12 @@
 [package]
-name = "paperclip-codegen"
+name = "paperclip-derive"
 version = "0.1.0"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 
+[lib]
+proc-macro = true
+
 [dependencies]
-paperclip-openapi = { path = "../openapi" }
+quote = "0.6.12"
+syn = { version = "0.15.34", features = ["full"] }

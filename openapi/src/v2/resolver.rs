@@ -1,82 +1,68 @@
-use super::models::{Reference, Schema};
+use super::im::RcRefCell;
+use super::Schemable;
 use crate::error::PaperClipError;
 use failure::Error;
 
-use std::cell::RefCell;
 use std::collections::BTreeMap;
-use std::mem;
-use std::rc::Rc;
 
 // FIXME: The resolver is not in its best. It "just" works atm.
 
 const DEF_REF_PREFIX: &str = "#/definitions/";
 
-pub(crate) struct Resolver {
-    defs: BTreeMap<String, Rc<RefCell<Schema>>>,
+pub(crate) struct Resolver<S> {
+    pub defs: BTreeMap<String, RcRefCell<S>>,
 }
 
-impl From<BTreeMap<String, Schema>> for Resolver {
-    fn from(defs: BTreeMap<String, Schema>) -> Self {
-        Resolver {
-            defs: defs
-                .into_iter()
-                .map(|(k, v)| (k, Rc::new(RefCell::new(v))))
-                .collect(),
-        }
-    }
-}
-
-impl Resolver {
-    pub fn resolve(self) -> Result<BTreeMap<String, Rc<RefCell<Schema>>>, Error> {
-        self.defs.values().try_for_each(|schema| {
-            let mut schema = schema.borrow_mut();
-            self.resolve_schema(&mut schema)
-        })?;
-
-        Ok(self.defs)
+impl<S> Resolver<S>
+where
+    S: Schemable,
+{
+    pub fn resolve(&mut self) -> Result<(), Error> {
+        self.defs
+            .iter()
+            // FIXME: We don't support definitions that refer another definition
+            // directly from the root.
+            .try_for_each(|(name, schema)| {
+                trace!("Entering: {}", name);
+                self.resolve_definitions_no_root_ref(schema)
+            })
     }
 
-    fn resolve_schema(&self, schema: &mut Schema) -> Result<(), Error> {
-        if let Some(Reference::Identifier(ref ref_name)) = &mut schema.reference {
-            let ref_schema = self.resolve_definition_reference(ref_name)?;
-            *schema.reference.as_mut().unwrap() = Reference::Resolved(ref_schema);
+    fn resolve_definitions_no_root_ref(&self, schema: &RcRefCell<S>) -> Result<(), Error> {
+        let mut schema = schema.borrow_mut();
+        if let Some(mut inner) = schema.items_mut().take() {
+            self.resolve_definitions(&mut inner)?;
         }
 
-        schema.items = match schema.items.take() {
-            Some(Reference::Identifier(ref ref_name)) => {
-                let ref_schema = self.resolve_definition_reference(ref_name)?;
-                Some(Reference::Resolved(ref_schema))
-            }
-            Some(Reference::Raw(mut schema)) => {
-                self.resolve_schema(&mut schema)?;
-                Some(Reference::Resolved(Rc::new(RefCell::new(*schema))))
-            }
-            value => value,
-        };
-
-        if let Some(props) = schema.properties.as_mut() {
-            let old_props = mem::replace(props, BTreeMap::new());
-            for (name, mut ref_schema) in old_props {
-                ref_schema = match ref_schema {
-                    Reference::Identifier(ref ref_name) => {
-                        let new_schema = self.resolve_definition_reference(ref_name)?;
-                        Reference::Resolved(new_schema)
-                    }
-                    Reference::Raw(mut schema) => {
-                        self.resolve_schema(&mut schema)?;
-                        Reference::Resolved(Rc::new(RefCell::new(*schema)))
-                    }
-                    value => value,
-                };
-
-                props.insert(name, ref_schema);
-            }
+        if let Some(props) = schema.properties_mut().take() {
+            props
+                .values_mut()
+                .try_for_each(|s| self.resolve_definitions(s))?;
         }
 
         Ok(())
     }
 
-    fn resolve_definition_reference(&self, name: &str) -> Result<Rc<RefCell<Schema>>, Error> {
+    fn resolve_definitions(&self, schema: &mut RcRefCell<S>) -> Result<(), Error> {
+        let ref_def = {
+            if let Some(ref_name) = schema.borrow().reference() {
+                trace!("Resolving {}", ref_name);
+                Some(self.resolve_definition_reference(ref_name)?)
+            } else {
+                None
+            }
+        };
+
+        if let Some(s) = ref_def {
+            *schema = s;
+        } else {
+            self.resolve_definitions_no_root_ref(&*schema)?;
+        }
+
+        Ok(())
+    }
+
+    fn resolve_definition_reference(&self, name: &str) -> Result<RcRefCell<S>, Error> {
         if !name.starts_with(DEF_REF_PREFIX) {
             // FIXME: Bad
             return Err(PaperClipError::InvalidURI(name.into()))?;

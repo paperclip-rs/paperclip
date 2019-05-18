@@ -23,8 +23,6 @@ pub enum PaperClipError {
     InvalidURI(String),
     #[fail(display = "Definition missing: {}", _0)]
     MissingDefinition(String),
-    #[fail(display = "Cyclic reference detected while resolving {}", _0)]
-    CyclicReference(String),
     #[fail(display = "I/O error: {}", _0)]
     Io(io::Error),
     #[fail(display = "JSON error: {}", _0)]
