@@ -1,5 +1,5 @@
 use super::im::RcRefCell;
-use super::Schemable;
+use super::Schema;
 use crate::error::PaperClipError;
 use failure::Error;
 
@@ -15,7 +15,7 @@ pub(crate) struct Resolver<S> {
 
 impl<S> Resolver<S>
 where
-    S: Schemable,
+    S: Schema,
 {
     pub fn resolve(&mut self) -> Result<(), Error> {
         self.defs

@@ -1,5 +1,5 @@
 #[macro_use]
-extern crate paperclip_derive;
+extern crate paperclip_macros;
 #[macro_use]
 extern crate serde_derive;
 

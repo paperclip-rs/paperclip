@@ -12,4 +12,4 @@ matrix:
     - cargo clippy --all -- -D clippy::all
   - name: test
     script:
-    - cargo test --all --verbose
+    - cargo test --all --all-features --verbose

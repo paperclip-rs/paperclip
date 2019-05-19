@@ -1,5 +1,5 @@
 #![feature(proc_macro_diagnostic)]
-#![recursion_limit = "128"]
+#![recursion_limit = "256"]
 
 extern crate proc_macro;
 
@@ -26,7 +26,11 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let fields = match &mut item_ast.data {
         Data::Struct(s) => match &mut s.fields {
             Fields::Named(f) => &mut f.named,
-            _ => return call_site_error_with_msg("expected field'able struct for schema"),
+            _ => {
+                return call_site_error_with_msg(
+                    "expected struct with zero or more fields for schema",
+                )
+            }
         },
         _ => return call_site_error_with_msg("expected struct for schema"),
     };
@@ -50,15 +54,43 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let gen = quote! {
         #item_ast
 
-        impl #impl_generics paperclip_openapi::v2::Schemable for #name #ty_generics #where_clause {
+        impl #impl_generics paperclip_openapi::v2::Schema for #name #ty_generics #where_clause {
+            #[inline]
+            fn description(&self) -> Option<&str> {
+                self.description.as_ref().map(String::as_str)
+            }
+
+            #[inline]
             fn reference(&self) -> Option<&str> {
                 self.reference.as_ref().map(String::as_str)
             }
 
+            #[inline]
+            fn data_type(&self) -> Option<paperclip_openapi::v2::models::DataType> {
+                self.data_type
+            }
+
+            #[inline]
+            fn format(&self) -> Option<&paperclip_openapi::v2::models::DataTypeFormat> {
+                self.format.as_ref()
+            }
+
+            #[inline]
+            fn items(&self) -> Option<&paperclip_openapi::v2::im::RcRefCell<Self>> {
+                self.items.as_ref()
+            }
+
+            #[inline]
             fn items_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::RcRefCell<Self>> {
                 self.items.as_mut()
             }
 
+            #[inline]
+            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip_openapi::v2::im::RcRefCell<Self>>> {
+                self.properties.as_ref()
+            }
+
+            #[inline]
             fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::im::RcRefCell<Self>>> {
                 self.properties.as_mut()
             }

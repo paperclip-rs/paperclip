@@ -18,4 +18,4 @@ build:
 
 test:
 	cargo clippy --all -- -D clippy::all
-	cargo test --all
+	cargo test --all --all-features

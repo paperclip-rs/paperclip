@@ -1,9 +1,11 @@
+#[cfg(feature = "codegen")]
+pub mod codegen;
 pub mod im;
 pub mod models;
 mod resolver;
 
 use self::im::RcRefCell;
-use self::models::Api;
+use self::models::{Api, DataType, DataTypeFormat};
 use self::resolver::Resolver;
 use crate::error::PaperClipError;
 use failure::Error;
@@ -18,7 +20,7 @@ pub fn from_reader<R, S>(mut reader: R) -> Result<Api<S>, PaperClipError>
 where
     R: Read + Seek,
     for<'de> S: Deserialize<'de>,
-    S: Schemable,
+    S: Schema,
 {
     let mut buf = [0; 1];
     reader.read_exact(&mut buf)?;
@@ -31,15 +33,25 @@ where
     Ok(serde_yaml::from_reader(reader)?)
 }
 
-pub trait Schemable: Sized {
+pub trait Schema: Sized {
+    fn description(&self) -> Option<&str>;
+
     fn reference(&self) -> Option<&str>;
 
+    fn data_type(&self) -> Option<DataType>;
+
+    fn format(&self) -> Option<&DataTypeFormat>;
+
+    fn items(&self) -> Option<&RcRefCell<Self>>;
+
     fn items_mut(&mut self) -> Option<&mut RcRefCell<Self>>;
+
+    fn properties(&self) -> Option<&BTreeMap<String, RcRefCell<Self>>>;
 
     fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, RcRefCell<Self>>>;
 }
 
-impl<S: Schemable> Api<S> {
+impl<S: Schema> Api<S> {
     /// Consumes this API schema, resolves the references and returns
     /// the resolved schema.
     ///
