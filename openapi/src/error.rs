@@ -1,4 +1,5 @@
 use std::io;
+use std::path::PathBuf;
 
 macro_rules! impl_err_from {
     ($err:ident :: $type:ty > $variant:ident) => {
@@ -21,6 +22,12 @@ pub enum PaperClipError {
         _0
     )]
     InvalidURI(String),
+    #[fail(display = "Mising item schema for array: {:?}", _0)]
+    MissingArrayItem(Option<String>),
+    #[fail(display = "Invalid name for definition")]
+    InvalidDefinitionName,
+    #[fail(display = "Invalid path for definition")]
+    InvalidDefinitionPath(PathBuf),
     #[fail(display = "Definition missing: {}", _0)]
     MissingDefinition(String),
     #[fail(display = "I/O error: {}", _0)]

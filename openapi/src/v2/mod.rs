@@ -27,6 +27,7 @@ where
     reader.seek(SeekFrom::Start(0))?;
 
     if buf[0] == b'{' {
+        // FIXME: Support whitespaces
         return Ok(serde_json::from_reader(reader)?);
     }
 
@@ -34,6 +35,10 @@ where
 }
 
 pub trait Schema: Sized {
+    fn name(&self) -> Option<&str>;
+
+    fn set_name(&mut self, name: &str);
+
     fn description(&self) -> Option<&str>;
 
     fn reference(&self) -> Option<&str>;
@@ -45,6 +50,10 @@ pub trait Schema: Sized {
     fn items(&self) -> Option<&RcRefCell<Self>>;
 
     fn items_mut(&mut self) -> Option<&mut RcRefCell<Self>>;
+
+    fn additional_properties(&self) -> Option<&RcRefCell<Self>>;
+
+    fn additional_properties_mut(&mut self) -> Option<&mut RcRefCell<Self>>;
 
     fn properties(&self) -> Option<&BTreeMap<String, RcRefCell<Self>>>;
 

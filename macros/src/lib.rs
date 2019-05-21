@@ -46,6 +46,10 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             pub format: Option<paperclip_openapi::v2::models::DataTypeFormat>,
             pub properties: Option<std::collections::BTreeMap<String, paperclip_openapi::v2::im::RcRefCell<#name>>>,
             pub items: Option<paperclip_openapi::v2::im::RcRefCell<#name>>,
+            #[serde(rename = "additionalProperties")]
+            pub extra_props: Option<paperclip_openapi::v2::im::RcRefCell<#name>>,
+            #[serde(skip)]
+            pub name: Option<String>,
         }
     })
     .expect("parsing schema field?");
@@ -55,6 +59,16 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #item_ast
 
         impl #impl_generics paperclip_openapi::v2::Schema for #name #ty_generics #where_clause {
+            #[inline]
+            fn name(&self) -> Option<&str> {
+                self.name.as_ref().map(String::as_str)
+            }
+
+            #[inline]
+            fn set_name(&mut self, name: &str) {
+                self.name = Some(name.into());
+            }
+
             #[inline]
             fn description(&self) -> Option<&str> {
                 self.description.as_ref().map(String::as_str)
@@ -83,6 +97,16 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[inline]
             fn items_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::RcRefCell<Self>> {
                 self.items.as_mut()
+            }
+
+            #[inline]
+            fn additional_properties(&self) -> Option<&paperclip_openapi::v2::im::RcRefCell<Self>> {
+                self.extra_props.as_ref()
+            }
+
+            #[inline]
+            fn additional_properties_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::RcRefCell<Self>> {
+                self.extra_props.as_mut()
             }
 
             #[inline]

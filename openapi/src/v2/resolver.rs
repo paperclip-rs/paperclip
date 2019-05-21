@@ -24,6 +24,11 @@ where
             // directly from the root.
             .try_for_each(|(name, schema)| {
                 trace!("Entering: {}", name);
+                {
+                    let mut s = schema.borrow_mut();
+                    s.set_name(name);
+                }
+
                 self.resolve_definitions_no_root_ref(schema)
             })
     }
