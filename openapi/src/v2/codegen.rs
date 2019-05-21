@@ -13,7 +13,7 @@ use std::marker::PhantomData;
 use std::path::PathBuf;
 
 pub(crate) trait SchemaExt: Schema {
-    fn rust_unit_type_str(&self) -> Option<&'static str> {
+    fn matching_unit_type(&self) -> Option<&'static str> {
         return match self.format() {
             Some(DataTypeFormat::Int32) => Some("i32"),
             Some(DataTypeFormat::Int64) => Some("i64"),
@@ -76,11 +76,10 @@ pub trait SchemaEmitter {
 
     fn def_name(&self, def: &Self::Definition) -> Result<String, Error> {
         let config = self.config();
-        let n = def
-            .name()
+        def.name()
             .and_then(|n| n.split(config.ns_sep).last())
-            .ok_or(PaperClipError::InvalidDefinitionName)?;
-        Ok(n.to_camel_case())
+            .map(|n| n.to_camel_case())
+            .ok_or(PaperClipError::InvalidDefinitionName.into())
     }
 
     fn def_mod_path(&self, def: &Self::Definition) -> Result<PathBuf, Error> {
@@ -92,89 +91,100 @@ pub trait SchemaEmitter {
         Ok(path)
     }
 
+    fn emit_array(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
+        let it = def.items().ok_or(PaperClipError::MissingArrayItem(
+            self.def_name(def).ok().map(|n| n.clone()),
+        ))?;
+
+        let schema = it.read();
+        let ty = self.build_def(&schema, false)?;
+        let ty = String::from("Vec<") + &ty + ">";
+        if define {
+            self.emit_type_alias(def, &ty)
+        } else {
+            Ok(ty)
+        }
+    }
+
+    fn emit_object(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
+        if let Some(map) = self.try_emit_map(def, define) {
+            return map;
+        }
+
+        if !define {
+            return self.def_name(def);
+        }
+
+        self.emit_struct(def)
+    }
+
+    fn try_emit_map(&self, def: &Self::Definition, define: bool) -> Option<Result<String, Error>> {
+        def.additional_properties().map(|s| {
+            let schema = s.read();
+            let ty = self.build_def(&schema, false)?;
+            if define {
+                Ok(format!(
+                    "type {} = std::collections::BTreeMap<String, {}>",
+                    self.def_name(def)?,
+                    ty
+                ))
+            } else {
+                Ok(format!("std::collections::BTreeMap<String, {}>", ty))
+            }
+        })
+    }
+
+    fn emit_struct(&self, def: &Self::Definition) -> Result<String, Error> {
+        let name = self.def_name(def)?;
+        let mut final_gen = String::new();
+        final_gen.push_str("#[derive(Debug, Clone, Deserialize, Serialize)]");
+        final_gen.push_str("\npub struct ");
+        final_gen.push_str(&name);
+        final_gen.push_str(" {");
+
+        if let Some(props) = def.properties() {
+            props
+                .iter()
+                .try_for_each(|(name, prop)| -> Result<(), Error> {
+                    final_gen.push_str("\npub ");
+                    final_gen.push_str(name);
+                    final_gen.push_str(": ");
+                    let schema = prop.read();
+                    let ty = self.build_def(&schema, false)?;
+                    final_gen.push_str(&ty);
+                    final_gen.push(',');
+                    Ok(())
+                })?
+        }
+
+        final_gen.push_str("\n};");
+        Ok(final_gen)
+    }
+
+    fn emit_type_alias(&self, def: &Self::Definition, ty: &str) -> Result<String, Error> {
+        self.def_name(def)
+            .map(|n| format!("type {} = {};\n", n, ty))
+    }
+
     fn build_def(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
         trace!("Definition: {:?}", def);
-        let name = self.def_name(def);
-        if let Some(ty) = def.rust_unit_type_str() {
+        if let Some(ty) = def.matching_unit_type() {
             trace!("Matches unit type: {}", ty);
             if define {
-                return Ok(format!("type {} = {};\n", name?, ty));
+                return self.emit_type_alias(def, ty);
             }
 
             return Ok(ty.to_owned());
         }
 
         match def.data_type() {
-            Some(DataType::Array) => {
-                let it = def.items().ok_or(PaperClipError::MissingArrayItem(
-                    name.as_ref().ok().map(|n| n.clone()),
-                ))?;
-                let schema = it.borrow();
-                let ty = self.build_def(&schema, false)?; // just return the type
-                let ty = String::from("Vec<") + &ty + ">";
-                if define {
-                    Ok(format!("type {} = {};\n", name?, ty))
-                } else {
-                    Ok(ty)
-                }
-            }
-            Some(DataType::Object) => {
-                // FIXME: Refactor needed.
-                if let Some(s) = def.additional_properties() {
-                    let schema = s.borrow();
-                    let ty = self.build_def(&schema, false)?;
-                    if define {
-                        return Ok(format!(
-                            "type {} = std::collections::BTreeMap<String, {}>",
-                            name?, ty
-                        ));
-                    } else {
-                        return Ok(format!("std::collections::BTreeMap<String, {}>", ty));
-                    }
-                }
-
-                if !define {
-                    return name;
-                }
-
-                let name = name?;
-                let mut final_gen = String::new();
-                // if let Some(s) = def.description() {
-                //     final_gen.push_str("/// ");
-                //     final_gen.push_str(s);
-                //     final_gen.push('\n');
-                // }
-
-                final_gen.push_str("#[derive(Debug, Clone, Deserialize, Serialize)]");
-                final_gen.push_str("\npub struct ");
-                final_gen.push_str(&name);
-                final_gen.push_str(" {");
-                match def.properties() {
-                    Some(props) => {
-                        props
-                            .iter()
-                            .try_for_each(|(name, prop)| -> Result<(), Error> {
-                                final_gen.push_str("\npub ");
-                                final_gen.push_str(name);
-                                final_gen.push_str(": ");
-                                let schema = prop.borrow();
-                                let ty = self.build_def(&schema, false)?;
-                                final_gen.push_str(&ty);
-                                final_gen.push(',');
-                                Ok(())
-                            })?
-                    }
-                    None => (),
-                }
-
-                final_gen.push_str("\n};");
-                Ok(final_gen)
-            }
+            Some(DataType::Array) => self.emit_array(def, define),
+            Some(DataType::Object) => self.emit_object(def, define),
             Some(_) => unreachable!("bleh?"), // we've already handled everything else
             None => {
                 if define {
                     // default to String
-                    Ok(format!("type {} = String;\n", name?))
+                    self.emit_type_alias(def, "String")
                 } else {
                     Ok("String".into())
                 }
@@ -218,7 +228,7 @@ pub trait SchemaEmitter {
     fn create_defs(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
         for (name, schema) in &api.definitions {
             info!("Creating definition {}", name);
-            let schema = schema.borrow();
+            let schema = schema.read();
             self.create_def_from_root(&schema)?;
         }
 

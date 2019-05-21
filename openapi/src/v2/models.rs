@@ -1,4 +1,4 @@
-use super::im::RcRefCell;
+use super::im::ArcRwLock;
 use crate as paperclip_openapi; // hack for proc macro
 
 use std::collections::BTreeMap;
@@ -39,7 +39,7 @@ pub enum DataTypeFormat {
 #[derive(Debug, Deserialize)]
 pub struct Api<S> {
     pub swagger: Version,
-    pub definitions: BTreeMap<String, RcRefCell<S>>,
+    pub definitions: BTreeMap<String, ArcRwLock<S>>,
 }
 
 #[api_schema]

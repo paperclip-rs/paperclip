@@ -44,10 +44,10 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[serde(rename = "type")]
             pub data_type: Option<paperclip_openapi::v2::models::DataType>,
             pub format: Option<paperclip_openapi::v2::models::DataTypeFormat>,
-            pub properties: Option<std::collections::BTreeMap<String, paperclip_openapi::v2::im::RcRefCell<#name>>>,
-            pub items: Option<paperclip_openapi::v2::im::RcRefCell<#name>>,
+            pub properties: Option<std::collections::BTreeMap<String, paperclip_openapi::v2::im::ArcRwLock<#name>>>,
+            pub items: Option<paperclip_openapi::v2::im::ArcRwLock<#name>>,
             #[serde(rename = "additionalProperties")]
-            pub extra_props: Option<paperclip_openapi::v2::im::RcRefCell<#name>>,
+            pub extra_props: Option<paperclip_openapi::v2::im::ArcRwLock<#name>>,
             #[serde(skip)]
             pub name: Option<String>,
         }
@@ -90,32 +90,32 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn items(&self) -> Option<&paperclip_openapi::v2::im::RcRefCell<Self>> {
+            fn items(&self) -> Option<&paperclip_openapi::v2::im::ArcRwLock<Self>> {
                 self.items.as_ref()
             }
 
             #[inline]
-            fn items_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::RcRefCell<Self>> {
+            fn items_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::ArcRwLock<Self>> {
                 self.items.as_mut()
             }
 
             #[inline]
-            fn additional_properties(&self) -> Option<&paperclip_openapi::v2::im::RcRefCell<Self>> {
+            fn additional_properties(&self) -> Option<&paperclip_openapi::v2::im::ArcRwLock<Self>> {
                 self.extra_props.as_ref()
             }
 
             #[inline]
-            fn additional_properties_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::RcRefCell<Self>> {
+            fn additional_properties_mut(&mut self) -> Option<&mut paperclip_openapi::v2::im::ArcRwLock<Self>> {
                 self.extra_props.as_mut()
             }
 
             #[inline]
-            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip_openapi::v2::im::RcRefCell<Self>>> {
+            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip_openapi::v2::im::ArcRwLock<Self>>> {
                 self.properties.as_ref()
             }
 
             #[inline]
-            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::im::RcRefCell<Self>>> {
+            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::im::ArcRwLock<Self>>> {
                 self.properties.as_mut()
             }
         }

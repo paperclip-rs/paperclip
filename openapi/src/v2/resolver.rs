@@ -1,4 +1,4 @@
-use super::im::RcRefCell;
+use super::im::ArcRwLock;
 use super::Schema;
 use crate::error::PaperClipError;
 use failure::Error;
@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 const DEF_REF_PREFIX: &str = "#/definitions/";
 
 pub(crate) struct Resolver<S> {
-    pub defs: BTreeMap<String, RcRefCell<S>>,
+    pub defs: BTreeMap<String, ArcRwLock<S>>,
 }
 
 impl<S> Resolver<S>
@@ -25,7 +25,7 @@ where
             .try_for_each(|(name, schema)| {
                 trace!("Entering: {}", name);
                 {
-                    let mut s = schema.borrow_mut();
+                    let mut s = schema.write();
                     s.set_name(name);
                 }
 
@@ -33,8 +33,8 @@ where
             })
     }
 
-    fn resolve_definitions_no_root_ref(&self, schema: &RcRefCell<S>) -> Result<(), Error> {
-        let mut schema = schema.borrow_mut();
+    fn resolve_definitions_no_root_ref(&self, schema: &ArcRwLock<S>) -> Result<(), Error> {
+        let mut schema = schema.write();
         if let Some(mut inner) = schema.items_mut().take() {
             self.resolve_definitions(&mut inner)?;
         }
@@ -48,9 +48,9 @@ where
         Ok(())
     }
 
-    fn resolve_definitions(&self, schema: &mut RcRefCell<S>) -> Result<(), Error> {
+    fn resolve_definitions(&self, schema: &mut ArcRwLock<S>) -> Result<(), Error> {
         let ref_def = {
-            if let Some(ref_name) = schema.borrow().reference() {
+            if let Some(ref_name) = schema.read().reference() {
                 trace!("Resolving {}", ref_name);
                 Some(self.resolve_definition_reference(ref_name)?)
             } else {
@@ -67,7 +67,7 @@ where
         Ok(())
     }
 
-    fn resolve_definition_reference(&self, name: &str) -> Result<RcRefCell<S>, Error> {
+    fn resolve_definition_reference(&self, name: &str) -> Result<ArcRwLock<S>, Error> {
         if !name.starts_with(DEF_REF_PREFIX) {
             // FIXME: Bad
             return Err(PaperClipError::InvalidURI(name.into()))?;

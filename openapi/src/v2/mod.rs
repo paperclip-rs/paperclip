@@ -4,7 +4,7 @@ pub mod im;
 pub mod models;
 mod resolver;
 
-use self::im::RcRefCell;
+use self::im::ArcRwLock;
 use self::models::{Api, DataType, DataTypeFormat};
 use self::resolver::Resolver;
 use crate::error::PaperClipError;
@@ -47,17 +47,17 @@ pub trait Schema: Sized {
 
     fn format(&self) -> Option<&DataTypeFormat>;
 
-    fn items(&self) -> Option<&RcRefCell<Self>>;
+    fn items(&self) -> Option<&ArcRwLock<Self>>;
 
-    fn items_mut(&mut self) -> Option<&mut RcRefCell<Self>>;
+    fn items_mut(&mut self) -> Option<&mut ArcRwLock<Self>>;
 
-    fn additional_properties(&self) -> Option<&RcRefCell<Self>>;
+    fn additional_properties(&self) -> Option<&ArcRwLock<Self>>;
 
-    fn additional_properties_mut(&mut self) -> Option<&mut RcRefCell<Self>>;
+    fn additional_properties_mut(&mut self) -> Option<&mut ArcRwLock<Self>>;
 
-    fn properties(&self) -> Option<&BTreeMap<String, RcRefCell<Self>>>;
+    fn properties(&self) -> Option<&BTreeMap<String, ArcRwLock<Self>>>;
 
-    fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, RcRefCell<Self>>>;
+    fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, ArcRwLock<Self>>>;
 }
 
 impl<S: Schema> Api<S> {
