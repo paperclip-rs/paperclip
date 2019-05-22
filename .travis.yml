@@ -13,3 +13,4 @@ matrix:
   - name: test
     script:
     - cargo test --all --all-features --verbose
+    - cd openapi/tests/test_k8s && cargo build
