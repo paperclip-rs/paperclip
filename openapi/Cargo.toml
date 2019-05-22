@@ -27,4 +27,4 @@ lazy_static = "1.3.0"
 default = ["v2"]
 v2 = []
 codegen = ["heck", "syn", "quote"]
-codegen-fmt = ["rustfmt"]
+codegen-fmt = ["codegen", "rustfmt"]

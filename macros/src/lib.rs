@@ -49,7 +49,9 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[serde(rename = "additionalProperties")]
             pub extra_props: Option<paperclip_openapi::v2::im::ArcRwLock<#name>>,
             #[serde(skip)]
-            pub name: Option<String>,
+            name: Option<String>,
+            #[serde(skip)]
+            cyclic: bool,
         }
     })
     .expect("parsing schema field?");
@@ -67,6 +69,16 @@ pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[inline]
             fn set_name(&mut self, name: &str) {
                 self.name = Some(name.into());
+            }
+
+            #[inline]
+            fn set_cyclic(&mut self, cyclic: bool) {
+                self.cyclic = cyclic;
+            }
+
+            #[inline]
+            fn is_cyclic(&self) -> bool {
+                self.cyclic
             }
 
             #[inline]

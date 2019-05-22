@@ -6,11 +6,19 @@ use crate::error::PaperClipError;
 use failure::Error;
 use heck::{CamelCase, SnekCase};
 
+use std::cell::RefCell;
+use std::collections::{HashMap, HashSet};
 use std::fmt::Debug;
 use std::fs::{self, OpenOptions};
 use std::io::{BufWriter, Write};
 use std::marker::PhantomData;
 use std::path::PathBuf;
+use std::rc::Rc;
+
+/// Common conflicting keywords in Rust. An underscore will be added
+/// to fields using these keywords.
+// FIXME: Fill this list!
+const RUST_KEYWORDS: &[&str] = &["type", "continue", "enum", "ref"];
 
 pub(crate) trait SchemaExt: Schema {
     fn matching_unit_type(&self) -> Option<&'static str> {
@@ -36,6 +44,7 @@ impl<T: Schema> SchemaExt for T {}
 pub struct Config {
     pub working_dir: PathBuf,
     pub ns_sep: &'static str,
+    mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
 }
 
 impl Default for Config {
@@ -43,6 +52,7 @@ impl Default for Config {
         Config {
             working_dir: PathBuf::from("."),
             ns_sep: ".",
+            mod_children: Rc::new(RefCell::new(HashMap::new())),
         }
     }
 }
@@ -74,19 +84,122 @@ pub trait SchemaEmitter {
 
     fn config(&self) -> &Config;
 
-    fn def_name(&self, def: &Self::Definition) -> Result<String, Error> {
+    fn create_defs(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
+        for (name, schema) in &api.definitions {
+            info!("Creating definition {}", name);
+            let schema = schema.read();
+            self.create_def_from_root(&schema)?;
+        }
+
+        let config = self.config();
+        let mods = config.mod_children.borrow();
+        info!("Adding mod declarations.");
+        for (rel_parent, children) in &*mods {
+            let mut mod_path = config.working_dir.join(rel_parent);
+            mod_path.push("mod.rs");
+            let mut fd = BufWriter::new(
+                OpenOptions::new()
+                    .create(true)
+                    .write(true)
+                    .open(&mod_path)?,
+            );
+
+            for child in children {
+                fd.write(format!("pub mod {};\n", child).as_bytes())?;
+            }
+        }
+
+        Ok(())
+    }
+
+    fn create_def_from_root(&self, def: &Self::Definition) -> Result<(), Error> {
+        let full_path = self.def_mod_path(def)?;
+        if !full_path.exists() {
+            fs::create_dir_all(&full_path)?;
+        }
+
+        let config = self.config();
+        let path_error = PaperClipError::InvalidDefinitionPath(full_path.clone());
+        let rel_path = full_path
+            .strip_prefix(&config.working_dir)
+            .map_err(|_| path_error)?;
+
+        let mut mods = config.mod_children.borrow_mut();
+        for path in rel_path.ancestors() {
+            match (path.parent(), path.file_name()) {
+                (Some(parent), Some(name)) if parent.parent().is_some() => {
+                    let entry = mods.entry(parent.into()).or_insert(HashSet::new());
+                    entry.insert(name.to_string_lossy().into_owned());
+                }
+                _ => (),
+            }
+        }
+
+        let mod_path = full_path.join("mod.rs");
+        debug!("Touching mod: {}", mod_path.display());
+        let mut fd = BufWriter::new(
+            OpenOptions::new()
+                .create(true)
+                .append(true)
+                .open(&mod_path)?,
+        );
+
+        let def_str = self.build_def(def, true)?;
+        fd.write(def_str.as_bytes())?;
+        fd.write(b"\n")?;
+
+        Ok(())
+    }
+
+    fn build_def(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
+        trace!("Building definition: {:?}", def);
+        if let Some(ty) = def.matching_unit_type() {
+            trace!("Matches unit type: {}", ty);
+            if define {
+                return self.emit_type_alias(def, ty);
+            }
+
+            return Ok(ty.to_owned());
+        }
+
+        match def.data_type() {
+            Some(DataType::Array) => self.emit_array(def, define),
+            Some(DataType::Object) => self.emit_object(def, define),
+            Some(_) => unreachable!("bleh?"), // we've already handled everything else
+            None => {
+                if define {
+                    // default to String
+                    self.emit_type_alias(def, "String")
+                } else {
+                    Ok("String".into())
+                }
+            }
+        }
+    }
+
+    fn def_ns_name<'a>(
+        &self,
+        def: &'a Self::Definition,
+    ) -> Result<Box<Iterator<Item = String> + 'a>, Error> {
         let config = self.config();
         def.name()
-            .and_then(|n| n.split(config.ns_sep).last())
-            .map(|n| n.to_camel_case())
+            .map(|n| n.split(config.ns_sep).map(SnekCase::to_snek_case))
             .ok_or(PaperClipError::InvalidDefinitionName.into())
+            .map(|i| Box::new(i) as Box<_>)
+    }
+
+    fn def_name(&self, def: &Self::Definition) -> Result<String, Error> {
+        Ok(self
+            .def_ns_name(def)?
+            .last()
+            .map(|s| s.to_camel_case())
+            .expect("last item always exists for split?"))
     }
 
     fn def_mod_path(&self, def: &Self::Definition) -> Result<PathBuf, Error> {
-        let name = def.name().ok_or(PaperClipError::InvalidDefinitionName)?;
         let config = self.config();
         let mut path = config.working_dir.clone();
-        path.extend(name.split(config.ns_sep).map(SnekCase::to_snek_case));
+        path.extend(self.def_ns_name(def)?);
         path.pop(); // pop final component (as it's used for name)
         Ok(path)
     }
@@ -112,7 +225,18 @@ pub trait SchemaEmitter {
         }
 
         if !define {
-            return self.def_name(def);
+            let mut mod_path = String::from("crate");
+            let mut iter = self.def_ns_name(def)?.peekable();
+            while let Some(mut c) = iter.next() {
+                mod_path.push_str("::");
+                if iter.peek().is_none() {
+                    c = c.to_camel_case();
+                }
+
+                mod_path.push_str(&c);
+            }
+
+            return Ok(mod_path);
         }
 
         self.emit_struct(def)
@@ -124,7 +248,7 @@ pub trait SchemaEmitter {
             let ty = self.build_def(&schema, false)?;
             if define {
                 Ok(format!(
-                    "type {} = std::collections::BTreeMap<String, {}>",
+                    "pub type {} = std::collections::BTreeMap<String, {}>",
                     self.def_name(def)?,
                     ty
                 ))
@@ -137,7 +261,7 @@ pub trait SchemaEmitter {
     fn emit_struct(&self, def: &Self::Definition) -> Result<String, Error> {
         let name = self.def_name(def)?;
         let mut final_gen = String::new();
-        final_gen.push_str("#[derive(Debug, Clone, Deserialize, Serialize)]");
+        final_gen.push_str("\n#[derive(Debug, Clone, Deserialize, Serialize)]");
         final_gen.push_str("\npub struct ");
         final_gen.push_str(&name);
         final_gen.push_str(" {");
@@ -146,92 +270,42 @@ pub trait SchemaEmitter {
             props
                 .iter()
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
+                    let mut snek = name.to_snek_case();
+                    if RUST_KEYWORDS.iter().find(|&&k| k == snek).is_some() {
+                        snek.push('_');
+                    }
+
+                    if snek != name.as_str() {
+                        final_gen.push_str("\n#[serde(rename = \"");
+                        final_gen.push_str(&name);
+                        final_gen.push_str("\")]");
+                    }
+
                     final_gen.push_str("\npub ");
-                    final_gen.push_str(name);
+                    final_gen.push_str(&snek);
                     final_gen.push_str(": ");
                     let schema = prop.read();
                     let ty = self.build_def(&schema, false)?;
-                    final_gen.push_str(&ty);
+
+                    if schema.is_cyclic() {
+                        final_gen.push_str("Box<");
+                        final_gen.push_str(&ty);
+                        final_gen.push_str(">");
+                    } else {
+                        final_gen.push_str(&ty);
+                    }
+
                     final_gen.push(',');
                     Ok(())
                 })?
         }
 
-        final_gen.push_str("\n};");
+        final_gen.push_str("\n}");
         Ok(final_gen)
     }
 
     fn emit_type_alias(&self, def: &Self::Definition, ty: &str) -> Result<String, Error> {
         self.def_name(def)
-            .map(|n| format!("type {} = {};\n", n, ty))
-    }
-
-    fn build_def(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
-        trace!("Definition: {:?}", def);
-        if let Some(ty) = def.matching_unit_type() {
-            trace!("Matches unit type: {}", ty);
-            if define {
-                return self.emit_type_alias(def, ty);
-            }
-
-            return Ok(ty.to_owned());
-        }
-
-        match def.data_type() {
-            Some(DataType::Array) => self.emit_array(def, define),
-            Some(DataType::Object) => self.emit_object(def, define),
-            Some(_) => unreachable!("bleh?"), // we've already handled everything else
-            None => {
-                if define {
-                    // default to String
-                    self.emit_type_alias(def, "String")
-                } else {
-                    Ok("String".into())
-                }
-            }
-        }
-    }
-
-    fn create_def_from_root(&self, def: &Self::Definition) -> Result<(), Error> {
-        let abs_path = self.def_mod_path(def)?;
-        if !abs_path.exists() {
-            fs::create_dir_all(&abs_path)?;
-        }
-
-        let config = self.config();
-        let rel_path = abs_path
-            .strip_prefix(&config.working_dir)
-            .ok()
-            .ok_or(PaperClipError::InvalidDefinitionPath(abs_path.clone()))?;
-        for (i, path) in rel_path.ancestors().enumerate() {
-            let mod_path = config.working_dir.join(path).join("mod.rs");
-            debug!("Touching mod: {}", mod_path.display());
-            let mut fd = BufWriter::new(
-                OpenOptions::new()
-                    .create(true)
-                    .append(true)
-                    .open(&mod_path)?,
-            );
-
-            if i != 0 {
-                continue;
-            }
-
-            let def_str = self.build_def(def, true)?;
-            fd.write(def_str.as_bytes())?;
-            fd.write(b"\n")?;
-        }
-
-        Ok(())
-    }
-
-    fn create_defs(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
-        for (name, schema) in &api.definitions {
-            info!("Creating definition {}", name);
-            let schema = schema.read();
-            self.create_def_from_root(&schema)?;
-        }
-
-        Ok(())
+            .map(|n| format!("pub type {} = {};\n", n, ty))
     }
 }

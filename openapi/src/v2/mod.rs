@@ -37,6 +37,10 @@ where
 pub trait Schema: Sized {
     fn name(&self) -> Option<&str>;
 
+    fn set_cyclic(&mut self, cyclic: bool);
+
+    fn is_cyclic(&self) -> bool;
+
     fn set_name(&mut self, name: &str);
 
     fn description(&self) -> Option<&str>;
@@ -68,9 +72,7 @@ impl<S: Schema> Api<S> {
     /// substitutes the referenced IDs with the pointer to schema objects
     /// and returns the resolved object or an error if it encountered one.
     pub fn resolve(self) -> Result<Api<S>, Error> {
-        let mut resolver = Resolver {
-            defs: self.definitions,
-        };
+        let mut resolver = Resolver::from(self.definitions);
         resolver.resolve()?;
         Ok(Api {
             swagger: self.swagger,

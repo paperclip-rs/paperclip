@@ -7,6 +7,7 @@ clean:
 	fi
 
 prepare:
+	rustup override set nightly-2019-05-09
 	rustup component add rustfmt
 	rustup component add clippy
 
@@ -19,3 +20,4 @@ build:
 test:
 	cargo clippy --all -- -D clippy::all
 	cargo test --all --all-features
+	cd openapi/tests/test_k8s && cargo build

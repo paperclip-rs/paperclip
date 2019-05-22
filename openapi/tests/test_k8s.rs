@@ -62,9 +62,12 @@ fn test_emitter() {
     let root = env!("CARGO_MANIFEST_DIR");
     let mut config = Config::default();
     config.working_dir = root.into();
-    config.working_dir.push("target");
-    if config.working_dir.exists() {
-        fs::remove_dir_all(&config.working_dir).expect("cleaning up dir");
+    config.working_dir.push("tests");
+    config.working_dir.push("test_k8s");
+
+    let gen_dir = config.working_dir.join("io");
+    if gen_dir.exists() {
+        fs::remove_dir_all(&gen_dir).expect("cleaning up dir");
     }
 
     let emitter = DefaultEmitter::from(config);
