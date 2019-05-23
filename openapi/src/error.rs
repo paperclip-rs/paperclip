@@ -36,8 +36,13 @@ pub enum PaperClipError {
     Json(serde_json::Error),
     #[fail(display = "YAML error: {}", _0)]
     Yaml(serde_yaml::Error),
+    #[cfg(feature = "codegen-fmt")]
+    #[fail(display = "Rustfmt formatting error: {}", _0)]
+    RustFmt(rustfmt_nightly::ErrorKind),
 }
 
 impl_err_from!(PaperClipError::io::Error > Io);
 impl_err_from!(PaperClipError::serde_json::Error > Json);
 impl_err_from!(PaperClipError::serde_yaml::Error > Yaml);
+#[cfg(feature = "codegen-fmt")]
+impl_err_from!(PaperClipError::rustfmt_nightly::ErrorKind > RustFmt);

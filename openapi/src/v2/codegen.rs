@@ -12,7 +12,7 @@ use std::fmt::Debug;
 use std::fs::{self, OpenOptions};
 use std::io::{BufWriter, Write};
 use std::marker::PhantomData;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 /// Common conflicting keywords in Rust. An underscore will be added
@@ -45,6 +45,7 @@ pub struct Config {
     pub working_dir: PathBuf,
     pub ns_sep: &'static str,
     mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
+    def_mods: Rc<RefCell<HashMap<PathBuf, String>>>,
 }
 
 impl Default for Config {
@@ -52,6 +53,7 @@ impl Default for Config {
         Config {
             working_dir: PathBuf::from("."),
             ns_sep: ".",
+            def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
         }
     }
@@ -84,35 +86,46 @@ pub trait SchemaEmitter {
 
     fn config(&self) -> &Config;
 
+    fn write_contents(&self, contents: String, path: &Path) -> Result<(), Error> {
+        let mut fd = BufWriter::new(OpenOptions::new().create(true).write(true).open(path)?);
+        fd.write_all(contents.as_bytes())?;
+        Ok(())
+    }
+
     fn create_defs(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
         for (name, schema) in &api.definitions {
             info!("Creating definition {}", name);
             let schema = schema.read();
-            self.create_def_from_root(&schema)?;
+            self.generate_def_from_root(&schema)?;
         }
 
         let config = self.config();
-        let mods = config.mod_children.borrow();
+        let mut mods = config.mod_children.borrow_mut();
         info!("Adding mod declarations.");
-        for (rel_parent, children) in &*mods {
-            let mut mod_path = config.working_dir.join(rel_parent);
+        for (rel_parent, children) in mods.drain() {
+            let mut mod_path = config.working_dir.join(&rel_parent);
             mod_path.push("mod.rs");
-            let mut fd = BufWriter::new(
-                OpenOptions::new()
-                    .create(true)
-                    .write(true)
-                    .open(&mod_path)?,
-            );
 
+            let mut contents = String::new();
             for child in children {
-                fd.write(format!("pub mod {};\n", child).as_bytes())?;
+                contents.push_str("pub mod ");
+                contents.push_str(&child);
+                contents.push_str(";\n");
             }
+
+            self.write_contents(contents, &mod_path)?;
+        }
+
+        let mut def_mods = config.def_mods.borrow_mut();
+        info!("Writing definitions.");
+        for (mod_path, contents) in def_mods.drain() {
+            self.write_contents(contents, &mod_path)?;
         }
 
         Ok(())
     }
 
-    fn create_def_from_root(&self, def: &Self::Definition) -> Result<(), Error> {
+    fn generate_def_from_root(&self, def: &Self::Definition) -> Result<(), Error> {
         let full_path = self.def_mod_path(def)?;
         if !full_path.exists() {
             fs::create_dir_all(&full_path)?;
@@ -135,18 +148,12 @@ pub trait SchemaEmitter {
             }
         }
 
-        let mod_path = full_path.join("mod.rs");
-        debug!("Touching mod: {}", mod_path.display());
-        let mut fd = BufWriter::new(
-            OpenOptions::new()
-                .create(true)
-                .append(true)
-                .open(&mod_path)?,
-        );
-
+        let mut def_mods = config.def_mods.borrow_mut();
         let def_str = self.build_def(def, true)?;
-        fd.write(def_str.as_bytes())?;
-        fd.write(b"\n")?;
+        let mod_path = full_path.join("mod.rs");
+        let entry = def_mods.entry(mod_path).or_insert(String::new());
+        entry.push_str(&def_str);
+        entry.push('\n');
 
         Ok(())
     }
@@ -247,11 +254,7 @@ pub trait SchemaEmitter {
             let schema = s.read();
             let ty = self.build_def(&schema, false)?;
             if define {
-                Ok(format!(
-                    "pub type {} = std::collections::BTreeMap<String, {}>",
-                    self.def_name(def)?,
-                    ty
-                ))
+                self.emit_type_alias(def, &format!("std::collections::BTreeMap<String, {}>", ty))
             } else {
                 Ok(format!("std::collections::BTreeMap<String, {}>", ty))
             }

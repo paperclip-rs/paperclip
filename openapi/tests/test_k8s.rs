@@ -11,7 +11,8 @@ use paperclip_openapi::v2::{
     models::{Api, Version},
 };
 
-use std::fs::{self, File};
+use std::fs::File;
+use std::io::Read;
 
 lazy_static! {
     static ref SCHEMA: Api<K8sSchema> = {
@@ -65,11 +66,90 @@ fn test_emitter() {
     config.working_dir.push("tests");
     config.working_dir.push("test_k8s");
 
-    let gen_dir = config.working_dir.join("io");
-    if gen_dir.exists() {
-        fs::remove_dir_all(&gen_dir).expect("cleaning up dir");
-    }
+    let some_schema_path = config
+        .working_dir
+        .join("io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/mod.rs");
 
     let emitter = DefaultEmitter::from(config);
     emitter.create_defs(&SCHEMA).expect("creating definitions");
+
+    let mut contents = String::new();
+    let mut fd = File::open(&some_schema_path).expect("missing mod");
+    fd.read_to_string(&mut contents).expect("reading mod");
+
+    // We're interested in this definition because:
+    // - It uses some Rust keywords.
+    // - It has a number of camelcase fields.
+    // - It has some fields which are maps.
+    // - It uses pretty much all types (including custom types).
+    // - It references other definitions (directly and through an array).
+    assert!(contents.find("
+#[derive(Debug, Clone, Deserialize, Serialize)]
+pub struct JsonSchemaProps {
+#[serde(rename = \"$ref\")]
+pub ref_: String,
+#[serde(rename = \"$schema\")]
+pub schema: String,
+#[serde(rename = \"additionalItems\")]
+pub additional_items: String,
+#[serde(rename = \"additionalProperties\")]
+pub additional_properties: String,
+#[serde(rename = \"allOf\")]
+pub all_of: Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
+#[serde(rename = \"anyOf\")]
+pub any_of: Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
+pub default: String,
+pub definitions: std::collections::BTreeMap<String, String>,
+pub dependencies: std::collections::BTreeMap<String, String>,
+pub description: String,
+#[serde(rename = \"enum\")]
+pub enum_: Vec<String>,
+pub example: String,
+#[serde(rename = \"exclusiveMaximum\")]
+pub exclusive_maximum: bool,
+#[serde(rename = \"exclusiveMinimum\")]
+pub exclusive_minimum: bool,
+#[serde(rename = \"externalDocs\")]
+pub external_docs: crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::ExternalDocumentation,
+pub format: String,
+pub id: String,
+pub items: String,
+#[serde(rename = \"maxItems\")]
+pub max_items: i64,
+#[serde(rename = \"maxLength\")]
+pub max_length: i64,
+#[serde(rename = \"maxProperties\")]
+pub max_properties: i64,
+pub maximum: f64,
+#[serde(rename = \"minItems\")]
+pub min_items: i64,
+#[serde(rename = \"minLength\")]
+pub min_length: i64,
+#[serde(rename = \"minProperties\")]
+pub min_properties: i64,
+pub minimum: f64,
+#[serde(rename = \"multipleOf\")]
+pub multiple_of: f64,
+pub not: Box<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
+pub nullable: bool,
+#[serde(rename = \"oneOf\")]
+pub one_of: Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
+pub pattern: String,
+#[serde(rename = \"patternProperties\")]
+pub pattern_properties: std::collections::BTreeMap<String, String>,
+pub properties: std::collections::BTreeMap<String, String>,
+pub required: Vec<String>,
+pub title: String,
+#[serde(rename = \"type\")]
+pub type_: String,
+#[serde(rename = \"uniqueItems\")]
+pub unique_items: bool,
+#[serde(rename = \"x-kubernetes-embedded-resource\")]
+pub x_kubernetes_embedded_resource: bool,
+#[serde(rename = \"x-kubernetes-int-or-string\")]
+pub x_kubernetes_int_or_string: bool,
+#[serde(rename = \"x-kubernetes-preserve-unknown-fields\")]
+pub x_kubernetes_preserve_unknown_fields: bool,
+}"
+    ).is_some());
 }
