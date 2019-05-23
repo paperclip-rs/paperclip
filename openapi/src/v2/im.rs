@@ -1,3 +1,5 @@
+//! Interior mutability stuff.
+
 use parking_lot::RwLock;
 use serde::{Deserialize, Deserializer};
 
@@ -6,6 +8,7 @@ use std::ops::{Deref, DerefMut};
 use std::rc::Rc;
 use std::sync::Arc;
 
+/// Wrapper over `Rc<RefCell<T>>` to offer deserialization support.
 #[derive(Debug)]
 pub struct RcRefCell<S>(Rc<RefCell<S>>);
 
@@ -42,6 +45,7 @@ where
     }
 }
 
+/// Wrapper over `Arc<RwLock<T>>` to offer deserialization support.
 #[derive(Debug)]
 pub struct ArcRwLock<S>(Arc<RwLock<S>>);
 

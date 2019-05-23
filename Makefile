@@ -14,6 +14,9 @@ prepare:
 fmt:
 	cargo fmt --all
 
+doc:
+	cargo doc --all-features
+
 build:
 	cargo build
 

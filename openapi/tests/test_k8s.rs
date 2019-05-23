@@ -7,7 +7,7 @@ extern crate serde_derive;
 
 use paperclip_openapi::v2::{
     self,
-    codegen::{Config, DefaultEmitter, SchemaEmitter},
+    codegen::{DefaultEmitter, EmitterState, SchemaEmitter},
     models::{Api, Version},
 };
 
@@ -33,7 +33,7 @@ enum PatchStrategy {
     MergeAndRetain,
 }
 
-#[api_schema]
+#[api_v2_schema]
 #[allow(dead_code)]
 #[derive(Debug, Deserialize)]
 struct K8sSchema {
@@ -61,16 +61,16 @@ fn test_emitter() {
     //     .init();
 
     let root = env!("CARGO_MANIFEST_DIR");
-    let mut config = Config::default();
-    config.working_dir = root.into();
-    config.working_dir.push("tests");
-    config.working_dir.push("test_k8s");
+    let mut state = EmitterState::default();
+    state.working_dir = root.into();
+    state.working_dir.push("tests");
+    state.working_dir.push("test_k8s");
 
-    let some_schema_path = config
+    let some_schema_path = state
         .working_dir
         .join("io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/mod.rs");
 
-    let emitter = DefaultEmitter::from(config);
+    let emitter = DefaultEmitter::from(state);
     emitter.create_defs(&SCHEMA).expect("creating definitions");
 
     let mut contents = String::new();
@@ -83,6 +83,7 @@ fn test_emitter() {
     // - It has some fields which are maps.
     // - It uses pretty much all types (including custom types).
     // - It references other definitions (directly and through an array).
+    // - It's a cyclic type.
     assert!(contents.find("
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct JsonSchemaProps {

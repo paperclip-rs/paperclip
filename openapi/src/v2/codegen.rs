@@ -1,3 +1,5 @@
+//! Code generation for OpenAPI v2.
+
 use super::{
     models::{Api, DataType, DataTypeFormat},
     Schema,
@@ -20,7 +22,9 @@ use std::rc::Rc;
 // FIXME: Fill this list!
 const RUST_KEYWORDS: &[&str] = &["type", "continue", "enum", "ref"];
 
+/// Extension to `Schema` for internal use.
 pub(crate) trait SchemaExt: Schema {
+    /// Checks if this definition matches a known Rust type and returns it.
     fn matching_unit_type(&self) -> Option<&'static str> {
         return match self.format() {
             Some(DataTypeFormat::Int32) => Some("i32"),
@@ -40,17 +44,22 @@ pub(crate) trait SchemaExt: Schema {
 
 impl<T: Schema> SchemaExt for T {}
 
+/// Holds the state for your schema emitter.
 #[derive(Debug, Clone)]
-pub struct Config {
+pub struct EmitterState {
+    /// Working directory - the path in which the necessary modules are generated.
     pub working_dir: PathBuf,
+    /// Namespace separation string.
     pub ns_sep: &'static str,
+    /// Maps parent mod to immediate children. Used for declaring modules.
     mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
+    /// Holds generated code for leaf modules.
     def_mods: Rc<RefCell<HashMap<PathBuf, String>>>,
 }
 
-impl Default for Config {
-    fn default() -> Config {
-        Config {
+impl Default for EmitterState {
+    fn default() -> EmitterState {
+        EmitterState {
             working_dir: PathBuf::from("."),
             ns_sep: ".",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
@@ -59,15 +68,19 @@ impl Default for Config {
     }
 }
 
+/// Default emitter for anything that implements `Schema` trait.
+///
+/// This isn't special in any way, as `SchemaEmitter` trait takes
+/// care of all the heavy load.
 pub struct DefaultEmitter<S> {
-    config: Config,
+    state: EmitterState,
     _schema: PhantomData<S>,
 }
 
-impl<S> From<Config> for DefaultEmitter<S> {
-    fn from(config: Config) -> Self {
+impl<S> From<EmitterState> for DefaultEmitter<S> {
+    fn from(state: EmitterState) -> Self {
         DefaultEmitter {
-            config,
+            state,
             _schema: PhantomData,
         }
     }
@@ -76,34 +89,37 @@ impl<S> From<Config> for DefaultEmitter<S> {
 impl<S: Schema + Debug> SchemaEmitter for DefaultEmitter<S> {
     type Definition = S;
 
-    fn config(&self) -> &Config {
-        &self.config
+    fn state(&self) -> &EmitterState {
+        &self.state
     }
 }
 
+/// `SchemaEmitter` is the first phase in codegen. It generates the relevant
+/// modules and API objects required for the next phase.
 pub trait SchemaEmitter {
+    /// The associated `Schema` implementor.
     type Definition: Schema + Debug;
 
-    fn config(&self) -> &Config;
+    /// Returns a reference to the underlying state.
+    fn state(&self) -> &EmitterState;
 
-    fn write_contents(&self, contents: String, path: &Path) -> Result<(), Error> {
-        let mut fd = BufWriter::new(OpenOptions::new().create(true).write(true).open(path)?);
-        fd.write_all(contents.as_bytes())?;
-        Ok(())
-    }
-
+    /// Entrypoint for emitter. Given an API spec, generate the definitions
+    /// inside Rust modules in the configured working directory.
     fn create_defs(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
+        // Generate file contents by accumulating definitions.
         for (name, schema) in &api.definitions {
             info!("Creating definition {}", name);
             let schema = schema.read();
             self.generate_def_from_root(&schema)?;
         }
 
-        let config = self.config();
-        let mut mods = config.mod_children.borrow_mut();
+        let state = self.state();
+        let mut mods = state.mod_children.borrow_mut();
         info!("Adding mod declarations.");
+        // Now we know everything about the tree containing the modules.
+        // Let's generate the module declarations.
         for (rel_parent, children) in mods.drain() {
-            let mut mod_path = config.working_dir.join(&rel_parent);
+            let mut mod_path = state.working_dir.join(&rel_parent);
             mod_path.push("mod.rs");
 
             let mut contents = String::new();
@@ -116,7 +132,8 @@ pub trait SchemaEmitter {
             self.write_contents(contents, &mod_path)?;
         }
 
-        let mut def_mods = config.def_mods.borrow_mut();
+        // Write the definitions to leaf modules.
+        let mut def_mods = state.def_mods.borrow_mut();
         info!("Writing definitions.");
         for (mod_path, contents) in def_mods.drain() {
             self.write_contents(contents, &mod_path)?;
@@ -125,19 +142,31 @@ pub trait SchemaEmitter {
         Ok(())
     }
 
+    /// Writes the given contents to a file at the given path.
+    fn write_contents(&self, contents: String, path: &Path) -> Result<(), Error> {
+        let mut fd = BufWriter::new(OpenOptions::new().create(true).write(true).open(path)?);
+        fd.write_all(contents.as_bytes())?;
+        Ok(())
+    }
+
+    /// Given a schema definition, generate the corresponding Rust definition.
+    ///
+    /// **NOTE:** This doesn't generate any files. It only generates the code
+    /// and writes it to `EmitterState`.
     fn generate_def_from_root(&self, def: &Self::Definition) -> Result<(), Error> {
         let full_path = self.def_mod_path(def)?;
         if !full_path.exists() {
             fs::create_dir_all(&full_path)?;
         }
 
-        let config = self.config();
-        let path_error = PaperClipError::InvalidDefinitionPath(full_path.clone());
+        // Get the relative path to the parent dir.
+        let state = self.state();
         let rel_path = full_path
-            .strip_prefix(&config.working_dir)
-            .map_err(|_| path_error)?;
+            .strip_prefix(&state.working_dir)
+            .map_err(|_| PaperClipError::InvalidDefinitionPath(full_path.clone()))?;
 
-        let mut mods = config.mod_children.borrow_mut();
+        // Gather the immediate parent-children pairs for module declarations.
+        let mut mods = state.mod_children.borrow_mut();
         for path in rel_path.ancestors() {
             match (path.parent(), path.file_name()) {
                 (Some(parent), Some(name)) if parent.parent().is_some() => {
@@ -148,7 +177,8 @@ pub trait SchemaEmitter {
             }
         }
 
-        let mut def_mods = config.def_mods.borrow_mut();
+        // Generate the code and add the content to the state.
+        let mut def_mods = state.def_mods.borrow_mut();
         let def_str = self.build_def(def, true)?;
         let mod_path = full_path.join("mod.rs");
         let entry = def_mods.entry(mod_path).or_insert(String::new());
@@ -158,6 +188,8 @@ pub trait SchemaEmitter {
         Ok(())
     }
 
+    /// Builds a given definition. Also takes a `bool` to specify whether we're
+    /// planning to define a Rust type or whether we're reusing an existing type.
     fn build_def(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
         trace!("Building definition: {:?}", def);
         if let Some(ty) = def.matching_unit_type() {
@@ -184,17 +216,21 @@ pub trait SchemaEmitter {
         }
     }
 
+    /// Returns an iterator of path components for the given definition.
+    ///
+    /// **NOTE:** All components are [snake_cased](https://docs.rs/heck/*/heck/trait.SnekCase.html) (including the definition name).
     fn def_ns_name<'a>(
         &self,
         def: &'a Self::Definition,
     ) -> Result<Box<Iterator<Item = String> + 'a>, Error> {
-        let config = self.config();
+        let state = self.state();
         def.name()
-            .map(|n| n.split(config.ns_sep).map(SnekCase::to_snek_case))
+            .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
             .ok_or(PaperClipError::InvalidDefinitionName.into())
             .map(|i| Box::new(i) as Box<_>)
     }
 
+    /// Returns the [CamelCase](https://docs.rs/heck/*/heck/trait.CamelCase.html) name for the given definition.
     fn def_name(&self, def: &Self::Definition) -> Result<String, Error> {
         Ok(self
             .def_ns_name(def)?
@@ -203,14 +239,18 @@ pub trait SchemaEmitter {
             .expect("last item always exists for split?"))
     }
 
+    /// Returns the module path (from working directory) for the given definition.
     fn def_mod_path(&self, def: &Self::Definition) -> Result<PathBuf, Error> {
-        let config = self.config();
-        let mut path = config.working_dir.clone();
+        let state = self.state();
+        let mut path = state.working_dir.clone();
         path.extend(self.def_ns_name(def)?);
         path.pop(); // pop final component (as it's used for name)
         Ok(path)
     }
 
+    /// Assumes that the given definition is an array and returns the corresponding
+    /// vector type for it. Also takes a `bool` to specify whether we're defining the
+    /// vector as a type alias or just fetching the type of the vector.
     fn emit_array(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
         let it = def.items().ok_or(PaperClipError::MissingArrayItem(
             self.def_name(def).ok().map(|n| n.clone()),
@@ -226,12 +266,18 @@ pub trait SchemaEmitter {
         }
     }
 
+    /// Assumes that the given definition is an object and returns the corresponding
+    /// Rust struct. Also takes a `bool` to specify whether we're defining the struct
+    /// or just reusing the type.
     fn emit_object(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
         if let Some(map) = self.try_emit_map(def, define) {
             return map;
         }
 
         if !define {
+            // Use absolute paths to save some pain.
+            // FIXME: This assumes that the working directory is the immediate
+            // child module of a crate. We should support custom prefixes.
             let mut mod_path = String::from("crate");
             let mut iter = self.def_ns_name(def)?.peekable();
             while let Some(mut c) = iter.next() {
@@ -249,6 +295,9 @@ pub trait SchemaEmitter {
         self.emit_struct(def)
     }
 
+    /// Checks if the given definition is a simple map and returns the corresponding
+    /// `BTreeMap`. Also takes a `bool` to specify whether we're defining the
+    /// map as a type alias or just fetching the type of the map.
     fn try_emit_map(&self, def: &Self::Definition, define: bool) -> Option<Result<String, Error>> {
         def.additional_properties().map(|s| {
             let schema = s.read();
@@ -261,6 +310,8 @@ pub trait SchemaEmitter {
         })
     }
 
+    /// Helper for `emit_object` - This returns the Rust struct definition for the
+    /// given schema definition.
     fn emit_struct(&self, def: &Self::Definition) -> Result<String, Error> {
         let name = self.def_name(def)?;
         let mut final_gen = String::new();
@@ -273,23 +324,26 @@ pub trait SchemaEmitter {
             props
                 .iter()
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
-                    let mut snek = name.to_snek_case();
-                    if RUST_KEYWORDS.iter().find(|&&k| k == snek).is_some() {
-                        snek.push('_');
+                    let mut new_name = name.to_snek_case();
+                    // Check if the field matches a Rust keyword and add '_' suffix.
+                    if RUST_KEYWORDS.iter().find(|&&k| k == new_name).is_some() {
+                        new_name.push('_');
                     }
 
-                    if snek != name.as_str() {
+                    // If we've modified the name, add a serde attribute for renaming.
+                    if new_name != name.as_str() {
                         final_gen.push_str("\n#[serde(rename = \"");
                         final_gen.push_str(&name);
                         final_gen.push_str("\")]");
                     }
 
                     final_gen.push_str("\npub ");
-                    final_gen.push_str(&snek);
+                    final_gen.push_str(&new_name);
                     final_gen.push_str(": ");
                     let schema = prop.read();
                     let ty = self.build_def(&schema, false)?;
 
+                    // If it's a cyclic type, box it.
                     if schema.is_cyclic() {
                         final_gen.push_str("Box<");
                         final_gen.push_str(&ty);
@@ -307,6 +361,7 @@ pub trait SchemaEmitter {
         Ok(final_gen)
     }
 
+    /// Given a definition and a type, emit the type alias using the definition's name.
     fn emit_type_alias(&self, def: &Self::Definition, ty: &str) -> Result<String, Error> {
         self.def_name(def)
             .map(|n| format!("pub type {} = {};\n", n, ty))

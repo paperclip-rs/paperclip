@@ -12,8 +12,12 @@ fn call_site_error_with_msg(msg: &str) -> TokenStream {
     (quote! {}).into()
 }
 
+/// Converts your struct to support deserializing from an OpenAPI v2
+/// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
+/// object. This adds the necessary fields (in addition to your own fields) and implements the
+/// `Schema` trait for parsing and codegen.
 #[proc_macro_attribute]
-pub fn api_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
+pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let mut item_ast: DeriveInput = match syn::parse(input) {
         Ok(s) => s,
         Err(_) => return call_site_error_with_msg("error parsing derive input"),

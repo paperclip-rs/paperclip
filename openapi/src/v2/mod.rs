@@ -1,3 +1,5 @@
+//! Types and traits related to the [OpenAPI v2 spec](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
+
 #[cfg(feature = "codegen")]
 pub mod codegen;
 pub mod im;
@@ -34,34 +36,58 @@ where
     Ok(serde_yaml::from_reader(reader)?)
 }
 
+/// Interface for the [`Schema`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject) object.
+///
+/// This is only used for resolving the definitions. Please use the `#[api_v2_schema]`
+/// proc macro attribute instead of implementing this trait by yourself.
 pub trait Schema: Sized {
-    fn name(&self) -> Option<&str>;
-
-    fn set_cyclic(&mut self, cyclic: bool);
-
-    fn is_cyclic(&self) -> bool;
-
-    fn set_name(&mut self, name: &str);
-
+    /// Description for this schema, if any (`description` field).
     fn description(&self) -> Option<&str>;
 
+    /// Reference to some other schema, if any (`$ref` field).
     fn reference(&self) -> Option<&str>;
 
+    /// Data type of this schema, if any (`type` field).
     fn data_type(&self) -> Option<DataType>;
 
+    /// Data type format used by this schema, if any (`format` field).
     fn format(&self) -> Option<&DataTypeFormat>;
 
+    /// Schema for array definitions, if any (`items` field).
     fn items(&self) -> Option<&ArcRwLock<Self>>;
 
+    /// Mutable access to the `items` field, if it exists.
     fn items_mut(&mut self) -> Option<&mut ArcRwLock<Self>>;
 
+    /// Value schema for maps (`additional_properties` field).
     fn additional_properties(&self) -> Option<&ArcRwLock<Self>>;
 
+    /// Mutable access to `additional_properties` field, if it's a map.
     fn additional_properties_mut(&mut self) -> Option<&mut ArcRwLock<Self>>;
 
+    /// Map of names and schema for properties, if it's an object (`properties` field)
     fn properties(&self) -> Option<&BTreeMap<String, ArcRwLock<Self>>>;
 
+    /// Mutable access to `properties` field.
     fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, ArcRwLock<Self>>>;
+
+    /// Set whether this definition is cyclic. This is done by the resolver.
+    fn set_cyclic(&mut self, cyclic: bool);
+
+    /// Returns whether this definition is cyclic.
+    ///
+    /// **NOTE:** This is not part of the schema object, but it's
+    /// set by the resolver using `set_cyclic` for codegen.
+    fn is_cyclic(&self) -> bool;
+
+    /// Name of this schema, if any.
+    ///
+    /// **NOTE:** This is not part of the schema object, but it's
+    /// set by the resolver using `set_name` for codegen.
+    fn name(&self) -> Option<&str>;
+
+    /// Sets the name for this schema. This is done by the resolver.
+    fn set_name(&mut self, name: &str);
 }
 
 impl<S: Schema> Api<S> {

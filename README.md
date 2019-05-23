@@ -8,7 +8,7 @@ WIP OpenAPI code generator for Rust.
 
 The following features are supported at the moment:
 
- - Generate API objects from schemas.
+ - Generate API objects from schemas in an OpenAPI v2 spec.
 
 See the [projects](https://github.com/wafflespeanut/paperclip/projects) for tracking the features in queue.
 
