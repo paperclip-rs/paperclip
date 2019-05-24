@@ -24,7 +24,7 @@ syn = { version = "0.15.34", features = ["full"], optional = true }
 env_logger = "0.6.1"
 
 [features]
-default = ["v2"]
+default = ["v2", "codegen"]
 v2 = []
 codegen = ["heck", "syn", "quote"]
 codegen-fmt = ["codegen", "rustfmt-nightly"]

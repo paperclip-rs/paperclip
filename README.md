@@ -44,7 +44,7 @@ at your option.
 
 ## FAQ
 
-> Why are you generating raw Rust code instead of relying on [procedural macros](https://doc.rust-lang.org/reference/procedural-macros.html) for compile-time codegen?
+> Why is this generating raw Rust code instead of leveraging [procedural macros](https://doc.rust-lang.org/reference/procedural-macros.html) for compile-time codegen?
 
 I don't think proc macros are the right way to go for REST APIs. We need to be able to **see** the generated code somehow to identify names, fields, supported methods, etc. With proc macros, you sorta have to guess.
 

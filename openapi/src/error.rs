@@ -1,5 +1,3 @@
-//! Errors.
-
 use std::io;
 use std::path::PathBuf;
 
@@ -20,8 +18,9 @@ pub type PaperClipResult<T> = Result<T, PaperClipError>;
 #[derive(Debug, Fail)]
 pub enum PaperClipError {
     /// Failed to resolve the schema because an invalid URI was provided for
-    /// `$ref` field. Currently, we only support `#/definitions/YourType` in
     /// `$ref` field.
+    ///
+    /// Currently, we only support `#/definitions/YourType` in `$ref` field.
     #[fail(
         display = "Invalid $ref URI: {}. Only relative URIs for definitions are supported right now.",
         _0

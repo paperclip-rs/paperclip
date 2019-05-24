@@ -26,7 +26,7 @@ const RUST_KEYWORDS: &[&str] = &["type", "continue", "enum", "ref"];
 pub(crate) trait SchemaExt: Schema {
     /// Checks if this definition matches a known Rust type and returns it.
     fn matching_unit_type(&self) -> Option<&'static str> {
-        return match self.format() {
+        match self.format() {
             Some(DataTypeFormat::Int32) => Some("i32"),
             Some(DataTypeFormat::Int64) => Some("i64"),
             Some(DataTypeFormat::Float) => Some("f32"),
@@ -38,7 +38,7 @@ pub(crate) trait SchemaExt: Schema {
                 Some(DataType::String) => Some("String"),
                 _ => None,
             },
-        };
+        }
     }
 }
 
@@ -170,7 +170,7 @@ pub trait SchemaEmitter {
         for path in rel_path.ancestors() {
             match (path.parent(), path.file_name()) {
                 (Some(parent), Some(name)) if parent.parent().is_some() => {
-                    let entry = mods.entry(parent.into()).or_insert(HashSet::new());
+                    let entry = mods.entry(parent.into()).or_insert_with(HashSet::new);
                     entry.insert(name.to_string_lossy().into_owned());
                 }
                 _ => (),
@@ -181,7 +181,7 @@ pub trait SchemaEmitter {
         let mut def_mods = state.def_mods.borrow_mut();
         let def_str = self.build_def(def, true)?;
         let mod_path = full_path.join("mod.rs");
-        let entry = def_mods.entry(mod_path).or_insert(String::new());
+        let entry = def_mods.entry(mod_path).or_insert_with(String::new);
         entry.push_str(&def_str);
         entry.push('\n');
 
@@ -226,7 +226,7 @@ pub trait SchemaEmitter {
         let state = self.state();
         def.name()
             .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
-            .ok_or(PaperClipError::InvalidDefinitionName.into())
+            .ok_or_else(|| PaperClipError::InvalidDefinitionName.into())
             .map(|i| Box::new(i) as Box<_>)
     }
 
@@ -252,9 +252,9 @@ pub trait SchemaEmitter {
     /// vector type for it. Also takes a `bool` to specify whether we're defining the
     /// vector as a type alias or just fetching the type of the vector.
     fn emit_array(&self, def: &Self::Definition, define: bool) -> Result<String, Error> {
-        let it = def.items().ok_or(PaperClipError::MissingArrayItem(
-            self.def_name(def).ok().map(|n| n.clone()),
-        ))?;
+        let it = def
+            .items()
+            .ok_or(PaperClipError::MissingArrayItem(self.def_name(def).ok()))?;
 
         let schema = it.read();
         let ty = self.build_def(&schema, false)?;
@@ -326,7 +326,7 @@ pub trait SchemaEmitter {
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
                     let mut new_name = name.to_snek_case();
                     // Check if the field matches a Rust keyword and add '_' suffix.
-                    if RUST_KEYWORDS.iter().find(|&&k| k == new_name).is_some() {
+                    if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                         new_name.push('_');
                     }
 

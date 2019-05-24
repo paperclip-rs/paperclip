@@ -1,4 +1,4 @@
-//! Models used by OpenAPI v2 spec.
+//! Models used by OpenAPI v2.
 
 use super::im::ArcRwLock;
 use crate as paperclip_openapi; // hack for proc macro
