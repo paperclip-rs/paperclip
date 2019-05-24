@@ -24,6 +24,6 @@ deploy:
   github_token: $GITHUB_TOKEN
   on:
     branch: master
-    condition: "$TRAVIS_BUILD_STAGE_NAME = Docs"
+    condition: "$TRAVIS_JOB_NAME = docs"
   local_dir: target/doc
   fqdn: paperclip.waffles.space
