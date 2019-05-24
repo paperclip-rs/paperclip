@@ -13,5 +13,14 @@ matrix:
   - name: test
     script:
     - cargo test --all --all-features --verbose
-    - cargo doc --all-features
+    - cargo doc --all --all-features --no-deps
     - cd openapi/tests/test_k8s && cargo build
+
+deploy:
+  provider: pages
+  skip_cleanup: true
+  github_token: $GITHUB_TOKEN
+  on:
+    branch: master
+  local_dir: target/doc
+  fqdn: paperclip.waffles.space

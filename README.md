@@ -1,6 +1,7 @@
 # Paperclip
 
 [![Build Status](https://api.travis-ci.org/wafflespeanut/paperclip.svg?branch=master)](https://travis-ci.org/wafflespeanut/paperclip)
+[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip_openapi)
 
 WIP OpenAPI code generator for Rust.
 

@@ -15,7 +15,7 @@ fmt:
 	cargo fmt --all
 
 doc:
-	cargo doc --all-features
+	cargo doc --all --all-features --no-deps
 
 build:
 	cargo build
