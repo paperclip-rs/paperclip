@@ -12,9 +12,11 @@ matrix:
     - cargo clippy --all -- -D clippy::all
   - name: test
     script:
-    - cargo test --all --all-features --verbose
-    - cargo doc --all --all-features --no-deps
+    - cargo test --all --all-features
     - cd openapi/tests/test_k8s && cargo build
+  - name: docs
+    script:
+    - cargo doc --all --all-features --no-deps
 
 deploy:
   provider: pages
@@ -22,5 +24,6 @@ deploy:
   github_token: $GITHUB_TOKEN
   on:
     branch: master
+    condition: "$TRAVIS_BUILD_STAGE_NAME = Docs"
   local_dir: target/doc
   fqdn: paperclip.waffles.space
