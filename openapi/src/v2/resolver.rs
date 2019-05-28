@@ -1,5 +1,5 @@
 use super::im::ArcRwLock;
-use super::Schema;
+use super::{models::OperationMap, Schema};
 use crate::error::PaperClipError;
 use failure::Error;
 
@@ -22,15 +22,28 @@ pub(crate) struct Resolver<S> {
     cyclic_defs: HashSet<String>,
     /// Actual definitions.
     pub defs: BTreeMap<String, ArcRwLock<S>>,
+    /// Paths and the corresponding operations.
+    pub paths: BTreeMap<String, OperationMap<S>>,
 }
 
-impl<S> From<BTreeMap<String, ArcRwLock<S>>> for Resolver<S> {
-    fn from(defs: BTreeMap<String, ArcRwLock<S>>) -> Self {
+impl<S>
+    From<(
+        BTreeMap<String, ArcRwLock<S>>,
+        BTreeMap<String, OperationMap<S>>,
+    )> for Resolver<S>
+{
+    fn from(
+        (defs, paths): (
+            BTreeMap<String, ArcRwLock<S>>,
+            BTreeMap<String, OperationMap<S>>,
+        ),
+    ) -> Self {
         Resolver {
             cur_def: RefCell::new(None),
             cur_def_cyclic: Cell::new(false),
             cyclic_defs: HashSet::new(),
             defs,
+            paths,
         }
     }
 }

@@ -22,6 +22,7 @@ pub enum DataType {
     Boolean,
     Array,
     Object,
+    File,
 }
 
 /// Supported data type formats.
@@ -42,13 +43,103 @@ pub enum DataTypeFormat {
 }
 
 /// OpenAPI v2 spec.
-#[derive(Debug, Deserialize)]
+#[derive(Clone, Debug, Deserialize)]
 pub struct Api<S> {
     pub swagger: Version,
     pub definitions: BTreeMap<String, ArcRwLock<S>>,
+    pub paths: BTreeMap<String, OperationMap<S>>,
 }
 
 /// Default schema if your schema doesn't have any custom fields.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 #[api_v2_schema]
 #[derive(Clone, Debug, Deserialize)]
 pub struct DefaultSchema {}
+
+/// Path item.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
+#[derive(Clone, Debug, Deserialize)]
+pub struct OperationMap<S> {
+    #[serde(flatten)]
+    pub methods: BTreeMap<HttpMethod, Operation<S>>,
+    pub parameters: Option<Vec<Parameter<S>>>,
+}
+
+/// Request parameter.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+#[derive(Clone, Debug, Deserialize)]
+pub struct Parameter<S> {
+    pub description: Option<String>,
+    #[serde(rename = "in")]
+    pub in_: ParameterIn,
+    pub name: String,
+    pub required: Option<bool>,
+    pub schema: Option<ArcRwLock<S>>,
+    #[serde(rename = "type")]
+    pub data_type: Option<DataType>,
+    pub format: Option<DataTypeFormat>,
+    pub items: Option<ArcRwLock<S>>,
+}
+
+/// The location of the parameter.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "camelCase")]
+pub enum ParameterIn {
+    Query,
+    Header,
+    Path,
+    FormData,
+    Body,
+}
+
+/// An operation.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+#[derive(Clone, Debug, Deserialize)]
+pub struct Operation<S> {
+    pub operation_id: Option<String>,
+    pub description: Option<String>,
+    // FIXME: Switch to `mime::MediaType` (which adds serde support) once 0.4 is released.
+    #[serde(default)]
+    pub consumes: Vec<String>,
+    #[serde(default)]
+    pub produces: Vec<String>,
+    pub schemes: Vec<OperationProtocol>,
+    // FIXME: Validate using `http::status::StatusCode::from_u16`
+    pub responses: BTreeMap<String, Response<S>>,
+}
+
+/// HTTP response.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject
+#[derive(Clone, Debug, Deserialize)]
+pub struct Response<S> {
+    pub description: Option<String>,
+    pub schema: Option<ArcRwLock<S>>,
+}
+
+/// The HTTP method used for an operation.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub enum HttpMethod {
+    Get,
+    Put,
+    Post,
+    Delete,
+    Options,
+    Head,
+    Patch,
+}
+
+/// The protocol used for an operation.
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
+pub enum OperationProtocol {
+    Http,
+    Https,
+    Ws,
+    Wss,
+}

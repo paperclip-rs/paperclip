@@ -182,11 +182,12 @@ impl<S: Schema> Api<S> {
     /// substitutes the referenced IDs with the pointer to schema objects
     /// and returns the resolved object or an error if it encountered one.
     pub fn resolve(self) -> Result<Api<S>, Error> {
-        let mut resolver = Resolver::from(self.definitions);
+        let mut resolver = Resolver::from((self.definitions, self.paths));
         resolver.resolve()?;
         Ok(Api {
             swagger: self.swagger,
             definitions: resolver.defs,
+            paths: resolver.paths,
         })
     }
 }
