@@ -5,6 +5,7 @@ use failure::Error;
 
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, HashSet};
+use std::mem;
 
 // FIXME: The resolver is not in its best. It "just" works atm.
 
@@ -72,6 +73,14 @@ where
             }
         }
 
+        let mut paths = mem::replace(&mut self.paths, BTreeMap::new());
+        paths.iter_mut().try_for_each(|(path, map)| {
+            trace!("Checking path: {}", path);
+
+            self.resolve_operations(map)
+        })?;
+        self.paths = paths;
+
         // We're doing this separately because we may have mutably borrowed
         // definitions if they're cyclic and borrowing them again will result
         // in a deadlock.
@@ -122,6 +131,21 @@ where
         }
 
         Ok(())
+    }
+
+    /// Resolve a given operation.
+    fn resolve_operations(&self, map: &mut OperationMap<S>) -> Result<(), Error> {
+        map.methods.iter_mut().try_for_each(|(_, op)| {
+            op.responses.iter_mut().try_for_each(|(_, response)| {
+                if let Some(schema) = response.schema.as_mut() {
+                    self.resolve_definitions(schema)?;
+                }
+
+                Ok(())
+            })
+        })
+
+        // FIXME: Resolve parameters
     }
 
     /// Given a name (from `$ref` field), get a reference to the definition.

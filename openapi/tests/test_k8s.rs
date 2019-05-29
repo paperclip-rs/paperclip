@@ -8,7 +8,7 @@ extern crate serde_derive;
 use paperclip_openapi::v2::{
     self,
     codegen::{DefaultEmitter, EmitterState, SchemaEmitter},
-    models::{Api, Version},
+    models::{Api, HttpMethod, Version},
 };
 
 use std::fs::File;
@@ -42,7 +42,7 @@ struct K8sSchema {
 }
 
 #[test]
-fn test_ref_cycles() {
+fn test_definition_ref_cycles() {
     assert_eq!(SCHEMA.swagger, Version::V2);
     assert_eq!(SCHEMA.definitions.len(), 614);
 
@@ -52,6 +52,22 @@ fn test_ref_cycles() {
     let all_of = json_props_def.read().properties.as_ref().unwrap()["allOf"].clone();
     let items = all_of.read().items.as_ref().unwrap().clone();
     assert_eq!(items.read().description, desc); // both point to same `JSONSchemaProps`
+}
+
+#[test]
+fn test_path_with_schema() {
+    let api_versions = &SCHEMA.paths["/api/"].methods[&HttpMethod::Get].responses["200"].schema;
+    let schema = api_versions.as_ref().expect("bleh?").read();
+    assert!(schema.reference.is_none()); // this was a reference
+    assert_eq!(
+        &SCHEMA.definitions["io.k8s.apimachinery.pkg.apis.meta.v1.APIVersions"]
+            .read()
+            .description
+            .as_ref()
+            .unwrap()
+            .as_str(),
+        schema.description.as_ref().unwrap()
+    );
 }
 
 #[test]
