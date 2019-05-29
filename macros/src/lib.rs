@@ -52,6 +52,8 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             pub items: Option<paperclip_openapi::v2::im::ArcRwLock<#name>>,
             #[serde(rename = "additionalProperties")]
             pub extra_props: Option<paperclip_openapi::v2::im::ArcRwLock<#name>>,
+            #[serde(default)]
+            pub required: std::collections::HashSet<String>,
             #[serde(skip)]
             name: Option<String>,
             #[serde(skip)]
@@ -133,6 +135,11 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[inline]
             fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::im::ArcRwLock<Self>>> {
                 self.properties.as_mut()
+            }
+
+            #[inline]
+            fn is_required_property(&self, property: &str) -> bool {
+                self.required.contains(property)
             }
         }
     };

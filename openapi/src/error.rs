@@ -32,8 +32,8 @@ pub enum PaperClipError {
     /// The name for the given definition is missing or invalid.
     #[fail(display = "Invalid name for definition")]
     InvalidDefinitionName,
-    /// A relative path cannot be obtained for the given defition.
-    #[fail(display = "Invalid path for definition")]
+    /// A valid path cannot be obtained for the given defition.
+    #[fail(display = "Invalid path for definition: {:?}", _0)]
     InvalidDefinitionPath(PathBuf),
     /// A definition has been referenced but it's missing.
     #[fail(display = "Definition missing: {}", _0)]

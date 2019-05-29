@@ -155,6 +155,9 @@ pub trait Schema: Sized {
     /// Mutable access to `properties` field.
     fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, ArcRwLock<Self>>>;
 
+    /// If this is of type "object", checks whether the given property is required.
+    fn is_required_property(&self, property: &str) -> bool;
+
     /// Set whether this definition is cyclic. This is done by the resolver.
     fn set_cyclic(&mut self, cyclic: bool);
 

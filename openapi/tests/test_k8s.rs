@@ -84,7 +84,7 @@ fn test_emitter() {
 
     let some_schema_path = state
         .working_dir
-        .join("io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/mod.rs");
+        .join("io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/json_schema_props.rs");
 
     let emitter = DefaultEmitter::from(state);
     emitter.create_defs(&SCHEMA).expect("creating definitions");
@@ -100,73 +100,73 @@ fn test_emitter() {
     // - It uses pretty much all types (including custom types).
     // - It references other definitions (directly and through an array).
     // - It's a cyclic type.
-    assert!(contents.find("
+    assert_eq!(contents, "
 #[derive(Debug, Clone, Deserialize, Serialize)]
 pub struct JsonSchemaProps {
-#[serde(rename = \"$ref\")]
-pub ref_: String,
-#[serde(rename = \"$schema\")]
-pub schema: String,
-#[serde(rename = \"additionalItems\")]
-pub additional_items: String,
-#[serde(rename = \"additionalProperties\")]
-pub additional_properties: String,
-#[serde(rename = \"allOf\")]
-pub all_of: Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
-#[serde(rename = \"anyOf\")]
-pub any_of: Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
-pub default: String,
-pub definitions: std::collections::BTreeMap<String, String>,
-pub dependencies: std::collections::BTreeMap<String, String>,
-pub description: String,
-#[serde(rename = \"enum\")]
-pub enum_: Vec<String>,
-pub example: String,
-#[serde(rename = \"exclusiveMaximum\")]
-pub exclusive_maximum: bool,
-#[serde(rename = \"exclusiveMinimum\")]
-pub exclusive_minimum: bool,
-#[serde(rename = \"externalDocs\")]
-pub external_docs: crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::ExternalDocumentation,
-pub format: String,
-pub id: String,
-pub items: String,
-#[serde(rename = \"maxItems\")]
-pub max_items: i64,
-#[serde(rename = \"maxLength\")]
-pub max_length: i64,
-#[serde(rename = \"maxProperties\")]
-pub max_properties: i64,
-pub maximum: f64,
-#[serde(rename = \"minItems\")]
-pub min_items: i64,
-#[serde(rename = \"minLength\")]
-pub min_length: i64,
-#[serde(rename = \"minProperties\")]
-pub min_properties: i64,
-pub minimum: f64,
-#[serde(rename = \"multipleOf\")]
-pub multiple_of: f64,
-pub not: Box<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
-pub nullable: bool,
-#[serde(rename = \"oneOf\")]
-pub one_of: Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::JsonSchemaProps>,
-pub pattern: String,
-#[serde(rename = \"patternProperties\")]
-pub pattern_properties: std::collections::BTreeMap<String, String>,
-pub properties: std::collections::BTreeMap<String, String>,
-pub required: Vec<String>,
-pub title: String,
-#[serde(rename = \"type\")]
-pub type_: String,
-#[serde(rename = \"uniqueItems\")]
-pub unique_items: bool,
-#[serde(rename = \"x-kubernetes-embedded-resource\")]
-pub x_kubernetes_embedded_resource: bool,
-#[serde(rename = \"x-kubernetes-int-or-string\")]
-pub x_kubernetes_int_or_string: bool,
-#[serde(rename = \"x-kubernetes-preserve-unknown-fields\")]
-pub x_kubernetes_preserve_unknown_fields: bool,
-}"
-    ).is_some());
+    #[serde(rename = \"$ref\")]
+    pub ref_: Option<String>,
+    #[serde(rename = \"$schema\")]
+    pub schema: Option<String>,
+    #[serde(rename = \"additionalItems\")]
+    pub additional_items: Option<String>,
+    #[serde(rename = \"additionalProperties\")]
+    pub additional_properties: Option<String>,
+    #[serde(rename = \"allOf\")]
+    pub all_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    #[serde(rename = \"anyOf\")]
+    pub any_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub default: Option<String>,
+    pub definitions: Option<std::collections::BTreeMap<String, String>>,
+    pub dependencies: Option<std::collections::BTreeMap<String, String>>,
+    pub description: Option<String>,
+    #[serde(rename = \"enum\")]
+    pub enum_: Option<Vec<String>>,
+    pub example: Option<String>,
+    #[serde(rename = \"exclusiveMaximum\")]
+    pub exclusive_maximum: Option<bool>,
+    #[serde(rename = \"exclusiveMinimum\")]
+    pub exclusive_minimum: Option<bool>,
+    #[serde(rename = \"externalDocs\")]
+    pub external_docs: Option<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::external_documentation::ExternalDocumentation>,
+    pub format: Option<String>,
+    pub id: Option<String>,
+    pub items: Option<String>,
+    #[serde(rename = \"maxItems\")]
+    pub max_items: Option<i64>,
+    #[serde(rename = \"maxLength\")]
+    pub max_length: Option<i64>,
+    #[serde(rename = \"maxProperties\")]
+    pub max_properties: Option<i64>,
+    pub maximum: Option<f64>,
+    #[serde(rename = \"minItems\")]
+    pub min_items: Option<i64>,
+    #[serde(rename = \"minLength\")]
+    pub min_length: Option<i64>,
+    #[serde(rename = \"minProperties\")]
+    pub min_properties: Option<i64>,
+    pub minimum: Option<f64>,
+    #[serde(rename = \"multipleOf\")]
+    pub multiple_of: Option<f64>,
+    pub not: Option<Box<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub nullable: Option<bool>,
+    #[serde(rename = \"oneOf\")]
+    pub one_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub pattern: Option<String>,
+    #[serde(rename = \"patternProperties\")]
+    pub pattern_properties: Option<std::collections::BTreeMap<String, String>>,
+    pub properties: Option<std::collections::BTreeMap<String, String>>,
+    pub required: Option<Vec<String>>,
+    pub title: Option<String>,
+    #[serde(rename = \"type\")]
+    pub type_: Option<String>,
+    #[serde(rename = \"uniqueItems\")]
+    pub unique_items: Option<bool>,
+    #[serde(rename = \"x-kubernetes-embedded-resource\")]
+    pub x_kubernetes_embedded_resource: Option<bool>,
+    #[serde(rename = \"x-kubernetes-int-or-string\")]
+    pub x_kubernetes_int_or_string: Option<bool>,
+    #[serde(rename = \"x-kubernetes-preserve-unknown-fields\")]
+    pub x_kubernetes_preserve_unknown_fields: Option<bool>,
+}
+");
 }

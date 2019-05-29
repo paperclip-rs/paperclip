@@ -154,9 +154,12 @@ pub trait SchemaEmitter {
     /// **NOTE:** This doesn't generate any files. It only generates the code
     /// and writes it to `EmitterState`.
     fn generate_def_from_root(&self, def: &Self::Definition) -> Result<(), Error> {
-        let full_path = self.def_mod_path(def)?;
-        if !full_path.exists() {
-            fs::create_dir_all(&full_path)?;
+        let mut full_path = self.def_mod_path(def)?;
+        let dir_path = full_path
+            .parent()
+            .ok_or(PaperClipError::InvalidDefinitionPath(full_path.clone()))?;
+        if !dir_path.exists() {
+            fs::create_dir_all(&dir_path)?;
         }
 
         // Get the relative path to the parent dir.
@@ -179,11 +182,10 @@ pub trait SchemaEmitter {
 
         // Generate the code and add the content to the state.
         let mut def_mods = state.def_mods.borrow_mut();
-        let def_str = self.build_def(def, true)?;
-        let mod_path = full_path.join("mod.rs");
-        let entry = def_mods.entry(mod_path).or_insert_with(String::new);
-        entry.push_str(&def_str);
-        entry.push('\n');
+        let mut def_str = self.build_def(def, true)?;
+        def_str.push('\n');
+        full_path.set_extension("rs");
+        def_mods.insert(full_path, def_str);
 
         Ok(())
     }
@@ -240,11 +242,12 @@ pub trait SchemaEmitter {
     }
 
     /// Returns the module path (from working directory) for the given definition.
+    ///
+    /// **NOTE:** This doesn't (shouldn't) set any extension to the leaf component.
     fn def_mod_path(&self, def: &Self::Definition) -> Result<PathBuf, Error> {
         let state = self.state();
         let mut path = state.working_dir.clone();
         path.extend(self.def_ns_name(def)?);
-        path.pop(); // pop final component (as it's used for name)
         Ok(path)
     }
 
@@ -283,6 +286,8 @@ pub trait SchemaEmitter {
             while let Some(mut c) = iter.next() {
                 mod_path.push_str("::");
                 if iter.peek().is_none() {
+                    mod_path.push_str(&c);
+                    mod_path.push_str("::");
                     c = c.to_camel_case();
                 }
 
@@ -324,6 +329,7 @@ pub trait SchemaEmitter {
             props
                 .iter()
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
+                    let is_required = def.is_required_property(name);
                     let mut new_name = name.to_snek_case();
                     // Check if the field matches a Rust keyword and add '_' suffix.
                     if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
@@ -332,14 +338,18 @@ pub trait SchemaEmitter {
 
                     // If we've modified the name, add a serde attribute for renaming.
                     if new_name != name.as_str() {
-                        final_gen.push_str("\n#[serde(rename = \"");
+                        final_gen.push_str("\n    #[serde(rename = \"");
                         final_gen.push_str(&name);
                         final_gen.push_str("\")]");
                     }
 
-                    final_gen.push_str("\npub ");
+                    final_gen.push_str("\n    pub ");
                     final_gen.push_str(&new_name);
                     final_gen.push_str(": ");
+                    if !is_required {
+                        final_gen.push_str("Option<");
+                    }
+
                     let schema = prop.read();
                     let ty = self.build_def(&schema, false)?;
 
@@ -350,6 +360,10 @@ pub trait SchemaEmitter {
                         final_gen.push_str(">");
                     } else {
                         final_gen.push_str(&ty);
+                    }
+
+                    if !is_required {
+                        final_gen.push_str(">");
                     }
 
                     final_gen.push(',');
@@ -366,4 +380,11 @@ pub trait SchemaEmitter {
         self.def_name(def)
             .map(|n| format!("pub type {} = {};\n", n, ty))
     }
+}
+
+///
+pub trait OperationEmitter: SchemaEmitter {
+    // fn create_def_exts(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
+    //     //
+    // }
 }
