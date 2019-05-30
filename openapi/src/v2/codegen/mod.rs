@@ -1,5 +1,11 @@
 //! Code generation for OpenAPI v2.
 
+pub mod object;
+mod state;
+
+pub use self::state::EmitterState;
+
+use self::object::{ApiObject, ObjectField};
 use super::{
     models::{Api, DataType, DataTypeFormat},
     Schema,
@@ -8,14 +14,11 @@ use crate::error::PaperClipError;
 use failure::Error;
 use heck::{CamelCase, SnekCase};
 
-use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
-use std::fmt::{self, Debug, Display};
-use std::fs::{self, OpenOptions};
-use std::io::Write;
+use std::collections::HashSet;
+use std::fmt::Debug;
+use std::fs;
 use std::marker::PhantomData;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::path::PathBuf;
 
 /// Common conflicting keywords in Rust. An underscore will be added
 /// to fields using these keywords.
@@ -43,30 +46,6 @@ pub(crate) trait SchemaExt: Schema {
 }
 
 impl<T: Schema> SchemaExt for T {}
-
-/// Holds the state for your schema emitter.
-#[derive(Debug, Clone)]
-pub struct EmitterState {
-    /// Working directory - the path in which the necessary modules are generated.
-    pub working_dir: PathBuf,
-    /// Namespace separation string.
-    pub ns_sep: &'static str,
-    /// Maps parent mod to immediate children. Used for declaring modules.
-    mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
-    /// Holds generated struct definitions for leaf modules.
-    def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
-}
-
-impl Default for EmitterState {
-    fn default() -> EmitterState {
-        EmitterState {
-            working_dir: PathBuf::from("."),
-            ns_sep: ".",
-            def_mods: Rc::new(RefCell::new(HashMap::new())),
-            mod_children: Rc::new(RefCell::new(HashMap::new())),
-        }
-    }
-}
 
 /// Default emitter for anything that implements `Schema` trait.
 ///
@@ -114,52 +93,9 @@ pub trait Emitter {
         }
 
         let state = self.state();
-        let mods = state.mod_children.borrow();
-        info!("Adding mod declarations.");
-        // Now we know everything about the tree containing the modules.
-        // Let's generate the module declarations.
-        for (rel_parent, children) in &*mods {
-            let mut mod_path = state.working_dir.join(&rel_parent);
-            mod_path.push("mod.rs");
+        state.declare_modules()?;
+        state.write_definitions()?;
 
-            let mut contents = String::new();
-            for child in children {
-                contents.push_str("pub mod ");
-                contents.push_str(child);
-                contents.push_str(";\n");
-            }
-
-            self.write_contents(&contents, &mod_path)?;
-        }
-
-        // Write the definitions to leaf modules.
-        let def_mods = state.def_mods.borrow();
-        info!("Writing definitions.");
-        for (mod_path, object) in &*def_mods {
-            let contents = object.to_string();
-            self.write_contents(&contents, mod_path)?;
-        }
-
-        Ok(())
-    }
-
-    /// Writes the given contents to a file at the given path (truncating the file if it exists).
-    fn write_contents(&self, contents: &str, path: &Path) -> Result<(), Error> {
-        let mut fd = OpenOptions::new()
-            .create(true)
-            .write(true)
-            .truncate(true)
-            .open(path)?;
-        fd.write_all(contents.as_bytes())?;
-        Ok(())
-    }
-
-    /// Appends the given contents to an existing file at the given path.
-    ///
-    /// **NOTE:** This doesn't create a file if it is non-existent.
-    fn append_contents(&self, contents: &str, path: &Path) -> Result<(), Error> {
-        let mut fd = OpenOptions::new().append(true).open(path)?;
-        fd.write_all(contents.as_bytes())?;
         Ok(())
     }
 
@@ -391,77 +327,5 @@ impl EmittedUnit {
             EmittedUnit::Known(s) => s,
             _ => panic!("Emitted unit is not a known type"),
         }
-    }
-}
-
-/// Represents a (simplified) Rust struct.
-#[derive(Debug, Clone)]
-pub struct ApiObject {
-    /// Name of the struct (camel-cased).
-    pub name: String,
-    /// List of fields.
-    pub fields: Vec<ObjectField>,
-}
-
-/// Represents a struct field.
-#[derive(Debug, Clone)]
-pub struct ObjectField {
-    /// Name of the field (snake-cased).
-    pub name: String,
-    /// Actual name of the field (should it be serde-renamed).
-    pub rename: Option<String>,
-    /// Type of the field as a path.
-    pub ty_path: String,
-    /// Whether this field is required (i.e., not optional).
-    pub is_required: bool,
-    /// Whether this field should be boxed.
-    pub boxed: bool,
-}
-
-impl Display for ApiObject {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("#[derive(Debug, Default, Clone, Deserialize, Serialize)]")?;
-        f.write_str("\npub struct ")?;
-        f.write_str(&self.name)?;
-        f.write_str(" {")?;
-
-        self.fields.iter().try_for_each(|field| {
-            f.write_str("\n    ")?;
-            if let Some(name) = field.rename.as_ref() {
-                f.write_str("#[serde(rename = \"")?;
-                f.write_str(name)?;
-                f.write_str("\")]\n    ")?;
-            }
-
-            f.write_str("pub ")?;
-            f.write_str(&field.name)?;
-            f.write_str(": ")?;
-            if !field.is_required {
-                f.write_str("Option<")?;
-            }
-
-            if field.boxed {
-                f.write_str("Box<")?;
-            }
-
-            f.write_str(&field.ty_path)?;
-
-            if field.boxed {
-                f.write_str(">")?;
-            }
-
-            if !field.is_required {
-                f.write_str(">")?;
-            }
-
-            f.write_str(",")?;
-            Ok(())
-        })?;
-
-        if !self.fields.is_empty() {
-            f.write_str("\n")?;
-        }
-
-        f.write_str("}\n")
     }
 }
