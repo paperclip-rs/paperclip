@@ -55,6 +55,14 @@ impl EmitterState {
             self.write_contents(&contents, mod_path)?;
         }
 
+        for (mod_path, object) in &*def_mods {
+            if let Some(builder) = object.builder() {
+                let mut contents = String::from("\n");
+                contents.push_str(&builder.to_string());
+                self.append_contents(&contents, mod_path)?;
+            }
+        }
+
         Ok(())
     }
 
@@ -72,7 +80,6 @@ impl EmitterState {
     /// Appends the given contents to an existing file at the given path.
     ///
     /// **NOTE:** This doesn't create a file if it is non-existent.
-    #[allow(dead_code)]
     fn append_contents(&self, contents: &str, path: &Path) -> Result<(), Error> {
         let mut fd = OpenOptions::new().append(true).open(path)?;
         fd.write_all(contents.as_bytes())?;

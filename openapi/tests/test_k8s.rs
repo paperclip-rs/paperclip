@@ -15,12 +15,24 @@ use std::fs::File;
 use std::io::Read;
 
 lazy_static! {
+    static ref ROOT: String = String::from(env!("CARGO_MANIFEST_DIR"));
     static ref SCHEMA: Api<K8sSchema> = {
-        let root = env!("CARGO_MANIFEST_DIR");
-        let fd = File::open(String::from(root) + "/tests/k8s-v1.16.0-alpha.0-openapi-v2.json")
-            .expect("file?");
+        let fd =
+            File::open(ROOT.clone() + "/tests/k8s-v1.16.0-alpha.0-openapi-v2.json").expect("file?");
         let raw: Api<K8sSchema> = v2::from_reader(fd).expect("deserializing spec");
         raw.resolve().expect("resolution")
+    };
+    static ref CODEGEN: () = {
+        // env_logger::builder()
+        //     .filter(Some("paperclip_openapi"), log::LevelFilter::Trace)
+        //     .init();
+        let mut state = EmitterState::default();
+        state.working_dir = (&*ROOT).into();
+        state.working_dir.push("tests");
+        state.working_dir.push("test_k8s");
+
+        let emitter = DefaultEmitter::from(state);
+        emitter.generate(&SCHEMA).expect("creating definitions");
     };
 }
 
@@ -71,24 +83,11 @@ fn test_path_with_schema() {
 }
 
 #[test]
-fn test_emitter() {
-    // env_logger::builder()
-    //     .filter(Some("paperclip_openapi"), log::LevelFilter::Trace)
-    //     .init();
+fn test_complex_object() {
+    let some_schema_path = ROOT.clone()
+        + "/tests/test_k8s/io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/json_schema_props.rs";
 
-    let root = env!("CARGO_MANIFEST_DIR");
-    let mut state = EmitterState::default();
-    state.working_dir = root.into();
-    state.working_dir.push("tests");
-    state.working_dir.push("test_k8s");
-
-    let some_schema_path = state
-        .working_dir
-        .join("io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/json_schema_props.rs");
-
-    let emitter = DefaultEmitter::from(state);
-    emitter.generate(&SCHEMA).expect("creating definitions");
-
+    let _ = &*CODEGEN;
     let mut contents = String::new();
     let mut fd = File::open(&some_schema_path).expect("missing mod");
     fd.read_to_string(&mut contents).expect("reading mod");
