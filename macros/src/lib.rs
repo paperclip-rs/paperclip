@@ -1,5 +1,5 @@
 #![feature(proc_macro_diagnostic)]
-#![recursion_limit = "256"]
+#![recursion_limit = "512"]
 
 extern crate proc_macro;
 
@@ -135,6 +135,11 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[inline]
             fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::im::ArcRwLock<Self>>> {
                 self.properties.as_mut()
+            }
+
+            #[inline]
+            fn has_required_properties(&self) -> bool {
+                !self.required.is_empty()
             }
 
             #[inline]

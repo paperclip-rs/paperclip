@@ -110,6 +110,7 @@ pub struct Operation<S> {
     pub schemes: Vec<OperationProtocol>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
+    pub parameters: Option<Vec<Parameter<S>>>,
 }
 
 /// HTTP response.

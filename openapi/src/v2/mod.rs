@@ -72,12 +72,12 @@
 //! ```rust,no_run
 //! # use paperclip_openapi::v2::{self, Api, DefaultSchema};
 //! # let api: Api<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
-//! use paperclip_openapi::v2::{DefaultEmitter, EmitterState, SchemaEmitter};
+//! use paperclip_openapi::v2::{DefaultEmitter, EmitterState, Emitter};
 //!
 //! let mut state = EmitterState::default();
 //! state.working_dir = "/path/to/my/crate".into();
 //! let emitter = DefaultEmitter::from(state);
-//! emitter.create_defs(&api).unwrap(); // create definitions
+//! emitter.generate(&api).unwrap(); // generate code!
 //! ```
 
 #[cfg(feature = "codegen")]
@@ -97,7 +97,7 @@ use std::collections::BTreeMap;
 use std::io::{Read, Seek, SeekFrom};
 
 #[cfg(feature = "codegen")]
-pub use self::codegen::{DefaultEmitter, EmitterState, SchemaEmitter};
+pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
 pub use self::models::{Api, DefaultSchema};
 
 /// Deserialize the schema from the given reader. Currently, this only supports
@@ -154,6 +154,9 @@ pub trait Schema: Sized {
 
     /// Mutable access to `properties` field.
     fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, ArcRwLock<Self>>>;
+
+    /// If this is of type "object", checks if it requires any properties.
+    fn has_required_properties(&self) -> bool;
 
     /// If this is of type "object", checks whether the given property is required.
     fn is_required_property(&self, property: &str) -> bool;

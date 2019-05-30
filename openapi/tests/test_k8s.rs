@@ -7,7 +7,7 @@ extern crate serde_derive;
 
 use paperclip_openapi::v2::{
     self,
-    codegen::{DefaultEmitter, EmitterState, SchemaEmitter},
+    codegen::{DefaultEmitter, Emitter, EmitterState},
     models::{Api, HttpMethod, Version},
 };
 
@@ -87,7 +87,7 @@ fn test_emitter() {
         .join("io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/json_schema_props.rs");
 
     let emitter = DefaultEmitter::from(state);
-    emitter.create_defs(&SCHEMA).expect("creating definitions");
+    emitter.generate(&SCHEMA).expect("creating definitions");
 
     let mut contents = String::new();
     let mut fd = File::open(&some_schema_path).expect("missing mod");
@@ -100,8 +100,8 @@ fn test_emitter() {
     // - It uses pretty much all types (including custom types).
     // - It references other definitions (directly and through an array).
     // - It's a cyclic type.
-    assert_eq!(contents, "
-#[derive(Debug, Clone, Deserialize, Serialize)]
+    assert_eq!(contents,
+"#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct JsonSchemaProps {
     #[serde(rename = \"$ref\")]
     pub ref_: Option<String>,
