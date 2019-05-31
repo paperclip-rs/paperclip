@@ -1,5 +1,8 @@
 use super::im::ArcRwLock;
-use super::{models::OperationMap, Schema};
+use super::{
+    models::{OperationMap, Parameter},
+    Schema,
+};
 use crate::error::PaperClipError;
 use failure::Error;
 
@@ -135,17 +138,29 @@ where
 
     /// Resolve a given operation.
     fn resolve_operations(&self, map: &mut OperationMap<S>) -> Result<(), Error> {
-        map.methods.iter_mut().try_for_each(|(_, op)| {
-            op.responses.iter_mut().try_for_each(|(_, response)| {
+        for op in map.methods.values_mut() {
+            self.resolve_parameters(&mut op.parameters)?;
+            for response in op.responses.values_mut() {
                 if let Some(schema) = response.schema.as_mut() {
                     self.resolve_definitions(schema)?;
                 }
+            }
+        }
 
-                Ok(())
-            })
-        })
+        self.resolve_parameters(&mut map.parameters)
+    }
 
-        // FIXME: Resolve parameters
+    /// Resolve the given bunch of parameters.
+    fn resolve_parameters(&self, params: &mut Option<Vec<Parameter<S>>>) -> Result<(), Error> {
+        if let Some(params) = params.as_mut() {
+            for param in params.iter_mut() {
+                if let Some(schema) = param.schema.as_mut() {
+                    self.resolve_definitions(schema)?;
+                }
+            }
+        }
+
+        Ok(())
     }
 
     /// Given a name (from `$ref` field), get a reference to the definition.

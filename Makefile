@@ -23,4 +23,5 @@ build:
 test:
 	cargo clippy --all -- -D clippy::all
 	cargo test --all --all-features
+	# Compile the code generated through tests.
 	cd openapi/tests/test_k8s && cargo build

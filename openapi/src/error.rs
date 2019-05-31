@@ -38,6 +38,28 @@ pub enum PaperClipError {
     /// A definition has been referenced but it's missing.
     #[fail(display = "Definition missing: {}", _0)]
     MissingDefinition(String),
+    /// If a parameter uses a schema, then we expect it to exist in
+    /// the definition (for now).
+    #[fail(
+        display = "Parameter {:?} in path {:?} defines a new schema, which is unsupported at this point.",
+        _0, _1
+    )]
+    UnsupportedParameterDefinition(String, String),
+    /// If a parameter specifies body, then schema must be specified.
+    #[fail(
+        display = "Parameter {:?} in path {:?} is a body but the schema is missing",
+        _0, _1
+    )]
+    MissingSchemaForBodyParameter(String, String),
+    /// If a parameter doesn't specify a body, then it must have a type.
+    #[fail(display = "Parameter {:?} in path {:?} must have a type", _0, _1)]
+    MissingParameterType(String, String),
+    /// The type of this parameter is not known.
+    #[fail(
+        display = "Parameter {:?} in path {:?} doesn't have a known type",
+        _0, _1
+    )]
+    UnknownParameterType(String, String),
     /// I/O errors.
     #[fail(display = "I/O error: {}", _0)]
     Io(io::Error),

@@ -24,7 +24,7 @@ lazy_static! {
     };
     static ref CODEGEN: () = {
         // env_logger::builder()
-        //     .filter(Some("paperclip_openapi"), log::LevelFilter::Trace)
+        //     .filter(Some("paperclip_openapi"), log::LevelFilter::Debug)
         //     .init();
         let mut state = EmitterState::default();
         state.working_dir = (&*ROOT).into();

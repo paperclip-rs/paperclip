@@ -5,9 +5,9 @@ mod state;
 
 pub use self::state::EmitterState;
 
-use self::object::{ApiObject, ObjectField};
+use self::object::{ApiObject, ObjectField, Parameter};
 use super::{
-    models::{Api, DataType, DataTypeFormat},
+    models::{self, Api, DataType, DataTypeFormat, OperationMap},
     Schema,
 };
 use crate::error::PaperClipError;
@@ -25,27 +25,25 @@ use std::path::PathBuf;
 // FIXME: Fill this list!
 const RUST_KEYWORDS: &[&str] = &["type", "continue", "enum", "ref"];
 
-/// Extension to `Schema` for internal use.
-pub(crate) trait SchemaExt: Schema {
-    /// Checks if this definition matches a known Rust type and returns it.
-    fn matching_unit_type(&self) -> Option<&'static str> {
-        match self.format() {
-            Some(DataTypeFormat::Int32) => Some("i32"),
-            Some(DataTypeFormat::Int64) => Some("i64"),
-            Some(DataTypeFormat::Float) => Some("f32"),
-            Some(DataTypeFormat::Double) => Some("f64"),
-            _ => match self.data_type() {
-                Some(DataType::Integer) => Some("i64"),
-                Some(DataType::Number) => Some("f64"),
-                Some(DataType::Boolean) => Some("bool"),
-                Some(DataType::String) => Some("String"),
-                _ => None,
-            },
-        }
+/// Checks if the given type/format matches a known Rust type and returns it.
+fn matching_unit_type(
+    format: Option<&DataTypeFormat>,
+    type_: Option<DataType>,
+) -> Option<&'static str> {
+    match format {
+        Some(DataTypeFormat::Int32) => Some("i32"),
+        Some(DataTypeFormat::Int64) => Some("i64"),
+        Some(DataTypeFormat::Float) => Some("f32"),
+        Some(DataTypeFormat::Double) => Some("f64"),
+        _ => match type_ {
+            Some(DataType::Integer) => Some("i64"),
+            Some(DataType::Number) => Some("f64"),
+            Some(DataType::Boolean) => Some("bool"),
+            Some(DataType::String) => Some("String"),
+            _ => None,
+        },
     }
 }
-
-impl<T: Schema> SchemaExt for T {}
 
 /// Default emitter for anything that implements `Schema` trait.
 ///
@@ -96,6 +94,10 @@ pub trait Emitter {
         state.declare_modules()?;
         state.write_definitions()?;
 
+        for (path, map) in &api.paths {
+            self.generate_builder(path, map)?;
+        }
+
         Ok(())
     }
 
@@ -109,7 +111,10 @@ pub trait Emitter {
         let state = self.state();
         def.name()
             .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
-            .ok_or_else(|| PaperClipError::InvalidDefinitionName.into())
+            .ok_or_else(|| {
+                trace!("Invalid name for definition: {:?}", def);
+                PaperClipError::InvalidDefinitionName.into()
+            })
             .map(|i| Box::new(i) as Box<_>)
     }
 
@@ -129,6 +134,7 @@ pub trait Emitter {
         let state = self.state();
         let mut path = state.working_dir.clone();
         path.extend(self.def_ns_name(def)?);
+        path.set_extension("rs");
         Ok(path)
     }
 
@@ -145,14 +151,19 @@ pub trait Emitter {
             _ => return Ok(()),
         };
 
-        let mut full_path = self.def_mod_path(def)?;
-        let dir_path = full_path
+        let mod_path = self.def_mod_path(def)?;
+        let dir_path = mod_path
             .parent()
-            .ok_or(PaperClipError::InvalidDefinitionPath(full_path.clone()))?;
+            .ok_or(PaperClipError::InvalidDefinitionPath(mod_path.clone()))?;
         if !dir_path.exists() {
             fs::create_dir_all(&dir_path)?;
         }
 
+        let full_path = dir_path.join(
+            mod_path
+                .file_stem()
+                .ok_or(PaperClipError::InvalidDefinitionPath(mod_path.clone()))?,
+        );
         // Get the relative path to the parent dir.
         let rel_path = full_path
             .strip_prefix(&state.working_dir)
@@ -172,17 +183,87 @@ pub trait Emitter {
 
         // Add generated object to state.
         let mut def_mods = state.def_mods.borrow_mut();
-        full_path.set_extension("rs");
-        def_mods.insert(full_path, object);
+        def_mods.insert(mod_path, object);
+
+        Ok(())
+    }
+
+    fn generate_builder(
+        &self,
+        path: &str,
+        map: &OperationMap<Self::Definition>,
+    ) -> Result<(), Error> {
+        debug!("Constructing builder for {:?}", path);
+        let state = self.state();
+
+        let check_params = |obj_params: &[models::Parameter<_>]| -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
+            let def_mods = state.def_mods.borrow();
+            let mut schema_path = None;
+            let mut params = vec![];
+            for p in obj_params {
+                p.check(path)?;
+
+                if let Some(def) = p.schema.as_ref() {
+                    let pat = self.def_mod_path(&*def.read())?;
+                    def_mods
+                        .get(&pat)
+                        .ok_or(PaperClipError::UnsupportedParameterDefinition(
+                            p.name.clone(),
+                            path.into(),
+                        ))?;
+                    schema_path = Some(pat);
+                    continue
+                }
+
+                let ty = matching_unit_type(p.format.as_ref(), p.data_type).ok_or(
+                    PaperClipError::UnknownParameterType(p.name.clone(), path.into()),
+                )?;
+                params.push(Parameter {
+                    name: p.name.clone(),
+                    ty_path: ty.into(),
+                    required: p.required,
+                });
+            }
+
+            Ok((params, schema_path))
+        };
+
+        let mut unused_params = vec![];
+        if let Some(global_params) = map.parameters.as_ref() {
+            let (params, schema_path) = check_params(global_params)?;
+            if let Some(pat) = schema_path.as_ref() {
+                let mut def_mods = state.def_mods.borrow_mut();
+                let obj = def_mods.get_mut(pat).expect("bleh?");
+                let ops = obj
+                    .paths
+                    .entry(path.into())
+                    .or_insert_with(Default::default);
+                ops.params = params;
+            } else {
+                unused_params = params;
+            }
+        }
+
+        for (meth, op) in &map.methods {
+            if let Some(local_params) = op.parameters.as_ref() {
+                let (params, schema_path) = check_params(local_params)?;
+            }
+        }
+
+        // FIXME: If none of the parameters (local to operation or global) specify
+        // a body then we should use something (say, `operationID`) to generate
+        // a builder and forward `unused_params` to it?
 
         Ok(())
     }
 
     /// Builds a given definition. Also takes a `bool` to specify whether we're
     /// planning to define a Rust type or whether we're reusing an existing type.
+    ///
+    /// **NOTE:** We resolve type aliases to known types.
     fn build_def(&self, def: &Self::Definition, define: bool) -> Result<EmittedUnit, Error> {
         trace!("Building definition: {:?}", def);
-        if let Some(ty) = def.matching_unit_type() {
+        if let Some(ty) = matching_unit_type(def.format(), def.data_type()) {
             trace!("Matches unit type: {}", ty);
             if define {
                 return Ok(EmittedUnit::None);
@@ -271,10 +352,7 @@ pub trait Emitter {
     /// Helper for `emit_object` - This returns the Rust struct definition for the
     /// given schema definition.
     fn emit_struct(&self, def: &Self::Definition) -> Result<EmittedUnit, Error> {
-        let mut obj = ApiObject {
-            name: self.def_name(def)?,
-            fields: vec![],
-        };
+        let mut obj = ApiObject::with_name(self.def_name(def)?);
 
         if let Some(props) = def.properties() {
             props

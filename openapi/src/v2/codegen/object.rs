@@ -1,7 +1,9 @@
 //! Simplified objects for codegen.
 
+use super::super::models::HttpMethod;
 use heck::{CamelCase, SnekCase};
 
+use std::collections::HashMap;
 use std::fmt::{self, Display};
 
 /// Represents a (simplified) Rust struct.
@@ -11,20 +13,26 @@ pub struct ApiObject {
     pub name: String,
     /// List of fields.
     pub fields: Vec<ObjectField>,
+    /// Paths with operations which address this object.
+    pub paths: HashMap<String, PathOps>,
 }
 
-impl ApiObject {
-    /// Returns the builder struct repr if this object needs a builder.
-    pub fn builder(&self) -> Option<ApiObjectBuilder<'_>> {
-        if self.fields.iter().any(|f| f.is_required) {
-            Some(ApiObjectBuilder {
-                name: self.name.clone() + "Builder",
-                inner: self,
-            })
-        } else {
-            None
-        }
-    }
+/// Operations in a path.
+#[derive(Debug, Clone)]
+pub struct PathOps {
+    /// Operations for this object and their associated requirements.
+    pub req: HashMap<HttpMethod, OpRequirement>,
+    /// Parameters required for all operations in this path.
+    pub params: Vec<Parameter>,
+}
+
+/// Requirement for an object corresponding to some operation.
+#[derive(Debug, Clone)]
+pub struct OpRequirement {
+    /// Parameters required for this operation.
+    pub params: Vec<Parameter>,
+    /// Whether the object itself is required (in body) for this operation.
+    pub body_required: bool,
 }
 
 /// Represents a builder struct for some API object.
@@ -33,6 +41,17 @@ pub struct ApiObjectBuilder<'a> {
     /// Name of the builder (camel-cased).
     pub name: String,
     inner: &'a ApiObject,
+}
+
+/// Represents some parameter somewhere (header, path, query, etc.).
+#[derive(Debug, Clone)]
+pub struct Parameter {
+    /// Name of the parameter (snake-cased).
+    pub name: String,
+    /// Type of the parameter as a path.
+    pub ty_path: String,
+    /// Whether this parameter is required.
+    pub required: bool,
 }
 
 /// Represents a struct field.
@@ -48,6 +67,32 @@ pub struct ObjectField {
     pub is_required: bool,
     /// Whether this field should be boxed.
     pub boxed: bool,
+}
+
+impl ApiObject {
+    /// Create an object with the given name.
+    pub fn with_name<S>(name: S) -> Self
+    where
+        S: Into<String>,
+    {
+        ApiObject {
+            name: name.into(),
+            fields: vec![],
+            paths: HashMap::new(),
+        }
+    }
+
+    /// Returns the builder struct repr if this object needs a builder.
+    pub fn builder(&self) -> Option<ApiObjectBuilder<'_>> {
+        if self.fields.iter().any(|f| f.is_required) {
+            Some(ApiObjectBuilder {
+                name: self.name.clone() + "Builder",
+                inner: self,
+            })
+        } else {
+            None
+        }
+    }
 }
 
 impl<'a> Display for ApiObjectBuilder<'a> {
@@ -141,5 +186,14 @@ impl Display for ApiObject {
         }
 
         f.write_str("}\n")
+    }
+}
+
+impl Default for PathOps {
+    fn default() -> Self {
+        PathOps {
+            req: HashMap::new(),
+            params: vec![],
+        }
     }
 }

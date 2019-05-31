@@ -1,7 +1,9 @@
 //! Models used by OpenAPI v2.
 
 use super::im::ArcRwLock;
-use crate as paperclip_openapi; // hack for proc macro
+use crate as paperclip_openapi;
+use crate::error::PaperClipError; // hack for proc macro
+use failure::Error;
 
 use std::collections::BTreeMap;
 
@@ -76,7 +78,8 @@ pub struct Parameter<S> {
     #[serde(rename = "in")]
     pub in_: ParameterIn,
     pub name: String,
-    pub required: Option<bool>,
+    #[serde(default)]
+    pub required: bool,
     pub schema: Option<ArcRwLock<S>>,
     #[serde(rename = "type")]
     pub data_type: Option<DataType>,
@@ -123,7 +126,7 @@ pub struct Response<S> {
 }
 
 /// The HTTP method used for an operation.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum HttpMethod {
     Get,
@@ -143,4 +146,25 @@ pub enum OperationProtocol {
     Https,
     Ws,
     Wss,
+}
+
+impl<S> Parameter<S> {
+    /// Checks if this parameter is valid.
+    pub fn check(&self, path: &str) -> Result<(), Error> {
+        if self.in_ == ParameterIn::Body {
+            if self.schema.is_none() {
+                Err(PaperClipError::MissingSchemaForBodyParameter(
+                    self.name.clone(),
+                    path.into(),
+                ))?
+            }
+        } else if self.data_type.is_none() {
+            Err(PaperClipError::MissingParameterType(
+                self.name.clone(),
+                path.into(),
+            ))?
+        }
+
+        Ok(())
+    }
 }

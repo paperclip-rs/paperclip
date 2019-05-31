@@ -55,13 +55,13 @@ impl EmitterState {
             self.write_contents(&contents, mod_path)?;
         }
 
-        for (mod_path, object) in &*def_mods {
-            if let Some(builder) = object.builder() {
-                let mut contents = String::from("\n");
-                contents.push_str(&builder.to_string());
-                self.append_contents(&contents, mod_path)?;
-            }
-        }
+        // for (mod_path, object) in &*def_mods {
+        //     if let Some(builder) = object.builder() {
+        //         let mut contents = String::from("\n");
+        //         contents.push_str(&builder.to_string());
+        //         self.append_contents(&contents, mod_path)?;
+        //     }
+        // }
 
         Ok(())
     }
