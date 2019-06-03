@@ -5,7 +5,7 @@ mod state;
 
 pub use self::state::EmitterState;
 
-use self::object::{ApiObject, ObjectField, Parameter};
+use self::object::{ApiObject, ObjectField, OpRequirement, Parameter};
 use super::{
     models::{self, Api, DataType, DataTypeFormat, OperationMap},
     Schema,
@@ -95,15 +95,18 @@ pub trait Emitter {
         state.write_definitions()?;
 
         for (path, map) in &api.paths {
-            self.generate_builder(path, map)?;
+            self.collect_requirements_for_path(path, map)?;
         }
+
+        state.add_builders()?;
 
         Ok(())
     }
 
     /// Returns an iterator of path components for the given definition.
     ///
-    /// **NOTE:** All components are [snake_cased](https://docs.rs/heck/*/heck/trait.SnekCase.html) (including the definition name).
+    /// **NOTE:** All components are [snake_cased](https://docs.rs/heck/*/heck/trait.SnekCase.html)
+    /// (including the definition name).
     fn def_ns_name<'a>(
         &self,
         def: &'a Self::Definition,
@@ -118,7 +121,8 @@ pub trait Emitter {
             .map(|i| Box::new(i) as Box<_>)
     }
 
-    /// Returns the [CamelCase](https://docs.rs/heck/*/heck/trait.CamelCase.html) name for the given definition.
+    /// Returns the [CamelCase](https://docs.rs/heck/*/heck/trait.CamelCase.html)
+    /// name for the given definition.
     fn def_name(&self, def: &Self::Definition) -> Result<String, Error> {
         Ok(self
             .def_ns_name(def)?
@@ -152,6 +156,7 @@ pub trait Emitter {
         };
 
         let mod_path = self.def_mod_path(def)?;
+        // Create parent dirs recursively for the leaf module.
         let dir_path = mod_path
             .parent()
             .ok_or(PaperClipError::InvalidDefinitionPath(mod_path.clone()))?;
@@ -188,22 +193,26 @@ pub trait Emitter {
         Ok(())
     }
 
-    fn generate_builder(
+    /// Given a path and an operation map, collect the stuff required
+    /// for generating builders later.
+    // FIXME: Cleanup befere this spreads!
+    fn collect_requirements_for_path(
         &self,
         path: &str,
         map: &OperationMap<Self::Definition>,
     ) -> Result<(), Error> {
-        debug!("Constructing builder for {:?}", path);
+        info!("Collecting builder requirement for {:?}", path);
         let state = self.state();
 
-        let check_params = |obj_params: &[models::Parameter<_>]| -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
+        let collect_params = |obj_params: &[models::Parameter<_>]| -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
             let def_mods = state.def_mods.borrow();
             let mut schema_path = None;
             let mut params = vec![];
             for p in obj_params {
-                p.check(path)?;
+                p.check(path)?; // validate the parameter
 
                 if let Some(def) = p.schema.as_ref() {
+                    // If a schema exists, then get its path for later use.
                     let pat = self.def_mod_path(&*def.read())?;
                     def_mods
                         .get(&pat)
@@ -215,6 +224,7 @@ pub trait Emitter {
                     continue
                 }
 
+                // Enforce that the parameter is a known type and collect it.
                 let ty = matching_unit_type(p.format.as_ref(), p.data_type).ok_or(
                     PaperClipError::UnknownParameterType(p.name.clone(), path.into()),
                 )?;
@@ -229,24 +239,90 @@ pub trait Emitter {
         };
 
         let mut unused_params = vec![];
+        // Collect all the parameters local to some API call.
         if let Some(global_params) = map.parameters.as_ref() {
-            let (params, schema_path) = check_params(global_params)?;
-            if let Some(pat) = schema_path.as_ref() {
-                let mut def_mods = state.def_mods.borrow_mut();
-                let obj = def_mods.get_mut(pat).expect("bleh?");
-                let ops = obj
-                    .paths
-                    .entry(path.into())
-                    .or_insert_with(Default::default);
-                ops.params = params;
-            } else {
-                unused_params = params;
-            }
+            let (params, _) = collect_params(global_params)?;
+            // FIXME: What if a body is "required" globally (for all operations)?
+            // This means, operations can override the body with some other schema
+            // and we may need to map it to the appropriate builders.
+            unused_params = params;
         }
 
-        for (meth, op) in &map.methods {
+        // Now collect the parameters local to an API call operation (method).
+        for (&meth, op) in &map.methods {
+            let mut op_addressed = false;
+            let mut unused_local_params = vec![];
+
             if let Some(local_params) = op.parameters.as_ref() {
-                let (params, schema_path) = check_params(local_params)?;
+                let (mut params, schema_path) = collect_params(local_params)?;
+                // If we have unused params which don't exist in the method-specific
+                // params (which take higher precedence), then we can copy those inside.
+                for global_param in &unused_params {
+                    if params
+                        .iter()
+                        .find(|p| p.name == global_param.name)
+                        .is_none()
+                    {
+                        params.push(global_param.clone());
+                    }
+                }
+
+                // If there's a matching object, add the params to its operation.
+                if let Some(pat) = schema_path.as_ref() {
+                    op_addressed = true;
+                    let mut def_mods = state.def_mods.borrow_mut();
+                    let obj = def_mods.get_mut(pat).expect("bleh?");
+                    let ops = obj
+                        .paths
+                        .entry(path.into())
+                        .or_insert_with(Default::default);
+                    ops.req.insert(
+                        meth,
+                        OpRequirement {
+                            params,
+                            body_required: true,
+                        },
+                    );
+                } else {
+                    unused_local_params = params;
+                }
+            }
+
+            // We haven't attached this operation to any object.
+            // Let's try from the response maybe...
+            if !op_addressed {
+                let mut def_mods = state.def_mods.borrow_mut();
+                for schema in op
+                    .responses
+                    .iter()
+                    .filter(|(c, _)| c.starts_with('2'))
+                    .filter_map(|(_, r)| r.schema.as_ref())
+                {
+                    let pat = self.def_mod_path(&*schema.read()).ok();
+                    let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
+                        Some(o) => o,
+                        None => {
+                            warn!(
+                                "Skipping unknown response schema for path {:?}: {:?}",
+                                path, schema
+                            );
+                            continue;
+                        }
+                    };
+
+                    let ops = obj
+                        .paths
+                        .entry(path.into())
+                        .or_insert_with(Default::default);
+                    ops.req.insert(
+                        meth,
+                        OpRequirement {
+                            params: unused_local_params,
+                            body_required: false,
+                        },
+                    );
+                    break;
+                }
             }
         }
 

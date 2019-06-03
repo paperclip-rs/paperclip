@@ -23,9 +23,9 @@ lazy_static! {
         raw.resolve().expect("resolution")
     };
     static ref CODEGEN: () = {
-        // env_logger::builder()
-        //     .filter(Some("paperclip_openapi"), log::LevelFilter::Debug)
-        //     .init();
+        env_logger::builder()
+            .filter(Some("paperclip_openapi"), log::LevelFilter::Info)
+            .init();
         let mut state = EmitterState::default();
         state.working_dir = (&*ROOT).into();
         state.working_dir.push("tests");
