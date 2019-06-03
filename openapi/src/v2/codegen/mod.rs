@@ -295,7 +295,7 @@ pub trait Emitter {
                 for schema in op
                     .responses
                     .iter()
-                    .filter(|(c, _)| c.starts_with('2'))
+                    .filter(|(c, _)| c.starts_with('2')) // 2xx response
                     .filter_map(|(_, r)| r.schema.as_ref())
                 {
                     let pat = self.def_mod_path(&*schema.read()).ok();

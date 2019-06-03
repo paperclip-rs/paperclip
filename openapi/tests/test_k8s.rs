@@ -99,7 +99,7 @@ fn test_complex_object() {
     // - It uses pretty much all types (including custom types).
     // - It references other definitions (directly and through an array).
     // - It's a cyclic type.
-    assert_eq!(contents,
+    assert_eq!(contents.find(
 "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct JsonSchemaProps {
     #[serde(rename = \"$ref\")]
@@ -167,5 +167,5 @@ pub struct JsonSchemaProps {
     #[serde(rename = \"x-kubernetes-preserve-unknown-fields\")]
     pub x_kubernetes_preserve_unknown_fields: Option<bool>,
 }
-");
+"), Some(0));
 }

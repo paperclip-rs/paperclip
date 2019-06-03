@@ -64,7 +64,7 @@ impl EmitterState {
         info!("Adding builders to definitions.");
         let def_mods = self.def_mods.borrow();
         for (mod_path, object) in &*def_mods {
-            if let Some(builder) = object.builder() {
+            for builder in object.builders() {
                 let mut contents = String::from("\n");
                 contents.push_str(&builder.to_string());
                 self.append_contents(&contents, mod_path)?;

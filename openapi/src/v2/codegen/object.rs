@@ -3,8 +3,9 @@
 use super::{super::models::HttpMethod, RUST_KEYWORDS};
 use heck::{CamelCase, SnekCase};
 
-use std::collections::HashMap;
-use std::fmt::{self, Display};
+use std::collections::{BTreeMap, HashSet};
+use std::fmt::{self, Debug, Display};
+use std::iter;
 
 /// Represents a (simplified) Rust struct.
 #[derive(Debug, Clone)]
@@ -14,14 +15,14 @@ pub struct ApiObject {
     /// List of fields.
     pub fields: Vec<ObjectField>,
     /// Paths with operations which address this object.
-    pub paths: HashMap<String, PathOps>,
+    pub paths: BTreeMap<String, PathOps>,
 }
 
 /// Operations in a path.
 #[derive(Debug, Clone)]
 pub struct PathOps {
     /// Operations for this object and their associated requirements.
-    pub req: HashMap<HttpMethod, OpRequirement>,
+    pub req: BTreeMap<HttpMethod, OpRequirement>,
     /// Parameters required for all operations in this path.
     pub params: Vec<Parameter>,
 }
@@ -70,159 +71,220 @@ impl ApiObject {
         ApiObject {
             name: name.into(),
             fields: vec![],
-            paths: HashMap::new(),
+            paths: BTreeMap::new(),
         }
     }
 
-    /// Returns the builder struct repr if this object needs a builder.
-    pub fn builder(&self) -> Option<ApiObjectBuilder<'_>> {
-        let builder = Some(ApiObjectBuilder {
-            name: self.name.clone() + "Builder",
-            inner: self,
-        });
+    /// Returns the builders for this object.
+    ///
+    /// Each builder is bound to an operation in a path. If the object is not
+    /// bound to any operation, then the builder only keeps track of the fields.
+    // FIXME: Make operations generic across builders. This will reduce the
+    // number of structs generated.
+    pub fn builders<'a>(&'a self) -> Box<Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
+        if self.paths.is_empty() {
+            return Box::new(iter::once(ApiObjectBuilder {
+                idx: 0,
+                object: &self.name,
+                method: None,
+                body_required: true,
+                fields: &self.fields,
+                global_params: &[],
+                local_params: &[],
+            })) as Box<_>;
+        }
 
-        if self.fields.iter().any(|f| f.is_required)
-            || self
-                .paths
+        Box::new(
+            self.paths
                 .values()
-                .next()
-                .and_then(|path_ops| path_ops.params.iter().find(|p| p.required))
-                .is_some()
-        {
-            if self.paths.len() <= 1 {
-                return builder;
-            }
-        } else if self.paths.len() == 1 {
-            return builder;
-        }
-
-        if self.paths.len() > 1 {
-            // FIXME: How do we handle objects in multiple paths? Operation IDs? Our own IDs?
-            warn!(
-                "Skipping builder for {} because it has {} different paths",
-                self.name,
-                self.paths.len()
-            );
-        }
-
-        None
+                .enumerate()
+                .flat_map(move |(idx, path_ops)| {
+                    path_ops
+                        .req
+                        .iter()
+                        .map(move |(&method, req)| ApiObjectBuilder {
+                            idx,
+                            object: &self.name,
+                            method: Some(method),
+                            body_required: req.body_required,
+                            fields: &self.fields,
+                            global_params: &path_ops.params,
+                            local_params: &req.params,
+                        })
+                }),
+        ) as Box<_>
     }
 }
 
 /// Represents a builder struct for some API object.
 #[derive(Debug, Clone)]
 pub struct ApiObjectBuilder<'a> {
-    /// Name of the builder (camel-cased).
-    pub name: String,
-    inner: &'a ApiObject,
+    idx: usize,
+    method: Option<HttpMethod>,
+    object: &'a str,
+    body_required: bool,
+    fields: &'a [ObjectField],
+    global_params: &'a [Parameter],
+    local_params: &'a [Parameter],
 }
 
 impl<'a> ApiObjectBuilder<'a> {
-    /// Returns the impl repr for the object builder.
-    pub fn impl_repr(&self) -> ApiObjectBuilderImpl<'_> {
-        ApiObjectBuilderImpl(self)
-    }
-}
+    fn struct_fields_iter(&self) -> impl Iterator<Item = (&'a str, &'a str, Property)> + 'a {
+        let field_iter = self.fields.iter().map(|field| {
+            (
+                field.name.as_str(),
+                field.ty_path.as_str(),
+                if field.is_required {
+                    Property::RequiredField
+                } else {
+                    Property::OptionalField
+                },
+            )
+        });
 
-/// Represents the impl for API object builders.
-#[derive(Debug, Clone)]
-pub struct ApiObjectBuilderImpl<'a>(&'a ApiObjectBuilder<'a>);
-
-// impl<'a> Display for ApiObjectBuilderImpl<'a> {
-//     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-//         //
-//     }
-// }
-
-impl<'a> ApiObjectBuilder<'a> {
-    fn required_fields_iter(&self) -> Box<Iterator<Item = (&'a str, &'a str, Required)> + 'a> {
-        let field_iter = self
-            .inner
-            .fields
+        let param_iter = self
+            .global_params
             .iter()
-            .filter(|f| f.is_required)
-            .map(|f| (f.name.as_str(), f.ty_path.as_str(), Required::Field));
+            .chain(self.local_params.iter())
+            .scan(HashSet::new(), |set, param| {
+                if set.contains(&param.name) {
+                    Some(None)
+                } else {
+                    set.insert(&param.name);
+                    Some(Some((
+                        param.name.as_str(),
+                        param.ty_path.as_str(),
+                        if param.required {
+                            Property::RequiredParam
+                        } else {
+                            Property::OptionalParam
+                        },
+                    )))
+                }
+            })
+            .filter_map(|p| p);
 
-        if let Some(path_ops) = self.inner.paths.values().next() {
-            let path_iter = path_ops
-                .params
-                .iter()
-                .filter(|p| p.required)
-                .map(|p| (p.name.as_str(), p.ty_path.as_str(), Required::Parameter));
-            return Box::new(field_iter.chain(path_iter)) as Box<_>;
-        }
-
-        Box::new(field_iter) as Box<_>
+        // Local parameters override global parameters.
+        field_iter.chain(param_iter)
     }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-enum Required {
-    Field,
-    Parameter,
+enum Property {
+    RequiredField,
+    OptionalField,
+    RequiredParam,
+    OptionalParam,
+}
+
+impl Property {
+    /// Whether this property is required.
+    fn is_required(self) -> bool {
+        match self {
+            Property::RequiredField | Property::RequiredParam => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this property is a parameter.
+    fn is_parameter(self) -> bool {
+        match self {
+            Property::RequiredParam | Property::OptionalParam => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this property is a field.
+    fn is_field(self) -> bool {
+        match self {
+            Property::RequiredField | Property::OptionalField => true,
+            _ => false,
+        }
+    }
 }
 
 impl<'a> Display for ApiObjectBuilder<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("#[derive(Debug, Clone)]")?;
         f.write_str("\npub struct ")?;
-        f.write_str(&self.name)?;
-        f.write_str("<")?;
-
-        if !self.inner.paths.is_empty() {
-            f.write_str("Operation")?;
+        f.write_str(&self.object)?;
+        if let Some(method) = self.method {
+            Debug::fmt(&method, f)?;
         }
 
-        self.required_fields_iter()
+        f.write_str("Builder")?;
+
+        if self.idx > 0 {
+            f.write_str(&self.idx.to_string())?;
+        }
+
+        let mut needs_fields = false;
+        self.struct_fields_iter()
+            .filter(|(_, _, prop)| prop.is_required())
             .enumerate()
-            .try_for_each(|(i, (name, _, req))| {
-                if !self.inner.paths.is_empty() || i > 0 {
+            .try_for_each(|(i, (name, _, prop))| {
+                if i > 0 {
                     f.write_str(", ")?;
+                } else {
+                    needs_fields = true;
+                    f.write_str("<")?;
                 }
 
-                if req == Required::Parameter {
+                if prop.is_parameter() {
                     f.write_str("Param")?;
                 }
 
                 f.write_str(&name.to_camel_case())
             })?;
 
-        f.write_str("> {")?;
-
-        f.write_str("\n    ")?;
-        f.write_str("pub(crate) inner: ")?;
-        f.write_str(&self.inner.name)?;
-        f.write_str(",")?;
-
-        if !self.inner.paths.is_empty() {
-            f.write_str("\n    _op: Operation,")?;
+        if needs_fields {
+            f.write_str(">")?;
         }
 
-        self.required_fields_iter()
-            .try_for_each(|(name, ty, req)| {
-                let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
-                f.write_str("\n    ")?;
-                f.write_str(&sk)?;
-                if RUST_KEYWORDS.iter().any(|&k| k == sk) {
-                    f.write_str("_")?;
-                }
+        f.write_str(" {")?;
 
-                f.write_str(": ")?;
-                f.write_str(&ty)?;
-                f.write_str(",")?;
+        f.write_str("\n    ")?;
+        f.write_str("pub(crate) inner: Option<")?;
+        f.write_str(&self.object)?;
+        f.write_str(">,")?;
 
-                f.write_str("\n    ")?;
+        self.struct_fields_iter().try_for_each(|(name, ty, prop)| {
+            let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
+            f.write_str("\n    ")?;
+            if prop.is_parameter() {
+                f.write_str("param_")?;
+            }
+
+            f.write_str(&sk)?;
+            if prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == sk) {
                 f.write_str("_")?;
-                if req == Required::Parameter {
+            }
+
+            f.write_str(": ")?;
+            f.write_str("Option<")?;
+            f.write_str(&ty)?;
+            f.write_str(">")?;
+
+            if prop.is_required() {
+                f.write_str(",\n    ")?;
+                if prop.is_parameter() {
                     f.write_str("_param")?;
                 }
 
+                f.write_str("_")?;
                 f.write_str(&sk)?;
                 f.write_str(": ")?;
                 f.write_str("core::marker::PhantomData<")?;
+                if prop.is_parameter() {
+                    f.write_str("Param")?;
+                }
+
                 f.write_str(&cc)?;
-                f.write_str(">,")
-            })?;
+                f.write_str(">")?;
+            }
+
+            f.write_str(",")
+        })?;
 
         f.write_str("\n}\n")
     }
@@ -279,7 +341,7 @@ impl Display for ApiObject {
 impl Default for PathOps {
     fn default() -> Self {
         PathOps {
-            req: HashMap::new(),
+            req: BTreeMap::new(),
             params: vec![],
         }
     }
