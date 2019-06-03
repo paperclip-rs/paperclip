@@ -1,6 +1,6 @@
 //! Simplified objects for codegen.
 
-use super::{super::models::HttpMethod, RUST_KEYWORDS};
+use crate::v2::models::HttpMethod;
 use heck::{CamelCase, SnekCase};
 
 use std::collections::{BTreeMap, HashSet};
@@ -12,6 +12,8 @@ use std::iter;
 pub struct ApiObject {
     /// Name of the struct (camel-cased).
     pub name: String,
+    /// Path to this object from (generated) root module.
+    pub path: String,
     /// List of fields.
     pub fields: Vec<ObjectField>,
     /// Paths with operations which address this object.
@@ -69,6 +71,8 @@ impl ApiObject {
         S: Into<String>,
     {
         ApiObject {
+            // NOTE: Even though it's empty, it'll be replaced by the emitter.
+            path: String::new(),
             name: name.into(),
             fields: vec![],
             paths: BTreeMap::new(),
@@ -130,11 +134,13 @@ pub struct ApiObjectBuilder<'a> {
 
 impl<'a> ApiObjectBuilder<'a> {
     fn struct_fields_iter(&self) -> impl Iterator<Item = (&'a str, &'a str, Property)> + 'a {
-        let field_iter = self.fields.iter().map(|field| {
+        let body_required = self.body_required;
+        let field_iter = self.fields.iter().map(move |field| {
             (
                 field.name.as_str(),
                 field.ty_path.as_str(),
-                if field.is_required {
+                // We "require" the object fields only if the object itself is required.
+                if body_required && field.is_required {
                     Property::RequiredField
                 } else {
                     Property::OptionalField
@@ -147,7 +153,10 @@ impl<'a> ApiObjectBuilder<'a> {
             .iter()
             .chain(self.local_params.iter())
             .scan(HashSet::new(), |set, param| {
+                // Local parameters override global parameters.
                 if set.contains(&param.name) {
+                    // Workaround because `scan` stops when it encounters
+                    // `None`, but we want filtering.
                     Some(None)
                 } else {
                     set.insert(&param.name);
@@ -164,7 +173,6 @@ impl<'a> ApiObjectBuilder<'a> {
             })
             .filter_map(|p| p);
 
-        // Local parameters override global parameters.
         field_iter.chain(param_iter)
     }
 }
@@ -177,6 +185,7 @@ enum Property {
     OptionalParam,
 }
 
+#[allow(dead_code)]
 impl Property {
     /// Whether this property is required.
     fn is_required(self) -> bool {
@@ -243,30 +252,25 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 
         f.write_str(" {")?;
 
-        f.write_str("\n    ")?;
-        f.write_str("pub(crate) inner: Option<")?;
-        f.write_str(&self.object)?;
-        f.write_str(">,")?;
+        if self.body_required {
+            f.write_str("\n    ")?;
+            f.write_str("pub(crate) inner: Option<")?;
+            f.write_str(&self.object)?;
+            f.write_str(">,")?;
+        }
 
         self.struct_fields_iter().try_for_each(|(name, ty, prop)| {
             let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
-            f.write_str("\n    ")?;
             if prop.is_parameter() {
-                f.write_str("param_")?;
+                f.write_str("\n    param_")?;
+                f.write_str(&sk)?;
+                f.write_str(": Option<")?;
+                f.write_str(&ty)?;
+                f.write_str(">,")?;
             }
-
-            f.write_str(&sk)?;
-            if prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == sk) {
-                f.write_str("_")?;
-            }
-
-            f.write_str(": ")?;
-            f.write_str("Option<")?;
-            f.write_str(&ty)?;
-            f.write_str(">")?;
 
             if prop.is_required() {
-                f.write_str(",\n    ")?;
+                f.write_str("\n    ")?;
                 if prop.is_parameter() {
                     f.write_str("_param")?;
                 }
@@ -280,10 +284,10 @@ impl<'a> Display for ApiObjectBuilder<'a> {
                 }
 
                 f.write_str(&cc)?;
-                f.write_str(">")?;
+                f.write_str(">,")?;
             }
 
-            f.write_str(",")
+            Ok(())
         })?;
 
         f.write_str("\n}\n")

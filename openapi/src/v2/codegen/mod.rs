@@ -19,7 +19,7 @@ const RUST_KEYWORDS: &[&str] = &["type", "continue", "enum", "ref"];
 
 /// Default emitter for anything that implements `Schema` trait.
 ///
-/// This isn't special in any way, as `Emitter` trait takes
+/// This doesn't do anything special, as `Emitter` trait methods take
 /// care of all the heavy load.
 pub struct DefaultEmitter<S> {
     state: EmitterState,

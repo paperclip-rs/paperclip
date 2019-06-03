@@ -160,7 +160,7 @@ where
     fn generate_def_from_root(&self, def: &E::Definition) -> Result<(), Error> {
         let state = self.state();
         // Generate the object.
-        let object = match self.build_def(def, true)? {
+        let mut object = match self.build_def(def, true)? {
             EmittedUnit::Object(o) => o,
             // We don't care about type aliases because we resolve them anyway.
             _ => return Ok(()),
@@ -175,6 +175,7 @@ where
             fs::create_dir_all(&dir_path)?;
         }
 
+        // Get the path without the extension.
         let full_path = dir_path.join(
             mod_path
                 .file_stem()
@@ -197,6 +198,9 @@ where
             }
         }
 
+        // Set the path for future reference
+        object.path = rel_path.to_string_lossy().into_owned().replace('/', "::");
+
         // Add generated object to state.
         let mut def_mods = state.def_mods.borrow_mut();
         def_mods.insert(mod_path, object);
@@ -206,12 +210,13 @@ where
 
     /// Given a path and an operation map, collect the stuff required
     /// for generating builders later.
+    // FIXME: Cleanup before this infection spreads!
     fn collect_requirements_for_path(
         &self,
         path: &str,
         map: &OperationMap<E::Definition>,
     ) -> Result<(), Error> {
-        info!("Collecting builder requirement for {:?}", path);
+        debug!("Collecting builder requirement for {:?}", path);
         let state = self.state();
 
         let mut unused_params = vec![];
