@@ -260,6 +260,7 @@ where
                     ops.req.insert(
                         meth,
                         OpRequirement {
+                            id: op.operation_id.clone(),
                             params,
                             body_required: true,
                         },
@@ -267,6 +268,8 @@ where
                 } else {
                     unused_local_params = params;
                 }
+            } else {
+                unused_local_params = unused_params.clone();
             }
 
             // We haven't attached this operation to any object.
@@ -298,6 +301,7 @@ where
                     ops.req.insert(
                         meth,
                         OpRequirement {
+                            id: op.operation_id.clone(),
                             params: unused_local_params,
                             body_required: false,
                         },

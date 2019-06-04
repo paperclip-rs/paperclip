@@ -1,10 +1,13 @@
 //! Simplified objects for codegen.
+//!
+//! This contains the necessary objects for generating actual
+//! API objects, their builders, impls, etc.
 
 use crate::v2::models::HttpMethod;
 use heck::{CamelCase, SnekCase};
 
 use std::collections::{BTreeMap, HashSet};
-use std::fmt::{self, Debug, Display};
+use std::fmt::{self, Display, Write};
 use std::iter;
 
 /// Represents a (simplified) Rust struct.
@@ -32,6 +35,11 @@ pub struct PathOps {
 /// Requirement for an object corresponding to some operation.
 #[derive(Debug, Clone)]
 pub struct OpRequirement {
+    /// Operation ID (if it's provided in the schema).
+    ///
+    /// If there are multiple operations for the same path, then we
+    /// attempt to use this.
+    pub id: Option<String>,
     /// Parameters required for this operation.
     pub params: Vec<Parameter>,
     /// Whether the object itself is required (in body) for this operation.
@@ -79,6 +87,11 @@ impl ApiObject {
         }
     }
 
+    /// Returns a struct representing the impl for this object.
+    pub fn impl_repr(&self) -> ApiObjectImpl<'_> {
+        ApiObjectImpl(self)
+    }
+
     /// Returns the builders for this object.
     ///
     /// Each builder is bound to an operation in a path. If the object is not
@@ -91,6 +104,7 @@ impl ApiObject {
                 idx: 0,
                 object: &self.name,
                 method: None,
+                op_id: None,
                 body_required: true,
                 fields: &self.fields,
                 global_params: &[],
@@ -109,6 +123,7 @@ impl ApiObject {
                         .map(move |(&method, req)| ApiObjectBuilder {
                             idx,
                             object: &self.name,
+                            op_id: req.id.as_ref().map(String::as_str),
                             method: Some(method),
                             body_required: req.body_required,
                             fields: &self.fields,
@@ -120,10 +135,14 @@ impl ApiObject {
     }
 }
 
+/// Represents the API object impl.
+pub struct ApiObjectImpl<'a>(&'a ApiObject);
+
 /// Represents a builder struct for some API object.
 #[derive(Debug, Clone)]
 pub struct ApiObjectBuilder<'a> {
     idx: usize,
+    op_id: Option<&'a str>,
     method: Option<HttpMethod>,
     object: &'a str,
     body_required: bool,
@@ -133,6 +152,7 @@ pub struct ApiObjectBuilder<'a> {
 }
 
 impl<'a> ApiObjectBuilder<'a> {
+    /// Returns an iterator of all fields and parameters required for the Rust builder struct.
     fn struct_fields_iter(&self) -> impl Iterator<Item = (&'a str, &'a str, Property)> + 'a {
         let body_required = self.body_required;
         let field_iter = self.fields.iter().map(move |field| {
@@ -175,6 +195,110 @@ impl<'a> ApiObjectBuilder<'a> {
 
         field_iter.chain(param_iter)
     }
+
+    /// Returns whether this builder needs `repr(transparent)`
+    fn needs_repr_transparent(&self) -> bool {
+        let zero_sized_parent = self.fields.is_empty();
+        let needs_params = self.struct_fields_iter().any(|(_, _, p)| p.is_required());
+        (self.body_required && !zero_sized_parent) || needs_params
+    }
+
+    /// Returns whether this builder has any parameters.
+    fn has_parameters(&self) -> bool {
+        !self.local_params.is_empty() || !self.global_params.is_empty()
+    }
+
+    /// Returns whether this builder will have at least one field.
+    fn has_atleast_one_field(&self) -> bool {
+        self.struct_fields_iter()
+            .any(|(_, _, p)| p.is_parameter() || p.is_required())
+    }
+
+    /// Write this builder's name into the given formatter.
+    fn write_name<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        f.write_str(&self.object)?;
+        if let Some(method) = self.method {
+            write!(f, "{:?}", method)?;
+        }
+
+        f.write_str("Builder")?;
+        if self.idx > 0 {
+            f.write_str(&self.idx.to_string())?;
+        }
+
+        Ok(())
+    }
+
+    /// Writes generic stuff to the struct definition, if needed.
+    fn write_generics_if_necessary<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        let mut is_generic = false;
+        // Inspect fields and parameters and write generics.
+        self.struct_fields_iter()
+            .filter(|(_, _, prop)| prop.is_required())
+            .enumerate()
+            .try_for_each(|(i, (name, _, prop))| {
+                if i == 0 {
+                    is_generic = true;
+                    f.write_str("<")?;
+                } else {
+                    f.write_str(", ")?;
+                }
+
+                if prop.is_parameter() {
+                    f.write_str("Param")?;
+                }
+
+                f.write_str(&name.to_camel_case())
+            })?;
+
+        if is_generic {
+            f.write_str(">")?;
+        }
+
+        Ok(())
+    }
+
+    /// Writes the body field into the formatter if required.
+    fn write_body_field_if_required<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        if self.body_required {
+            f.write_str("\n    inner: ")?;
+            f.write_str(&self.object)?;
+            f.write_str(",")?;
+        }
+
+        Ok(())
+    }
+
+    /// Writes the parameter into the formatter if required.
+    fn write_parameter_if_required<F>(
+        &self,
+        prop: Property,
+        name: &str,
+        ty: &str,
+        f: &mut F,
+    ) -> fmt::Result
+    where
+        F: Write,
+    {
+        if prop.is_parameter() {
+            f.write_str("\n    param_")?;
+            f.write_str(&name)?;
+            f.write_str(": Option<")?;
+            f.write_str(&ty)?;
+            f.write_str(">,")?;
+        }
+
+        Ok(())
+    }
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -212,62 +336,71 @@ impl Property {
     }
 }
 
-impl<'a> Display for ApiObjectBuilder<'a> {
+impl<'a> Display for ApiObjectImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        f.write_str("#[derive(Debug, Clone)]")?;
-        f.write_str("\npub struct ")?;
-        f.write_str(&self.object)?;
-        if let Some(method) = self.method {
-            Debug::fmt(&method, f)?;
-        }
-
-        f.write_str("Builder")?;
-
-        if self.idx > 0 {
-            f.write_str(&self.idx.to_string())?;
-        }
-
-        let mut needs_fields = false;
-        self.struct_fields_iter()
-            .filter(|(_, _, prop)| prop.is_required())
-            .enumerate()
-            .try_for_each(|(i, (name, _, prop))| {
-                if i > 0 {
-                    f.write_str(", ")?;
-                } else {
-                    needs_fields = true;
-                    f.write_str("<")?;
-                }
-
-                if prop.is_parameter() {
-                    f.write_str("Param")?;
-                }
-
-                f.write_str(&name.to_camel_case())
-            })?;
-
-        if needs_fields {
-            f.write_str(">")?;
-        }
-
+        f.write_str("impl ")?;
+        f.write_str(&self.0.name)?;
         f.write_str(" {")?;
 
-        if self.body_required {
-            f.write_str("\n    ")?;
-            f.write_str("pub(crate) inner: Option<")?;
-            f.write_str(&self.object)?;
-            f.write_str(">,")?;
+        // self.0.builders().try_for_each(|builder| {
+        //     f.write_str("\n    #[inline]\n    pub fn ")?;
+        //     if let Some(_id) = builder.op_id {
+        //         // TODO
+        //     } else if let Some(m) = builder.method {
+        //         // TODO
+        //     } else {
+        //         f.write_str("builder")?;
+        //     }
+
+        //     f.write_str("() -> ")?;
+        //     builder.write_name(f)?;
+        //     f.write_str(" {\n        Default::default()\n    }")
+        // })?;
+
+        f.write_str("\n}\n")
+    }
+}
+
+impl<'a> Display for ApiObjectBuilder<'a> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.needs_repr_transparent() {
+            f.write_str("#[repr(transparent)]\n")?;
+        }
+
+        f.write_str("#[derive(Debug, Default, Clone)]\npub struct ")?;
+        self.write_name(f)?;
+        self.write_generics_if_necessary(f)?;
+
+        // If structs don't have any fields, then we go for unit structs.
+        let has_fields = self.has_atleast_one_field();
+        // If the builder "needs" a parameter, then we go for a separate
+        // container which holds both the body (if any) and the parameters,
+        // so that we can make the actual builder `#[repr(transparent)]`
+        // for safe transmuting.
+        let has_parameters = self.has_parameters();
+
+        if has_fields || self.body_required || has_parameters {
+            f.write_str(" {")?;
+        }
+
+        let mut container = String::new();
+        if has_parameters {
+            container.push_str("#[derive(Debug, Default, Clone)]\nstruct ");
+            self.write_name(&mut container)?;
+            container.push_str("Container {");
+            self.write_body_field_if_required(&mut container)?;
+
+            f.write_str("\n    inner: ")?;
+            self.write_name(f)?;
+            f.write_str("Container,")?;
+        } else {
+            self.write_body_field_if_required(f)?;
         }
 
         self.struct_fields_iter().try_for_each(|(name, ty, prop)| {
             let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
-            if prop.is_parameter() {
-                f.write_str("\n    param_")?;
-                f.write_str(&sk)?;
-                f.write_str(": Option<")?;
-                f.write_str(&ty)?;
-                f.write_str(">,")?;
-            }
+            // 'container' is meant for parameters.
+            self.write_parameter_if_required(prop, &sk, &ty, &mut container)?;
 
             if prop.is_required() {
                 f.write_str("\n    ")?;
@@ -290,7 +423,19 @@ impl<'a> Display for ApiObjectBuilder<'a> {
             Ok(())
         })?;
 
-        f.write_str("\n}\n")
+        if has_fields || self.body_required {
+            f.write_str("\n}\n")?;
+        } else {
+            f.write_str(";\n")?;
+        }
+
+        if has_parameters {
+            f.write_str("\n")?;
+            f.write_str(&container)?;
+            f.write_str("\n}\n")?;
+        }
+
+        Ok(())
     }
 }
 

@@ -3,6 +3,7 @@ use failure::Error;
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
+use std::fmt::Write as _;
 use std::fs::OpenOptions;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -64,11 +65,14 @@ impl EmitterState {
         info!("Adding builders to definitions.");
         let def_mods = self.def_mods.borrow();
         for (mod_path, object) in &*def_mods {
+            let mut contents = String::from("\n");
+            let _ = write!(contents, "{}", object.impl_repr());
             for builder in object.builders() {
-                let mut contents = String::from("\n");
-                contents.push_str(&builder.to_string());
-                self.append_contents(&contents, mod_path)?;
+                contents.push('\n');
+                let _ = write!(contents, "{}", builder);
             }
+
+            self.append_contents(&contents, mod_path)?;
         }
 
         Ok(())
