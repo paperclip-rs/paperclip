@@ -64,6 +64,7 @@ pub trait Emitter: Sized {
         }
 
         state.add_builders()?;
+        state.add_deps()?;
 
         Ok(())
     }

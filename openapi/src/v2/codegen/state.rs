@@ -1,5 +1,6 @@
 use super::object::ApiObject;
 use failure::Error;
+use heck::CamelCase;
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -20,6 +21,10 @@ pub struct EmitterState {
     pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
     /// Holds generated struct definitions for leaf modules.
     pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
+    /// Unit types used by builders.
+    unit_types: Rc<RefCell<HashSet<String>>>,
+    /// Root module emitted by codegen.
+    root_module: Rc<RefCell<Option<String>>>,
 }
 
 impl EmitterState {
@@ -43,6 +48,20 @@ impl EmitterState {
             self.write_contents(&contents, &mod_path)?;
         }
 
+        if let Some(p) = mods.keys().next() {
+            let mut some_path = PathBuf::from(p);
+            loop {
+                match some_path.parent() {
+                    Some(p) if p.parent().is_some() => some_path = p.into(),
+                    _ => break,
+                }
+            }
+
+            self.root_module
+                .borrow_mut()
+                .replace(some_path.to_string_lossy().into_owned());
+        }
+
         Ok(())
     }
 
@@ -63,11 +82,19 @@ impl EmitterState {
     /// we can use this method to add builder structs and their impls.
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
         info!("Adding builders to definitions.");
+        let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
         for (mod_path, object) in &*def_mods {
             let mut contents = String::from("\n");
             let _ = write!(contents, "{}", object.impl_repr());
             for builder in object.builders() {
+                builder
+                    .struct_fields_iter()
+                    .filter(|(_, _, prop)| prop.is_required())
+                    .for_each(|(name, _, _)| {
+                        unit_types.insert(name.to_camel_case());
+                    });
+
                 contents.push('\n');
                 let _ = write!(contents, "{}", builder);
             }
@@ -76,6 +103,37 @@ impl EmitterState {
         }
 
         Ok(())
+    }
+
+    /// Once the builders have been added, we can add unit types
+    /// and other dependencies.
+    pub(crate) fn add_deps(&self) -> Result<(), Error> {
+        let module = match &*self.root_module.borrow() {
+            Some(p) => self.working_dir.join(p).join("mod.rs"),
+            None => {
+                error!("No root module to generate deps.");
+                return Ok(());
+            }
+        };
+
+        let types = self.unit_types.borrow();
+        let mut content = String::new();
+        content.push_str("\npub mod prelude {\n");
+
+        for ty in &*types {
+            content.push_str("    pub struct Missing");
+            content.push_str(ty);
+            content.push_str(";\n");
+            content.push_str("    pub struct ");
+            content.push_str(ty);
+            content.push_str("Optional;\n");
+            content.push_str("    pub struct ");
+            content.push_str(ty);
+            content.push_str("Exists;\n");
+        }
+
+        content.push_str("}\n");
+        self.append_contents(&content, &module)
     }
 
     /// Writes the given contents to a file at the given path (truncating the file if it exists).
@@ -106,6 +164,8 @@ impl Default for EmitterState {
             ns_sep: ".",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
+            unit_types: Rc::new(RefCell::new(HashSet::new())),
+            root_module: Rc::new(RefCell::new(None)),
         }
     }
 }

@@ -153,7 +153,14 @@ pub struct ApiObjectBuilder<'a> {
 
 impl<'a> ApiObjectBuilder<'a> {
     /// Returns an iterator of all fields and parameters required for the Rust builder struct.
-    fn struct_fields_iter(&self) -> impl Iterator<Item = (&'a str, &'a str, Property)> + 'a {
+    ///
+    /// **NOTE:** The names yielded by this iterator are unique for a builder.
+    /// If there's a collision between a path-specific parameter and an operation-specific
+    /// parameter, then the latter overrides the former. If there's a collision between a field
+    /// and a parameter, then the latter overrides the former.
+    pub(super) fn struct_fields_iter(
+        &self,
+    ) -> impl Iterator<Item = (&'a str, &'a str, Property)> + 'a {
         let body_required = self.body_required;
         let field_iter = self.fields.iter().map(move |field| {
             (
@@ -193,7 +200,18 @@ impl<'a> ApiObjectBuilder<'a> {
             })
             .filter_map(|p| p);
 
-        field_iter.chain(param_iter)
+        // Check parameter-field collisions.
+        param_iter
+            .chain(field_iter)
+            .scan(HashSet::new(), |set, (name, ty, prop)| {
+                if set.contains(name) {
+                    Some(None)
+                } else {
+                    set.insert(name);
+                    Some(Some((name, ty, prop)))
+                }
+            })
+            .filter_map(|p| p)
     }
 
     /// Returns whether this builder needs `repr(transparent)`
@@ -242,16 +260,12 @@ impl<'a> ApiObjectBuilder<'a> {
         self.struct_fields_iter()
             .filter(|(_, _, prop)| prop.is_required())
             .enumerate()
-            .try_for_each(|(i, (name, _, prop))| {
+            .try_for_each(|(i, (name, _, _))| {
                 if i == 0 {
                     is_generic = true;
                     f.write_str("<")?;
                 } else {
                     f.write_str(", ")?;
-                }
-
-                if prop.is_parameter() {
-                    f.write_str("Param")?;
                 }
 
                 f.write_str(&name.to_camel_case())
@@ -302,7 +316,7 @@ impl<'a> ApiObjectBuilder<'a> {
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
-enum Property {
+pub(super) enum Property {
     RequiredField,
     OptionalField,
     RequiredParam,
@@ -312,7 +326,7 @@ enum Property {
 #[allow(dead_code)]
 impl Property {
     /// Whether this property is required.
-    fn is_required(self) -> bool {
+    pub(super) fn is_required(self) -> bool {
         match self {
             Property::RequiredField | Property::RequiredParam => true,
             _ => false,
@@ -320,7 +334,7 @@ impl Property {
     }
 
     /// Checks whether this property is a parameter.
-    fn is_parameter(self) -> bool {
+    pub(super) fn is_parameter(self) -> bool {
         match self {
             Property::RequiredParam | Property::OptionalParam => true,
             _ => false,
@@ -328,7 +342,7 @@ impl Property {
     }
 
     /// Checks whether this property is a field.
-    fn is_field(self) -> bool {
+    pub(super) fn is_field(self) -> bool {
         match self {
             Property::RequiredField | Property::OptionalField => true,
             _ => false,
@@ -367,7 +381,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
             f.write_str("#[repr(transparent)]\n")?;
         }
 
-        f.write_str("#[derive(Debug, Default, Clone)]\npub struct ")?;
+        f.write_str("#[derive(Debug, Clone)]\npub struct ")?;
         self.write_name(f)?;
         self.write_generics_if_necessary(f)?;
 
@@ -412,10 +426,6 @@ impl<'a> Display for ApiObjectBuilder<'a> {
                 f.write_str(&sk)?;
                 f.write_str(": ")?;
                 f.write_str("core::marker::PhantomData<")?;
-                if prop.is_parameter() {
-                    f.write_str("Param")?;
-                }
-
                 f.write_str(&cc)?;
                 f.write_str(">,")?;
             }
