@@ -15,7 +15,12 @@ use std::marker::PhantomData;
 /// Common conflicting keywords in Rust. An underscore will be added
 /// to fields using these keywords.
 // FIXME: Fill this list!
-const RUST_KEYWORDS: &[&str] = &["type", "continue", "enum", "ref"];
+const RUST_KEYWORDS: &[&str] = &[
+    "as", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern", "false", "fn",
+    "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref",
+    "return", "self", "Self", "static", "struct", "super", "trait", "true", "type", "unsafe",
+    "use", "where", "while",
+];
 
 /// Default emitter for anything that implements `Schema` trait.
 ///
