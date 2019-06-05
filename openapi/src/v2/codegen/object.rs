@@ -98,10 +98,14 @@ impl ApiObject {
     /// bound to any operation, then the builder only keeps track of the fields.
     // FIXME: Make operations generic across builders. This will reduce the
     // number of structs generated.
-    pub fn builders<'a>(&'a self) -> Box<Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
+    pub fn builders<'a>(
+        &'a self,
+        helper_module_prefix: &'a str,
+    ) -> Box<Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
         if self.paths.is_empty() {
             return Box::new(iter::once(ApiObjectBuilder {
                 idx: 0,
+                helper_module_prefix,
                 object: &self.name,
                 method: None,
                 op_id: None,
@@ -122,6 +126,7 @@ impl ApiObject {
                         .iter()
                         .map(move |(&method, req)| ApiObjectBuilder {
                             idx,
+                            helper_module_prefix,
                             object: &self.name,
                             op_id: req.id.as_ref().map(String::as_str),
                             method: Some(method),
@@ -142,6 +147,7 @@ pub struct ApiObjectImpl<'a>(&'a ApiObject);
 #[derive(Debug, Clone)]
 pub struct ApiObjectBuilder<'a> {
     idx: usize,
+    helper_module_prefix: &'a str,
     op_id: Option<&'a str>,
     method: Option<HttpMethod>,
     object: &'a str,
@@ -214,16 +220,13 @@ impl<'a> ApiObjectBuilder<'a> {
             .filter_map(|p| p)
     }
 
-    /// Returns whether this builder needs `repr(transparent)`
-    fn needs_repr_transparent(&self) -> bool {
-        let zero_sized_parent = self.fields.is_empty();
-        let needs_params = self.struct_fields_iter().any(|(_, _, p)| p.is_required());
-        (self.body_required && !zero_sized_parent) || needs_params
-    }
-
-    /// Returns whether this builder has any parameters.
-    fn has_parameters(&self) -> bool {
-        !self.local_params.is_empty() || !self.global_params.is_empty()
+    /// Returns whether a separate container is needed for the builder struct.
+    fn needs_container(&self) -> bool {
+        self.local_params
+            .iter()
+            .chain(self.global_params.iter())
+            .any(|p| p.required)
+            || (self.body_required && self.fields.iter().any(|f| f.is_required))
     }
 
     /// Returns whether this builder will have at least one field.
@@ -248,6 +251,15 @@ impl<'a> ApiObjectBuilder<'a> {
         }
 
         Ok(())
+    }
+
+    /// Write this builder's container name into the given formatter.
+    fn write_container_name<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        self.write_name(f)?;
+        f.write_str("Container")
     }
 
     /// Writes generic stuff to the struct definition, if needed.
@@ -284,7 +296,7 @@ impl<'a> ApiObjectBuilder<'a> {
         F: Write,
     {
         if self.body_required {
-            f.write_str("\n    inner: ")?;
+            f.write_str("\n    body: ")?;
             f.write_str(&self.object)?;
             f.write_str(",")?;
         }
@@ -377,7 +389,12 @@ impl<'a> Display for ApiObjectImpl<'a> {
 
 impl<'a> Display for ApiObjectBuilder<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        if self.needs_repr_transparent() {
+        // If the builder "needs" parameters/fields, then we go for a separate
+        // container which holds both the body (if any) and the parameters,
+        // so that we can make the actual builder `#[repr(transparent)]`
+        // for safe transmuting.
+        let needs_container = self.needs_container();
+        if needs_container {
             f.write_str("#[repr(transparent)]\n")?;
         }
 
@@ -387,34 +404,32 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 
         // If structs don't have any fields, then we go for unit structs.
         let has_fields = self.has_atleast_one_field();
-        // If the builder "needs" a parameter, then we go for a separate
-        // container which holds both the body (if any) and the parameters,
-        // so that we can make the actual builder `#[repr(transparent)]`
-        // for safe transmuting.
-        let has_parameters = self.has_parameters();
 
-        if has_fields || self.body_required || has_parameters {
+        if has_fields || self.body_required || needs_container {
             f.write_str(" {")?;
         }
 
         let mut container = String::new();
-        if has_parameters {
+        if needs_container {
             container.push_str("#[derive(Debug, Default, Clone)]\nstruct ");
-            self.write_name(&mut container)?;
-            container.push_str("Container {");
+            self.write_container_name(&mut container)?;
+            container.push_str(" {");
             self.write_body_field_if_required(&mut container)?;
 
             f.write_str("\n    inner: ")?;
-            self.write_name(f)?;
-            f.write_str("Container,")?;
+            self.write_container_name(f)?;
+            f.write_str(",")?;
         } else {
             self.write_body_field_if_required(f)?;
         }
 
         self.struct_fields_iter().try_for_each(|(name, ty, prop)| {
             let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
-            // 'container' is meant for parameters.
-            self.write_parameter_if_required(prop, &sk, &ty, &mut container)?;
+            if needs_container {
+                self.write_parameter_if_required(prop, &sk, &ty, &mut container)?;
+            } else {
+                self.write_parameter_if_required(prop, &sk, &ty, f)?;
+            }
 
             if prop.is_required() {
                 f.write_str("\n    ")?;
@@ -439,7 +454,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
             f.write_str(";\n")?;
         }
 
-        if has_parameters {
+        if needs_container {
             f.write_str("\n")?;
             f.write_str(&container)?;
             f.write_str("\n}\n")?;

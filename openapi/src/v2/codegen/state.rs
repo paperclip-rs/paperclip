@@ -48,6 +48,7 @@ impl EmitterState {
             self.write_contents(&contents, &mod_path)?;
         }
 
+        // We just need some path to find the root module.
         if let Some(p) = mods.keys().next() {
             let mut some_path = PathBuf::from(p);
             loop {
@@ -81,13 +82,22 @@ impl EmitterState {
     /// Once the emitter has collected requirements for paths,
     /// we can use this method to add builder structs and their impls.
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
+        // FIXME: Fix this when we support custom prefixes.
+        let module_prefix = match &*self.root_module.borrow() {
+            Some(p) => format!("crate::{}::generics::", p),
+            None => {
+                error!("No root module to generate builders.");
+                return Ok(());
+            }
+        };
+
         info!("Adding builders to definitions.");
         let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
         for (mod_path, object) in &*def_mods {
             let mut contents = String::from("\n");
             let _ = write!(contents, "{}", object.impl_repr());
-            for builder in object.builders() {
+            for builder in object.builders(&module_prefix) {
                 builder
                     .struct_fields_iter()
                     .filter(|(_, _, prop)| prop.is_required())
@@ -118,18 +128,31 @@ impl EmitterState {
 
         let types = self.unit_types.borrow();
         let mut content = String::new();
-        content.push_str("\npub mod prelude {\n");
+        content.push_str("\npub mod generics {");
+
+        content.push_str("\n    pub trait Optional {}");
+        content.push_str("\n    pub trait Missing {}");
+        content.push_str("\n    pub trait Exists {}");
 
         for ty in &*types {
-            content.push_str("    pub struct Missing");
+            content.push_str("\n\n    pub struct Missing");
             content.push_str(ty);
-            content.push_str(";\n");
-            content.push_str("    pub struct ");
+            content.push_str(";");
+            content.push_str("\n    impl Missing for Missing");
             content.push_str(ty);
-            content.push_str("Optional;\n");
-            content.push_str("    pub struct ");
+            content.push_str(" {}");
+            content.push_str("\n    pub struct ");
             content.push_str(ty);
-            content.push_str("Exists;\n");
+            content.push_str("Optional;");
+            content.push_str("\n    impl Optional for ");
+            content.push_str(ty);
+            content.push_str("Optional {}");
+            content.push_str("\n    pub struct ");
+            content.push_str(ty);
+            content.push_str("Exists;");
+            content.push_str("\n    impl Exists for ");
+            content.push_str(ty);
+            content.push_str("Exists {}");
         }
 
         content.push_str("}\n");
