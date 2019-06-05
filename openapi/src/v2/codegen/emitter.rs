@@ -1,6 +1,5 @@
 use super::object::{ApiObject, ObjectField, OpRequirement, Parameter};
 use super::state::EmitterState;
-use super::RUST_KEYWORDS;
 use crate::error::PaperClipError;
 use crate::v2::{
     models::{self, Api, DataType, DataTypeFormat, OperationMap},
@@ -431,23 +430,11 @@ where
             props
                 .iter()
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
-                    let mut new_name = name.to_snek_case();
-                    // Check if the field matches a Rust keyword and add '_' suffix.
-                    if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
-                        new_name.push('_');
-                    }
-
                     let schema = prop.read();
                     let ty = self.build_def(&schema, false)?;
 
                     obj.fields.push(ObjectField {
-                        // If we've modified the name, mark it for serde renaming.
-                        rename: if new_name != name.as_str() {
-                            Some(name.clone())
-                        } else {
-                            None
-                        },
-                        name: new_name,
+                        name: name.clone(),
                         ty_path: ty.known_type(),
                         is_required: def.is_required_property(name),
                         boxed: schema.is_cyclic(),

@@ -3,6 +3,7 @@
 //! This contains the necessary objects for generating actual
 //! API objects, their builders, impls, etc.
 
+use super::RUST_KEYWORDS;
 use crate::v2::models::HttpMethod;
 use heck::{CamelCase, SnekCase};
 
@@ -49,7 +50,7 @@ pub struct OpRequirement {
 /// Represents some parameter somewhere (header, path, query, etc.).
 #[derive(Debug, Clone)]
 pub struct Parameter {
-    /// Name of the parameter (snake-cased).
+    /// Name of the parameter.
     pub name: String,
     /// Type of the parameter as a path.
     pub ty_path: String,
@@ -60,10 +61,8 @@ pub struct Parameter {
 /// Represents a struct field.
 #[derive(Debug, Clone)]
 pub struct ObjectField {
-    /// Name of the field (snake-cased).
+    /// Name of the field.
     pub name: String,
-    /// Actual name of the field (should it be serde-renamed).
-    pub rename: Option<String>,
     /// Type of the field as a path.
     pub ty_path: String,
     /// Whether this field is required (i.e., not optional).
@@ -186,7 +185,7 @@ impl<'a> ApiObjectImpl<'a> {
 
             f.write_str("() -> ")?;
             builder.write_name(f)?;
-            builder.write_generics_if_necessary(f, true)?;
+            builder.write_generics_if_necessary(f, TypeParameters::ReplaceAll)?;
             f.write_str(" {\n        ")?;
             builder.write_name(f)?;
             f.write_str(" {")?;
@@ -243,6 +242,11 @@ pub struct ApiObjectBuilder<'a> {
 }
 
 impl<'a> ApiObjectBuilder<'a> {
+    /// Returns a struct representing the impl for this builder.
+    pub fn impl_repr(&self) -> ApiObjectBuilderImpl<'_, '_> {
+        ApiObjectBuilderImpl(self)
+    }
+
     /// Returns an iterator of all fields and parameters required for the Rust builder struct.
     ///
     /// **NOTE:** The names yielded by this iterator are unique for a builder.
@@ -349,38 +353,50 @@ impl<'a> ApiObjectBuilder<'a> {
 
     /// Writes generic parameters, if needed.
     ///
-    /// Also takes a bool to specify whether the parameters should make
-    /// use of actual types (defaults for impl).
-    fn write_generics_if_necessary<F>(&self, f: &mut F, types: bool) -> fmt::Result
+    /// Also takes an enum to specify whether the one/all/none of the parameters
+    /// should make use of actual types.
+    fn write_generics_if_necessary<F>(
+        &self,
+        f: &mut F,
+        params: TypeParameters<'_>,
+    ) -> Result<usize, fmt::Error>
     where
         F: Write,
     {
-        let mut is_generic = false;
+        let mut num_generics = 0;
         // Inspect fields and parameters and write generics.
         self.struct_fields_iter()
             .filter(|(_, _, prop)| prop.is_required())
             .enumerate()
             .try_for_each(|(i, (name, _, _))| {
+                num_generics += 1;
                 if i == 0 {
-                    is_generic = true;
                     f.write_str("<")?;
                 } else {
                     f.write_str(", ")?;
                 }
 
-                if types {
-                    f.write_str(self.helper_module_prefix)?;
-                    f.write_str("Missing")?;
+                match params {
+                    TypeParameters::ChangeOne(n) if name == n => {
+                        f.write_str(self.helper_module_prefix)?;
+                        f.write_str(&name.to_camel_case())?;
+                        return f.write_str("Exists");
+                    }
+                    TypeParameters::ReplaceAll => {
+                        f.write_str(self.helper_module_prefix)?;
+                        f.write_str("Missing")?;
+                    }
+                    _ => (),
                 }
 
                 f.write_str(&name.to_camel_case())
             })?;
 
-        if is_generic {
+        if num_generics > 0 {
             f.write_str(">")?;
         }
 
-        Ok(())
+        Ok(num_generics)
     }
 
     /// Writes the body field into the formatter if required.
@@ -418,6 +434,15 @@ impl<'a> ApiObjectBuilder<'a> {
 
         Ok(())
     }
+}
+
+/// Represents the API object builder impl.
+pub struct ApiObjectBuilderImpl<'a, 'b>(&'a ApiObjectBuilder<'b>);
+
+enum TypeParameters<'a> {
+    Generic,
+    ChangeOne(&'a str),
+    ReplaceAll,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -482,7 +507,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 
         f.write_str("#[derive(Debug, Clone)]\npub struct ")?;
         self.write_name(f)?;
-        self.write_generics_if_necessary(f, false)?;
+        self.write_generics_if_necessary(f, TypeParameters::Generic)?;
 
         // If structs don't have any fields, then we go for unit structs.
         let has_fields = self.has_atleast_one_field();
@@ -546,6 +571,103 @@ impl<'a> Display for ApiObjectBuilder<'a> {
     }
 }
 
+impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        // FIXME: Refactor needed.
+        let needs_container = self.0.needs_container();
+        let mut generics = String::new();
+        self.0
+            .write_generics_if_necessary(&mut generics, TypeParameters::Generic)?;
+
+        let mut has_fields = false;
+        self.0
+            .struct_fields_iter()
+            .filter(|(_, _, p)| (self.0.body_required && p.is_field()) || p.is_parameter())
+            .enumerate()
+            .try_for_each(|(i, (name, ty, prop))| {
+                if i == 0 {
+                    has_fields = true;
+                    f.write_str("\nimpl")?;
+                    f.write_str(&generics)?;
+                    f.write_str(" ")?;
+                    self.0.write_name(f)?;
+                    f.write_str(&generics)?;
+                    f.write_str(" {")?;
+                }
+
+                let field_name = name.to_snek_case();
+                f.write_str("\n    pub fn ")?;
+                if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
+                    f.write_str("r#")?;
+                }
+
+                f.write_str(&field_name)?;
+                f.write_str("(mut self, value: ")?;
+                if !ty.contains("::") {
+                    f.write_str("impl Into<")?;
+                }
+
+                f.write_str(ty)?;
+                if !ty.contains("::") {
+                    f.write_str(">")?;
+                }
+
+                f.write_str(") -> ")?;
+
+                if prop.is_required() {
+                    self.0.write_name(f)?;
+                    self.0
+                        .write_generics_if_necessary(f, TypeParameters::ChangeOne(name))?;
+                } else {
+                    f.write_str("Self")?;
+                }
+
+                f.write_str(" {\n        self.")?;
+                if needs_container {
+                    f.write_str("inner.")?;
+                }
+
+                if prop.is_parameter() {
+                    f.write_str("param_")?;
+                } else if self.0.body_required {
+                    // param won't be in body, for sure.
+                    f.write_str("body.")?;
+                }
+
+                f.write_str(&field_name)?;
+                if prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name) {
+                    f.write_str("_")?;
+                }
+
+                f.write_str(" = ")?;
+                if prop.is_parameter() || !prop.is_required() {
+                    f.write_str("Some(")?;
+                }
+
+                f.write_str("value.into()")?;
+
+                if prop.is_parameter() || !prop.is_required() {
+                    f.write_str(")")?;
+                }
+
+                f.write_str(";\n        ")?;
+                if prop.is_required() {
+                    f.write_str("unsafe { std::mem::transmute(self) }")?;
+                } else {
+                    f.write_str("self")?;
+                }
+
+                f.write_str("\n    }\n")
+            })?;
+
+        if has_fields {
+            f.write_str("}\n")?;
+        }
+
+        Ok(())
+    }
+}
+
 impl Display for ApiObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("#[derive(Debug, Default, Clone, Deserialize, Serialize)]")?;
@@ -555,14 +677,20 @@ impl Display for ApiObject {
 
         self.fields.iter().try_for_each(|field| {
             f.write_str("\n    ")?;
-            if let Some(name) = field.rename.as_ref() {
+            let mut new_name = field.name.to_snek_case();
+            // Check if the field matches a Rust keyword and add '_' suffix.
+            if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
+                new_name.push('_');
+            }
+
+            if new_name != field.name.as_str() {
                 f.write_str("#[serde(rename = \"")?;
-                f.write_str(name)?;
+                f.write_str(&field.name)?;
                 f.write_str("\")]\n    ")?;
             }
 
             f.write_str("pub ")?;
-            f.write_str(&field.name)?;
+            f.write_str(&new_name)?;
             f.write_str(": ")?;
             if !field.is_required {
                 f.write_str("Option<")?;

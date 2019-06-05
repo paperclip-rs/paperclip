@@ -107,6 +107,8 @@ impl EmitterState {
 
                 builder_content.push('\n');
                 let _ = write!(builder_content, "{}", builder);
+                builder_content.push('\n');
+                let _ = write!(builder_content, "{}", builder.impl_repr());
                 repr.builders.push(builder);
             }
 
@@ -136,26 +138,18 @@ impl EmitterState {
         content.push_str("\npub mod generics {");
 
         content.push_str("\n    pub trait Optional {}");
-        content.push_str("\n    pub trait Missing {}");
-        content.push_str("\n    pub trait Exists {}");
 
         for ty in &*types {
             content.push_str("\n\n    pub struct Missing");
             content.push_str(ty);
             content.push_str(";");
-            content.push_str("\n    impl Missing for Missing");
+            content.push_str("\n    impl Optional for Missing");
             content.push_str(ty);
             content.push_str(" {}");
             content.push_str("\n    pub struct ");
             content.push_str(ty);
-            content.push_str("Optional;");
-            content.push_str("\n    impl Optional for ");
-            content.push_str(ty);
-            content.push_str("Optional {}");
-            content.push_str("\n    pub struct ");
-            content.push_str(ty);
             content.push_str("Exists;");
-            content.push_str("\n    impl Exists for ");
+            content.push_str("\n    impl Optional for ");
             content.push_str(ty);
             content.push_str("Exists {}");
         }
