@@ -89,7 +89,10 @@ impl ApiObject {
 
     /// Returns a struct representing the impl for this object.
     pub fn impl_repr(&self) -> ApiObjectImpl<'_> {
-        ApiObjectImpl(self)
+        ApiObjectImpl {
+            inner: self,
+            builders: vec![],
+        }
     }
 
     /// Returns the builders for this object.
@@ -141,7 +144,89 @@ impl ApiObject {
 }
 
 /// Represents the API object impl.
-pub struct ApiObjectImpl<'a>(&'a ApiObject);
+pub struct ApiObjectImpl<'a> {
+    inner: &'a ApiObject,
+    pub(super) builders: Vec<ApiObjectBuilder<'a>>,
+}
+
+impl<'a> ApiObjectImpl<'a> {
+    fn write_builder_methods<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        let has_multiple = self.builders.len() > 1;
+
+        for builder in &self.builders {
+            f.write_str("\n    #[inline]\n    pub fn ")?;
+            match (builder.op_id, builder.method) {
+                // If there's a method and we don't have any collisions
+                // (i.e., two or more paths for same object), then we default
+                // to using the method ...
+                (_, Some(meth)) if !has_multiple => {
+                    let m = meth.to_string().to_snek_case();
+                    f.write_str(&m)?;
+                }
+                // If there's an operation ID, then we go for that ...
+                (Some(id), _) => {
+                    let n = id.to_snek_case();
+                    f.write_str(&n)?;
+                }
+                // If there's a method, then we go for numbered functions ...
+                (_, Some(meth)) => {
+                    let m = meth.to_string().to_snek_case();
+                    f.write_str(&m)?;
+                    if builder.idx > 0 {
+                        f.write_str("_")?;
+                        f.write_str(&builder.idx.to_string())?;
+                    }
+                }
+                // Otherwise it's a simple object builder.
+                _ => f.write_str("builder")?,
+            }
+
+            f.write_str("() -> ")?;
+            builder.write_name(f)?;
+            builder.write_generics_if_necessary(f, true)?;
+            f.write_str(" {\n        ")?;
+            builder.write_name(f)?;
+            f.write_str(" {")?;
+
+            let needs_container = builder.needs_container();
+            if needs_container {
+                f.write_str("\n            ")?;
+                f.write_str("inner: Default::default(),")?;
+            } else if builder.body_required {
+                f.write_str("\n            ")?;
+                f.write_str("body: Default::default(),")?;
+            }
+
+            builder
+                .struct_fields_iter()
+                .try_for_each(|(name, _, prop)| {
+                    if prop.is_required() {
+                        f.write_str("\n            ")?;
+                        if prop.is_parameter() {
+                            f.write_str("_param")?;
+                        }
+
+                        f.write_str("_")?;
+                        f.write_str(&name.to_snek_case())?;
+                        f.write_str(": core::marker::PhantomData,")?;
+                    } else if prop.is_parameter() && !needs_container {
+                        f.write_str("\n            param_")?;
+                        f.write_str(&name.to_snek_case())?;
+                        f.write_str(": None,")?;
+                    }
+
+                    Ok(())
+                })?;
+
+            f.write_str("\n        }\n    }")?;
+        }
+
+        Ok(())
+    }
+}
 
 /// Represents a builder struct for some API object.
 #[derive(Debug, Clone)]
@@ -242,7 +327,7 @@ impl<'a> ApiObjectBuilder<'a> {
     {
         f.write_str(&self.object)?;
         if let Some(method) = self.method {
-            write!(f, "{:?}", method)?;
+            write!(f, "{}", method)?;
         }
 
         f.write_str("Builder")?;
@@ -262,8 +347,11 @@ impl<'a> ApiObjectBuilder<'a> {
         f.write_str("Container")
     }
 
-    /// Writes generic stuff to the struct definition, if needed.
-    fn write_generics_if_necessary<F>(&self, f: &mut F) -> fmt::Result
+    /// Writes generic parameters, if needed.
+    ///
+    /// Also takes a bool to specify whether the parameters should make
+    /// use of actual types (defaults for impl).
+    fn write_generics_if_necessary<F>(&self, f: &mut F, types: bool) -> fmt::Result
     where
         F: Write,
     {
@@ -278,6 +366,11 @@ impl<'a> ApiObjectBuilder<'a> {
                     f.write_str("<")?;
                 } else {
                     f.write_str(", ")?;
+                }
+
+                if types {
+                    f.write_str(self.helper_module_prefix)?;
+                    f.write_str("Missing")?;
                 }
 
                 f.write_str(&name.to_camel_case())
@@ -364,25 +457,14 @@ impl Property {
 
 impl<'a> Display for ApiObjectImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        if self.builders.is_empty() {
+            return Ok(());
+        }
+
         f.write_str("impl ")?;
-        f.write_str(&self.0.name)?;
+        f.write_str(&self.inner.name)?;
         f.write_str(" {")?;
-
-        // self.0.builders().try_for_each(|builder| {
-        //     f.write_str("\n    #[inline]\n    pub fn ")?;
-        //     if let Some(_id) = builder.op_id {
-        //         // TODO
-        //     } else if let Some(m) = builder.method {
-        //         // TODO
-        //     } else {
-        //         f.write_str("builder")?;
-        //     }
-
-        //     f.write_str("() -> ")?;
-        //     builder.write_name(f)?;
-        //     f.write_str(" {\n        Default::default()\n    }")
-        // })?;
-
+        self.write_builder_methods(f)?;
         f.write_str("\n}\n")
     }
 }
@@ -400,7 +482,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 
         f.write_str("#[derive(Debug, Clone)]\npub struct ")?;
         self.write_name(f)?;
-        self.write_generics_if_necessary(f)?;
+        self.write_generics_if_necessary(f, false)?;
 
         // If structs don't have any fields, then we go for unit structs.
         let has_fields = self.has_atleast_one_field();

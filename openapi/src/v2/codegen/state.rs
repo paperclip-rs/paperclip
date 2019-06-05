@@ -95,8 +95,8 @@ impl EmitterState {
         let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
         for (mod_path, object) in &*def_mods {
-            let mut contents = String::from("\n");
-            let _ = write!(contents, "{}", object.impl_repr());
+            let mut builder_content = String::new();
+            let mut repr = object.impl_repr();
             for builder in object.builders(&module_prefix) {
                 builder
                     .struct_fields_iter()
@@ -105,11 +105,16 @@ impl EmitterState {
                         unit_types.insert(name.to_camel_case());
                     });
 
-                contents.push('\n');
-                let _ = write!(contents, "{}", builder);
+                builder_content.push('\n');
+                let _ = write!(builder_content, "{}", builder);
+                repr.builders.push(builder);
             }
 
-            self.append_contents(&contents, mod_path)?;
+            let mut impl_content = String::from("\n");
+            let _ = write!(impl_content, "{}", repr);
+
+            self.append_contents(&impl_content, mod_path)?;
+            self.append_contents(&builder_content, mod_path)?;
         }
 
         Ok(())

@@ -6,6 +6,7 @@ use crate::error::PaperClipError; // hack for proc macro
 use failure::Error;
 
 use std::collections::BTreeMap;
+use std::fmt::{self, Display};
 
 /// OpenAPI version.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
@@ -102,6 +103,7 @@ pub enum ParameterIn {
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
 #[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
 pub struct Operation<S> {
     pub operation_id: Option<String>,
     pub description: Option<String>,
@@ -136,6 +138,12 @@ pub enum HttpMethod {
     Options,
     Head,
     Patch,
+}
+
+impl Display for HttpMethod {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
+    }
 }
 
 /// The protocol used for an operation.
