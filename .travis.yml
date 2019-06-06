@@ -3,7 +3,7 @@ rust: nightly-2019-05-09
 cache: cargo
 
 before_script:
-- cargo install cargo-sweep
+- cargo install cargo-sweep --force
 - cargo sweep --stamp
 
 before_cache:
@@ -24,10 +24,10 @@ matrix:
     - CACHE_NAME=test
     script:
     - cargo test --all --all-features
+    - cargo doc --all --all-features --no-deps
     - cd openapi/tests/test_k8s && cargo build
     - cargo doc --all --all-features --no-deps
-    - cd openapi/tests/test_k8s && cargo doc --all --all-features --no-deps && cd -
-    - cp -r openapi/tests/test_k8s/target/doc target/doc/tests
+    - cp -r target/doc ../../../target/doc/tests
 
 deploy:
   provider: pages
