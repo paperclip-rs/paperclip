@@ -2,20 +2,29 @@ language: rust
 rust: nightly-2019-05-09
 cache: cargo
 
+before_script:
+- cargo install cargo-sweep
+- cargo sweep --stamp
+
+before_cache:
+- cargo sweep --file
+
 matrix:
   include:
   - name: check
+    env:
+    - CACHE_NAME=check
     before_script:
     - rustup component add rustfmt clippy
     script:
     - cargo fmt --all -- --check
     - cargo clippy --all -- -D clippy::all
   - name: test
+    env:
+    - CACHE_NAME=test
     script:
     - cargo test --all --all-features
     - cd openapi/tests/test_k8s && cargo build
-  - name: docs
-    script:
     - cargo doc --all --all-features --no-deps
     - cd openapi/tests/test_k8s && cargo doc --all --all-features --no-deps && cd -
     - cp -r openapi/tests/test_k8s/target/doc target/doc/tests
@@ -26,6 +35,6 @@ deploy:
   github_token: $GITHUB_TOKEN
   on:
     branch: master
-    condition: "$TRAVIS_JOB_NAME = docs"
+    condition: "$TRAVIS_JOB_NAME = test"
   local_dir: target/doc
   fqdn: paperclip.waffles.space

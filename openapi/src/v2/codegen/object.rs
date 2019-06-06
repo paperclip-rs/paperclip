@@ -657,7 +657,6 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 
 impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        // FIXME: Refactor needed.
         let mut generics = String::new();
         self.0
             .write_generics_if_necessary(&mut generics, TypeParameters::Generic)?;
