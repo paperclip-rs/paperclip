@@ -156,6 +156,7 @@ impl<'a> ApiObjectImpl<'a> {
         let has_multiple = self.builders.len() > 1;
 
         for builder in &self.builders {
+            let has_fields = builder.has_atleast_one_field();
             f.write_str("\n    #[inline]\n    pub fn ")?;
             match (builder.op_id, builder.method) {
                 // If there's a method and we don't have any collisions
@@ -188,7 +189,10 @@ impl<'a> ApiObjectImpl<'a> {
             builder.write_generics_if_necessary(f, TypeParameters::ReplaceAll)?;
             f.write_str(" {\n        ")?;
             builder.write_name(f)?;
-            f.write_str(" {")?;
+
+            if has_fields || builder.body_required {
+                f.write_str(" {")?;
+            }
 
             let needs_container = builder.needs_container();
             if needs_container {
@@ -220,7 +224,11 @@ impl<'a> ApiObjectImpl<'a> {
                     Ok(())
                 })?;
 
-            f.write_str("\n        }\n    }")?;
+            if has_fields || builder.body_required {
+                f.write_str("\n        }")?;
+            }
+
+            f.write_str("\n    }\n")?;
         }
 
         Ok(())
@@ -439,6 +447,82 @@ impl<'a> ApiObjectBuilder<'a> {
 /// Represents the API object builder impl.
 pub struct ApiObjectBuilderImpl<'a, 'b>(&'a ApiObjectBuilder<'b>);
 
+impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
+    /// Writes the property-related methods to the given formatter.
+    fn write_property_method<F>(
+        &self,
+        name: &str,
+        ty: &str,
+        prop: Property,
+        f: &mut F,
+    ) -> fmt::Result
+    where
+        F: Write,
+    {
+        let field_name = name.to_snek_case();
+        let known_type = !ty.contains("::");
+        let (prop_is_parameter, prop_is_required) = (prop.is_parameter(), prop.is_required());
+
+        f.write_str("\n    #[inline]\n    pub fn ")?;
+        if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
+            f.write_str("r#")?;
+        }
+
+        f.write_str(&field_name)?;
+        f.write_str("(mut self, value: ")?;
+        if known_type {
+            write!(f, "impl Into<{}>", ty)?;
+        } else {
+            f.write_str(ty)?;
+        }
+
+        f.write_str(") -> ")?;
+        if prop_is_required {
+            self.0.write_name(f)?;
+            self.0
+                .write_generics_if_necessary(f, TypeParameters::ChangeOne(name))?;
+        } else {
+            f.write_str("Self")?;
+        }
+
+        f.write_str(" {\n        self.")?;
+        if self.0.needs_container() {
+            f.write_str("inner.")?;
+        }
+
+        if prop_is_parameter {
+            f.write_str("param_")?;
+        } else if self.0.body_required {
+            // parameter won't be in body, for sure.
+            f.write_str("body.")?;
+        }
+
+        f.write_str(&field_name)?;
+        if prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name) {
+            f.write_str("_")?;
+        }
+
+        f.write_str(" = ")?;
+        if prop_is_parameter || !prop_is_required {
+            f.write_str("Some(")?;
+        }
+
+        f.write_str("value.into()")?;
+        if prop_is_parameter || !prop_is_required {
+            f.write_str(")")?;
+        }
+
+        f.write_str(";\n        ")?;
+        if prop_is_required {
+            f.write_str("unsafe { std::mem::transmute(self) }")?;
+        } else {
+            f.write_str("self")?;
+        }
+
+        f.write_str("\n    }\n")
+    }
+}
+
 enum TypeParameters<'a> {
     Generic,
     ChangeOne(&'a str),
@@ -490,7 +574,7 @@ impl<'a> Display for ApiObjectImpl<'a> {
         f.write_str(&self.inner.name)?;
         f.write_str(" {")?;
         self.write_builder_methods(f)?;
-        f.write_str("\n}\n")
+        f.write_str("}\n")
     }
 }
 
@@ -574,7 +658,6 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         // FIXME: Refactor needed.
-        let needs_container = self.0.needs_container();
         let mut generics = String::new();
         self.0
             .write_generics_if_necessary(&mut generics, TypeParameters::Generic)?;
@@ -587,7 +670,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
             .try_for_each(|(i, (name, ty, prop))| {
                 if i == 0 {
                     has_fields = true;
-                    f.write_str("\nimpl")?;
+                    f.write_str("impl")?;
                     f.write_str(&generics)?;
                     f.write_str(" ")?;
                     self.0.write_name(f)?;
@@ -595,69 +678,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
                     f.write_str(" {")?;
                 }
 
-                let field_name = name.to_snek_case();
-                f.write_str("\n    pub fn ")?;
-                if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
-                    f.write_str("r#")?;
-                }
-
-                f.write_str(&field_name)?;
-                f.write_str("(mut self, value: ")?;
-                if !ty.contains("::") {
-                    f.write_str("impl Into<")?;
-                }
-
-                f.write_str(ty)?;
-                if !ty.contains("::") {
-                    f.write_str(">")?;
-                }
-
-                f.write_str(") -> ")?;
-
-                if prop.is_required() {
-                    self.0.write_name(f)?;
-                    self.0
-                        .write_generics_if_necessary(f, TypeParameters::ChangeOne(name))?;
-                } else {
-                    f.write_str("Self")?;
-                }
-
-                f.write_str(" {\n        self.")?;
-                if needs_container {
-                    f.write_str("inner.")?;
-                }
-
-                if prop.is_parameter() {
-                    f.write_str("param_")?;
-                } else if self.0.body_required {
-                    // param won't be in body, for sure.
-                    f.write_str("body.")?;
-                }
-
-                f.write_str(&field_name)?;
-                if prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name) {
-                    f.write_str("_")?;
-                }
-
-                f.write_str(" = ")?;
-                if prop.is_parameter() || !prop.is_required() {
-                    f.write_str("Some(")?;
-                }
-
-                f.write_str("value.into()")?;
-
-                if prop.is_parameter() || !prop.is_required() {
-                    f.write_str(")")?;
-                }
-
-                f.write_str(";\n        ")?;
-                if prop.is_required() {
-                    f.write_str("unsafe { std::mem::transmute(self) }")?;
-                } else {
-                    f.write_str("self")?;
-                }
-
-                f.write_str("\n    }\n")
+                self.write_property_method(name, ty, prop, f)
             })?;
 
         if has_fields {

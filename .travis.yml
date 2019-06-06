@@ -17,6 +17,8 @@ matrix:
   - name: docs
     script:
     - cargo doc --all --all-features --no-deps
+    - cd openapi/tests/test_k8s && cargo doc --all --all-features --no-deps && cd -
+    - cp -r openapi/tests/test_k8s/target/doc target/doc/tests
 
 deploy:
   provider: pages
