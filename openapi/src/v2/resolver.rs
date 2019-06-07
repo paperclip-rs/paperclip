@@ -1,6 +1,5 @@
-use super::im::ArcRwLock;
 use super::{
-    models::{OperationMap, Parameter},
+    models::{OperationMap, Parameter, SchemaRepr},
     Schema,
 };
 use crate::error::PaperClipError;
@@ -25,20 +24,20 @@ pub(crate) struct Resolver<S> {
     /// Set containing cyclic definition names.
     cyclic_defs: HashSet<String>,
     /// Actual definitions.
-    pub defs: BTreeMap<String, ArcRwLock<S>>,
+    pub defs: BTreeMap<String, SchemaRepr<S>>,
     /// Paths and the corresponding operations.
     pub paths: BTreeMap<String, OperationMap<S>>,
 }
 
 impl<S>
     From<(
-        BTreeMap<String, ArcRwLock<S>>,
+        BTreeMap<String, SchemaRepr<S>>,
         BTreeMap<String, OperationMap<S>>,
     )> for Resolver<S>
 {
     fn from(
         (defs, paths): (
-            BTreeMap<String, ArcRwLock<S>>,
+            BTreeMap<String, SchemaRepr<S>>,
             BTreeMap<String, OperationMap<S>>,
         ),
     ) -> Self {
@@ -100,7 +99,7 @@ where
     /// contain any reference.
     // FIXME: This means we currently don't support definitions which
     // directly refer some other definition (basically a type alias). Should we?
-    fn resolve_definitions_no_root_ref(&self, schema: &ArcRwLock<S>) -> Result<(), Error> {
+    fn resolve_definitions_no_root_ref(&self, schema: &SchemaRepr<S>) -> Result<(), Error> {
         let mut schema = schema.write();
         if let Some(mut inner) = schema.items_mut().take() {
             return self.resolve_definitions(&mut inner);
@@ -117,7 +116,7 @@ where
 
     /// Resolve the given definition. If it contains a reference, find and assign it,
     /// otherwise traverse further.
-    fn resolve_definitions(&self, schema: &mut ArcRwLock<S>) -> Result<(), Error> {
+    fn resolve_definitions(&self, schema: &mut SchemaRepr<S>) -> Result<(), Error> {
         let ref_def = {
             if let Some(ref_name) = schema.read().reference() {
                 trace!("Resolving {}", ref_name);
@@ -127,8 +126,14 @@ where
             }
         };
 
-        if let Some(s) = ref_def {
-            *schema = s;
+        if let Some(new) = ref_def {
+            *schema = match schema {
+                SchemaRepr::Raw(old) => SchemaRepr::Resolved {
+                    old: old.clone(),
+                    new: (&*new).clone(),
+                },
+                _ => unimplemented!("schema already resolved?"),
+            };
         } else {
             self.resolve_definitions_no_root_ref(&*schema)?;
         }
@@ -164,7 +169,7 @@ where
     }
 
     /// Given a name (from `$ref` field), get a reference to the definition.
-    fn resolve_definition_reference(&self, name: &str) -> Result<ArcRwLock<S>, Error> {
+    fn resolve_definition_reference(&self, name: &str) -> Result<SchemaRepr<S>, Error> {
         if !name.starts_with(DEF_REF_PREFIX) {
             // FIXME: Bad
             return Err(PaperClipError::InvalidRefURI(name.into()))?;

@@ -261,6 +261,7 @@ where
                         meth,
                         OpRequirement {
                             id: op.operation_id.clone(),
+                            description: op.description.clone(),
                             params,
                             body_required: true,
                         },
@@ -302,6 +303,7 @@ where
                         meth,
                         OpRequirement {
                             id: op.operation_id.clone(),
+                            description: op.description.clone(),
                             params: unused_local_params,
                             body_required: false,
                         },
@@ -315,6 +317,17 @@ where
         // FIXME: If none of the parameters (local to operation or global) specify
         // a body then we should use something (say, `operationID`) to generate
         // a builder and forward `unused_params` to it?
+        if map.methods.is_empty() {
+            warn!(
+                "Missing operations for path: {:?}{}",
+                path,
+                if unused_params.is_empty() {
+                    ""
+                } else {
+                    ", but 'parameters' field is specified."
+                }
+            );
+        }
 
         Ok(())
     }
@@ -350,6 +363,7 @@ where
             )?;
             params.push(Parameter {
                 name: p.name.clone(),
+                description: p.description.clone(),
                 ty_path: ty.into(),
                 required: p.required,
             });
@@ -425,6 +439,7 @@ where
     /// given schema definition.
     fn emit_struct(&self, def: &E::Definition) -> Result<EmittedUnit, Error> {
         let mut obj = ApiObject::with_name(self.def_name(def)?);
+        obj.description = def.description().map(String::from);
 
         if let Some(props) = def.properties() {
             props
@@ -435,6 +450,7 @@ where
 
                     obj.fields.push(ObjectField {
                         name: name.clone(),
+                        description: prop.get_description(),
                         ty_path: ty.known_type(),
                         is_required: def.is_required_property(name),
                         boxed: schema.is_cyclic(),

@@ -16,6 +16,8 @@ use std::iter;
 pub struct ApiObject {
     /// Name of the struct (camel-cased).
     pub name: String,
+    /// Description for this object (if any), to be used for docs.
+    pub description: Option<String>,
     /// Path to this object from (generated) root module.
     pub path: String,
     /// List of fields.
@@ -41,6 +43,8 @@ pub struct OpRequirement {
     /// If there are multiple operations for the same path, then we
     /// attempt to use this.
     pub id: Option<String>,
+    /// Description of this operation (if any), to be used for docs.
+    pub description: Option<String>,
     /// Parameters required for this operation.
     pub params: Vec<Parameter>,
     /// Whether the object itself is required (in body) for this operation.
@@ -52,6 +56,8 @@ pub struct OpRequirement {
 pub struct Parameter {
     /// Name of the parameter.
     pub name: String,
+    /// Description of this operation (if any), to be used for docs.
+    pub description: Option<String>,
     /// Type of the parameter as a path.
     pub ty_path: String,
     /// Whether this parameter is required.
@@ -65,6 +71,8 @@ pub struct ObjectField {
     pub name: String,
     /// Type of the field as a path.
     pub ty_path: String,
+    /// Description of this operation (if any), to be used for docs.
+    pub description: Option<String>,
     /// Whether this field is required (i.e., not optional).
     pub is_required: bool,
     /// Whether this field should be boxed.
@@ -80,6 +88,7 @@ impl ApiObject {
         ApiObject {
             // NOTE: Even though it's empty, it'll be replaced by the emitter.
             path: String::new(),
+            description: None,
             name: name.into(),
             fields: vec![],
             paths: BTreeMap::new(),
@@ -139,6 +148,24 @@ impl ApiObject {
                         })
                 }),
         ) as Box<_>
+    }
+
+    /// Writes the given string (if any) as Rust documentation into
+    /// the given formatter.
+    fn write_docs<F, S>(stuff: Option<S>, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+        S: AsRef<str>,
+    {
+        if let Some(desc) = stuff.as_ref() {
+            desc.as_ref().split('\n').try_for_each(|line| {
+                f.write_str("/// ")?;
+                f.write_str(line)
+            })?;
+            f.write_str("\n")?;
+        }
+
+        Ok(())
     }
 }
 
@@ -690,6 +717,8 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
 
 impl Display for ApiObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        ApiObject::write_docs(self.description.as_ref(), f)?;
+
         f.write_str("#[derive(Debug, Default, Clone, Deserialize, Serialize)]")?;
         f.write_str("\npub struct ")?;
         f.write_str(&self.name)?;
@@ -701,6 +730,11 @@ impl Display for ApiObject {
             // Check if the field matches a Rust keyword and add '_' suffix.
             if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                 new_name.push('_');
+            }
+
+            ApiObject::write_docs(field.description.as_ref(), f)?;
+            if field.description.is_some() {
+                f.write_str("    ")?;
             }
 
             if new_name != field.name.as_str() {

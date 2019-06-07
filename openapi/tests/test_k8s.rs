@@ -100,7 +100,8 @@ fn test_complex_object() {
     // - It references other definitions (directly and through an array).
     // - It's a cyclic type.
     assert_eq!(contents.find(
-"#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+"/// JSONSchemaProps is a JSON-Schema following Specification Draft 4 (http://json-schema.org/).
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct JsonSchemaProps {
     #[serde(rename = \"$ref\")]
     pub ref_: Option<String>,
@@ -160,10 +161,13 @@ pub struct JsonSchemaProps {
     pub type_: Option<String>,
     #[serde(rename = \"uniqueItems\")]
     pub unique_items: Option<bool>,
+    /// x-kubernetes-embedded-resource defines that the value is an embedded Kubernetes runtime.Object, with TypeMeta and ObjectMeta. The type must be object. It is allowed to further restrict the embedded object. kind, apiVersion and metadata are validated automatically. x-kubernetes-preserve-unknown-fields is allowed to be true, but does not have to be if the object is fully specified (up to kind, apiVersion, metadata).
     #[serde(rename = \"x-kubernetes-embedded-resource\")]
     pub x_kubernetes_embedded_resource: Option<bool>,
+    /// x-kubernetes-int-or-string specifies that this value is either an integer or a string. If this is true, an empty type is allowed and type as child of anyOf is permitted if following one of the following patterns:/// /// 1) anyOf:///    - type: integer///    - type: string/// 2) allOf:///    - anyOf:///      - type: integer///      - type: string///    - ... zero or more
     #[serde(rename = \"x-kubernetes-int-or-string\")]
     pub x_kubernetes_int_or_string: Option<bool>,
+    /// x-kubernetes-preserve-unknown-fields stops the API server decoding step from pruning fields which are not specified in the validation schema. This affects fields recursively, but switches back to normal pruning behaviour if nested properties or additionalProperties are specified in the schema. This can either be true or undefined. False is forbidden.
     #[serde(rename = \"x-kubernetes-preserve-unknown-fields\")]
     pub x_kubernetes_preserve_unknown_fields: Option<bool>,
 }

@@ -86,8 +86,7 @@ pub mod im;
 pub mod models;
 mod resolver;
 
-use self::im::ArcRwLock;
-use self::models::{DataType, DataTypeFormat};
+use self::models::{DataType, DataTypeFormat, SchemaRepr};
 use self::resolver::Resolver;
 use crate::error::PaperClipError;
 use failure::Error;
@@ -122,8 +121,10 @@ where
 
 /// Interface for the [`Schema`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject) object.
 ///
-/// This is only used for resolving the definitions. Please use the `#[api_v2_schema]`
-/// proc macro attribute instead of implementing this trait by yourself.
+/// This is only used for resolving the definitions.
+///
+/// **NOTE:** Don't implement this by yourself! Please use the `#[api_v2_schema]`
+/// proc macro attribute instead.
 pub trait Schema: Sized {
     /// Description for this schema, if any (`description` field).
     fn description(&self) -> Option<&str>;
@@ -138,22 +139,22 @@ pub trait Schema: Sized {
     fn format(&self) -> Option<&DataTypeFormat>;
 
     /// Schema for array definitions, if any (`items` field).
-    fn items(&self) -> Option<&ArcRwLock<Self>>;
+    fn items(&self) -> Option<&SchemaRepr<Self>>;
 
     /// Mutable access to the `items` field, if it exists.
-    fn items_mut(&mut self) -> Option<&mut ArcRwLock<Self>>;
+    fn items_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
 
     /// Value schema for maps (`additional_properties` field).
-    fn additional_properties(&self) -> Option<&ArcRwLock<Self>>;
+    fn additional_properties(&self) -> Option<&SchemaRepr<Self>>;
 
     /// Mutable access to `additional_properties` field, if it's a map.
-    fn additional_properties_mut(&mut self) -> Option<&mut ArcRwLock<Self>>;
+    fn additional_properties_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
 
     /// Map of names and schema for properties, if it's an object (`properties` field)
-    fn properties(&self) -> Option<&BTreeMap<String, ArcRwLock<Self>>>;
+    fn properties(&self) -> Option<&BTreeMap<String, SchemaRepr<Self>>>;
 
     /// Mutable access to `properties` field.
-    fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, ArcRwLock<Self>>>;
+    fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, SchemaRepr<Self>>>;
 
     /// If this is of type "object", checks if it requires any properties.
     fn has_required_properties(&self) -> bool;

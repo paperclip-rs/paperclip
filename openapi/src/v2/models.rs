@@ -1,12 +1,13 @@
 //! Models used by OpenAPI v2.
 
-use super::im::ArcRwLock;
+use super::{im::ArcRwLock, Schema};
 use crate as paperclip_openapi;
 use crate::error::PaperClipError; // hack for proc macro
 use failure::Error;
 
 use std::collections::BTreeMap;
 use std::fmt::{self, Display};
+use std::ops::{Deref, DerefMut};
 
 /// OpenAPI version.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
@@ -49,7 +50,7 @@ pub enum DataTypeFormat {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Api<S> {
     pub swagger: Version,
-    pub definitions: BTreeMap<String, ArcRwLock<S>>,
+    pub definitions: BTreeMap<String, SchemaRepr<S>>,
     pub paths: BTreeMap<String, OperationMap<S>>,
 }
 
@@ -59,6 +60,20 @@ pub struct Api<S> {
 #[api_v2_schema]
 #[derive(Clone, Debug, Deserialize)]
 pub struct DefaultSchema {}
+
+/// Wrapper for schema. This uses `Arc<RwLock<S>>` for interior
+/// mutability and differentiates raw schema from resolved schema
+/// (i.e., the one where `$ref` references point to the actual schema).
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum SchemaRepr<S> {
+    Raw(ArcRwLock<S>),
+    #[serde(skip)]
+    Resolved {
+        new: ArcRwLock<S>,
+        old: ArcRwLock<S>,
+    },
+}
 
 /// Path item.
 ///
@@ -81,11 +96,11 @@ pub struct Parameter<S> {
     pub name: String,
     #[serde(default)]
     pub required: bool,
-    pub schema: Option<ArcRwLock<S>>,
+    pub schema: Option<SchemaRepr<S>>,
     #[serde(rename = "type")]
     pub data_type: Option<DataType>,
     pub format: Option<DataTypeFormat>,
-    pub items: Option<ArcRwLock<S>>,
+    pub items: Option<SchemaRepr<S>>,
 }
 
 /// The location of the parameter.
@@ -124,7 +139,7 @@ pub struct Operation<S> {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Response<S> {
     pub description: Option<String>,
-    pub schema: Option<ArcRwLock<S>>,
+    pub schema: Option<SchemaRepr<S>>,
 }
 
 /// The HTTP method used for an operation.
@@ -140,12 +155,6 @@ pub enum HttpMethod {
     Patch,
 }
 
-impl Display for HttpMethod {
-    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "{:?}", self)
-    }
-}
-
 /// The protocol used for an operation.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -154,6 +163,20 @@ pub enum OperationProtocol {
     Https,
     Ws,
     Wss,
+}
+
+impl<S> SchemaRepr<S>
+where
+    S: Schema,
+{
+    /// Fetch the description for this schema.
+    pub fn get_description(&self) -> Option<String> {
+        match *self {
+            SchemaRepr::Raw(ref s) => s.read().description().map(String::from),
+            // We don't want parameters/fields to describe the actual refrenced object.
+            SchemaRepr::Resolved { ref old, .. } => old.read().description().map(String::from),
+        }
+    }
 }
 
 impl<S> Parameter<S> {
@@ -174,5 +197,43 @@ impl<S> Parameter<S> {
         }
 
         Ok(())
+    }
+}
+
+impl<S> Deref for SchemaRepr<S> {
+    type Target = ArcRwLock<S>;
+
+    fn deref(&self) -> &Self::Target {
+        match *self {
+            SchemaRepr::Raw(ref s) => s,
+            SchemaRepr::Resolved { ref new, .. } => new,
+        }
+    }
+}
+
+impl<S> DerefMut for SchemaRepr<S> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match *self {
+            SchemaRepr::Raw(ref mut s) => s,
+            SchemaRepr::Resolved { ref mut new, .. } => new,
+        }
+    }
+}
+
+impl<S> Clone for SchemaRepr<S> {
+    fn clone(&self) -> Self {
+        match *self {
+            SchemaRepr::Raw(ref s) => SchemaRepr::Raw(s.clone()),
+            SchemaRepr::Resolved { ref new, ref old } => SchemaRepr::Resolved {
+                new: new.clone(),
+                old: old.clone(),
+            },
+        }
+    }
+}
+
+impl Display for HttpMethod {
+    fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "{:?}", self)
     }
 }
