@@ -24,6 +24,7 @@ matrix:
     - CACHE_NAME=test
     script:
     - cargo test --all --all-features
+    - rm -rf target/doc
     - cargo doc --all --all-features --no-deps
     - cd openapi/tests/test_k8s
     - cargo build
