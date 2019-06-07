@@ -6,10 +6,16 @@
 use super::RUST_KEYWORDS;
 use crate::v2::models::HttpMethod;
 use heck::{CamelCase, SnekCase};
+use regex::{Captures, Regex};
 
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::{self, Display, Write};
 use std::iter;
+
+lazy_static! {
+    /// Regex for appropriate escaping in docs.
+    static ref DOC_REGEX: Regex = Regex::new(r"\[|\]").expect("invalid doc regex?");
+}
 
 /// Represents a (simplified) Rust struct.
 #[derive(Debug, Clone)]
@@ -116,7 +122,9 @@ impl ApiObject {
         if self.paths.is_empty() {
             return Box::new(iter::once(ApiObjectBuilder {
                 idx: 0,
+                multiple_builders_exist: false,
                 helper_module_prefix,
+                description: None,
                 object: &self.name,
                 method: None,
                 op_id: None,
@@ -126,6 +134,12 @@ impl ApiObject {
                 local_params: &[],
             })) as Box<_>;
         }
+
+        let count = self
+            .paths
+            .values()
+            .flat_map(|path_ops| path_ops.req.iter())
+            .count();
 
         Box::new(
             self.paths
@@ -137,7 +151,9 @@ impl ApiObject {
                         .iter()
                         .map(move |(&method, req)| ApiObjectBuilder {
                             idx,
+                            multiple_builders_exist: count > 1,
                             helper_module_prefix,
+                            description: req.description.as_ref().map(String::as_str),
                             object: &self.name,
                             op_id: req.id.as_ref().map(String::as_str),
                             method: Some(method),
@@ -152,15 +168,31 @@ impl ApiObject {
 
     /// Writes the given string (if any) as Rust documentation into
     /// the given formatter.
-    fn write_docs<F, S>(stuff: Option<S>, f: &mut F) -> fmt::Result
+    fn write_docs<F, S>(stuff: Option<S>, f: &mut F, levels: usize) -> fmt::Result
     where
         F: Write,
         S: AsRef<str>,
     {
+        let indent = iter::repeat(' ').take(levels * 4).collect::<String>();
         if let Some(desc) = stuff.as_ref() {
             desc.as_ref().split('\n').try_for_each(|line| {
-                f.write_str("/// ")?;
-                f.write_str(line)
+                f.write_str("\n")?;
+                f.write_str(&indent)?;
+                f.write_str("///")?;
+                if line.is_empty() {
+                    return Ok(());
+                }
+
+                f.write_str(" ")?;
+                f.write_str(
+                    &DOC_REGEX
+                        .replace_all(line, |c: &Captures| match &c[0] {
+                            "[" => "\\[",
+                            "]" => "\\]",
+                            _ => unreachable!(),
+                        })
+                        .trim_end(),
+                )
             })?;
             f.write_str("\n")?;
         }
@@ -180,37 +212,25 @@ impl<'a> ApiObjectImpl<'a> {
     where
         F: Write,
     {
-        let has_multiple = self.builders.len() > 1;
-
         for builder in &self.builders {
+            let mut temp = String::new();
             let has_fields = builder.has_atleast_one_field();
-            f.write_str("\n    #[inline]\n    pub fn ")?;
-            match (builder.op_id, builder.method) {
-                // If there's a method and we don't have any collisions
-                // (i.e., two or more paths for same object), then we default
-                // to using the method ...
-                (_, Some(meth)) if !has_multiple => {
-                    let m = meth.to_string().to_snek_case();
-                    f.write_str(&m)?;
-                }
-                // If there's an operation ID, then we go for that ...
-                (Some(id), _) => {
-                    let n = id.to_snek_case();
-                    f.write_str(&n)?;
-                }
-                // If there's a method, then we go for numbered functions ...
-                (_, Some(meth)) => {
-                    let m = meth.to_string().to_snek_case();
-                    f.write_str(&m)?;
-                    if builder.idx > 0 {
-                        f.write_str("_")?;
-                        f.write_str(&builder.idx.to_string())?;
-                    }
-                }
-                // Otherwise it's a simple object builder.
-                _ => f.write_str("builder")?,
+            if builder.description.is_none() {
+                temp.write_str("\n")?;
             }
 
+            temp.write_str("    #[inline]\n    pub fn ")?;
+            if let Some(name) = builder.con_fn_name() {
+                temp.write_str(&name)?;
+                ApiObject::write_docs(builder.description.as_ref(), f, 1)?;
+            } else {
+                // If we don't know, then we go for a simple object builder.
+                f.write_str("\n    /// Create a builder for this object.")?;
+                temp.write_str("builder")?;
+            }
+
+            // Now that we've written the docs, we can write the actual method signature.
+            f.write_str(&temp)?;
             f.write_str("() -> ")?;
             builder.write_name(f)?;
             builder.write_generics_if_necessary(f, TypeParameters::ReplaceAll)?;
@@ -232,7 +252,7 @@ impl<'a> ApiObjectImpl<'a> {
 
             builder
                 .struct_fields_iter()
-                .try_for_each(|(name, _, prop)| {
+                .try_for_each(|(name, _, prop, _)| {
                     if prop.is_required() {
                         f.write_str("\n            ")?;
                         if prop.is_parameter() {
@@ -266,9 +286,11 @@ impl<'a> ApiObjectImpl<'a> {
 #[derive(Debug, Clone)]
 pub struct ApiObjectBuilder<'a> {
     idx: usize,
+    multiple_builders_exist: bool,
     helper_module_prefix: &'a str,
     op_id: Option<&'a str>,
     method: Option<HttpMethod>,
+    description: Option<&'a str>,
     object: &'a str,
     body_required: bool,
     fields: &'a [ObjectField],
@@ -282,6 +304,32 @@ impl<'a> ApiObjectBuilder<'a> {
         ApiObjectBuilderImpl(self)
     }
 
+    /// Name of the constructor function which creates this builder.
+    pub fn con_fn_name(&self) -> Option<String> {
+        match (self.op_id, self.method) {
+            // If there's a method and we *don't* have any collisions
+            // (i.e., two or more paths for same object), then we default
+            // to using the method ...
+            (_, Some(meth)) if !self.multiple_builders_exist => {
+                Some(meth.to_string().to_snek_case())
+            }
+            // If there's an operation ID, then we go for that ...
+            (Some(id), _) => Some(id.to_snek_case()),
+            // If there's a method, then we go for numbered functions ...
+            (_, Some(meth)) => {
+                let mut name = meth.to_string().to_snek_case();
+                if self.idx > 0 {
+                    name.push('_');
+                    name.push_str(&self.idx.to_string());
+                }
+
+                Some(name)
+            }
+            // We don't know what to do ...
+            _ => None,
+        }
+    }
+
     /// Returns an iterator of all fields and parameters required for the Rust builder struct.
     ///
     /// **NOTE:** The names yielded by this iterator are unique for a builder.
@@ -290,7 +338,7 @@ impl<'a> ApiObjectBuilder<'a> {
     /// and a parameter, then the latter overrides the former.
     pub(super) fn struct_fields_iter(
         &self,
-    ) -> impl Iterator<Item = (&'a str, &'a str, Property)> + 'a {
+    ) -> impl Iterator<Item = (&'a str, &'a str, Property, Option<&'a str>)> + 'a {
         let body_required = self.body_required;
         let field_iter = self.fields.iter().map(move |field| {
             (
@@ -302,6 +350,7 @@ impl<'a> ApiObjectBuilder<'a> {
                 } else {
                     Property::OptionalField
                 },
+                field.description.as_ref().map(String::as_str),
             )
         });
 
@@ -325,6 +374,7 @@ impl<'a> ApiObjectBuilder<'a> {
                         } else {
                             Property::OptionalParam
                         },
+                        param.description.as_ref().map(String::as_str),
                     )))
                 }
             })
@@ -333,12 +383,12 @@ impl<'a> ApiObjectBuilder<'a> {
         // Check parameter-field collisions.
         param_iter
             .chain(field_iter)
-            .scan(HashSet::new(), |set, (name, ty, prop)| {
+            .scan(HashSet::new(), |set, (name, ty, prop, desc)| {
                 if set.contains(name) {
                     Some(None)
                 } else {
                     set.insert(name);
-                    Some(Some((name, ty, prop)))
+                    Some(Some((name, ty, prop, desc)))
                 }
             })
             .filter_map(|p| p)
@@ -356,7 +406,7 @@ impl<'a> ApiObjectBuilder<'a> {
     /// Returns whether this builder will have at least one field.
     fn has_atleast_one_field(&self) -> bool {
         self.struct_fields_iter()
-            .any(|(_, _, p)| p.is_parameter() || p.is_required())
+            .any(|(_, _, p, _)| p.is_parameter() || p.is_required())
     }
 
     /// Write this builder's name into the given formatter.
@@ -401,9 +451,9 @@ impl<'a> ApiObjectBuilder<'a> {
         let mut num_generics = 0;
         // Inspect fields and parameters and write generics.
         self.struct_fields_iter()
-            .filter(|(_, _, prop)| prop.is_required())
+            .filter(|(_, _, prop, _)| prop.is_required())
             .enumerate()
-            .try_for_each(|(i, (name, _, _))| {
+            .try_for_each(|(i, (name, _, _, _))| {
                 num_generics += 1;
                 if i == 0 {
                     f.write_str("<")?;
@@ -481,6 +531,7 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
         name: &str,
         ty: &str,
         prop: Property,
+        desc: Option<&str>,
         f: &mut F,
     ) -> fmt::Result
     where
@@ -489,8 +540,9 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
         let field_name = name.to_snek_case();
         let known_type = !ty.contains("::");
         let (prop_is_parameter, prop_is_required) = (prop.is_parameter(), prop.is_required());
+        ApiObject::write_docs(desc, f, 1)?;
 
-        f.write_str("\n    #[inline]\n    pub fn ")?;
+        f.write_str("    #[inline]\n    pub fn ")?;
         if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
             f.write_str("r#")?;
         }
@@ -607,6 +659,29 @@ impl<'a> Display for ApiObjectImpl<'a> {
 
 impl<'a> Display for ApiObjectBuilder<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        f.write_str("/// Builder ")?;
+        if let (Some(name), Some(m)) = (self.con_fn_name(), self.method) {
+            f.write_str("created by [`")?;
+            f.write_str(&self.object)?;
+            f.write_str("::")?;
+            f.write_str(&name)?;
+            f.write_str("`](./struct.")?;
+            f.write_str(&self.object)?;
+            f.write_str(".html#method.")?;
+            f.write_str(&name)?;
+            f.write_str(") method for a `")?;
+            f.write_str(&m.to_string().to_uppercase())?;
+            f.write_str("` operation associated with `")?;
+            f.write_str(&self.object)?;
+            f.write_str("`.\n")?;
+        } else {
+            f.write_str("for [`")?;
+            f.write_str(&self.object)?;
+            f.write_str("`](./struct.")?;
+            f.write_str(&self.object)?;
+            f.write_str(".html) object.\n")?;
+        }
+
         // If the builder "needs" parameters/fields, then we go for a separate
         // container which holds both the body (if any) and the parameters,
         // so that we can make the actual builder `#[repr(transparent)]`
@@ -641,30 +716,31 @@ impl<'a> Display for ApiObjectBuilder<'a> {
             self.write_body_field_if_required(f)?;
         }
 
-        self.struct_fields_iter().try_for_each(|(name, ty, prop)| {
-            let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
-            if needs_container {
-                self.write_parameter_if_required(prop, &sk, &ty, &mut container)?;
-            } else {
-                self.write_parameter_if_required(prop, &sk, &ty, f)?;
-            }
-
-            if prop.is_required() {
-                f.write_str("\n    ")?;
-                if prop.is_parameter() {
-                    f.write_str("_param")?;
+        self.struct_fields_iter()
+            .try_for_each(|(name, ty, prop, _)| {
+                let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
+                if needs_container {
+                    self.write_parameter_if_required(prop, &sk, &ty, &mut container)?;
+                } else {
+                    self.write_parameter_if_required(prop, &sk, &ty, f)?;
                 }
 
-                f.write_str("_")?;
-                f.write_str(&sk)?;
-                f.write_str(": ")?;
-                f.write_str("core::marker::PhantomData<")?;
-                f.write_str(&cc)?;
-                f.write_str(">,")?;
-            }
+                if prop.is_required() {
+                    f.write_str("\n    ")?;
+                    if prop.is_parameter() {
+                        f.write_str("_param")?;
+                    }
 
-            Ok(())
-        })?;
+                    f.write_str("_")?;
+                    f.write_str(&sk)?;
+                    f.write_str(": ")?;
+                    f.write_str("core::marker::PhantomData<")?;
+                    f.write_str(&cc)?;
+                    f.write_str(">,")?;
+                }
+
+                Ok(())
+            })?;
 
         if has_fields || self.body_required {
             f.write_str("\n}\n")?;
@@ -691,9 +767,9 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
         let mut has_fields = false;
         self.0
             .struct_fields_iter()
-            .filter(|(_, _, p)| (self.0.body_required && p.is_field()) || p.is_parameter())
+            .filter(|(_, _, p, _)| (self.0.body_required && p.is_field()) || p.is_parameter())
             .enumerate()
-            .try_for_each(|(i, (name, ty, prop))| {
+            .try_for_each(|(i, (name, ty, prop, desc))| {
                 if i == 0 {
                     has_fields = true;
                     f.write_str("impl")?;
@@ -704,7 +780,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
                     f.write_str(" {")?;
                 }
 
-                self.write_property_method(name, ty, prop, f)
+                self.write_property_method(name, ty, prop, desc, f)
             })?;
 
         if has_fields {
@@ -717,7 +793,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
 
 impl Display for ApiObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        ApiObject::write_docs(self.description.as_ref(), f)?;
+        ApiObject::write_docs(self.description.as_ref(), f, 0)?;
 
         f.write_str("#[derive(Debug, Default, Clone, Deserialize, Serialize)]")?;
         f.write_str("\npub struct ")?;
@@ -725,18 +801,18 @@ impl Display for ApiObject {
         f.write_str(" {")?;
 
         self.fields.iter().try_for_each(|field| {
-            f.write_str("\n    ")?;
             let mut new_name = field.name.to_snek_case();
             // Check if the field matches a Rust keyword and add '_' suffix.
             if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                 new_name.push('_');
             }
 
-            ApiObject::write_docs(field.description.as_ref(), f)?;
-            if field.description.is_some() {
-                f.write_str("    ")?;
+            ApiObject::write_docs(field.description.as_ref(), f, 1)?;
+            if field.description.is_none() {
+                f.write_str("\n")?;
             }
 
+            f.write_str("    ")?;
             if new_name != field.name.as_str() {
                 f.write_str("#[serde(rename = \"")?;
                 f.write_str(&field.name)?;

@@ -100,8 +100,8 @@ impl EmitterState {
             for builder in object.builders(&module_prefix) {
                 builder
                     .struct_fields_iter()
-                    .filter(|(_, _, prop)| prop.is_required())
-                    .for_each(|(name, _, _)| {
+                    .filter(|(_, _, prop, _)| prop.is_required())
+                    .for_each(|(name, _, _, _)| {
                         unit_types.insert(name.to_camel_case());
                     });
 
