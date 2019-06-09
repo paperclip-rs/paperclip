@@ -99,8 +99,7 @@ fn test_complex_object() {
     // - It uses pretty much all types (including custom types).
     // - It references other definitions (directly and through an array).
     // - It's a cyclic type.
-    assert_eq!(contents.find(
-"
+    assert_eq!(contents.find("
 /// JSONSchemaProps is a JSON-Schema following Specification Draft 4 (http://json-schema.org/).
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct JsonSchemaProps {
@@ -117,7 +116,7 @@ pub struct JsonSchemaProps {
     #[serde(rename = \"anyOf\")]
     pub any_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub default: Option<String>,
-    pub definitions: Option<std::collections::BTreeMap<String, String>>,
+    pub definitions: Option<std::collections::BTreeMap<String, crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub dependencies: Option<std::collections::BTreeMap<String, String>>,
     pub description: Option<String>,
     #[serde(rename = \"enum\")]
@@ -154,8 +153,8 @@ pub struct JsonSchemaProps {
     pub one_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub pattern: Option<String>,
     #[serde(rename = \"patternProperties\")]
-    pub pattern_properties: Option<std::collections::BTreeMap<String, String>>,
-    pub properties: Option<std::collections::BTreeMap<String, String>>,
+    pub pattern_properties: Option<std::collections::BTreeMap<String, crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub properties: Option<std::collections::BTreeMap<String, crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub required: Option<Vec<String>>,
     pub title: Option<String>,
     #[serde(rename = \"type\")]

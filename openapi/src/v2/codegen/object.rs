@@ -208,6 +208,7 @@ pub struct ApiObjectImpl<'a> {
 }
 
 impl<'a> ApiObjectImpl<'a> {
+    /// Writes the associated function for this object for instantiating builders.
     fn write_builder_methods<F>(&self, f: &mut F) -> fmt::Result
     where
         F: Write,
@@ -662,7 +663,6 @@ pub(super) enum Property {
     OptionalParam,
 }
 
-#[allow(dead_code)]
 impl Property {
     /// Whether this property is required.
     pub(super) fn is_required(self) -> bool {

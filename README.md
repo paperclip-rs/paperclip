@@ -3,13 +3,14 @@
 [![Build Status](https://api.travis-ci.org/wafflespeanut/paperclip.svg?branch=master)](https://travis-ci.org/wafflespeanut/paperclip)
 [![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip_openapi)
 
-WIP OpenAPI code generator for Rust.
+WIP OpenAPI code generator for type-safe compile-time checked HTTP APIs in Rust.
 
 ## Features
 
 The following features are supported at the moment:
 
- - Generate API objects from schemas in an OpenAPI v2 spec.
+ - Generates API objects from schemas in an OpenAPI v2 spec.
+ - Generates builder structs for API objects and HTTP operations.
 
 See the [projects](https://github.com/wafflespeanut/paperclip/projects) for tracking the features in queue.
 

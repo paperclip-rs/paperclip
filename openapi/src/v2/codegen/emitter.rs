@@ -112,7 +112,6 @@ pub trait Emitter: Sized {
     ///
     /// **NOTE:** We resolve type aliases to known types.
     fn build_def(&self, def: &Self::Definition, define: bool) -> Result<EmittedUnit, Error> {
-        trace!("Building definition: {:?}", def);
         if let Some(ty) = matching_unit_type(def.format(), def.data_type()) {
             trace!("Matches unit type: {}", ty);
             if define {
@@ -152,6 +151,7 @@ impl<'a, E> Deref for CodegenEmitter<'a, E> {
 impl<'a, E> CodegenEmitter<'a, E>
 where
     E: Emitter,
+    E::Definition: Debug,
 {
     /// Given a schema definition, generate the corresponding Rust definition.
     ///
