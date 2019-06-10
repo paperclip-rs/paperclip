@@ -184,7 +184,7 @@ where
         let schema = self
             .defs
             .get(name)
-            .ok_or(PaperClipError::MissingDefinition(name.into()))?;
+            .ok_or_else(|| PaperClipError::MissingDefinition(name.into()))?;
         Ok(schema.clone())
     }
 }

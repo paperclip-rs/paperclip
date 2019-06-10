@@ -118,7 +118,7 @@ impl ApiObject {
     pub fn builders<'a>(
         &'a self,
         helper_module_prefix: &'a str,
-    ) -> Box<Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
+    ) -> Box<dyn Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
         if self.paths.is_empty() {
             return Box::new(iter::once(ApiObjectBuilder {
                 idx: 0,

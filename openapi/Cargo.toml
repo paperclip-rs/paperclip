@@ -14,7 +14,7 @@ paperclip-macros = { path = "../macros" }
 parking_lot = { version = "0.8.0" }
 quote = { version = "0.6.12", optional = true }
 regex = "1.1.6"
-rustfmt-nightly = { version = "1.2.2", optional = true }
+# rustfmt-nightly = { version = "1.2.2", optional = true }
 serde = "1.0.91"
 serde_derive = "1.0.91"
 serde_json = "1.0.39"
@@ -28,4 +28,4 @@ env_logger = "0.6.1"
 default = ["v2", "codegen"]
 v2 = []
 codegen = ["heck", "syn", "quote"]
-codegen-fmt = ["codegen", "rustfmt-nightly"]
+# codegen-fmt = ["codegen", "rustfmt-nightly"]

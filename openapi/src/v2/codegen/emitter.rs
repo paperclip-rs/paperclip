@@ -75,7 +75,7 @@ pub trait Emitter: Sized {
     fn def_ns_name<'a>(
         &self,
         def: &'a Self::Definition,
-    ) -> Result<Box<Iterator<Item = String> + 'a>, Error> {
+    ) -> Result<Box<dyn Iterator<Item = String> + 'a>, Error> {
         let state = self.state();
         def.name()
             .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
@@ -170,7 +170,7 @@ where
         // Create parent dirs recursively for the leaf module.
         let dir_path = mod_path
             .parent()
-            .ok_or(PaperClipError::InvalidDefinitionPath(mod_path.clone()))?;
+            .ok_or_else(|| PaperClipError::InvalidDefinitionPath(mod_path.clone()))?;
         if !dir_path.exists() {
             fs::create_dir_all(&dir_path)?;
         }
@@ -179,7 +179,7 @@ where
         let full_path = dir_path.join(
             mod_path
                 .file_stem()
-                .ok_or(PaperClipError::InvalidDefinitionPath(mod_path.clone()))?,
+                .ok_or_else(|| PaperClipError::InvalidDefinitionPath(mod_path.clone()))?,
         );
         // Get the relative path to the parent dir.
         let rel_path = full_path
@@ -347,20 +347,16 @@ where
             if let Some(def) = p.schema.as_ref() {
                 // If a schema exists, then get its path for later use.
                 let pat = self.def_mod_path(&*def.read())?;
-                def_mods
-                    .get(&pat)
-                    .ok_or(PaperClipError::UnsupportedParameterDefinition(
-                        p.name.clone(),
-                        path.into(),
-                    ))?;
+                def_mods.get(&pat).ok_or_else(|| {
+                    PaperClipError::UnsupportedParameterDefinition(p.name.clone(), path.into())
+                })?;
                 schema_path = Some(pat);
                 continue;
             }
 
             // Enforce that the parameter is a known type and collect it.
-            let ty = matching_unit_type(p.format.as_ref(), p.data_type).ok_or(
-                PaperClipError::UnknownParameterType(p.name.clone(), path.into()),
-            )?;
+            let ty = matching_unit_type(p.format.as_ref(), p.data_type)
+                .ok_or_else(|| PaperClipError::UnknownParameterType(p.name.clone(), path.into()))?;
             params.push(Parameter {
                 name: p.name.clone(),
                 description: p.description.clone(),
@@ -381,7 +377,7 @@ where
 
         let it = def
             .items()
-            .ok_or(PaperClipError::MissingArrayItem(self.def_name(def).ok()))?;
+            .ok_or_else(|| PaperClipError::MissingArrayItem(self.def_name(def).ok()))?;
 
         let schema = it.read();
         let ty = self.build_def(&schema, false)?.known_type();
