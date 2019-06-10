@@ -83,6 +83,15 @@ pub struct ObjectField {
     pub is_required: bool,
     /// Whether this field should be boxed.
     pub boxed: bool,
+    /// Requirements of the "deepest" child type in the given definition.
+    ///
+    /// Now, what do I mean by "deepest"? For example, if we had `Vec<Vec<Vec<T>>>`
+    /// or `Vec<BTreeMap<String, Vec<BTreeMap<String, T>>>>`, then "deepest" child
+    /// type is T (as long as it's not a `Vec` or `BTreeMap`).
+    ///
+    /// Yours sincerely,
+    /// Someone who's bad at naming.
+    pub children_req: Vec<String>,
 }
 
 impl ApiObject {
@@ -279,6 +288,32 @@ impl<'a> ApiObjectImpl<'a> {
 
         Ok(())
     }
+
+    /// Writes the `Into` impl for fulfilled builders (if they have a body).
+    fn write_into_impl<F>(&self, builder: &ApiObjectBuilder<'_>, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        if !builder.body_required {
+            return Ok(());
+        }
+
+        let needs_container = builder.needs_container();
+        f.write_str("\nimpl Into<")?;
+        f.write_str(&self.inner.name)?;
+        f.write_str("> for ")?;
+        builder.write_name(f)?;
+        builder.write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+        f.write_str(" {\n    fn into(self) -> ")?;
+        f.write_str(&self.inner.name)?;
+        f.write_str(" {\n        self.")?;
+
+        if needs_container {
+            f.write_str("inner.")?;
+        }
+
+        f.write_str("body\n    }\n}\n")
+    }
 }
 
 /// Represents a builder struct for some API object.
@@ -310,6 +345,9 @@ pub(super) struct StructField<'a> {
     pub desc: Option<&'a str>,
     /// Whether this field had a collision (i.e., between parameter and object field)
     pub overridden: bool,
+    /// Children fields needed for this field. If they exist, then we
+    /// switch to requiring a builder.
+    pub strict_children: &'a [String],
 }
 
 impl<'a> ApiObjectBuilder<'a> {
@@ -364,6 +402,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     Property::OptionalField
                 },
                 field.description.as_ref().map(String::as_str),
+                &*field.children_req,
             )
         });
 
@@ -388,6 +427,7 @@ impl<'a> ApiObjectBuilder<'a> {
                             Property::OptionalParam
                         },
                         param.description.as_ref().map(String::as_str),
+                        &[] as &[_],
                     )))
                 }
             })
@@ -395,7 +435,7 @@ impl<'a> ApiObjectBuilder<'a> {
 
         let mut fields = vec![];
         // Check parameter-field collisions.
-        for (name, ty, prop, desc) in param_iter.chain(field_iter) {
+        for (name, ty, prop, desc, strict_children) in param_iter.chain(field_iter) {
             if let Some(v) = fields
                 .iter_mut()
                 .find(|f: &&mut StructField<'_>| f.name == name)
@@ -415,6 +455,7 @@ impl<'a> ApiObjectBuilder<'a> {
                 prop,
                 desc,
                 overridden: false,
+                strict_children,
             });
         }
 
@@ -498,6 +539,11 @@ impl<'a> ApiObjectBuilder<'a> {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("Missing")?;
                     }
+                    TypeParameters::ChangeAll => {
+                        f.write_str(self.helper_module_prefix)?;
+                        f.write_str(&field.name.to_camel_case())?;
+                        return f.write_str("Exists");
+                    }
                     _ => (),
                 }
 
@@ -551,14 +597,77 @@ impl<'a> ApiObjectBuilder<'a> {
 /// Represents the API object builder impl.
 pub struct ApiObjectBuilderImpl<'a, 'b>(&'a ApiObjectBuilder<'b>);
 
-impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
+impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b>
+where
+    'b: 'a,
+{
+    /// Builds the method parameter type using the actual field type.
+    fn write_builder_ty<F>(&self, ty: &str, req: &[String], f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        let simple_type = !ty.contains("::");
+
+        if let Some(i) = ty.find('<') {
+            if ty[..i].ends_with("Vec") {
+                f.write_str("impl Iterator<Item = ")?;
+                self.write_builder_ty(&ty[i + 1..ty.len() - 1], req, f)?;
+                f.write_str(">")?;
+            } else if ty[..i].ends_with("std::collections::BTreeMap") {
+                f.write_str("impl Iterator<Item = (String, ")?;
+                self.write_builder_ty(&ty[i + 9..ty.len() - 1], req, f)?;
+                f.write_str(")>")?;
+            }
+        } else if simple_type {
+            return write!(f, "impl Into<{}>", ty);
+        } else {
+            f.write_str(ty)?;
+            if !req.is_empty() {
+                f.write_str("Builder<")?;
+                req.iter().enumerate().try_for_each(|(i, n)| {
+                    if i > 0 {
+                        f.write_str(", ")?;
+                    }
+
+                    f.write_str(self.0.helper_module_prefix)?;
+                    f.write_str(&n.to_camel_case())?;
+                    f.write_str("Exists")
+                })?;
+                f.write_str(">")?;
+            }
+        }
+
+        Ok(())
+    }
+
+    /// Builds the value conversion block using the actual field type.
+    fn write_value_map<F>(ty: &str, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        if let Some(i) = ty.find('<') {
+            if ty[..i].ends_with("Vec") {
+                f.write_str("value.map(|value| ")?;
+                Self::write_value_map(&ty[i + 1..ty.len() - 1], f)?;
+                f.write_str(").collect::<Vec<_>>()")?;
+            } else if ty[..i].ends_with("std::collections::BTreeMap") {
+                f.write_str("value.map(|(key, value)| (key, ")?;
+                Self::write_value_map(&ty[i + 9..ty.len() - 1], f)?;
+                f.write_str(")).collect::<std::collections::BTreeMap<_, _>>()")?;
+            }
+        } else {
+            f.write_str("value.into()")?;
+        }
+
+        Ok(())
+    }
+
     /// Writes the property-related methods to the given formatter.
-    fn write_property_method<F>(&self, field: StructField<'a>, f: &mut F) -> fmt::Result
+    fn write_property_method<F>(&self, field: StructField<'b>, f: &mut F) -> fmt::Result
     where
         F: Write,
     {
         let field_name = field.name.to_snek_case();
-        let known_type = !field.ty.contains("::");
         let (prop_is_parameter, prop_is_required, needs_container) = (
             field.prop.is_parameter(),
             field.prop.is_required(),
@@ -576,11 +685,7 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
 
         f.write_str(&field_name)?;
         f.write_str("(mut self, value: ")?;
-        if known_type {
-            write!(f, "impl Into<{}>", field.ty)?;
-        } else {
-            f.write_str(field.ty)?;
-        }
+        self.write_builder_ty(&field.ty, &field.strict_children, f)?;
 
         f.write_str(") -> ")?;
         if prop_is_required {
@@ -616,8 +721,9 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
         // If there's a field in the body with similar name and type,
         // then override it with this value.
         if field.overridden && self.0.body_required {
-            f.write_str("{\n            let val = value.into();")?;
-            f.write_str("\n            self.")?;
+            f.write_str("{\n            let val = ")?;
+            Self::write_value_map(field.ty, f)?;
+            f.write_str(";\n            self.")?;
             if needs_container {
                 f.write_str("inner.")?;
             }
@@ -631,7 +737,7 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
             f.write_str(" = val.clone().into();")?;
             f.write_str("\n            val\n        }")?;
         } else {
-            f.write_str("value.into()")?;
+            Self::write_value_map(field.ty, f)?;
         }
 
         if prop_is_parameter || !prop_is_required {
@@ -653,6 +759,7 @@ enum TypeParameters<'a> {
     Generic,
     ChangeOne(&'a str),
     ReplaceAll,
+    ChangeAll,
 }
 
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
@@ -699,7 +806,13 @@ impl<'a> Display for ApiObjectImpl<'a> {
         f.write_str(&self.inner.name)?;
         f.write_str(" {")?;
         self.write_builder_methods(f)?;
-        f.write_str("}\n")
+        f.write_str("}\n")?;
+
+        for builder in &self.builders {
+            self.write_into_impl(builder, f)?;
+        }
+
+        Ok(())
     }
 }
 

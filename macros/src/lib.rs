@@ -48,12 +48,13 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             #[serde(rename = "type")]
             pub data_type: Option<paperclip_openapi::v2::models::DataType>,
             pub format: Option<paperclip_openapi::v2::models::DataTypeFormat>,
-            pub properties: Option<std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<#name>>>,
+            #[serde(default)]
+            pub properties: std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<#name>>,
             pub items: Option<paperclip_openapi::v2::models::SchemaRepr<#name>>,
             #[serde(rename = "additionalProperties")]
             pub extra_props: Option<paperclip_openapi::v2::models::SchemaRepr<#name>>,
             #[serde(default)]
-            pub required: std::collections::HashSet<String>,
+            pub required: std::collections::BTreeSet<String>,
             #[serde(skip)]
             name: Option<String>,
             #[serde(skip)]
@@ -129,22 +130,29 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
             #[inline]
             fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<Self>>> {
-                self.properties.as_ref()
+                if self.properties.is_empty() {
+                    None
+                } else {
+                    Some(&self.properties)
+                }
             }
 
             #[inline]
             fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<Self>>> {
-                self.properties.as_mut()
+                if self.properties.is_empty() {
+                    None
+                } else {
+                    Some(&mut self.properties)
+                }
             }
 
             #[inline]
-            fn has_required_properties(&self) -> bool {
-                !self.required.is_empty()
-            }
-
-            #[inline]
-            fn is_required_property(&self, property: &str) -> bool {
-                self.required.contains(property)
+            fn required_properties(&self) -> Option<&std::collections::BTreeSet<String>> {
+                if self.required.is_empty() {
+                    None
+                } else {
+                    Some(&self.required)
+                }
             }
         }
     };

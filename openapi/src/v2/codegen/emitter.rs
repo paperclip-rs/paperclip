@@ -448,8 +448,12 @@ where
                         name: name.clone(),
                         description: prop.get_description(),
                         ty_path: ty.known_type(),
-                        is_required: def.is_required_property(name),
+                        is_required: def
+                            .required_properties()
+                            .map(|s| s.contains(name))
+                            .unwrap_or(false),
                         boxed: schema.is_cyclic(),
+                        children_req: self.children_requirements(&schema),
                     });
 
                     Ok(())
@@ -457,6 +461,29 @@ where
         }
 
         Ok(EmittedUnit::Object(obj))
+    }
+
+    /// Returns the requirements of the "deepest" child type in the given definition.
+    ///
+    /// See `ObjectField.children_req` field for what it means.
+    fn children_requirements(&self, schema: &E::Definition) -> Vec<String> {
+        match schema.data_type() {
+            Some(DataType::Object) => {
+                if let Some(s) = schema.additional_properties() {
+                    return self.children_requirements(&s.read());
+                } else if let Some(s) = schema.required_properties() {
+                    return s.iter().cloned().collect();
+                }
+            }
+            Some(DataType::Array) => {
+                if let Some(s) = schema.items() {
+                    return self.children_requirements(&s.read());
+                }
+            }
+            _ => (),
+        }
+
+        vec![]
     }
 }
 

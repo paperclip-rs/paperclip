@@ -92,7 +92,7 @@ use crate::error::PaperClipError;
 use failure::Error;
 use serde::Deserialize;
 
-use std::collections::BTreeMap;
+use std::collections::{BTreeMap, BTreeSet};
 use std::io::{Read, Seek, SeekFrom};
 
 #[cfg(feature = "codegen")]
@@ -156,11 +156,8 @@ pub trait Schema: Sized {
     /// Mutable access to `properties` field.
     fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, SchemaRepr<Self>>>;
 
-    /// If this is of type "object", checks if it requires any properties.
-    fn has_required_properties(&self) -> bool;
-
-    /// If this is of type "object", checks whether the given property is required.
-    fn is_required_property(&self, property: &str) -> bool;
+    /// Returns the required properties (if any) for this object.
+    fn required_properties(&self) -> Option<&BTreeSet<String>>;
 
     /// Set whether this definition is cyclic. This is done by the resolver.
     fn set_cyclic(&mut self, cyclic: bool);
