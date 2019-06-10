@@ -250,26 +250,24 @@ impl<'a> ApiObjectImpl<'a> {
                 f.write_str("body: Default::default(),")?;
             }
 
-            builder
-                .struct_fields_iter()
-                .try_for_each(|(name, _, prop, _)| {
-                    if prop.is_required() {
-                        f.write_str("\n            ")?;
-                        if prop.is_parameter() {
-                            f.write_str("_param")?;
-                        }
-
-                        f.write_str("_")?;
-                        f.write_str(&name.to_snek_case())?;
-                        f.write_str(": core::marker::PhantomData,")?;
-                    } else if prop.is_parameter() && !needs_container {
-                        f.write_str("\n            param_")?;
-                        f.write_str(&name.to_snek_case())?;
-                        f.write_str(": None,")?;
+            builder.struct_fields_iter().try_for_each(|field| {
+                if field.prop.is_required() {
+                    f.write_str("\n            ")?;
+                    if field.prop.is_parameter() {
+                        f.write_str("_param")?;
                     }
 
-                    Ok(())
-                })?;
+                    f.write_str("_")?;
+                    f.write_str(&field.name.to_snek_case())?;
+                    f.write_str(": core::marker::PhantomData,")?;
+                } else if field.prop.is_parameter() && !needs_container {
+                    f.write_str("\n            param_")?;
+                    f.write_str(&field.name.to_snek_case())?;
+                    f.write_str(": None,")?;
+                }
+
+                Ok(())
+            })?;
 
             if has_fields || builder.body_required {
                 f.write_str("\n        }")?;
@@ -296,6 +294,21 @@ pub struct ApiObjectBuilder<'a> {
     fields: &'a [ObjectField],
     global_params: &'a [Parameter],
     local_params: &'a [Parameter],
+}
+
+/// Represents a Rust struct field (could be actual object field or a parameter).
+#[derive(Debug, Clone)]
+pub(super) struct StructField<'a> {
+    /// Name of this field (case unspecified).
+    pub name: &'a str,
+    /// Type of this field.
+    pub ty: &'a str,
+    /// What this field represents.
+    pub prop: Property,
+    /// Description for this field (if any), for docs.
+    pub desc: Option<&'a str>,
+    /// Whether this field had a collision (i.e., between parameter and object field)
+    pub overridden: bool,
 }
 
 impl<'a> ApiObjectBuilder<'a> {
@@ -336,9 +349,8 @@ impl<'a> ApiObjectBuilder<'a> {
     /// If there's a collision between a path-specific parameter and an operation-specific
     /// parameter, then the latter overrides the former. If there's a collision between a field
     /// and a parameter, then the latter overrides the former.
-    pub(super) fn struct_fields_iter(
-        &self,
-    ) -> impl Iterator<Item = (&'a str, &'a str, Property, Option<&'a str>)> + 'a {
+    // FIXME: This could be a singleton?
+    pub(super) fn struct_fields_iter(&self) -> impl Iterator<Item = StructField<'a>> + 'a {
         let body_required = self.body_required;
         let field_iter = self.fields.iter().map(move |field| {
             (
@@ -380,18 +392,32 @@ impl<'a> ApiObjectBuilder<'a> {
             })
             .filter_map(|p| p);
 
+        let mut fields = vec![];
         // Check parameter-field collisions.
-        param_iter
-            .chain(field_iter)
-            .scan(HashSet::new(), |set, (name, ty, prop, desc)| {
-                if set.contains(name) {
-                    Some(None)
-                } else {
-                    set.insert(name);
-                    Some(Some((name, ty, prop, desc)))
+        for (name, ty, prop, desc) in param_iter.chain(field_iter) {
+            if let Some(v) = fields
+                .iter_mut()
+                .find(|f: &&mut StructField<'_>| f.name == name)
+            {
+                if v.ty == ty {
+                    v.overridden = true;
                 }
-            })
-            .filter_map(|p| p)
+
+                // We don't know what we should do when we encounter
+                // parameter-field collision and they have different types.
+                continue;
+            }
+
+            fields.push(StructField {
+                name,
+                ty,
+                prop,
+                desc,
+                overridden: false,
+            });
+        }
+
+        fields.into_iter()
     }
 
     /// Returns whether a separate container is needed for the builder struct.
@@ -406,7 +432,7 @@ impl<'a> ApiObjectBuilder<'a> {
     /// Returns whether this builder will have at least one field.
     fn has_atleast_one_field(&self) -> bool {
         self.struct_fields_iter()
-            .any(|(_, _, p, _)| p.is_parameter() || p.is_required())
+            .any(|f| f.prop.is_parameter() || f.prop.is_required())
     }
 
     /// Write this builder's name into the given formatter.
@@ -451,9 +477,9 @@ impl<'a> ApiObjectBuilder<'a> {
         let mut num_generics = 0;
         // Inspect fields and parameters and write generics.
         self.struct_fields_iter()
-            .filter(|(_, _, prop, _)| prop.is_required())
+            .filter(|f| f.prop.is_required())
             .enumerate()
-            .try_for_each(|(i, (name, _, _, _))| {
+            .try_for_each(|(i, field)| {
                 num_generics += 1;
                 if i == 0 {
                     f.write_str("<")?;
@@ -462,9 +488,9 @@ impl<'a> ApiObjectBuilder<'a> {
                 }
 
                 match params {
-                    TypeParameters::ChangeOne(n) if name == n => {
+                    TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
-                        f.write_str(&name.to_camel_case())?;
+                        f.write_str(&field.name.to_camel_case())?;
                         return f.write_str("Exists");
                     }
                     TypeParameters::ReplaceAll => {
@@ -474,7 +500,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     _ => (),
                 }
 
-                f.write_str(&name.to_camel_case())
+                f.write_str(&field.name.to_camel_case())
             })?;
 
         if num_generics > 0 {
@@ -526,21 +552,21 @@ pub struct ApiObjectBuilderImpl<'a, 'b>(&'a ApiObjectBuilder<'b>);
 
 impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
     /// Writes the property-related methods to the given formatter.
-    fn write_property_method<F>(
-        &self,
-        name: &str,
-        ty: &str,
-        prop: Property,
-        desc: Option<&str>,
-        f: &mut F,
-    ) -> fmt::Result
+    fn write_property_method<F>(&self, field: StructField<'a>, f: &mut F) -> fmt::Result
     where
         F: Write,
     {
-        let field_name = name.to_snek_case();
-        let known_type = !ty.contains("::");
-        let (prop_is_parameter, prop_is_required) = (prop.is_parameter(), prop.is_required());
-        ApiObject::write_docs(desc, f, 1)?;
+        let field_name = field.name.to_snek_case();
+        let known_type = !field.ty.contains("::");
+        let (prop_is_parameter, prop_is_required, needs_container) = (
+            field.prop.is_parameter(),
+            field.prop.is_required(),
+            self.0.needs_container(),
+        );
+        let needs_trailing_dash =
+            field.prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name);
+
+        ApiObject::write_docs(field.desc, f, 1)?;
 
         f.write_str("    #[inline]\n    pub fn ")?;
         if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
@@ -550,22 +576,22 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
         f.write_str(&field_name)?;
         f.write_str("(mut self, value: ")?;
         if known_type {
-            write!(f, "impl Into<{}>", ty)?;
+            write!(f, "impl Into<{}>", field.ty)?;
         } else {
-            f.write_str(ty)?;
+            f.write_str(field.ty)?;
         }
 
         f.write_str(") -> ")?;
         if prop_is_required {
             self.0.write_name(f)?;
             self.0
-                .write_generics_if_necessary(f, TypeParameters::ChangeOne(name))?;
+                .write_generics_if_necessary(f, TypeParameters::ChangeOne(field.name))?;
         } else {
             f.write_str("Self")?;
         }
 
         f.write_str(" {\n        self.")?;
-        if self.0.needs_container() {
+        if needs_container {
             f.write_str("inner.")?;
         }
 
@@ -577,7 +603,7 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
         }
 
         f.write_str(&field_name)?;
-        if prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name) {
+        if needs_trailing_dash {
             f.write_str("_")?;
         }
 
@@ -586,7 +612,27 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b> {
             f.write_str("Some(")?;
         }
 
-        f.write_str("value.into()")?;
+        // If there's a field in the body with similar name and type,
+        // then override it with this value.
+        if field.overridden && self.0.body_required {
+            f.write_str("{\n            let val = value.into();")?;
+            f.write_str("\n            self.")?;
+            if needs_container {
+                f.write_str("inner.")?;
+            }
+
+            f.write_str("body.")?;
+            f.write_str(&field_name)?;
+            if needs_trailing_dash {
+                f.write_str("_")?;
+            }
+
+            f.write_str(" = val.clone().into();")?;
+            f.write_str("\n            val\n        }")?;
+        } else {
+            f.write_str("value.into()")?;
+        }
+
         if prop_is_parameter || !prop_is_required {
             f.write_str(")")?;
         }
@@ -716,31 +762,30 @@ impl<'a> Display for ApiObjectBuilder<'a> {
             self.write_body_field_if_required(f)?;
         }
 
-        self.struct_fields_iter()
-            .try_for_each(|(name, ty, prop, _)| {
-                let (cc, sk) = (name.to_camel_case(), name.to_snek_case());
-                if needs_container {
-                    self.write_parameter_if_required(prop, &sk, &ty, &mut container)?;
-                } else {
-                    self.write_parameter_if_required(prop, &sk, &ty, f)?;
+        self.struct_fields_iter().try_for_each(|field| {
+            let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
+            if needs_container {
+                self.write_parameter_if_required(field.prop, &sk, field.ty, &mut container)?;
+            } else {
+                self.write_parameter_if_required(field.prop, &sk, field.ty, f)?;
+            }
+
+            if field.prop.is_required() {
+                f.write_str("\n    ")?;
+                if field.prop.is_parameter() {
+                    f.write_str("_param")?;
                 }
 
-                if prop.is_required() {
-                    f.write_str("\n    ")?;
-                    if prop.is_parameter() {
-                        f.write_str("_param")?;
-                    }
+                f.write_str("_")?;
+                f.write_str(&sk)?;
+                f.write_str(": ")?;
+                f.write_str("core::marker::PhantomData<")?;
+                f.write_str(&cc)?;
+                f.write_str(">,")?;
+            }
 
-                    f.write_str("_")?;
-                    f.write_str(&sk)?;
-                    f.write_str(": ")?;
-                    f.write_str("core::marker::PhantomData<")?;
-                    f.write_str(&cc)?;
-                    f.write_str(">,")?;
-                }
-
-                Ok(())
-            })?;
+            Ok(())
+        })?;
 
         if has_fields || self.body_required {
             f.write_str("\n}\n")?;
@@ -767,9 +812,9 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
         let mut has_fields = false;
         self.0
             .struct_fields_iter()
-            .filter(|(_, _, p, _)| (self.0.body_required && p.is_field()) || p.is_parameter())
+            .filter(|f| (self.0.body_required && f.prop.is_field()) || f.prop.is_parameter())
             .enumerate()
-            .try_for_each(|(i, (name, ty, prop, desc))| {
+            .try_for_each(|(i, field)| {
                 if i == 0 {
                     has_fields = true;
                     f.write_str("impl")?;
@@ -780,7 +825,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
                     f.write_str(" {")?;
                 }
 
-                self.write_property_method(name, ty, prop, desc, f)
+                self.write_property_method(field, f)
             })?;
 
         if has_fields {
