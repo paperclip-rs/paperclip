@@ -4,7 +4,7 @@
 //! API objects, their builders, impls, etc.
 
 use super::RUST_KEYWORDS;
-use crate::v2::models::HttpMethod;
+use crate::v2::models::{HttpMethod, ParameterIn};
 use heck::{CamelCase, SnekCase};
 use regex::{Captures, Regex};
 
@@ -55,6 +55,8 @@ pub struct OpRequirement {
     pub params: Vec<Parameter>,
     /// Whether the object itself is required (in body) for this operation.
     pub body_required: bool,
+    /// Type path for this operation's response.
+    pub response_ty_path: Option<String>,
 }
 
 /// Represents some parameter somewhere (header, path, query, etc.).
@@ -68,6 +70,8 @@ pub struct Parameter {
     pub ty_path: String,
     /// Whether this parameter is required.
     pub required: bool,
+    /// Where the parameter lives.
+    pub presence: ParameterIn,
 }
 
 /// Represents a struct field.
@@ -127,11 +131,14 @@ impl ApiObject {
     pub fn builders<'a>(
         &'a self,
         helper_module_prefix: &'a str,
+        base_path: &'a str,
     ) -> Box<dyn Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
         let main_builder = ApiObjectBuilder {
             idx: 0,
             multiple_builders_exist: false,
             helper_module_prefix,
+            base_path,
+            rel_path: None,
             description: None,
             object: &self.name,
             method: None,
@@ -140,6 +147,7 @@ impl ApiObject {
             fields: &self.fields,
             global_params: &[],
             local_params: &[],
+            response: None,
         };
 
         let count = self
@@ -150,9 +158,9 @@ impl ApiObject {
 
         let path_iter = self
             .paths
-            .values()
+            .iter()
             .enumerate()
-            .flat_map(move |(idx, path_ops)| {
+            .flat_map(move |(idx, (path, path_ops))| {
                 path_ops
                     .req
                     .iter()
@@ -160,6 +168,8 @@ impl ApiObject {
                         idx,
                         multiple_builders_exist: count > 1,
                         helper_module_prefix,
+                        base_path,
+                        rel_path: Some(path),
                         description: req.description.as_ref().map(String::as_str),
                         object: &self.name,
                         op_id: req.id.as_ref().map(String::as_str),
@@ -168,6 +178,7 @@ impl ApiObject {
                         fields: &self.fields,
                         global_params: &path_ops.params,
                         local_params: &req.params,
+                        response: req.response_ty_path.as_ref().map(String::as_str),
                     })
             });
 
@@ -320,6 +331,8 @@ impl<'a> ApiObjectImpl<'a> {
 pub struct ApiObjectBuilder<'a> {
     idx: usize,
     multiple_builders_exist: bool,
+    base_path: &'a str,
+    rel_path: Option<&'a str>,
     helper_module_prefix: &'a str,
     op_id: Option<&'a str>,
     method: Option<HttpMethod>,
@@ -329,6 +342,7 @@ pub struct ApiObjectBuilder<'a> {
     fields: &'a [ObjectField],
     global_params: &'a [Parameter],
     local_params: &'a [Parameter],
+    response: Option<&'a str>,
 }
 
 /// Represents a Rust struct field (could be actual object field or a parameter).
@@ -347,6 +361,8 @@ pub(super) struct StructField<'a> {
     /// Children fields needed for this field. If they exist, then we
     /// switch to requiring a builder.
     pub strict_children: &'a [String],
+    /// Location of the parameter (if it is a parameter).
+    pub param_loc: Option<ParameterIn>,
 }
 
 impl<'a> ApiObjectBuilder<'a> {
@@ -390,19 +406,19 @@ impl<'a> ApiObjectBuilder<'a> {
     // FIXME: This could be a singleton?
     pub(super) fn struct_fields_iter(&self) -> impl Iterator<Item = StructField<'a>> + 'a {
         let body_required = self.body_required;
-        let field_iter = self.fields.iter().map(move |field| {
-            (
-                field.name.as_str(),
-                field.ty_path.as_str(),
-                // We "require" the object fields only if the object itself is required.
-                if body_required && field.is_required {
-                    Property::RequiredField
-                } else {
-                    Property::OptionalField
-                },
-                field.description.as_ref().map(String::as_str),
-                &*field.children_req,
-            )
+        let field_iter = self.fields.iter().map(move |field| StructField {
+            name: field.name.as_str(),
+            ty: field.ty_path.as_str(),
+            // We "require" the object fields only if the object itself is required.
+            prop: if body_required && field.is_required {
+                Property::RequiredField
+            } else {
+                Property::OptionalField
+            },
+            desc: field.description.as_ref().map(String::as_str),
+            strict_children: &*field.children_req,
+            param_loc: None,
+            overridden: false,
         });
 
         let param_iter = self
@@ -417,29 +433,31 @@ impl<'a> ApiObjectBuilder<'a> {
                     Some(None)
                 } else {
                     set.insert(&param.name);
-                    Some(Some((
-                        param.name.as_str(),
-                        param.ty_path.as_str(),
-                        if param.required {
+                    Some(Some(StructField {
+                        name: param.name.as_str(),
+                        ty: param.ty_path.as_str(),
+                        prop: if param.required {
                             Property::RequiredParam
                         } else {
                             Property::OptionalParam
                         },
-                        param.description.as_ref().map(String::as_str),
-                        &[] as &[_],
-                    )))
+                        desc: param.description.as_ref().map(String::as_str),
+                        strict_children: &[] as &[_],
+                        param_loc: Some(param.presence),
+                        overridden: false,
+                    }))
                 }
             })
             .filter_map(|p| p);
 
         let mut fields = vec![];
         // Check parameter-field collisions.
-        for (name, ty, prop, desc, strict_children) in param_iter.chain(field_iter) {
+        for field in param_iter.chain(field_iter) {
             if let Some(v) = fields
                 .iter_mut()
-                .find(|f: &&mut StructField<'_>| f.name == name)
+                .find(|f: &&mut StructField<'_>| f.name == field.name)
             {
-                if v.ty == ty {
+                if v.ty == field.ty {
                     v.overridden = true;
                 }
 
@@ -448,14 +466,7 @@ impl<'a> ApiObjectBuilder<'a> {
                 continue;
             }
 
-            fields.push(StructField {
-                name,
-                ty,
-                prop,
-                desc,
-                overridden: false,
-                strict_children,
-            });
+            fields.push(field);
         }
 
         fields.into_iter()
@@ -531,17 +542,20 @@ impl<'a> ApiObjectBuilder<'a> {
                 match params {
                     TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
+                        f.write_str("generics::")?;
+                        f.write_str(&field.name.to_camel_case())?;
+                        return f.write_str("Exists");
+                    }
+                    TypeParameters::ChangeAll => {
+                        f.write_str(self.helper_module_prefix)?;
+                        f.write_str("generics::")?;
                         f.write_str(&field.name.to_camel_case())?;
                         return f.write_str("Exists");
                     }
                     TypeParameters::ReplaceAll => {
                         f.write_str(self.helper_module_prefix)?;
+                        f.write_str("generics::")?;
                         f.write_str("Missing")?;
-                    }
-                    TypeParameters::ChangeAll => {
-                        f.write_str(self.helper_module_prefix)?;
-                        f.write_str(&field.name.to_camel_case())?;
-                        return f.write_str("Exists");
                     }
                     _ => (),
                 }
@@ -629,6 +643,7 @@ where
                     }
 
                     f.write_str(self.0.helper_module_prefix)?;
+                    f.write_str("generics::")?;
                     f.write_str(&n.to_camel_case())?;
                     f.write_str("Exists")
                 })?;
@@ -659,6 +674,101 @@ where
         }
 
         Ok(())
+    }
+
+    /// Writes the `Sendable` trait impl for this builder (if needed).
+    fn write_sendable_impl_if_needed<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        let (path, method) = match (self.0.rel_path, self.0.method) {
+            (Some(p), Some(m)) => (p, m),
+            _ => return Ok(()),
+        };
+
+        let needs_container = self.0.needs_container();
+        f.write_str("\nimpl ")?;
+        f.write_str(self.0.helper_module_prefix)?;
+        f.write_str("client::Sendable for ")?;
+        self.0.write_name(f)?;
+        self.0
+            .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+        f.write_str(" {\n    type Output = ")?;
+        if let Some(resp) = self.0.response {
+            f.write_str(resp)?;
+        } else {
+            f.write_str(self.0.object)?;
+        }
+
+        f.write_str(";\n\n    const METHOD: reqwest::Method = reqwest::Method::")?;
+        f.write_str(&method.to_string().to_uppercase())?;
+        f.write_str(";\n\n    fn path_url(&self) -> String {\n        ")?;
+        f.write_str("format!(\"")?;
+        f.write_str(self.0.base_path)?;
+        f.write_str(path)?;
+        f.write_str("\"")?;
+
+        self.0
+            .struct_fields_iter()
+            .filter(|f| f.param_loc == Some(ParameterIn::Path))
+            .try_for_each(|field| {
+                let name = field.name.to_snek_case();
+                f.write_str(", ")?;
+                f.write_str(&name)?;
+                f.write_str("=self.")?;
+                if needs_container {
+                    f.write_str("inner.")?;
+                }
+
+                f.write_str("param_")?;
+                f.write_str(&name)?;
+                f.write_str(".as_ref().expect(\"missing ")?;
+                f.write_str("parameter ")?;
+                f.write_str(&name)?;
+                f.write_str("?\")")
+            })?;
+
+        f.write_str(")\n    }")?;
+
+        let mut query = String::new();
+        self.0.struct_fields_iter().filter(|f| f.param_loc.is_some()).enumerate().try_for_each(|(i, field)| {
+            if i == 0 {
+                f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {")?;
+                f.write_str("\n        req")?;
+                if self.0.body_required {
+                    f.write_str("\n        .json(&self.")?;
+                    if needs_container {
+                        f.write_str("inner.")?;
+                    }
+
+                    f.write_str("body)")?;
+                }
+            }
+
+            if let Some(ParameterIn::Query) = field.param_loc {
+                if !query.is_empty() {
+                    query.push_str(", ");
+                }
+
+                write!(query, "\n            (\"{}\", self.", &field.name)?;
+                if needs_container {
+                    query.push_str("inner.");
+                }
+
+                let name = field.name.to_snek_case();
+                write!(query, "param_{name}.as_ref().map(std::string::ToString::to_string))", name=name)?;
+            }
+
+            Ok(())
+        })?;
+
+        if !query.is_empty() {
+            f.write_str("\n        .query(&[")?;
+            f.write_str(&query)?;
+            f.write_str("\n        ])\n    }")?;
+        }
+
+        f.write_str("\n}\n")
     }
 
     /// Writes the property-related methods to the given formatter.
@@ -944,7 +1054,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
             f.write_str("}\n")?;
         }
 
-        Ok(())
+        self.write_sendable_impl_if_needed(f)
     }
 }
 

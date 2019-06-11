@@ -143,7 +143,7 @@ pub struct Response<S> {
 }
 
 /// The HTTP method used for an operation.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Hash, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum HttpMethod {
     Get,

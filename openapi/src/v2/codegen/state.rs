@@ -17,6 +17,8 @@ pub struct EmitterState {
     pub working_dir: PathBuf,
     /// Namespace separation string.
     pub ns_sep: &'static str,
+    /// Base path for API.
+    pub base_path: &'static str,
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
     /// Holds generated struct definitions for leaf modules.
@@ -84,7 +86,7 @@ impl EmitterState {
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
         // FIXME: Fix this when we support custom prefixes.
         let module_prefix = match &*self.root_module.borrow() {
-            Some(p) => format!("crate::{}::generics::", p),
+            Some(p) => format!("crate::{}::", p),
             None => {
                 error!("No root module to generate builders.");
                 return Ok(());
@@ -97,7 +99,7 @@ impl EmitterState {
         for (mod_path, object) in &*def_mods {
             let mut builder_content = String::new();
             let mut repr = object.impl_repr();
-            for builder in object.builders(&module_prefix) {
+            for builder in object.builders(&module_prefix, &self.base_path) {
                 builder
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
@@ -168,21 +170,22 @@ impl EmitterState {
             }
         };
 
-        let content = "
-pub mod client {
+        let deser = "resp.json::<Self::Output>().map_err(ApiError::Reqwest)";
+        let content = format!("
+pub mod client {{
     use futures::Future;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
-    pub enum ApiError {
-        #[fail(display = \"API request failed for path: {} (code: {})\", _0, _1)]
+    pub enum ApiError {{
+        #[fail(display = \"API request failed for path: {{}} (code: {{}})\", _0, _1)]
         Failure(String, reqwest::StatusCode),
-        #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
+        #[fail(display = \"An error has occurred while performing the API request: {{}}\", _0)]
         Reqwest(reqwest::Error),
-    }
+    }}
 
     /// A trait for indicating that the implementor can send an API call.
-    pub trait Sendable {
+    pub trait Sendable {{
         /// The output object from this API request.
         type Output: serde::de::DeserializeOwned + 'static;
 
@@ -196,32 +199,32 @@ pub mod client {
 
         /// Modifier for this object. Builders override this method if they
         /// wish to add query parameters, set body, etc.
-        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
+        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {{
             req
-        }
+        }}
 
         /// Sends the request and returns a future for the response object.
-        fn send(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=Self::Output, Error=ApiError>> {
-            Box::new(self.send_raw(&client).and_then(|mut resp| {
-                resp.json::<Self::Output>().map_err(ApiError::Reqwest)
-            })) as Box<_>
-        }
+        fn send(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=Self::Output, Error=ApiError>> {{
+            Box::new(self.send_raw(&client).and_then(|mut resp| {{
+                {deserializer}
+            }})) as Box<_>
+        }}
 
         /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError>> {
+        fn send_raw(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError>> {{
             let path = self.path_url();
             let req = client.request(Self::METHOD, &path);
-            Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {
-                if resp.status().is_success() {
+            Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {{
+                if resp.status().is_success() {{
                     futures::future::ok(resp)
-                } else {
+                }} else {{
                     futures::future::err(ApiError::Failure(path, resp.status()).into())
-                }
-            })) as Box<_>
-        }
-    }
-}
-".to_owned();
+                }}
+            }})) as Box<_>
+        }}
+    }}
+}}
+", deserializer=deser);
 
         self.append_contents(&content, &module)
     }
@@ -252,6 +255,7 @@ impl Default for EmitterState {
         EmitterState {
             working_dir: PathBuf::from("."),
             ns_sep: ".",
+            base_path: "https://example.com",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
             unit_types: Rc::new(RefCell::new(HashSet::new())),

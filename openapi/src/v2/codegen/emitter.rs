@@ -2,7 +2,8 @@ use super::object::{ApiObject, ObjectField, OpRequirement, Parameter};
 use super::state::EmitterState;
 use crate::error::PaperClipError;
 use crate::v2::{
-    models::{self, Api, DataType, DataTypeFormat, OperationMap, ParameterIn},
+    im::ArcRwLock,
+    models::{self, Api, DataType, DataTypeFormat, Operation, OperationMap, ParameterIn},
     Schema,
 };
 use failure::Error;
@@ -265,6 +266,12 @@ where
                             description: op.description.clone(),
                             params,
                             body_required: true,
+                            response_ty_path: if let Some(s) = self.get_2xx_response_schema(&op) {
+                                let schema = &*s.read();
+                                Some(self.build_def(schema, false)?.known_type())
+                            } else {
+                                None
+                            },
                         },
                     );
                 } else {
@@ -277,14 +284,15 @@ where
             // We haven't attached this operation to any object.
             // Let's try from the response maybe...
             if !op_addressed {
-                let mut def_mods = state.def_mods.borrow_mut();
-                for schema in op
-                    .responses
-                    .iter()
-                    .filter(|(c, _)| c.starts_with('2')) // 2xx response
-                    .filter_map(|(_, r)| r.schema.as_ref())
-                {
-                    let pat = self.def_mod_path(&*schema.read()).ok();
+                if let Some(s) = self.get_2xx_response_schema(&op) {
+                    let mut def_mods = state.def_mods.borrow_mut();
+                    let schema = &*s.read();
+                    if schema.data_type() != Some(DataType::Object) {
+                        // FIXME: Handle response types that aren't object.
+                        continue;
+                    }
+
+                    let pat = self.def_mod_path(schema).ok();
                     let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
                         Some(o) => o,
                         None => {
@@ -307,10 +315,9 @@ where
                             description: op.description.clone(),
                             params: unused_local_params,
                             body_required: false,
+                            response_ty_path: None,
                         },
                     );
-
-                    break;
                 }
             }
         }
@@ -331,6 +338,21 @@ where
         }
 
         Ok(())
+    }
+
+    /// Returns the first 2xx response schema in this operation.
+    ///
+    /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
+    fn get_2xx_response_schema<'o>(
+        &self,
+        op: &'o Operation<E::Definition>,
+    ) -> Option<&'o ArcRwLock<E::Definition>> {
+        op.responses
+            .iter()
+            .filter(|(c, _)| c.starts_with('2')) // 2xx response
+            .filter_map(|(_, r)| r.schema.as_ref())
+            .next()
+            .map(|r| &**r)
     }
 
     /// Given a bunch of resolved parameters, validate and collect a simplified version of them.
@@ -362,6 +384,7 @@ where
                 name: p.name.clone(),
                 description: p.description.clone(),
                 ty_path: ty.into(),
+                presence: p.in_,
                 // NOTE: parameter is required if it's in path
                 required: p.required || p.in_ == ParameterIn::Path,
             });
