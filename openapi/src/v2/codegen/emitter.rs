@@ -2,7 +2,7 @@ use super::object::{ApiObject, ObjectField, OpRequirement, Parameter};
 use super::state::EmitterState;
 use crate::error::PaperClipError;
 use crate::v2::{
-    models::{self, Api, DataType, DataTypeFormat, OperationMap},
+    models::{self, Api, DataType, DataTypeFormat, OperationMap, ParameterIn},
     Schema,
 };
 use failure::Error;
@@ -63,6 +63,7 @@ pub trait Emitter: Sized {
         }
 
         state.add_builders()?;
+        state.add_client_deps()?;
         state.add_deps()?;
 
         Ok(())
@@ -361,7 +362,8 @@ where
                 name: p.name.clone(),
                 description: p.description.clone(),
                 ty_path: ty.into(),
-                required: p.required,
+                // NOTE: parameter is required if it's in path
+                required: p.required || p.in_ == ParameterIn::Path,
             });
         }
 

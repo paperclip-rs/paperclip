@@ -128,21 +128,19 @@ impl ApiObject {
         &'a self,
         helper_module_prefix: &'a str,
     ) -> Box<dyn Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
-        if self.paths.is_empty() {
-            return Box::new(iter::once(ApiObjectBuilder {
-                idx: 0,
-                multiple_builders_exist: false,
-                helper_module_prefix,
-                description: None,
-                object: &self.name,
-                method: None,
-                op_id: None,
-                body_required: true,
-                fields: &self.fields,
-                global_params: &[],
-                local_params: &[],
-            })) as Box<_>;
-        }
+        let main_builder = ApiObjectBuilder {
+            idx: 0,
+            multiple_builders_exist: false,
+            helper_module_prefix,
+            description: None,
+            object: &self.name,
+            method: None,
+            op_id: None,
+            body_required: true,
+            fields: &self.fields,
+            global_params: &[],
+            local_params: &[],
+        };
 
         let count = self
             .paths
@@ -150,29 +148,30 @@ impl ApiObject {
             .flat_map(|path_ops| path_ops.req.iter())
             .count();
 
-        Box::new(
-            self.paths
-                .values()
-                .enumerate()
-                .flat_map(move |(idx, path_ops)| {
-                    path_ops
-                        .req
-                        .iter()
-                        .map(move |(&method, req)| ApiObjectBuilder {
-                            idx,
-                            multiple_builders_exist: count > 1,
-                            helper_module_prefix,
-                            description: req.description.as_ref().map(String::as_str),
-                            object: &self.name,
-                            op_id: req.id.as_ref().map(String::as_str),
-                            method: Some(method),
-                            body_required: req.body_required,
-                            fields: &self.fields,
-                            global_params: &path_ops.params,
-                            local_params: &req.params,
-                        })
-                }),
-        ) as Box<_>
+        let path_iter = self
+            .paths
+            .values()
+            .enumerate()
+            .flat_map(move |(idx, path_ops)| {
+                path_ops
+                    .req
+                    .iter()
+                    .map(move |(&method, req)| ApiObjectBuilder {
+                        idx,
+                        multiple_builders_exist: count > 1,
+                        helper_module_prefix,
+                        description: req.description.as_ref().map(String::as_str),
+                        object: &self.name,
+                        op_id: req.id.as_ref().map(String::as_str),
+                        method: Some(method),
+                        body_required: req.body_required,
+                        fields: &self.fields,
+                        global_params: &path_ops.params,
+                        local_params: &req.params,
+                    })
+            });
+
+        Box::new(iter::once(main_builder).chain(path_iter)) as Box<_>
     }
 
     /// Writes the given string (if any) as Rust documentation into

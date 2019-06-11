@@ -158,6 +158,74 @@ impl EmitterState {
         self.append_contents(&content, &module)
     }
 
+    /// Once the builders have been added, we can add API client dependencies.
+    pub(crate) fn add_client_deps(&self) -> Result<(), Error> {
+        let module = match &*self.root_module.borrow() {
+            Some(p) => self.working_dir.join(p).join("mod.rs"),
+            None => {
+                error!("No root module to generate client deps.");
+                return Ok(());
+            }
+        };
+
+        let content = "
+pub mod client {
+    use futures::Future;
+
+    /// Common API errors.
+    #[derive(Debug, Fail)]
+    pub enum ApiError {
+        #[fail(display = \"API request failed for path: {} (code: {})\", _0, _1)]
+        Failure(String, reqwest::StatusCode),
+        #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
+        Reqwest(reqwest::Error),
+    }
+
+    /// A trait for indicating that the implementor can send an API call.
+    pub trait Sendable {
+        /// The output object from this API request.
+        type Output: serde::de::DeserializeOwned + 'static;
+
+        /// HTTP method used by this call.
+        const METHOD: reqwest::Method;
+
+        /// URL for this API call.
+        ///
+        /// **NOTE:** This URL [must be parse'able](https://docs.rs/url/*/url/struct.Url.html#method.parse).
+        fn path_url(&self) -> String;
+
+        /// Modifier for this object. Builders override this method if they
+        /// wish to add query parameters, set body, etc.
+        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
+            req
+        }
+
+        /// Sends the request and returns a future for the response object.
+        fn send(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=Self::Output, Error=ApiError>> {
+            Box::new(self.send_raw(&client).and_then(|mut resp| {
+                resp.json::<Self::Output>().map_err(ApiError::Reqwest)
+            })) as Box<_>
+        }
+
+        /// Convenience method for returning a raw response after sending a request.
+        fn send_raw(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError>> {
+            let path = self.path_url();
+            let req = client.request(Self::METHOD, &path);
+            Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {
+                if resp.status().is_success() {
+                    futures::future::ok(resp)
+                } else {
+                    futures::future::err(ApiError::Failure(path, resp.status()).into())
+                }
+            })) as Box<_>
+        }
+    }
+}
+".to_owned();
+
+        self.append_contents(&content, &module)
+    }
+
     /// Writes the given contents to a file at the given path (truncating the file if it exists).
     fn write_contents(&self, contents: &str, path: &Path) -> Result<(), Error> {
         let mut fd = OpenOptions::new()
