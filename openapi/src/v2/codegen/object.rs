@@ -18,7 +18,7 @@ lazy_static! {
 }
 
 /// Represents a (simplified) Rust struct.
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct ApiObject {
     /// Name of the struct (camel-cased).
     pub name: String,
@@ -33,7 +33,7 @@ pub struct ApiObject {
 }
 
 /// Operations in a path.
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct PathOps {
     /// Operations for this object and their associated requirements.
     pub req: BTreeMap<HttpMethod, OpRequirement>,
@@ -93,6 +93,9 @@ pub struct ObjectField {
     /// or `Vec<BTreeMap<String, Vec<BTreeMap<String, T>>>>`, then "deepest" child
     /// type is T (as long as it's not a `Vec` or `BTreeMap`).
     ///
+    /// To understand why we're doing this, see `ApiObjectBuilderImpl::write_builder_ty`
+    /// and `ApiObjectBuilderImpl::write_value_map` functions.
+    ///
     /// Yours sincerely,
     /// Someone who's bad at naming.
     pub children_req: Vec<String>,
@@ -105,12 +108,9 @@ impl ApiObject {
         S: Into<String>,
     {
         ApiObject {
-            // NOTE: Even though it's empty, it'll be replaced by the emitter.
-            path: String::new(),
-            description: None,
             name: name.into(),
-            fields: vec![],
-            paths: BTreeMap::new(),
+            // NOTE: Even though `path` is empty, it'll be replaced by the emitter.
+            ..Default::default()
         }
     }
 
@@ -131,30 +131,15 @@ impl ApiObject {
     pub fn builders<'a>(
         &'a self,
         helper_module_prefix: &'a str,
-        base_path: &'a str,
     ) -> Box<dyn Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
+        // Always emit a builder for API objects (regardless of operations).
         let main_builder = ApiObjectBuilder {
-            idx: 0,
-            multiple_builders_exist: false,
             helper_module_prefix,
-            base_path,
-            rel_path: None,
-            description: None,
             object: &self.name,
-            method: None,
-            op_id: None,
             body_required: true,
             fields: &self.fields,
-            global_params: &[],
-            local_params: &[],
-            response: None,
+            ..Default::default()
         };
-
-        let count = self
-            .paths
-            .values()
-            .flat_map(|path_ops| path_ops.req.iter())
-            .count();
 
         let path_iter = self
             .paths
@@ -166,9 +151,12 @@ impl ApiObject {
                     .iter()
                     .map(move |(&method, req)| ApiObjectBuilder {
                         idx,
-                        multiple_builders_exist: count > 1,
+                        multiple_builders_exist: {
+                            let mut iter =
+                                self.paths.values().flat_map(|path_ops| path_ops.req.iter());
+                            iter.next().is_some() && iter.next().is_some()
+                        },
                         helper_module_prefix,
-                        base_path,
                         rel_path: Some(path),
                         description: req.description.as_ref().map(String::as_str),
                         object: &self.name,
@@ -239,12 +227,14 @@ impl<'a> ApiObjectImpl<'a> {
                 temp.write_str("\n")?;
             }
 
+            // All builder constructor functions are inlined.
             temp.write_str("    #[inline]\n    pub fn ")?;
             if let Some(name) = builder.con_fn_name() {
                 temp.write_str(&name)?;
                 ApiObject::write_docs(builder.description.as_ref(), f, 1)?;
             } else {
-                // If we don't know, then we go for a simple object builder.
+                // If we can't generate a name of a builder, then we go for a
+                // simple object builder.
                 f.write_str("\n    /// Create a builder for this object.")?;
                 temp.write_str("builder")?;
             }
@@ -280,6 +270,7 @@ impl<'a> ApiObjectImpl<'a> {
                     f.write_str("_")?;
                     f.write_str(&field.name.to_snek_case())?;
                     f.write_str(": core::marker::PhantomData,")?;
+                // If we have a container, then we store parameters inside that.
                 } else if field.prop.is_parameter() && !needs_container {
                     f.write_str("\n            param_")?;
                     f.write_str(&field.name.to_snek_case())?;
@@ -327,11 +318,10 @@ impl<'a> ApiObjectImpl<'a> {
 }
 
 /// Represents a builder struct for some API object.
-#[derive(Debug, Clone)]
+#[derive(Default, Debug, Clone)]
 pub struct ApiObjectBuilder<'a> {
     idx: usize,
     multiple_builders_exist: bool,
-    base_path: &'a str,
     rel_path: Option<&'a str>,
     helper_module_prefix: &'a str,
     op_id: Option<&'a str>,
@@ -363,6 +353,14 @@ pub(super) struct StructField<'a> {
     pub strict_children: &'a [String],
     /// Location of the parameter (if it is a parameter).
     pub param_loc: Option<ParameterIn>,
+}
+
+/// See `ApiObjectBuilder::write_generics_if_necessary`
+enum TypeParameters<'a> {
+    Generic,
+    ChangeOne(&'a str),
+    ReplaceAll,
+    ChangeAll,
 }
 
 impl<'a> ApiObjectBuilder<'a> {
@@ -540,18 +538,21 @@ impl<'a> ApiObjectBuilder<'a> {
                 }
 
                 match params {
+                    // If the name matches, then change that unit type to `{Name}Exists`
                     TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
                         f.write_str(&field.name.to_camel_case())?;
                         return f.write_str("Exists");
                     }
+                    // All names should be changed to `{Name}Exists`
                     TypeParameters::ChangeAll => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
                         f.write_str(&field.name.to_camel_case())?;
                         return f.write_str("Exists");
                     }
+                    // All names should be reset to `Missing{Name}`
                     TypeParameters::ReplaceAll => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
@@ -615,6 +616,12 @@ where
     'b: 'a,
 {
     /// Builds the method parameter type using the actual field type.
+    ///
+    /// For example, if a field is `Vec<T>`, then we replace it (in builder method)
+    /// with `impl Iterator<Item=Into<T>>`, and if we had `BTreeMap<String, T>`,
+    /// then we replace it with `impl Iterator<Item = (String, T)>` and
+    /// we do this... recursively.
+    // FIXME: Investigate if there's a better way.
     fn write_builder_ty<F>(&self, ty: &str, req: &[String], f: &mut F) -> fmt::Result
     where
         F: Write,
@@ -655,6 +662,12 @@ where
     }
 
     /// Builds the value conversion block using the actual field type.
+    ///
+    /// Once we get the value from a builder method (whose type is
+    /// generated by `Self::write_builder_ty`), we need to convert it
+    /// appropriately. So, whenever we encounter collections, we recursively
+    /// collect the iterator items and if it's not a collection, we go for
+    /// `value.into()`.
     fn write_value_map<F>(ty: &str, f: &mut F) -> fmt::Result
     where
         F: Write,
@@ -695,6 +708,7 @@ where
             .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
         f.write_str(" {\n    type Output = ")?;
         if let Some(resp) = self.0.response {
+            // If we've acquired a response type, then write that.
             f.write_str(resp)?;
         } else {
             f.write_str(self.0.object)?;
@@ -702,70 +716,82 @@ where
 
         f.write_str(";\n\n    const METHOD: reqwest::Method = reqwest::Method::")?;
         f.write_str(&method.to_string().to_uppercase())?;
-        f.write_str(";\n\n    fn path_url(&self) -> String {\n        ")?;
-        f.write_str("format!(\"")?;
-        f.write_str(self.0.base_path)?;
-        f.write_str(path)?;
-        f.write_str("\"")?;
+        f.write_str(";\n\n    fn rel_path(&self) -> std::borrow::Cow<'static, str> {\n        ")?;
 
-        self.0
+        // Determine if we need a `&'static str` or `String`
+        let mut path_items = String::new();
+        self.0 // path stuff goes directly
             .struct_fields_iter()
             .filter(|f| f.param_loc == Some(ParameterIn::Path))
             .try_for_each(|field| {
                 let name = field.name.to_snek_case();
-                f.write_str(", ")?;
-                f.write_str(&name)?;
-                f.write_str("=self.")?;
+                write!(path_items, ", {}=self.", name)?;
+                if needs_container {
+                    path_items.write_str("inner.")?;
+                }
+
+                write!(
+                    path_items,
+                    "param_{name}.as_ref().expect(\"missing parameter {name}?\")",
+                    name = name
+                )
+            })?;
+
+        if path_items.is_empty() {
+            write!(f, "\"{}\".into()", path)?;
+        } else {
+            write!(f, "format!(\"{}\"{}).into()", path, path_items)?;
+        }
+
+        f.write_str("\n    }")?;
+
+        // Check for whether the `modify` method needs to be added (i.e. body and other params).
+        let mut query = String::new();
+        self.0
+            .struct_fields_iter()
+            .filter(|f| f.param_loc.is_some())
+            .try_for_each(|field| {
+                if let Some(ParameterIn::Query) = field.param_loc {
+                    if !query.is_empty() {
+                        query.push_str(", ");
+                    }
+
+                    write!(query, "\n            (\"{}\", self.", &field.name)?;
+                    if needs_container {
+                        query.push_str("inner.");
+                    }
+
+                    let name = field.name.to_snek_case();
+                    write!(
+                        query,
+                        "param_{name}.as_ref().map(std::string::ToString::to_string))",
+                        name = name
+                    )?;
+                }
+
+                Ok(())
+            })?;
+
+        if self.0.body_required || !query.is_empty() {
+            f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {")?;
+            f.write_str("\n        req")?;
+
+            if self.0.body_required {
+                f.write_str("\n        .json(&self.")?;
                 if needs_container {
                     f.write_str("inner.")?;
                 }
 
-                f.write_str("param_")?;
-                f.write_str(&name)?;
-                f.write_str(".as_ref().expect(\"missing ")?;
-                f.write_str("parameter ")?;
-                f.write_str(&name)?;
-                f.write_str("?\")")
-            })?;
-
-        f.write_str(")\n    }")?;
-
-        let mut query = String::new();
-        self.0.struct_fields_iter().filter(|f| f.param_loc.is_some()).enumerate().try_for_each(|(i, field)| {
-            if i == 0 {
-                f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {")?;
-                f.write_str("\n        req")?;
-                if self.0.body_required {
-                    f.write_str("\n        .json(&self.")?;
-                    if needs_container {
-                        f.write_str("inner.")?;
-                    }
-
-                    f.write_str("body)")?;
-                }
+                f.write_str("body)")?;
             }
 
-            if let Some(ParameterIn::Query) = field.param_loc {
-                if !query.is_empty() {
-                    query.push_str(", ");
-                }
-
-                write!(query, "\n            (\"{}\", self.", &field.name)?;
-                if needs_container {
-                    query.push_str("inner.");
-                }
-
-                let name = field.name.to_snek_case();
-                write!(query, "param_{name}.as_ref().map(std::string::ToString::to_string))", name=name)?;
+            if !query.is_empty() {
+                f.write_str("\n        .query(&[")?;
+                f.write_str(&query)?;
+                f.write_str("\n        ])")?;
             }
 
-            Ok(())
-        })?;
-
-        if !query.is_empty() {
-            f.write_str("\n        .query(&[")?;
-            f.write_str(&query)?;
-            f.write_str("\n        ])\n    }")?;
+            f.write_str("\n    }")?;
         }
 
         f.write_str("\n}\n")
@@ -787,6 +813,7 @@ where
 
         ApiObject::write_docs(field.desc, f, 1)?;
 
+        // Inline property methods.
         f.write_str("    #[inline]\n    pub fn ")?;
         if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
             f.write_str("r#")?;
@@ -812,8 +839,8 @@ where
 
         if prop_is_parameter {
             f.write_str("param_")?;
+        // If it's not a parameter, then it's definitely a body field.
         } else if self.0.body_required {
-            // parameter won't be in body, for sure.
             f.write_str("body.")?;
         }
 
@@ -854,6 +881,7 @@ where
         }
 
         f.write_str(";\n        ")?;
+        // We need to transmute only if there's a required field/parameter.
         if prop_is_required {
             f.write_str("unsafe { std::mem::transmute(self) }")?;
         } else {
@@ -864,13 +892,7 @@ where
     }
 }
 
-enum TypeParameters<'a> {
-    Generic,
-    ChangeOne(&'a str),
-    ReplaceAll,
-    ChangeAll,
-}
-
+/// The property we're dealing with.
 #[derive(Debug, Clone, Copy, Eq, PartialEq)]
 pub(super) enum Property {
     RequiredField,
@@ -984,6 +1006,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
             self.write_body_field_if_required(f)?;
         }
 
+        // Write struct fields and the associated markers if needed.
         self.struct_fields_iter().try_for_each(|field| {
             let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
             if needs_container {
@@ -1116,14 +1139,5 @@ impl Display for ApiObject {
         }
 
         f.write_str("}\n")
-    }
-}
-
-impl Default for PathOps {
-    fn default() -> Self {
-        PathOps {
-            req: BTreeMap::new(),
-            params: vec![],
-        }
     }
 }

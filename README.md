@@ -10,13 +10,12 @@ WIP OpenAPI code generator for type-safe compile-time checked HTTP APIs in Rust.
 The following features are supported at the moment:
 
  - Generates API objects from schemas in an OpenAPI v2 spec.
- - Generates builder structs for API objects and HTTP operations.
+ - Generates builder structs for the API objects and HTTP operations.
+ - Fulfilled builder structs send API calls and return response futures (only `application/json` is supported as of now).
 
 See the [projects](https://github.com/wafflespeanut/paperclip/projects) for tracking the features in queue.
 
 ## Motivation
-
-This project is inspired from [go-swagger](https://github.com/go-swagger/go-swagger).
 
 While [Serde](https://serde.rs/) makes it amazingly easy to write API objects, only the official codegen [supports generating proper APIs](https://github.com/swagger-api/swagger-codegen/tree/dedb5ce36d54495365da9a7d88d1e6e056cfe29f/samples/client/petstore/rust) and leverages the builder pattern for building API requests. I think it should be really easy to build type-safe APIs from OpenAPI specifications using pure Rust.
 

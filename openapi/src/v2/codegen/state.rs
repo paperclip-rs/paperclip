@@ -99,7 +99,7 @@ impl EmitterState {
         for (mod_path, object) in &*def_mods {
             let mut builder_content = String::new();
             let mut repr = object.impl_repr();
-            for builder in object.builders(&module_prefix, &self.base_path) {
+            for builder in object.builders(&module_prefix) {
                 builder
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
@@ -184,6 +184,22 @@ pub mod client {{
         Reqwest(reqwest::Error),
     }}
 
+    /// Represents an API client.
+    pub trait ApiClient {{
+        /// Base path for this API.
+        fn base_path(&self) -> &'static str {{ \"{base_path}\" }}
+
+        /// Consumes a method and a relative path and produces a request builder for a single API call.
+        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
+    }}
+
+    impl ApiClient for reqwest::r#async::Client {{
+        #[inline]
+        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {{
+            self.request(method, &(String::from(self.base_path()) + rel_path))
+        }}
+    }}
+
     /// A trait for indicating that the implementor can send an API call.
     pub trait Sendable {{
         /// The output object from this API request.
@@ -192,10 +208,10 @@ pub mod client {{
         /// HTTP method used by this call.
         const METHOD: reqwest::Method;
 
-        /// URL for this API call.
+        /// Relative URL for this API call formatted appropriately with parameter values.
         ///
-        /// **NOTE:** This URL [must be parse'able](https://docs.rs/url/*/url/struct.Url.html#method.parse).
-        fn path_url(&self) -> String;
+        /// **NOTE:** This URL **must** begin with `/`.
+        fn rel_path(&self) -> std::borrow::Cow<'static, str>;
 
         /// Modifier for this object. Builders override this method if they
         /// wish to add query parameters, set body, etc.
@@ -204,27 +220,27 @@ pub mod client {{
         }}
 
         /// Sends the request and returns a future for the response object.
-        fn send(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=Self::Output, Error=ApiError>> {{
-            Box::new(self.send_raw(&client).and_then(|mut resp| {{
+        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError>> {{
+            Box::new(self.send_raw(client).and_then(|mut resp| {{
                 {deserializer}
             }})) as Box<_>
         }}
 
         /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &reqwest::r#async::Client) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError>> {{
-            let path = self.path_url();
-            let req = client.request(Self::METHOD, &path);
+        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError>> {{
+            let rel_path = self.rel_path();
+            let req = client.request_builder(Self::METHOD, &rel_path);
             Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {{
                 if resp.status().is_success() {{
                     futures::future::ok(resp)
                 }} else {{
-                    futures::future::err(ApiError::Failure(path, resp.status()).into())
+                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status()).into())
                 }}
             }})) as Box<_>
         }}
     }}
 }}
-", deserializer=deser);
+", deserializer=deser, base_path=self.base_path);
 
         self.append_contents(&content, &module)
     }
