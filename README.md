@@ -30,7 +30,7 @@ edition = "2018"
 build = "build.rs"
 
 [dependencies]
-# NOTE: These are the crates required by the generated code!
+# Crates required by the generated code!
 failure = "0.1"
 failure_derive = "0.1"
 futures = "0.1"
@@ -105,9 +105,65 @@ fn main() {
 }
 ```
 
+## Compile-time checks?
+
+API calls often *require* some parameters. Should we miss those parameters when performing a request, either the client will produce a runtime error or the server will reject our request. Our generated client code on the other hand, uses markers to avoid this problem at compile-time.
+
+Let's change the [previous example](#srcmainrs) to fetch a service. In order to fetch a Kubernetes service, the [`name` and `namespace` parameters are required](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#read-service-v1-core).
+
+```rust
+use self::io::k8s::api::core::v1::service::Service;
+
+fn main() {
+    let client = Client::new();
+    let f = Service::read_core_v1_namespaced_service()
+        .send(&client);
+    ...
+}
+```
+
+When we compile this, we'll get an error:
+
+```
+error[E0599]: no method named `send` found for type
+`io::k8s::api::core::v1::service::ServiceGetBuilder1<
+    io::generics::MissingName,
+    io::generics::MissingNamespace
+>` in the current scope
+```
+
+We can see that the builder has been marked with `MissingName` and `MissingNamespace`. Let's try setting the name.
+
+```rust
+let f = Service::read_core_v1_namespaced_service()
+    .name("my_service")
+    .send(&client);
+```
+
+... and we'll get another error:
+
+```
+error[E0599]: no method named `send` found for type
+`io::k8s::api::core::v1::service::ServiceGetBuilder1<
+    io::generics::NameExists,
+    io::generics::MissingNamespace
+>` in the current scope
+```
+
+Now, the name exists, but the namespace is still missing. Setting the namespace like so:
+
+```rust
+let f = Service::read_core_v1_namespaced_service()
+    .name("my_service")
+    .namespace("default")
+    .send(&client);
+```
+
+And the code will compile.
+
 ## Motivation
 
-While [Serde](https://serde.rs/) makes it amazingly easy to write API objects, only the official codegen [supports generating proper APIs](https://github.com/swagger-api/swagger-codegen/tree/dedb5ce36d54495365da9a7d88d1e6e056cfe29f/samples/client/petstore/rust) and leverages the builder pattern for building API requests. I think it should be really easy to build type-safe APIs from OpenAPI specifications using pure Rust.
+While [Serde](https://serde.rs/) makes it amazingly easy to write API objects, only the official codegen [supports generating proper APIs](https://github.com/swagger-api/swagger-codegen/tree/dedb5ce36d54495365da9a7d88d1e6e056cfe29f/samples/client/petstore/rust) and leverages the builder pattern for building API requests. I think we can build better APIs using pure Rust.
 
 ## Developing locally
 
