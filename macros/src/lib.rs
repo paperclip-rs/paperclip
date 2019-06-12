@@ -1,3 +1,8 @@
+//! Convenience macros for [paperclip](https://github.com/wafflespeanut/paperclip).
+//!
+//! You shouldn't need to depend on this, because the attributes here are
+//! already exposed by paperclip.
+
 #![feature(proc_macro_diagnostic)]
 #![recursion_limit = "512"]
 
@@ -14,7 +19,7 @@ fn call_site_error_with_msg(msg: &str) -> TokenStream {
 
 /// Converts your struct to support deserializing from an OpenAPI v2
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
-/// object. This adds the necessary fields (in addition to your own fields) and implements the
+/// object ([example](https://paperclip.waffles.space/paperclip/v2/)). This adds the necessary fields (in addition to your own fields) and implements the
 /// `Schema` trait for parsing and codegen.
 #[proc_macro_attribute]
 pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {

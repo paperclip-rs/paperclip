@@ -3,6 +3,11 @@ name = "paperclip-macros"
 version = "0.1.0"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
+description = "Macros for paperclip OpenAPI codegen"
+documentation = "https://paperclip.waffles.space/paperclip_macros"
+license = "MIT OR Apache-2.0"
+homepage = "https://github.com/wafflespeanut/paperclip"
+repository = "https://github.com/wafflespeanut/paperclip"
 
 [lib]
 proc-macro = true
