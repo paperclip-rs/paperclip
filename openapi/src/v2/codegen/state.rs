@@ -1,6 +1,7 @@
 use super::object::ApiObject;
 use failure::Error;
 use heck::CamelCase;
+use itertools::Itertools;
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -53,7 +54,7 @@ impl EmitterState {
             mod_path.push("mod.rs");
 
             let mut contents = String::new();
-            for child in children {
+            for child in children.iter().sorted_by(|a, b| a.name.cmp(&b.name)) {
                 writeln!(
                     contents,
                     "

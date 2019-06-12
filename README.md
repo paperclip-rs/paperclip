@@ -1,7 +1,7 @@
 # Paperclip
 
 [![Build Status](https://api.travis-ci.org/wafflespeanut/paperclip.svg?branch=master)](https://travis-ci.org/wafflespeanut/paperclip)
-[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip_openapi)
+[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip)
 
 WIP OpenAPI code generator for type-safe compile-time checked HTTP APIs in Rust.
 
@@ -11,7 +11,7 @@ The following features are supported at the moment:
 
  - Generates API objects from schemas in an OpenAPI v2 spec.
  - Generates builder structs for the API objects and HTTP operations.
- - Fulfilled builder structs send API calls and return response futures (only `application/json` is supported as of now).
+ - Fulfilled builder structs send API calls and return response futures (only `https` and `application/json` is supported as of now).
 
 See the [projects](https://github.com/wafflespeanut/paperclip/projects) for tracking the features in queue.
 
@@ -195,4 +195,4 @@ at your option.
 
 I don't think proc macros are the right way to go for REST APIs. We need to be able to **see** the generated code somehow to identify names, fields, supported methods, etc. ([like this](https://paperclip.waffles.space/tests/test_k8s/api/)). With proc macros, you sorta have to guess.
 
-This doesn't mean you can't generate APIs in compile-time. The only difference is that you'll be using [build scripts](https://doc.rust-lang.org/cargo/reference/build-scripts.html) instead and `include!` the relevant code. That said, [we're using proc-macros](./macros) for other things.
+This doesn't mean you can't generate APIs in compile-time. The only difference is that you'll be using [build scripts](#build-script-example) instead and `include!` the relevant code. That said, [we're using proc-macros](./macros) for other things.

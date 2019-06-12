@@ -753,7 +753,7 @@ where
             .try_for_each(|field| {
                 if let Some(ParameterIn::Query) = field.param_loc {
                     if !query.is_empty() {
-                        query.push_str(", ");
+                        query.push_str(",");
                     }
 
                     write!(query, "\n            (\"{}\", self.", &field.name)?;
