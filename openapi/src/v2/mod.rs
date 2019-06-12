@@ -7,7 +7,7 @@
 //! can use the `DefaultSchema`.
 //!
 //! ```rust,no_run
-//! use paperclip_openapi::v2::{self, Api, DefaultSchema, models::Version};
+//! use paperclip::v2::{self, Api, DefaultSchema, models::Version};
 //!
 //! use std::fs::File;
 //!
@@ -29,7 +29,7 @@
 //! #[macro_use] extern crate paperclip_macros;
 //! #[macro_use] extern crate serde_derive; // NOTE: We're using serde for decoding stuff.
 //!
-//! use paperclip_openapi::v2::{self, Api};
+//! use paperclip::v2::{self, Api};
 //!
 //! use std::fs::File;
 //!
@@ -60,7 +60,7 @@
 //! find `$ref` fields and assign references to the corresponding definitions.
 //!
 //! ```rust,no_run
-//! # use paperclip_openapi::v2::{self, Api, DefaultSchema};
+//! # use paperclip::v2::{self, Api, DefaultSchema};
 //! # let api: Api<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //!
 //! let resolved = api.resolve().unwrap();
@@ -70,9 +70,9 @@
 //! emitter to emit the API into some path.
 //!
 //! ```rust,no_run
-//! # use paperclip_openapi::v2::{self, Api, DefaultSchema};
+//! # use paperclip::v2::{self, Api, DefaultSchema};
 //! # let api: Api<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
-//! use paperclip_openapi::v2::{DefaultEmitter, EmitterState, Emitter};
+//! use paperclip::v2::{DefaultEmitter, EmitterState, Emitter};
 //!
 //! let mut state = EmitterState::default();
 //! state.working_dir = "/path/to/my/crate".into();

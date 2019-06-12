@@ -46,13 +46,13 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             pub title: Option<String>,
             pub description: Option<String>,
             #[serde(rename = "type")]
-            pub data_type: Option<paperclip_openapi::v2::models::DataType>,
-            pub format: Option<paperclip_openapi::v2::models::DataTypeFormat>,
+            pub data_type: Option<paperclip::v2::models::DataType>,
+            pub format: Option<paperclip::v2::models::DataTypeFormat>,
             #[serde(default)]
-            pub properties: std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<#name>>,
-            pub items: Option<paperclip_openapi::v2::models::SchemaRepr<#name>>,
+            pub properties: std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<#name>>,
+            pub items: Option<paperclip::v2::models::SchemaRepr<#name>>,
             #[serde(rename = "additionalProperties")]
-            pub extra_props: Option<paperclip_openapi::v2::models::SchemaRepr<#name>>,
+            pub extra_props: Option<paperclip::v2::models::SchemaRepr<#name>>,
             #[serde(default)]
             pub required: std::collections::BTreeSet<String>,
             #[serde(skip)]
@@ -67,7 +67,7 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let gen = quote! {
         #item_ast
 
-        impl #impl_generics paperclip_openapi::v2::Schema for #name #ty_generics #where_clause {
+        impl #impl_generics paperclip::v2::Schema for #name #ty_generics #where_clause {
             #[inline]
             fn name(&self) -> Option<&str> {
                 self.name.as_ref().map(String::as_str)
@@ -99,37 +99,37 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn data_type(&self) -> Option<paperclip_openapi::v2::models::DataType> {
+            fn data_type(&self) -> Option<paperclip::v2::models::DataType> {
                 self.data_type
             }
 
             #[inline]
-            fn format(&self) -> Option<&paperclip_openapi::v2::models::DataTypeFormat> {
+            fn format(&self) -> Option<&paperclip::v2::models::DataTypeFormat> {
                 self.format.as_ref()
             }
 
             #[inline]
-            fn items(&self) -> Option<&paperclip_openapi::v2::models::SchemaRepr<Self>> {
+            fn items(&self) -> Option<&paperclip::v2::models::SchemaRepr<Self>> {
                 self.items.as_ref()
             }
 
             #[inline]
-            fn items_mut(&mut self) -> Option<&mut paperclip_openapi::v2::models::SchemaRepr<Self>> {
+            fn items_mut(&mut self) -> Option<&mut paperclip::v2::models::SchemaRepr<Self>> {
                 self.items.as_mut()
             }
 
             #[inline]
-            fn additional_properties(&self) -> Option<&paperclip_openapi::v2::models::SchemaRepr<Self>> {
+            fn additional_properties(&self) -> Option<&paperclip::v2::models::SchemaRepr<Self>> {
                 self.extra_props.as_ref()
             }
 
             #[inline]
-            fn additional_properties_mut(&mut self) -> Option<&mut paperclip_openapi::v2::models::SchemaRepr<Self>> {
+            fn additional_properties_mut(&mut self) -> Option<&mut paperclip::v2::models::SchemaRepr<Self>> {
                 self.extra_props.as_mut()
             }
 
             #[inline]
-            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<Self>>> {
+            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<Self>>> {
                 if self.properties.is_empty() {
                     None
                 } else {
@@ -138,7 +138,7 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip_openapi::v2::models::SchemaRepr<Self>>> {
+            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<Self>>> {
                 if self.properties.is_empty() {
                     None
                 } else {

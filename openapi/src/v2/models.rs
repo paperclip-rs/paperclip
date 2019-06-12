@@ -1,8 +1,7 @@
 //! Models used by OpenAPI v2.
 
 use super::{im::ArcRwLock, Schema};
-use crate as paperclip_openapi;
-use crate::error::PaperClipError; // hack for proc macro
+use crate::error::PaperClipError;
 use failure::Error;
 
 use std::collections::BTreeMap;
@@ -53,6 +52,8 @@ pub struct Api<S> {
     pub definitions: BTreeMap<String, SchemaRepr<S>>,
     pub paths: BTreeMap<String, OperationMap<S>>,
 }
+
+use crate as paperclip; // hack for proc macro
 
 /// Default schema if your schema doesn't have any custom fields.
 ///

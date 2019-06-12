@@ -14,3 +14,4 @@ mod error;
 pub mod v2;
 
 pub use error::{PaperClipError, PaperClipResult};
+pub use paperclip_macros::api_v2_schema;

@@ -1,11 +1,10 @@
 #[macro_use]
 extern crate lazy_static;
-#[macro_use]
-extern crate paperclip_macros;
+use paperclip::api_v2_schema;
 #[macro_use]
 extern crate serde_derive;
 
-use paperclip_openapi::v2::{
+use paperclip::v2::{
     self,
     codegen::{DefaultEmitter, Emitter, EmitterState},
     models::{Api, HttpMethod, Version},
@@ -24,7 +23,7 @@ lazy_static! {
     };
     static ref CODEGEN: () = {
         env_logger::builder()
-            .filter(Some("paperclip_openapi"), log::LevelFilter::Info)
+            .filter(Some("paperclip"), log::LevelFilter::Info)
             .init();
         let mut state = EmitterState::default();
         state.working_dir = (&*ROOT).into();
@@ -32,7 +31,7 @@ lazy_static! {
         state.working_dir.push("test_k8s");
 
         let emitter = DefaultEmitter::from(state);
-        emitter.generate(&SCHEMA).expect("creating definitions");
+        emitter.generate(&SCHEMA).expect("codegen");
     };
 }
 

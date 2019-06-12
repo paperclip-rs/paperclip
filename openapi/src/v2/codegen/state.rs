@@ -6,6 +6,7 @@ use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 use std::fs::OpenOptions;
+use std::hash::{Hash, Hasher};
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
@@ -17,16 +18,27 @@ pub struct EmitterState {
     pub working_dir: PathBuf,
     /// Namespace separation string.
     pub ns_sep: &'static str,
+    /// Module prefix for using in generated code.
+    pub mod_prefix: &'static str,
     /// Base path for API.
-    pub base_path: &'static str,
+    pub base_url: &'static str,
     /// Maps parent mod to immediate children. Used for declaring modules.
-    pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<String>>>>,
+    pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<ChildModule>>>>,
     /// Holds generated struct definitions for leaf modules.
     pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
     /// Unit types used by builders.
     unit_types: Rc<RefCell<HashSet<String>>>,
     /// Root module emitted by codegen.
     root_module: Rc<RefCell<Option<String>>>,
+}
+
+/// Indicates a child module in codegen working directory.
+#[derive(Debug, Clone, Eq)]
+pub(super) struct ChildModule {
+    /// Name of this child module.
+    pub name: String,
+    /// Whether this module is the final child.
+    pub is_final: bool,
 }
 
 impl EmitterState {
@@ -42,9 +54,19 @@ impl EmitterState {
 
             let mut contents = String::new();
             for child in children {
-                contents.push_str("pub mod ");
-                contents.push_str(child);
-                contents.push_str(";\n");
+                writeln!(
+                    contents,
+                    "
+pub mod {name} {{
+    include!(\"./{path}\");
+}}",
+                    name = child.name,
+                    path = if child.is_final {
+                        child.name.clone() + ".rs"
+                    } else {
+                        child.name.clone() + "/mod.rs"
+                    }
+                )?;
             }
 
             self.write_contents(&contents, &mod_path)?;
@@ -86,7 +108,7 @@ impl EmitterState {
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
         // FIXME: Fix this when we support custom prefixes.
         let module_prefix = match &*self.root_module.borrow() {
-            Some(p) => format!("crate::{}::", p),
+            Some(p) => format!("{}::{}::", self.mod_prefix.trim_matches(':'), p),
             None => {
                 error!("No root module to generate builders.");
                 return Ok(());
@@ -187,7 +209,7 @@ pub mod client {{
     /// Represents an API client.
     pub trait ApiClient {{
         /// Base path for this API.
-        fn base_path(&self) -> &'static str {{ \"{base_path}\" }}
+        fn base_url(&self) -> &'static str {{ \"{base_url}\" }}
 
         /// Consumes a method and a relative path and produces a request builder for a single API call.
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
@@ -196,14 +218,14 @@ pub mod client {{
     impl ApiClient for reqwest::r#async::Client {{
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {{
-            self.request(method, &(String::from(self.base_path()) + rel_path))
+            self.request(method, &(String::from(self.base_url()) + rel_path))
         }}
     }}
 
     /// A trait for indicating that the implementor can send an API call.
     pub trait Sendable {{
         /// The output object from this API request.
-        type Output: serde::de::DeserializeOwned + 'static;
+        type Output: serde::de::DeserializeOwned + Send + 'static;
 
         /// HTTP method used by this call.
         const METHOD: reqwest::Method;
@@ -220,14 +242,14 @@ pub mod client {{
         }}
 
         /// Sends the request and returns a future for the response object.
-        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError>> {{
+        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> {{
             Box::new(self.send_raw(client).and_then(|mut resp| {{
                 {deserializer}
             }})) as Box<_>
         }}
 
         /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError>> {{
+        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError> + Send> {{
             let rel_path = self.rel_path();
             let req = client.request_builder(Self::METHOD, &rel_path);
             Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {{
@@ -240,7 +262,7 @@ pub mod client {{
         }}
     }}
 }}
-", deserializer=deser, base_path=self.base_path);
+", deserializer=deser, base_url=self.base_url);
 
         self.append_contents(&content, &module)
     }
@@ -270,12 +292,25 @@ impl Default for EmitterState {
     fn default() -> EmitterState {
         EmitterState {
             working_dir: PathBuf::from("."),
+            mod_prefix: "crate::",
             ns_sep: ".",
-            base_path: "https://example.com",
+            base_url: "https://example.com",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
             unit_types: Rc::new(RefCell::new(HashSet::new())),
             root_module: Rc::new(RefCell::new(None)),
         }
+    }
+}
+
+impl Hash for ChildModule {
+    fn hash<H: Hasher>(&self, state: &mut H) {
+        self.name.hash(state);
+    }
+}
+
+impl PartialEq for ChildModule {
+    fn eq(&self, other: &Self) -> bool {
+        self.name == other.name
     }
 }

@@ -1,5 +1,5 @@
 use super::object::{ApiObject, ObjectField, OpRequirement, Parameter};
-use super::state::EmitterState;
+use super::state::{ChildModule, EmitterState};
 use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
@@ -183,18 +183,21 @@ where
                 .file_stem()
                 .ok_or_else(|| PaperClipError::InvalidDefinitionPath(mod_path.clone()))?,
         );
-        // Get the relative path to the parent dir.
+        // Get the relative path to the parent.
         let rel_path = full_path
             .strip_prefix(&state.working_dir)
             .map_err(|_| PaperClipError::InvalidDefinitionPath(full_path.clone()))?;
 
         // Gather the immediate parent-children pairs for module declarations.
         let mut mods = state.mod_children.borrow_mut();
-        for path in rel_path.ancestors() {
+        for (i, path) in rel_path.ancestors().enumerate() {
             match (path.parent(), path.file_name()) {
                 (Some(parent), Some(name)) if parent.parent().is_some() => {
                     let entry = mods.entry(parent.into()).or_insert_with(HashSet::new);
-                    entry.insert(name.to_string_lossy().into_owned());
+                    entry.insert(ChildModule {
+                        name: name.to_string_lossy().into_owned(),
+                        is_final: i == 0,
+                    });
                 }
                 _ => (),
             }
@@ -419,9 +422,7 @@ where
 
         if !define {
             // Use absolute paths to save some pain.
-            // FIXME: This assumes that the working directory is the immediate
-            // child module of a crate. We should support custom prefixes.
-            let mut ty_path = String::from("crate");
+            let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));
             let mut iter = self.def_ns_name(def)?.peekable();
             while let Some(mut c) = iter.next() {
                 ty_path.push_str("::");
