@@ -14,7 +14,6 @@ use std::marker::PhantomData;
 
 /// Common conflicting keywords in Rust. An underscore will be added
 /// to fields using these keywords.
-// FIXME: Fill this list!
 const RUST_KEYWORDS: &[&str] = &[
     "as", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern", "false", "fn",
     "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref",
