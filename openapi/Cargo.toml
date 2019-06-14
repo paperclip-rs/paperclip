@@ -3,7 +3,7 @@ name = "paperclip"
 version = "0.1.0"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
-description = "WIP OpenAPI codegen"
+description = "WIP OpenAPI codegen for type-safe compile-time checked HTTP APIs"
 documentation = "https://paperclip.waffles.space/paperclip"
 keywords = ["openapi", "api", "swagger", "http", "web"]
 license = "MIT OR Apache-2.0"
@@ -11,7 +11,12 @@ homepage = "https://github.com/wafflespeanut/paperclip"
 repository = "https://github.com/wafflespeanut/paperclip"
 readme = "../README.md"
 
+[[bin]]
+name = "paperclip"
+path = "src/bin/main.rs"
+
 [dependencies]
+env_logger = "0.6.1"
 failure = "0.1.5"
 failure_derive = "0.1.5"
 heck = { version = "0.3.1", optional = true }
@@ -20,14 +25,13 @@ lazy_static = "1.3.0"
 log = "0.4.6"
 paperclip-macros = { path = "../macros", version = "0.1.0" }
 parking_lot = { version = "0.8.0" }
-quote = { version = "0.6.12", optional = true }
 regex = "1.1.6"
 # rustfmt-nightly = { version = "1.2.2", optional = true }
 serde = "1.0.91"
 serde_derive = "1.0.91"
 serde_json = "1.0.39"
 serde_yaml = "0.8.9"
-syn = { version = "0.15.34", features = ["full"], optional = true }
+structopt = "0.2.16"
 
 [dev-dependencies]
 env_logger = "0.6.1"
@@ -35,5 +39,5 @@ env_logger = "0.6.1"
 [features]
 default = ["v2", "codegen"]
 v2 = []
-codegen = ["heck", "syn", "quote"]
+codegen = ["heck"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]

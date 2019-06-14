@@ -46,3 +46,15 @@ impl<S: Schema + Debug> Emitter for DefaultEmitter<S> {
         &self.state
     }
 }
+
+/// Metadata for generating a crate.
+#[derive(Debug, Default, Clone)]
+pub struct CrateMeta {
+    /// Name of the crate. If this is not specified, then the name of the
+    /// working directory is assumed to be crate name.
+    pub name: Option<String>,
+    /// Version (defaults to 0.1.0)
+    pub version: Option<String>,
+    /// List of authors for this crate. Defaults to cargo's defaults.
+    pub authors: Option<Vec<String>>,
+}

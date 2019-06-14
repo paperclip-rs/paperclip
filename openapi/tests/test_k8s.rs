@@ -29,6 +29,7 @@ lazy_static! {
         state.working_dir = (&*ROOT).into();
         state.working_dir.push("tests");
         state.working_dir.push("test_k8s");
+        state.mod_prefix = "crate::codegen::";
 
         let emitter = DefaultEmitter::from(state);
         emitter.generate(&SCHEMA).expect("codegen");
@@ -226,11 +227,11 @@ pub struct JsonSchemaProps {
     #[serde(rename = \"additionalProperties\")]
     pub additional_properties: Option<String>,
     #[serde(rename = \"allOf\")]
-    pub all_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub all_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     #[serde(rename = \"anyOf\")]
-    pub any_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub any_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub default: Option<String>,
-    pub definitions: Option<std::collections::BTreeMap<String, crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub definitions: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub dependencies: Option<std::collections::BTreeMap<String, String>>,
     pub description: Option<String>,
     #[serde(rename = \"enum\")]
@@ -241,7 +242,7 @@ pub struct JsonSchemaProps {
     #[serde(rename = \"exclusiveMinimum\")]
     pub exclusive_minimum: Option<bool>,
     #[serde(rename = \"externalDocs\")]
-    pub external_docs: Option<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::external_documentation::ExternalDocumentation>,
+    pub external_docs: Option<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::external_documentation::ExternalDocumentation>,
     pub format: Option<String>,
     pub id: Option<String>,
     pub items: Option<String>,
@@ -261,14 +262,14 @@ pub struct JsonSchemaProps {
     pub minimum: Option<f64>,
     #[serde(rename = \"multipleOf\")]
     pub multiple_of: Option<f64>,
-    pub not: Option<Box<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub not: Option<Box<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub nullable: Option<bool>,
     #[serde(rename = \"oneOf\")]
-    pub one_of: Option<Vec<crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub one_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub pattern: Option<String>,
     #[serde(rename = \"patternProperties\")]
-    pub pattern_properties: Option<std::collections::BTreeMap<String, crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
-    pub properties: Option<std::collections::BTreeMap<String, crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub pattern_properties: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
+    pub properties: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps>>,
     pub required: Option<Vec<String>>,
     pub title: Option<String>,
     #[serde(rename = \"type\")]
@@ -303,10 +304,10 @@ pub struct JsonSchemaProps {
 fn test_root_mod() {
     // Root mod contains the builder markers and helper code for client.
     assert_file_contains_content_at(
-        &(ROOT.clone() + "/tests/test_k8s/io/mod.rs"),
+        &(ROOT.clone() + "/tests/test_k8s/mod.rs"),
         "
-pub mod k8s {
-    include!(\"./k8s/mod.rs\");
+pub mod io {
+    include!(\"./io/mod.rs\");
 }
 
 pub mod client {
@@ -401,7 +402,7 @@ impl ConfigMap {
 
     /// create a ConfigMap
     #[inline]
-    pub fn create_core_v1_namespaced_config_map() -> ConfigMapPostBuilder<crate::io::generics::MissingNamespace> {
+    pub fn create_core_v1_namespaced_config_map() -> ConfigMapPostBuilder<crate::codegen::generics::MissingNamespace> {
         ConfigMapPostBuilder {
             inner: Default::default(),
             _param_namespace: core::marker::PhantomData,
@@ -410,7 +411,7 @@ impl ConfigMap {
 
     /// read the specified ConfigMap
     #[inline]
-    pub fn read_core_v1_namespaced_config_map() -> ConfigMapGetBuilder1<crate::io::generics::MissingName, crate::io::generics::MissingNamespace> {
+    pub fn read_core_v1_namespaced_config_map() -> ConfigMapGetBuilder1<crate::codegen::generics::MissingName, crate::codegen::generics::MissingNamespace> {
         ConfigMapGetBuilder1 {
             inner: Default::default(),
             _param_name: core::marker::PhantomData,
@@ -420,7 +421,7 @@ impl ConfigMap {
 
     /// replace the specified ConfigMap
     #[inline]
-    pub fn replace_core_v1_namespaced_config_map() -> ConfigMapPutBuilder1<crate::io::generics::MissingName, crate::io::generics::MissingNamespace> {
+    pub fn replace_core_v1_namespaced_config_map() -> ConfigMapPutBuilder1<crate::codegen::generics::MissingName, crate::codegen::generics::MissingNamespace> {
         ConfigMapPutBuilder1 {
             inner: Default::default(),
             _param_name: core::marker::PhantomData,
@@ -435,19 +436,19 @@ impl Into<ConfigMap> for ConfigMapBuilder {
     }
 }
 
-impl Into<ConfigMap> for ConfigMapPostBuilder<crate::io::generics::NamespaceExists> {
+impl Into<ConfigMap> for ConfigMapPostBuilder<crate::codegen::generics::NamespaceExists> {
     fn into(self) -> ConfigMap {
         self.inner.body
     }
 }
 
-impl Into<ConfigMap> for ConfigMapPutBuilder1<crate::io::generics::NameExists, crate::io::generics::NamespaceExists> {
+impl Into<ConfigMap> for ConfigMapPutBuilder1<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
     fn into(self) -> ConfigMap {
         self.inner.body
     }
 }
 ",
-        1880,
+        1889,
     );
 }
 
@@ -479,27 +480,27 @@ impl PodBuilder {
 
     /// Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
     #[inline]
-    pub fn metadata(mut self, value: crate::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
         self.body.metadata = Some(value.into());
         self
     }
 
     /// Specification of the desired behavior of the pod. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
     #[inline]
-    pub fn spec(mut self, value: crate::io::k8s::api::core::v1::pod_spec::PodSpecBuilder<crate::io::generics::ContainersExists>) -> Self {
+    pub fn spec(mut self, value: crate::codegen::io::k8s::api::core::v1::pod_spec::PodSpecBuilder<crate::codegen::generics::ContainersExists>) -> Self {
         self.body.spec = Some(value.into());
         self
     }
 
     /// Most recently observed status of the pod. This data may not be up to date. Populated by the system. Read-only. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#spec-and-status
     #[inline]
-    pub fn status(mut self, value: crate::io::k8s::api::core::v1::pod_status::PodStatus) -> Self {
+    pub fn status(mut self, value: crate::codegen::io::k8s::api::core::v1::pod_status::PodStatus) -> Self {
         self.body.status = Some(value.into());
         self
     }
 }
 ",
-        4140,
+        4237,
     )
 }
 
@@ -511,7 +512,7 @@ fn test_simple_object_builder_with_required_fields() {
 impl PolicyRule {
     /// Create a builder for this object.
     #[inline]
-    pub fn builder() -> PolicyRuleBuilder<crate::io::generics::MissingVerbs> {
+    pub fn builder() -> PolicyRuleBuilder<crate::codegen::generics::MissingVerbs> {
         PolicyRuleBuilder {
             inner: Default::default(),
             _verbs: core::marker::PhantomData,
@@ -519,7 +520,7 @@ impl PolicyRule {
     }
 }
 
-impl Into<PolicyRule> for PolicyRuleBuilder<crate::io::generics::VerbsExists> {
+impl Into<PolicyRule> for PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
     fn into(self) -> PolicyRule {
         self.inner.body
     }
@@ -569,7 +570,7 @@ impl<Verbs> PolicyRuleBuilder<Verbs> {
 
     /// Verbs is a list of Verbs that apply to ALL the ResourceKinds and AttributeRestrictions contained in this rule.  VerbAll represents all kinds.
     #[inline]
-    pub fn verbs(mut self, value: impl Iterator<Item = impl Into<String>>) -> PolicyRuleBuilder<crate::io::generics::VerbsExists> {
+    pub fn verbs(mut self, value: impl Iterator<Item = impl Into<String>>) -> PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
         self.inner.body.verbs = value.map(|value| value.into()).collect::<Vec<_>>();
         unsafe { std::mem::transmute(self) }
     }
@@ -651,14 +652,14 @@ impl<Name, Namespace> DeleteOptionsDeleteBuilder59<Name, Namespace> {
 
     /// name of the Role
     #[inline]
-    pub fn name(mut self, value: impl Into<String>) -> DeleteOptionsDeleteBuilder59<crate::io::generics::NameExists, Namespace> {
+    pub fn name(mut self, value: impl Into<String>) -> DeleteOptionsDeleteBuilder59<crate::codegen::generics::NameExists, Namespace> {
         self.inner.param_name = Some(value.into());
         unsafe { std::mem::transmute(self) }
     }
 
     /// object name and auth scope, such as for teams and projects
     #[inline]
-    pub fn namespace(mut self, value: impl Into<String>) -> DeleteOptionsDeleteBuilder59<Name, crate::io::generics::NamespaceExists> {
+    pub fn namespace(mut self, value: impl Into<String>) -> DeleteOptionsDeleteBuilder59<Name, crate::codegen::generics::NamespaceExists> {
         self.inner.param_namespace = Some(value.into());
         unsafe { std::mem::transmute(self) }
     }
@@ -686,14 +687,14 @@ impl<Name, Namespace> DeleteOptionsDeleteBuilder59<Name, Namespace> {
 
     /// Must be fulfilled before a deletion is carried out. If not possible, a 409 Conflict status will be returned.
     #[inline]
-    pub fn preconditions(mut self, value: crate::io::k8s::apimachinery::pkg::apis::meta::v1::preconditions::Preconditions) -> Self {
+    pub fn preconditions(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::preconditions::Preconditions) -> Self {
         self.inner.body.preconditions = Some(value.into());
         self
     }
 }
 
-impl crate::io::client::Sendable for DeleteOptionsDeleteBuilder59<crate::io::generics::NameExists, crate::io::generics::NamespaceExists> {
-    type Output = crate::io::k8s::apimachinery::pkg::apis::meta::v1::status::Status;
+impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
+    type Output = crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::status::Status;
 
     const METHOD: reqwest::Method = reqwest::Method::DELETE;
 
@@ -714,7 +715,7 @@ impl crate::io::client::Sendable for DeleteOptionsDeleteBuilder59<crate::io::gen
     }
 }
 ",
-        436104,
+        439779,
     );
 }
 
@@ -726,7 +727,7 @@ fn test_unit_builder_with_no_modifier() {
 impl ApiGroupList {
     /// Create a builder for this object.
     #[inline]
-    pub fn builder() -> ApiGroupListBuilder<crate::io::generics::MissingGroups> {
+    pub fn builder() -> ApiGroupListBuilder<crate::codegen::generics::MissingGroups> {
         ApiGroupListBuilder {
             inner: Default::default(),
             _groups: core::marker::PhantomData,
@@ -740,7 +741,7 @@ impl ApiGroupList {
     }
 }
 
-impl Into<ApiGroupList> for ApiGroupListBuilder<crate::io::generics::GroupsExists> {
+impl Into<ApiGroupList> for ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
     fn into(self) -> ApiGroupList {
         self.inner.body
     }
@@ -769,7 +770,7 @@ impl<Groups> ApiGroupListBuilder<Groups> {
 
     /// groups is a list of APIGroup.
     #[inline]
-    pub fn groups(mut self, value: impl Iterator<Item = crate::io::k8s::apimachinery::pkg::apis::meta::v1::api_group::ApiGroupBuilder<crate::io::generics::NameExists, crate::io::generics::VersionsExists>>) -> ApiGroupListBuilder<crate::io::generics::GroupsExists> {
+    pub fn groups(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::api_group::ApiGroupBuilder<crate::codegen::generics::NameExists, crate::codegen::generics::VersionsExists>>) -> ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
         self.inner.body.groups = value.map(|value| value.into()).collect::<Vec<_>>();
         unsafe { std::mem::transmute(self) }
     }
@@ -787,7 +788,7 @@ impl<Groups> ApiGroupListBuilder<Groups> {
 pub struct ApiGroupListGetBuilder;
 
 
-impl crate::io::client::Sendable for ApiGroupListGetBuilder {
+impl crate::codegen::client::Sendable for ApiGroupListGetBuilder {
     type Output = ApiGroupList;
 
     const METHOD: reqwest::Method = reqwest::Method::GET;
@@ -797,7 +798,7 @@ impl crate::io::client::Sendable for ApiGroupListGetBuilder {
     }
 }
 ",
-        970,
+        979,
     );
 }
 
@@ -823,7 +824,7 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
 
     /// Base64-encoded PKCS#10 CSR data
     #[inline]
-    pub fn request(mut self, value: impl Into<String>) -> CertificateSigningRequestSpecBuilder<crate::io::generics::RequestExists> {
+    pub fn request(mut self, value: impl Into<String>) -> CertificateSigningRequestSpecBuilder<crate::codegen::generics::RequestExists> {
         self.inner.body.request = value.into();
         unsafe { std::mem::transmute(self) }
     }
@@ -851,6 +852,6 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     }
 }
 ",
-        2133,
+        2143,
     );
 }

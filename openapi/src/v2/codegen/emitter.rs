@@ -191,15 +191,12 @@ where
         // Gather the immediate parent-children pairs for module declarations.
         let mut mods = state.mod_children.borrow_mut();
         for (i, path) in rel_path.ancestors().enumerate() {
-            match (path.parent(), path.file_name()) {
-                (Some(parent), Some(name)) if parent.parent().is_some() => {
-                    let entry = mods.entry(parent.into()).or_insert_with(HashSet::new);
-                    entry.insert(ChildModule {
-                        name: name.to_string_lossy().into_owned(),
-                        is_final: i == 0,
-                    });
-                }
-                _ => (),
+            if let (Some(parent), Some(name)) = (path.parent(), path.file_name()) {
+                let entry = mods.entry(parent.into()).or_insert_with(HashSet::new);
+                entry.insert(ChildModule {
+                    name: name.to_string_lossy().into_owned(),
+                    is_final: i == 0,
+                });
             }
         }
 

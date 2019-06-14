@@ -67,6 +67,7 @@ fn main() {
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let mut state = EmitterState::default();
+    state.mod_prefix = "crate::codegen::"; // prefix because we've isolated generated code (see main.rs).
     state.working_dir = out_dir.into();
 
     let emitter = DefaultEmitter::from(state);
@@ -80,13 +81,13 @@ fn main() {
 #[macro_use] extern crate failure_derive;
 #[macro_use] extern crate serde_derive;
 
-mod io {
+mod codegen {
     #![allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"), "/io/mod.rs"));
+    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
 }
 
-use self::io::client::Sendable;
-use self::io::k8s::api::core::v1::node_list::NodeList;
+use self::codegen::client::Sendable;
+use self::codegen::io::k8s::api::core::v1::node_list::NodeList;
 
 use futures::Future;
 use reqwest::r#async::Client;

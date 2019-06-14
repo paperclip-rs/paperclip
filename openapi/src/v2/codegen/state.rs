@@ -1,4 +1,4 @@
-use super::object::ApiObject;
+use super::{object::ApiObject, CrateMeta};
 use failure::Error;
 use heck::CamelCase;
 use itertools::Itertools;
@@ -21,16 +21,19 @@ pub struct EmitterState {
     pub ns_sep: &'static str,
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
+    /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
+    /// along with the modules.
+    pub crate_meta: Option<CrateMeta>,
     /// Base path for API.
     pub base_url: &'static str,
+    /// Whether the emitter should emit `mod.rs` (module) or `lib.rs` (crate) in root.
+    pub is_crate: bool,
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<ChildModule>>>>,
     /// Holds generated struct definitions for leaf modules.
     pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
     /// Unit types used by builders.
     unit_types: Rc<RefCell<HashSet<String>>>,
-    /// Root module emitted by codegen.
-    root_module: Rc<RefCell<Option<String>>>,
 }
 
 /// Indicates a child module in codegen working directory.
@@ -51,9 +54,22 @@ impl EmitterState {
         let mods = self.mod_children.borrow();
         for (rel_parent, children) in &*mods {
             let mut mod_path = self.working_dir.join(&rel_parent);
-            mod_path.push("mod.rs");
-
             let mut contents = String::new();
+
+            if rel_parent.parent().is_none() && self.is_crate {
+                contents.push_str(
+                    "
+#[macro_use]
+extern crate failure_derive;
+#[macro_use]
+extern crate serde_derive;
+",
+                );
+                mod_path.push("lib.rs");
+            } else {
+                mod_path.push("mod.rs");
+            }
+
             for child in children.iter().sorted_by(|a, b| a.name.cmp(&b.name)) {
                 writeln!(
                     contents,
@@ -71,21 +87,6 @@ pub mod {name} {{
             }
 
             self.write_contents(&contents, &mod_path)?;
-        }
-
-        // We just need some path to find the root module.
-        if let Some(p) = mods.keys().next() {
-            let mut some_path = PathBuf::from(p);
-            loop {
-                match some_path.parent() {
-                    Some(p) if p.parent().is_some() => some_path = p.into(),
-                    _ => break,
-                }
-            }
-
-            self.root_module
-                .borrow_mut()
-                .replace(some_path.to_string_lossy().into_owned());
         }
 
         Ok(())
@@ -108,13 +109,7 @@ pub mod {name} {{
     /// we can use this method to add builder structs and their impls.
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
         // FIXME: Fix this when we support custom prefixes.
-        let module_prefix = match &*self.root_module.borrow() {
-            Some(p) => format!("{}::{}::", self.mod_prefix.trim_matches(':'), p),
-            None => {
-                error!("No root module to generate builders.");
-                return Ok(());
-            }
-        };
+        let module_prefix = format!("{}::", self.mod_prefix.trim_matches(':'));
 
         info!("Adding builders to definitions.");
         let mut unit_types = self.unit_types.borrow_mut();
@@ -150,14 +145,7 @@ pub mod {name} {{
     /// Once the builders have been added, we can add unit types
     /// and other dependencies.
     pub(crate) fn add_deps(&self) -> Result<(), Error> {
-        let module = match &*self.root_module.borrow() {
-            Some(p) => self.working_dir.join(p).join("mod.rs"),
-            None => {
-                error!("No root module to generate deps.");
-                return Ok(());
-            }
-        };
-
+        let module = self.root_module_path();
         let types = self.unit_types.borrow();
         let mut content = String::new();
         content.push_str("\npub mod generics {");
@@ -179,20 +167,13 @@ pub mod {name} {{
             content.push_str("Exists {}");
         }
 
-        content.push_str("}\n");
+        content.push_str("\n}\n");
         self.append_contents(&content, &module)
     }
 
     /// Once the builders have been added, we can add API client dependencies.
     pub(crate) fn add_client_deps(&self) -> Result<(), Error> {
-        let module = match &*self.root_module.borrow() {
-            Some(p) => self.working_dir.join(p).join("mod.rs"),
-            None => {
-                error!("No root module to generate client deps.");
-                return Ok(());
-            }
-        };
-
+        let module = self.root_module_path();
         let deser = "resp.json::<Self::Output>().map_err(ApiError::Reqwest)";
         let content = format!("
 pub mod client {{
@@ -287,19 +268,29 @@ pub mod client {{
         fd.write_all(contents.as_bytes())?;
         Ok(())
     }
+
+    /// Returns the path to the root module.
+    fn root_module_path(&self) -> PathBuf {
+        if self.is_crate {
+            self.working_dir.join("lib.rs")
+        } else {
+            self.working_dir.join("mod.rs")
+        }
+    }
 }
 
 impl Default for EmitterState {
     fn default() -> EmitterState {
         EmitterState {
+            crate_meta: None,
             working_dir: PathBuf::from("."),
             mod_prefix: "crate::",
             ns_sep: ".",
+            is_crate: false,
             base_url: "https://example.com",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
             unit_types: Rc::new(RefCell::new(HashSet::new())),
-            root_module: Rc::new(RefCell::new(None)),
         }
     }
 }

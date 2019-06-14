@@ -96,8 +96,7 @@ pub struct ObjectField {
     /// To understand why we're doing this, see `ApiObjectBuilderImpl::write_builder_ty`
     /// and `ApiObjectBuilderImpl::write_value_map` functions.
     ///
-    /// Yours sincerely,
-    /// Someone who's bad at naming.
+    /// Yours sincerely.
     pub children_req: Vec<String>,
 }
 

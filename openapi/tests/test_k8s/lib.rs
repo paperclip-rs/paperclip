@@ -1,7 +1,9 @@
 #[macro_use] extern crate failure_derive;
 #[macro_use] extern crate serde_derive;
 
-mod io;
+mod codegen {
+    include!("./mod.rs");
+}
 
-pub use io::k8s::*;
-pub use io::client::{ApiError, Sendable};
+pub use codegen::io::k8s::*;
+pub use codegen::client::{ApiError, Sendable};
