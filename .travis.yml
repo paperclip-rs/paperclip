@@ -38,6 +38,8 @@ matrix:
     - cargo doc --all --all-features --no-deps
     - cd -
     - cp -r openapi/tests/test_k8s/target/doc target/doc/tests
+    - cd openapi/tests/test_pet
+    - cargo build
 
 deploy:
   provider: pages

@@ -342,6 +342,8 @@ futures = \"0.1\"
 reqwest = \"0.9\"
 serde = \"1.0\"
 serde_derive = \"1.0\"
+
+[workspace]
 ",
                 meta.name.as_ref().unwrap(),
                 meta.version.as_ref().unwrap(),

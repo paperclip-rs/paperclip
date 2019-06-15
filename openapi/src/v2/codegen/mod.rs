@@ -59,4 +59,6 @@ pub struct CrateMeta {
     pub version: Option<String>,
     /// List of authors for this crate. Defaults to cargo's defaults.
     pub authors: Option<Vec<String>>,
+    // Marker to avoid potential breakage when more public fields come in.
+    _marker: (),
 }

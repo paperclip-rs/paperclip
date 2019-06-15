@@ -1,0 +1,67 @@
+swagger: "2.0"
+definitions:
+  Tag:
+    properties:
+      name:
+        type: string
+      id:
+        type: integer
+        format: int64
+    type: object
+  Pet:
+    description: A pet is a person's best friend
+    required:
+    - id
+    - name
+    properties:
+      id:
+        type: integer
+        format: int64
+      tags:
+        type: array
+        items:
+          $ref: '#/definitions/Tag'
+      name:
+        type: string
+      category:
+        $ref: '#/definitions/Category'
+      photoUrls:
+        type: array
+        items:
+          type: string
+    type: object
+  Category:
+    properties:
+      name:
+        type: string
+      id:
+        type: integer
+        format: int64
+    type: object
+paths:
+  /pet/{petId}:
+    get:
+      description: Find pet by ID
+      operationId: getPetById
+      responses:
+        "200":
+          schema:
+            $ref: '#/definitions/Pet'
+      schemes:
+      - https
+  /pet:
+    post:
+      description: Add a new pet to the store
+      operationId: addPet
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          $ref: '#/definitions/Pet'
+      responses:
+        "200":
+          schema:
+            $ref: '#/definitions/Pet'
+      schemes:
+      - https
