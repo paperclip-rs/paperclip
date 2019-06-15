@@ -114,7 +114,7 @@ API calls often *require* some parameters. Should we miss those parameters when 
 Let's change the [previous example](#srcmainrs) to fetch a service. In order to fetch a Kubernetes service, the [`name` and `namespace` parameters are required](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#read-service-v1-core).
 
 ```rust
-use self::io::k8s::api::core::v1::service::Service;
+use self::codegen::io::k8s::api::core::v1::service::Service;
 
 fn main() {
     let client = Client::new();
@@ -128,9 +128,9 @@ When we compile this, we'll get an error:
 
 ```
 error[E0599]: no method named `send` found for type
-`io::k8s::api::core::v1::service::ServiceGetBuilder1<
-    io::generics::MissingName,
-    io::generics::MissingNamespace
+`codegen::io::k8s::api::core::v1::service::ServiceGetBuilder1<
+    codegen::generics::MissingName,
+    codegen::generics::MissingNamespace
 >` in the current scope
 ```
 
@@ -146,9 +146,9 @@ let f = Service::read_core_v1_namespaced_service()
 
 ```
 error[E0599]: no method named `send` found for type
-`io::k8s::api::core::v1::service::ServiceGetBuilder1<
-    io::generics::NameExists,
-    io::generics::MissingNamespace
+`codegen::io::k8s::api::core::v1::service::ServiceGetBuilder1<
+    codegen::generics::NameExists,
+    codegen::generics::MissingNamespace
 >` in the current scope
 ```
 

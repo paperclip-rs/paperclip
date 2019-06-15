@@ -19,6 +19,13 @@ matrix:
     script:
     - cargo fmt --all -- --check
     - cargo clippy --all -- -D clippy::all
+  - name: build
+    env:
+    - CACHE_NAME=build
+    script:
+    - cargo build
+    - cargo build --features default
+    - cargo build --all --all-features
   - name: test
     env:
     - CACHE_NAME=test

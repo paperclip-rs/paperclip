@@ -17,6 +17,9 @@ pub type PaperClipResult<T> = Result<T, PaperClipError>;
 /// Global error which encapsulates all related errors.
 #[derive(Debug, Fail)]
 pub enum PaperClipError {
+    /// The given directory cannot be used for generating code.
+    #[fail(display = "Cannot generate code in the given directory")]
+    InvalidCodegenDirectory,
     /// Currently, we only support OpenAPI v2, and eventually v3.
     #[fail(display = "This version of OpenAPI is unsupported.")]
     UnsupportedOpenAPIVersion,

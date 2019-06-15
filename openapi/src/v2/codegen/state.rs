@@ -1,11 +1,17 @@
-use super::{object::ApiObject, CrateMeta};
+use super::object::ApiObject;
+#[cfg(feature = "cli")]
+use crate::error::PaperClipError;
 use failure::Error;
 use heck::CamelCase;
+#[cfg(feature = "cli")]
+use heck::SnekCase;
 use itertools::Itertools;
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
+#[cfg(feature = "cli")]
+use std::fs;
 use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
@@ -22,12 +28,11 @@ pub struct EmitterState {
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
-    /// along with the modules.
-    pub crate_meta: Option<CrateMeta>,
+    /// along with the modules. This is applicable only for the CLI.
+    #[cfg(feature = "cli")]
+    pub crate_meta: Rc<RefCell<Option<super::CrateMeta>>>,
     /// Base path for API.
     pub base_url: &'static str,
-    /// Whether the emitter should emit `mod.rs` (module) or `lib.rs` (crate) in root.
-    pub is_crate: bool,
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<ChildModule>>>>,
     /// Holds generated struct definitions for leaf modules.
@@ -46,6 +51,46 @@ pub(super) struct ChildModule {
 }
 
 impl EmitterState {
+    /// This is a no-op.
+    #[cfg(not(feature = "cli"))]
+    pub(crate) fn infer_crate_meta(&self) -> Result<(), Error> {
+        Ok(())
+    }
+
+    /// Validates crate metadata and sets the unset fields.
+    #[cfg(feature = "cli")]
+    pub(crate) fn infer_crate_meta(&self) -> Result<(), Error> {
+        if let Some(meta) = self.crate_meta.borrow_mut().as_mut() {
+            if meta.name.is_none() {
+                meta.name = Some(
+                    fs::canonicalize(&self.working_dir)?
+                        .file_name()
+                        .ok_or(PaperClipError::InvalidCodegenDirectory)?
+                        .to_string_lossy()
+                        .into_owned()
+                        .to_snek_case(),
+                );
+            }
+
+            if meta.version.is_none() {
+                meta.version = Some("0.1.0".into());
+            }
+
+            if meta.authors.is_none() {
+                let (mut name, email) = super::author::discover()?;
+                if let Some(e) = email {
+                    name.push_str(" <");
+                    name.push_str(&e);
+                    name.push_str(">");
+                }
+
+                meta.authors = Some(vec![name]);
+            }
+        }
+
+        Ok(())
+    }
+
     /// Once the emitter has generated the struct definitions,
     /// we can call this method to generate the module declarations
     /// from root.
@@ -56,7 +101,7 @@ impl EmitterState {
             let mut mod_path = self.working_dir.join(&rel_parent);
             let mut contents = String::new();
 
-            if rel_parent.parent().is_none() && self.is_crate {
+            if rel_parent.parent().is_none() && self.is_crate() {
                 contents.push_str(
                     "
 #[macro_use]
@@ -168,7 +213,8 @@ pub mod {name} {{
         }
 
         content.push_str("\n}\n");
-        self.append_contents(&content, &module)
+        self.append_contents(&content, &module)?;
+        self.create_manifest()
     }
 
     /// Once the builders have been added, we can add API client dependencies.
@@ -269,24 +315,91 @@ pub mod client {{
         Ok(())
     }
 
+    /// Creates a Cargo.toml manifest in the working directory (if it's a crate).
+    #[cfg(feature = "cli")]
+    fn create_manifest(&self) -> Result<(), Error> {
+        let m = self.crate_meta.borrow();
+        let meta = match m.as_ref() {
+            Some(c) => c,
+            None => return Ok(()),
+        };
+
+        if self.is_crate() {
+            let content = format!(
+                "[package]
+name = {:?}
+version = {:?}
+authors = {:?}
+edition = \"2018\"
+
+[lib]
+path = \"lib.rs\"
+
+[dependencies]
+failure = \"0.1\"
+failure_derive = \"0.1\"
+futures = \"0.1\"
+reqwest = \"0.9\"
+serde = \"1.0\"
+serde_derive = \"1.0\"
+",
+                meta.name.as_ref().unwrap(),
+                meta.version.as_ref().unwrap(),
+                meta.authors.as_ref().unwrap()
+            );
+
+            let man_path = self.working_dir.join("Cargo.toml");
+            self.write_contents(&content, &man_path)?;
+        }
+
+        Ok(())
+    }
+
+    /// This is a no-op.
+    #[cfg(not(feature = "cli"))]
+    fn create_manifest(&self) -> Result<(), Error> {
+        Ok(())
+    }
+
+    /// Checks whether this session is for emitting a crate.
+    #[cfg(feature = "cli")]
+    fn is_crate(&self) -> bool {
+        self.crate_meta.borrow().is_some()
+    }
+
+    /// This always returns `false`.
+    #[cfg(not(feature = "cli"))]
+    fn is_crate(&self) -> bool {
+        false
+    }
+
     /// Returns the path to the root module.
+    #[cfg(feature = "cli")]
     fn root_module_path(&self) -> PathBuf {
-        if self.is_crate {
+        if self.crate_meta.borrow().is_some() {
             self.working_dir.join("lib.rs")
         } else {
             self.working_dir.join("mod.rs")
         }
+    }
+
+    /// Returns the path to the root module.
+    ///
+    /// **NOTE:** Always returns the root module path.
+    #[cfg(not(feature = "cli"))]
+    fn root_module_path(&self) -> PathBuf {
+        self.working_dir.join("mod.rs")
     }
 }
 
 impl Default for EmitterState {
     fn default() -> EmitterState {
         EmitterState {
-            crate_meta: None,
             working_dir: PathBuf::from("."),
             mod_prefix: "crate::",
             ns_sep: ".",
-            is_crate: false,
+            #[cfg(feature = "cli")]
+            crate_meta: Rc::new(RefCell::new(None)),
             base_url: "https://example.com",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),

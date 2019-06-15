@@ -20,6 +20,8 @@ doc:
 
 build:
 	cargo build
+	cargo build --features default
+	cargo build --all --all-features
 
 test:
 	cargo clippy --all -- -D clippy::all

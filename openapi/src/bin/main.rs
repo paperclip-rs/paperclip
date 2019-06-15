@@ -52,7 +52,7 @@ fn parse_args_and_run() -> Result<(), Error> {
     let spec = raw.resolve()?;
 
     let mut state = EmitterState::default();
-    state.crate_meta = Some(CrateMeta::default());
+    state.crate_meta.borrow_mut().replace(CrateMeta::default());
     if let Some(o) = opt.output {
         fs::create_dir_all(&o)?;
         state.working_dir = o;

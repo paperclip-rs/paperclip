@@ -1,5 +1,7 @@
 //! Code generation for OpenAPI v2.
 
+#[cfg(feature = "cli")]
+mod author;
 mod emitter;
 pub mod object;
 mod state;
