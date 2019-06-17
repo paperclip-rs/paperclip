@@ -6,7 +6,7 @@ extern crate serde_derive;
 
 use paperclip::v2::{
     self,
-    codegen::{DefaultEmitter, Emitter, EmitterState},
+    codegen::{CrateMeta, DefaultEmitter, Emitter, EmitterState},
     models::{Api, HttpMethod, Version},
 };
 
@@ -30,6 +30,20 @@ lazy_static! {
         state.working_dir.push("tests");
         state.working_dir.push("test_k8s");
         state.mod_prefix = "crate::codegen::";
+
+        let emitter = DefaultEmitter::from(state);
+        emitter.generate(&SCHEMA).expect("codegen");
+    };
+    static ref CLI_CODEGEN: () = {
+        let _ = &*CODEGEN;
+        let mut state = EmitterState::default();
+        state.working_dir = (&*ROOT).into();
+        state.working_dir.push("tests/test_k8s/cli");
+        let mut meta = CrateMeta::default();
+        meta.name = Some("test-k8s-cli".into());
+        meta.version = Some("0.0.0".into());
+        meta.is_cli = true;
+        state.crate_meta.borrow_mut().replace(meta);
 
         let emitter = DefaultEmitter::from(state);
         emitter.generate(&SCHEMA).expect("codegen");
@@ -380,8 +394,17 @@ pub mod client {
 }
 
 pub mod generics {
-    pub trait Optional {}
+    include!(\"./generics.rs\");
 ",
+        0,
+    );
+}
+
+#[test]
+fn test_generics_mod() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/generics.rs"),
+        "pub trait Optional {}",
         0,
     );
 }
@@ -849,4 +872,9 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
 ",
         1686,
     );
+}
+
+#[test]
+fn test_cli() {
+    let _ = &*CLI_CODEGEN;
 }

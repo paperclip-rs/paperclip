@@ -39,6 +39,9 @@ struct Opt {
     /// Output directory to write code (default: current working directory).
     #[structopt(short = "o", long = "out", parse(from_os_str))]
     output: Option<PathBuf>,
+    /// Emit CLI target instead.
+    #[structopt(long = "cli")]
+    cli: bool,
 }
 
 fn parse_args_and_run() -> Result<(), Error> {
@@ -56,6 +59,10 @@ fn parse_args_and_run() -> Result<(), Error> {
     if let Some(o) = opt.output {
         fs::create_dir_all(&o)?;
         state.working_dir = o;
+    }
+
+    if opt.cli {
+        state.crate_meta.borrow_mut().as_mut().map(|c| c.is_cli = true);
     }
 
     let emitter = DefaultEmitter::from(state);

@@ -2,5 +2,7 @@ target/
 **/*.rs.bk
 Cargo.lock
 **/test_k8s/io/
+**/test_k8s/cli/
 **/test_k8s/mod.rs
+**/test_k8s/generics.rs
 **/test_pet/

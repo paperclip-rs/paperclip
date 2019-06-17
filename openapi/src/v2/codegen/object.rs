@@ -5,7 +5,7 @@
 
 use super::RUST_KEYWORDS;
 use crate::v2::models::{HttpMethod, ParameterIn};
-use heck::{CamelCase, SnekCase};
+use heck::{CamelCase, KebabCase, SnekCase};
 use regex::{Captures, Regex};
 
 use std::collections::{BTreeMap, HashSet};
@@ -214,6 +214,87 @@ pub struct ApiObjectImpl<'a> {
 }
 
 impl<'a> ApiObjectImpl<'a> {
+    /// Writes the required "structopt" definitions for this object.
+    pub(super) fn write_cli_objects<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        // Ignore objects without any operations (all objects have a default builder).
+        if self.builders.len() < 2 {
+            return Ok(());
+        }
+
+        for builder in &self.builders {
+            let mut name = match builder.op_id {
+                Some(n) => n.into(),
+                None => {
+                    if let Some(name) = builder.con_fn_name() {
+                        name
+                    } else {
+                        if builder.method.is_some() || builder.rel_path.is_some() {
+                            warn!(
+                                "Unable to generate name for operation ({:?} {:?}). Skipping.",
+                                builder.method, builder.rel_path
+                            );
+                        }
+
+                        continue;
+                    }
+                }
+            };
+
+            name = name.to_camel_case();
+            let cmd_name = name.to_kebab_case();
+            if name != cmd_name {
+                write!(f, "\n    #[structopt(name = \"{}\")]", cmd_name)?;
+            }
+
+            let mut has_one_option = false;
+            write!(f, "\n    {}", name)?;
+
+            builder
+                .struct_fields_iter()
+                .filter(|f| f.prop.is_parameter())
+                .enumerate()
+                .try_for_each(|(i, field)| {
+                    if i == 0 {
+                        has_one_option = true;
+                        f.write_str(" {")?;
+                    }
+
+                    let kk = field.name.to_kebab_case();
+                    let mut sk = field.name.to_snek_case();
+                    if RUST_KEYWORDS.iter().any(|&k| k == sk) {
+                        sk.push('_');
+                    }
+
+                    if sk != kk {
+                        write!(f, "\n        #[structopt(long = \"{}\")]", kk)?;
+                    }
+
+                    write!(f, "\n        {}: ", &sk)?;
+                    if !field.prop.is_required() {
+                        f.write_str("Option<")?;
+                    }
+
+                    f.write_str(&field.ty)?;
+                    if !field.prop.is_required() {
+                        f.write_str(">")?;
+                    }
+
+                    f.write_str(",")
+                })?;
+
+            if has_one_option {
+                f.write_str("\n    }")?;
+            }
+
+            f.write_str(",")?;
+        }
+
+        f.write_str("\n")
+    }
+
     /// Writes the associated function for this object for instantiating builders.
     fn write_builder_methods<F>(&self, f: &mut F) -> fmt::Result
     where

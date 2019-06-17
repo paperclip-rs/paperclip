@@ -28,7 +28,7 @@ pub struct EmitterState {
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
-    /// along with the modules. This is applicable only for the CLI.
+    /// along with the modules. This is gated behind `"cli"` feature.
     #[cfg(feature = "cli")]
     pub crate_meta: Rc<RefCell<Option<super::CrateMeta>>>,
     /// Base path for API.
@@ -39,6 +39,8 @@ pub struct EmitterState {
     pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
     /// Unit types used by builders.
     unit_types: Rc<RefCell<HashSet<String>>>,
+    /// Generated CLI code.
+    cli_content: Rc<RefCell<String>>,
 }
 
 /// Indicates a child module in codegen working directory.
@@ -102,6 +104,8 @@ impl EmitterState {
             let mut contents = String::new();
 
             if rel_parent.parent().is_none() && self.is_crate() {
+                mod_path = self.root_module_path();
+
                 contents.push_str(
                     "
 #[macro_use]
@@ -110,7 +114,16 @@ extern crate failure_derive;
 extern crate serde_derive;
 ",
                 );
-                mod_path.push("lib.rs");
+
+                if mod_path.ends_with("main.rs") {
+                    contents.push_str(
+                        "
+pub mod cli {
+    include!(\"./cli.rs\");
+}
+",
+                    )
+                }
             } else {
                 mod_path.push("mod.rs");
             }
@@ -153,12 +166,25 @@ pub mod {name} {{
     /// Once the emitter has collected requirements for paths,
     /// we can use this method to add builder structs and their impls.
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
-        // FIXME: Fix this when we support custom prefixes.
         let module_prefix = format!("{}::", self.mod_prefix.trim_matches(':'));
-
         info!("Adding builders to definitions.");
         let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
+        let mut cli_content = self.cli_content.borrow_mut();
+        cli_content.push_str(
+            "
+use structopt::StructOpt;
+
+#[derive(StructOpt)]
+pub struct ApiCall {
+    #[structopt(subcommand)]
+    op: Operation,
+}
+
+#[derive(Debug, StructOpt)]
+enum Operation {",
+        );
+
         for (mod_path, object) in &*def_mods {
             let mut builder_content = String::new();
             let mut repr = object.impl_repr();
@@ -177,6 +203,7 @@ pub mod {name} {{
                 repr.builders.push(builder);
             }
 
+            repr.write_cli_objects(&mut *cli_content)?;
             let mut impl_content = String::from("\n");
             let _ = write!(impl_content, "{}", repr);
 
@@ -184,36 +211,48 @@ pub mod {name} {{
             self.append_contents(&builder_content, mod_path)?;
         }
 
+        cli_content.push_str("}\n");
+
         Ok(())
     }
 
     /// Once the builders have been added, we can add unit types
     /// and other dependencies.
     pub(crate) fn add_deps(&self) -> Result<(), Error> {
-        let module = self.root_module_path();
+        let mut module = self.root_module_path();
         let types = self.unit_types.borrow();
         let mut content = String::new();
-        content.push_str("\npub mod generics {");
+        content.push_str(
+            "
+pub mod generics {
+    include!(\"./generics.rs\");
+}
+",
+        );
+        self.append_contents(&content, &module)?;
 
-        content.push_str("\n    pub trait Optional {}");
+        content.clear();
+        module.set_file_name("generics.rs");
+        content.push_str("pub trait Optional {}");
 
         for ty in &*types {
-            content.push_str("\n\n    pub struct Missing");
+            content.push_str("\npub struct Missing");
             content.push_str(ty);
             content.push_str(";");
-            content.push_str("\n    impl Optional for Missing");
+            content.push_str("\nimpl Optional for Missing");
             content.push_str(ty);
             content.push_str(" {}");
-            content.push_str("\n    pub struct ");
+            content.push_str("\npub struct ");
             content.push_str(ty);
             content.push_str("Exists;");
-            content.push_str("\n    impl Optional for ");
+            content.push_str("\nimpl Optional for ");
             content.push_str(ty);
             content.push_str("Exists {}");
         }
 
-        content.push_str("\n}\n");
-        self.append_contents(&content, &module)?;
+        content.push_str("\n");
+        self.write_contents(&content, &module)?;
+        self.add_cli_deps_if_needed()?;
         self.create_manifest()
     }
 
@@ -315,10 +354,36 @@ pub mod client {{
         Ok(())
     }
 
+    /// Adds CLI-related deps for the given object (if needed).
+    fn add_cli_deps_if_needed(&self) -> Result<(), Error> {
+        let root = self.root_module_path();
+        if !root.ends_with("main.rs") {
+            return Ok(());
+        }
+
+        self.write_contents(&*self.cli_content.borrow(), &root.with_file_name("cli.rs"))?;
+
+        let content = String::from(
+            "
+use structopt::StructOpt;
+
+fn main() {
+    let _call = self::cli::ApiCall::from_args();
+}
+",
+        );
+
+        self.append_contents(&content, &root)
+    }
+
     /// Creates a Cargo.toml manifest in the working directory (if it's a crate).
     #[cfg(feature = "cli")]
     fn create_manifest(&self) -> Result<(), Error> {
         let m = self.crate_meta.borrow();
+        let mut man_path = self.root_module_path();
+        let is_cli = man_path.ends_with("main.rs");
+        man_path.set_file_name("Cargo.toml");
+
         let meta = match m.as_ref() {
             Some(c) => c,
             None => return Ok(()),
@@ -332,8 +397,7 @@ version = {:?}
 authors = {:?}
 edition = \"2018\"
 
-[lib]
-path = \"lib.rs\"
+{}
 
 [dependencies]
 failure = \"0.1\"
@@ -342,15 +406,23 @@ futures = \"0.1\"
 reqwest = \"0.9\"
 serde = \"1.0\"
 serde_derive = \"1.0\"
-
+{}
 [workspace]
 ",
                 meta.name.as_ref().unwrap(),
                 meta.version.as_ref().unwrap(),
-                meta.authors.as_ref().unwrap()
+                meta.authors.as_ref().unwrap(),
+                if is_cli {
+                    format!(
+                        "[[bin]]\nname = {:?}\npath = \"main.rs\"",
+                        meta.name.as_ref().unwrap()
+                    )
+                } else {
+                    "[lib]\npath = \"lib.rs\"".into()
+                },
+                if is_cli { "structopt = \"0.2\"\n" } else { "" },
             );
 
-            let man_path = self.working_dir.join("Cargo.toml");
             self.write_contents(&content, &man_path)?;
         }
 
@@ -378,8 +450,12 @@ serde_derive = \"1.0\"
     /// Returns the path to the root module.
     #[cfg(feature = "cli")]
     fn root_module_path(&self) -> PathBuf {
-        if self.crate_meta.borrow().is_some() {
-            self.working_dir.join("lib.rs")
+        if let Some(meta) = self.crate_meta.borrow().as_ref() {
+            if meta.is_cli {
+                self.working_dir.join("main.rs")
+            } else {
+                self.working_dir.join("lib.rs")
+            }
         } else {
             self.working_dir.join("mod.rs")
         }
@@ -406,6 +482,7 @@ impl Default for EmitterState {
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
             unit_types: Rc::new(RefCell::new(HashSet::new())),
+            cli_content: Rc::new(RefCell::new(String::new())),
         }
     }
 }
