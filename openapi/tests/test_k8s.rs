@@ -460,7 +460,7 @@ fn test_same_object_with_multiple_builders_has_basic_builder() {
 /// Builder for [`Pod`](./struct.Pod.html) object.
 #[derive(Debug, Clone)]
 pub struct PodBuilder {
-    body: Pod,
+    body: self::Pod,
 }
 
 impl PodBuilder {
@@ -514,7 +514,7 @@ impl PolicyRule {
     #[inline]
     pub fn builder() -> PolicyRuleBuilder<crate::codegen::generics::MissingVerbs> {
         PolicyRuleBuilder {
-            inner: Default::default(),
+            body: Default::default(),
             _verbs: core::marker::PhantomData,
         }
     }
@@ -522,56 +522,50 @@ impl PolicyRule {
 
 impl Into<PolicyRule> for PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
     fn into(self) -> PolicyRule {
-        self.inner.body
+        self.body
     }
 }
 
 /// Builder for [`PolicyRule`](./struct.PolicyRule.html) object.
-#[repr(transparent)]
 #[derive(Debug, Clone)]
 pub struct PolicyRuleBuilder<Verbs> {
-    inner: PolicyRuleBuilderContainer,
+    body: self::PolicyRule,
     _verbs: core::marker::PhantomData<Verbs>,
-}
-
-#[derive(Debug, Default, Clone)]
-struct PolicyRuleBuilderContainer {
-    body: PolicyRule,
 }
 
 impl<Verbs> PolicyRuleBuilder<Verbs> {
     /// APIGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed.
     #[inline]
     pub fn api_groups(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.inner.body.api_groups = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.api_groups = Some(value.map(|value| value.into()).collect::<Vec<_>>());
         self
     }
 
     /// NonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path Since non-resource URLs are not namespaced, this field is only applicable for ClusterRoles referenced from a ClusterRoleBinding. Rules can either apply to API resources (such as \"pods\" or \"secrets\") or non-resource URL paths (such as \"/api\"),  but not both.
     #[inline]
     pub fn non_resource_ur_ls(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.inner.body.non_resource_ur_ls = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.non_resource_ur_ls = Some(value.map(|value| value.into()).collect::<Vec<_>>());
         self
     }
 
     /// ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
     #[inline]
     pub fn resource_names(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.inner.body.resource_names = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.resource_names = Some(value.map(|value| value.into()).collect::<Vec<_>>());
         self
     }
 
     /// Resources is a list of resources this rule applies to.  ResourceAll represents all resources.
     #[inline]
     pub fn resources(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.inner.body.resources = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.resources = Some(value.map(|value| value.into()).collect::<Vec<_>>());
         self
     }
 
     /// Verbs is a list of Verbs that apply to ALL the ResourceKinds and AttributeRestrictions contained in this rule.  VerbAll represents all kinds.
     #[inline]
     pub fn verbs(mut self, value: impl Iterator<Item = impl Into<String>>) -> PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
-        self.inner.body.verbs = value.map(|value| value.into()).collect::<Vec<_>>();
+        self.body.verbs = value.map(|value| value.into()).collect::<Vec<_>>();
         unsafe { std::mem::transmute(self) }
     }
 }
@@ -599,7 +593,7 @@ pub struct DeleteOptionsDeleteBuilder59<Name, Namespace> {
 
 #[derive(Debug, Default, Clone)]
 struct DeleteOptionsDeleteBuilder59Container {
-    body: DeleteOptions,
+    body: self::DeleteOptions,
     param_dry_run: Option<String>,
     param_grace_period_seconds: Option<i64>,
     param_orphan_dependents: Option<bool>,
@@ -715,7 +709,7 @@ impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::co
     }
 }
 ",
-        439779,
+        440139,
     );
 }
 
@@ -729,7 +723,7 @@ impl ApiGroupList {
     #[inline]
     pub fn builder() -> ApiGroupListBuilder<crate::codegen::generics::MissingGroups> {
         ApiGroupListBuilder {
-            inner: Default::default(),
+            body: Default::default(),
             _groups: core::marker::PhantomData,
         }
     }
@@ -743,42 +737,36 @@ impl ApiGroupList {
 
 impl Into<ApiGroupList> for ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
     fn into(self) -> ApiGroupList {
-        self.inner.body
+        self.body
     }
 }
 
 /// Builder for [`ApiGroupList`](./struct.ApiGroupList.html) object.
-#[repr(transparent)]
 #[derive(Debug, Clone)]
 pub struct ApiGroupListBuilder<Groups> {
-    inner: ApiGroupListBuilderContainer,
+    body: self::ApiGroupList,
     _groups: core::marker::PhantomData<Groups>,
-}
-
-#[derive(Debug, Default, Clone)]
-struct ApiGroupListBuilderContainer {
-    body: ApiGroupList,
 }
 
 impl<Groups> ApiGroupListBuilder<Groups> {
     /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
     #[inline]
     pub fn api_version(mut self, value: impl Into<String>) -> Self {
-        self.inner.body.api_version = Some(value.into());
+        self.body.api_version = Some(value.into());
         self
     }
 
     /// groups is a list of APIGroup.
     #[inline]
     pub fn groups(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::api_group::ApiGroupBuilder<crate::codegen::generics::NameExists, crate::codegen::generics::VersionsExists>>) -> ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
-        self.inner.body.groups = value.map(|value| value.into()).collect::<Vec<_>>();
+        self.body.groups = value.map(|value| value.into()).collect::<Vec<_>>();
         unsafe { std::mem::transmute(self) }
     }
 
     /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
     #[inline]
     pub fn kind(mut self, value: impl Into<String>) -> Self {
-        self.inner.body.kind = Some(value.into());
+        self.body.kind = Some(value.into());
         self
     }
 }
@@ -807,32 +795,39 @@ fn test_builder_field_with_iterators() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_k8s/io/k8s/api/certificates/v1beta1/certificate_signing_request_spec.rs"),
         "
+/// Builder for [`CertificateSigningRequestSpec`](./struct.CertificateSigningRequestSpec.html) object.
+#[derive(Debug, Clone)]
+pub struct CertificateSigningRequestSpecBuilder<Request> {
+    body: self::CertificateSigningRequestSpec,
+    _request: core::marker::PhantomData<Request>,
+}
+
 impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     /// Extra information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn extra(mut self, value: impl Iterator<Item = (String, impl Iterator<Item = impl Into<String>>)>) -> Self {
-        self.inner.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>())).collect::<std::collections::BTreeMap<_, _>>());
+        self.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>())).collect::<std::collections::BTreeMap<_, _>>());
         self
     }
 
     /// Group information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn groups(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.inner.body.groups = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.groups = Some(value.map(|value| value.into()).collect::<Vec<_>>());
         self
     }
 
     /// Base64-encoded PKCS#10 CSR data
     #[inline]
     pub fn request(mut self, value: impl Into<String>) -> CertificateSigningRequestSpecBuilder<crate::codegen::generics::RequestExists> {
-        self.inner.body.request = value.into();
+        self.body.request = value.into();
         unsafe { std::mem::transmute(self) }
     }
 
     /// UID information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn uid(mut self, value: impl Into<String>) -> Self {
-        self.inner.body.uid = Some(value.into());
+        self.body.uid = Some(value.into());
         self
     }
 
@@ -840,18 +835,18 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     ///      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
     #[inline]
     pub fn usages(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.inner.body.usages = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.usages = Some(value.map(|value| value.into()).collect::<Vec<_>>());
         self
     }
 
     /// Information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn username(mut self, value: impl Into<String>) -> Self {
-        self.inner.body.username = Some(value.into());
+        self.body.username = Some(value.into());
         self
     }
 }
 ",
-        2143,
+        1686,
     );
 }

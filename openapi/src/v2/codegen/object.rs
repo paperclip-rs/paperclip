@@ -475,7 +475,10 @@ impl<'a> ApiObjectBuilder<'a> {
             .iter()
             .chain(self.global_params.iter())
             .any(|p| p.required)
-            || (self.body_required && self.fields.iter().any(|f| f.is_required))
+            || (self.body_required
+                && self.fields.iter().any(|f| f.is_required)
+                && !self.local_params.is_empty()
+                && !self.global_params.is_empty())
     }
 
     /// Returns whether this builder will have at least one field.
@@ -576,7 +579,9 @@ impl<'a> ApiObjectBuilder<'a> {
         F: Write,
     {
         if self.body_required {
-            f.write_str("\n    body: ")?;
+            // We address with 'self::' because it's possible for body type
+            // to collide with type parameters (if any).
+            f.write_str("\n    body: self::")?;
             f.write_str(&self.object)?;
             f.write_str(",")?;
         }
