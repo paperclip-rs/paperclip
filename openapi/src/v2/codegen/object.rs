@@ -215,7 +215,7 @@ pub struct ApiObjectImpl<'a> {
 
 impl<'a> ApiObjectImpl<'a> {
     /// Writes the required "structopt" definitions for this object.
-    pub(super) fn write_cli_objects<F>(&self, f: &mut F) -> fmt::Result
+    pub(super) fn write_clap_yaml<F>(&self, f: &mut F) -> fmt::Result
     where
         F: Write,
     {
@@ -243,14 +243,9 @@ impl<'a> ApiObjectImpl<'a> {
                 }
             };
 
-            name = name.to_camel_case();
-            let cmd_name = name.to_kebab_case();
-            if name != cmd_name {
-                write!(f, "\n    #[structopt(name = \"{}\")]", cmd_name)?;
-            }
-
+            name = name.to_kebab_case();
             let mut has_one_option = false;
-            write!(f, "\n    {}", name)?;
+            write!(f, "\n  - {}:", name)?;
 
             builder
                 .struct_fields_iter()
@@ -259,37 +254,19 @@ impl<'a> ApiObjectImpl<'a> {
                 .try_for_each(|(i, field)| {
                     if i == 0 {
                         has_one_option = true;
-                        f.write_str(" {")?;
+                        f.write_str("\n      args:")?;
                     }
 
-                    let kk = field.name.to_kebab_case();
-                    let mut sk = field.name.to_snek_case();
-                    if RUST_KEYWORDS.iter().any(|&k| k == sk) {
-                        sk.push('_');
+                    let field_name = field.name.to_kebab_case();
+                    write!(f, "\n        - {}:", &field_name)?;
+                    f.write_str("\n            long: ")?;
+                    f.write_str(&field_name)?;
+                    if field.prop.is_required() {
+                        f.write_str("\n            required: true")?;
                     }
 
-                    if sk != kk {
-                        write!(f, "\n        #[structopt(long = \"{}\")]", kk)?;
-                    }
-
-                    write!(f, "\n        {}: ", &sk)?;
-                    if !field.prop.is_required() {
-                        f.write_str("Option<")?;
-                    }
-
-                    f.write_str(&field.ty)?;
-                    if !field.prop.is_required() {
-                        f.write_str(">")?;
-                    }
-
-                    f.write_str(",")
+                    f.write_str("\n            takes_value: true")
                 })?;
-
-            if has_one_option {
-                f.write_str("\n    }")?;
-            }
-
-            f.write_str(",")?;
         }
 
         f.write_str("\n")

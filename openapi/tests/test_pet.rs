@@ -28,7 +28,7 @@ lazy_static! {
 
         let mut meta = CrateMeta::default();
         meta.authors = Some(vec!["Me <me@example.com>".into()]);
-        state.crate_meta.borrow_mut().replace(meta);
+        state.set_meta(meta);
 
         let emitter = DefaultEmitter::from(state);
         emitter.generate(&SCHEMA).expect("codegen");

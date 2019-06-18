@@ -1,4 +1,4 @@
-use super::object::ApiObject;
+use super::{object::ApiObject, CrateMeta};
 #[cfg(feature = "cli")]
 use crate::error::PaperClipError;
 use failure::Error;
@@ -27,16 +27,16 @@ pub struct EmitterState {
     pub ns_sep: &'static str,
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
-    /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
-    /// along with the modules. This is gated behind `"cli"` feature.
-    #[cfg(feature = "cli")]
-    pub crate_meta: Rc<RefCell<Option<super::CrateMeta>>>,
     /// Base path for API.
     pub base_url: &'static str,
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<ChildModule>>>>,
     /// Holds generated struct definitions for leaf modules.
     pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
+    /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
+    /// along with the modules. This is gated behind `"cli"` feature.
+    #[cfg(feature = "cli")]
+    crate_meta: Option<Rc<RefCell<CrateMeta>>>,
     /// Unit types used by builders.
     unit_types: Rc<RefCell<HashSet<String>>>,
     /// Generated CLI code.
@@ -53,46 +53,6 @@ pub(super) struct ChildModule {
 }
 
 impl EmitterState {
-    /// This is a no-op.
-    #[cfg(not(feature = "cli"))]
-    pub(crate) fn infer_crate_meta(&self) -> Result<(), Error> {
-        Ok(())
-    }
-
-    /// Validates crate metadata and sets the unset fields.
-    #[cfg(feature = "cli")]
-    pub(crate) fn infer_crate_meta(&self) -> Result<(), Error> {
-        if let Some(meta) = self.crate_meta.borrow_mut().as_mut() {
-            if meta.name.is_none() {
-                meta.name = Some(
-                    fs::canonicalize(&self.working_dir)?
-                        .file_name()
-                        .ok_or(PaperClipError::InvalidCodegenDirectory)?
-                        .to_string_lossy()
-                        .into_owned()
-                        .to_snek_case(),
-                );
-            }
-
-            if meta.version.is_none() {
-                meta.version = Some("0.1.0".into());
-            }
-
-            if meta.authors.is_none() {
-                let (mut name, email) = super::author::discover()?;
-                if let Some(e) = email {
-                    name.push_str(" <");
-                    name.push_str(&e);
-                    name.push_str(">");
-                }
-
-                meta.authors = Some(vec![name]);
-            }
-        }
-
-        Ok(())
-    }
-
     /// Once the emitter has generated the struct definitions,
     /// we can call this method to generate the module declarations
     /// from root.
@@ -118,9 +78,8 @@ extern crate serde_derive;
                 if mod_path.ends_with("main.rs") {
                     contents.push_str(
                         "
-pub mod cli {
-    include!(\"./cli.rs\");
-}
+#[macro_use]
+extern crate clap;
 ",
                     )
                 }
@@ -171,19 +130,6 @@ pub mod {name} {{
         let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
         let mut cli_content = self.cli_content.borrow_mut();
-        cli_content.push_str(
-            "
-use structopt::StructOpt;
-
-#[derive(StructOpt)]
-pub struct ApiCall {
-    #[structopt(subcommand)]
-    op: Operation,
-}
-
-#[derive(Debug, StructOpt)]
-enum Operation {",
-        );
 
         for (mod_path, object) in &*def_mods {
             let mut builder_content = String::new();
@@ -203,15 +149,13 @@ enum Operation {",
                 repr.builders.push(builder);
             }
 
-            repr.write_cli_objects(&mut *cli_content)?;
+            repr.write_clap_yaml(&mut *cli_content)?;
             let mut impl_content = String::from("\n");
             let _ = write!(impl_content, "{}", repr);
 
             self.append_contents(&impl_content, mod_path)?;
             self.append_contents(&builder_content, mod_path)?;
         }
-
-        cli_content.push_str("}\n");
 
         Ok(())
     }
@@ -361,34 +305,82 @@ pub mod client {{
             return Ok(());
         }
 
-        self.write_contents(&*self.cli_content.borrow(), &root.with_file_name("cli.rs"))?;
+        if let Some(m) = self.infer_crate_meta()? {
+            let meta = m.borrow();
+            let clap_yaml = root.with_file_name("app.yaml");
+            let base_content = format!(
+                "
+name: {}
+version: {:?}
+
+settings:
+- SubcommandRequiredElseHelp
+
+subcommands:",
+                meta.name.as_ref().unwrap(),
+                meta.version.as_ref().unwrap()
+            );
+
+            self.write_contents(&base_content, &clap_yaml)?;
+
+            self.append_contents(&*self.cli_content.borrow(), &clap_yaml)?;
+        }
 
         let content = String::from(
             "
-use structopt::StructOpt;
+use clap::App;
 
 fn main() {
-    let _call = self::cli::ApiCall::from_args();
+    let yml = load_yaml!(\"app.yaml\");
+    let matches = App::from_yaml(yml).get_matches();
 }
 ",
         );
 
         self.append_contents(&content, &root)
     }
+}
+
+/* Feature-specific impls */
+
+#[cfg(feature = "cli")]
+impl EmitterState {
+    /// Sets the crate metadata for this session.
+    pub fn set_meta(&mut self, meta: CrateMeta) {
+        self.crate_meta = Some(Rc::new(RefCell::new(meta)));
+    }
+
+    /// Checks whether this session is for emitting a crate.
+    fn is_crate(&self) -> bool {
+        self.crate_meta.is_some()
+    }
+
+    /// Returns the path to the root module.
+    fn root_module_path(&self) -> PathBuf {
+        if let Some(m) = self.crate_meta.as_ref() {
+            let meta = m.borrow();
+            if meta.is_cli {
+                self.working_dir.join("main.rs")
+            } else {
+                self.working_dir.join("lib.rs")
+            }
+        } else {
+            self.working_dir.join("mod.rs")
+        }
+    }
 
     /// Creates a Cargo.toml manifest in the working directory (if it's a crate).
-    #[cfg(feature = "cli")]
     fn create_manifest(&self) -> Result<(), Error> {
-        let m = self.crate_meta.borrow();
         let mut man_path = self.root_module_path();
         let is_cli = man_path.ends_with("main.rs");
         man_path.set_file_name("Cargo.toml");
 
-        let meta = match m.as_ref() {
+        let m = match self.infer_crate_meta()? {
             Some(c) => c,
             None => return Ok(()),
         };
 
+        let meta = m.borrow();
         if self.is_crate() {
             let content = format!(
                 "[package]
@@ -420,7 +412,11 @@ serde_derive = \"1.0\"
                 } else {
                     "[lib]\npath = \"lib.rs\"".into()
                 },
-                if is_cli { "structopt = \"0.2\"\n" } else { "" },
+                if is_cli {
+                    "clap = { version = \"2.33\", features = [\"yaml\"] }\n"
+                } else {
+                    ""
+                },
             );
 
             self.write_contents(&content, &man_path)?;
@@ -429,46 +425,68 @@ serde_derive = \"1.0\"
         Ok(())
     }
 
+    /// Validates crate metadata, sets the unset fields and returns a reference.
+    fn infer_crate_meta(&self) -> Result<Option<Rc<RefCell<CrateMeta>>>, Error> {
+        if let Some(m) = self.crate_meta.as_ref() {
+            let mut meta = m.borrow_mut();
+            if meta.name.is_none() {
+                meta.name = Some(
+                    fs::canonicalize(&self.working_dir)?
+                        .file_name()
+                        .ok_or(PaperClipError::InvalidCodegenDirectory)?
+                        .to_string_lossy()
+                        .into_owned()
+                        .to_snek_case(),
+                );
+            }
+
+            if meta.version.is_none() {
+                meta.version = Some("0.1.0".into());
+            }
+
+            if meta.authors.is_none() {
+                let (mut name, email) = super::author::discover()?;
+                if let Some(e) = email {
+                    name.push_str(" <");
+                    name.push_str(&e);
+                    name.push_str(">");
+                }
+
+                meta.authors = Some(vec![name]);
+            }
+        }
+
+        Ok(self.crate_meta.clone())
+    }
+}
+
+#[cfg(not(feature = "cli"))]
+impl EmitterState {
     /// This is a no-op.
-    #[cfg(not(feature = "cli"))]
-    fn create_manifest(&self) -> Result<(), Error> {
-        Ok(())
+    pub fn set_meta(&mut self, _: CrateMeta) {}
+
+    /// Always returns `Ok(None)`
+    fn infer_crate_meta(&self) -> Result<Option<Rc<RefCell<CrateMeta>>>, Error> {
+        Ok(None)
     }
 
-    /// Checks whether this session is for emitting a crate.
-    #[cfg(feature = "cli")]
-    fn is_crate(&self) -> bool {
-        self.crate_meta.borrow().is_some()
+    /// Always returns the path to `mod.rs` in root.
+    fn root_module_path(&self) -> PathBuf {
+        self.working_dir.join("mod.rs")
     }
 
     /// This always returns `false`.
-    #[cfg(not(feature = "cli"))]
     fn is_crate(&self) -> bool {
         false
     }
 
-    /// Returns the path to the root module.
-    #[cfg(feature = "cli")]
-    fn root_module_path(&self) -> PathBuf {
-        if let Some(meta) = self.crate_meta.borrow().as_ref() {
-            if meta.is_cli {
-                self.working_dir.join("main.rs")
-            } else {
-                self.working_dir.join("lib.rs")
-            }
-        } else {
-            self.working_dir.join("mod.rs")
-        }
-    }
-
-    /// Returns the path to the root module.
-    ///
-    /// **NOTE:** Always returns the root module path.
-    #[cfg(not(feature = "cli"))]
-    fn root_module_path(&self) -> PathBuf {
-        self.working_dir.join("mod.rs")
+    /// Always returns `Ok(())`
+    fn create_manifest(&self) -> Result<(), Error> {
+        Ok(())
     }
 }
+
+/* Other impls */
 
 impl Default for EmitterState {
     fn default() -> EmitterState {
@@ -477,7 +495,7 @@ impl Default for EmitterState {
             mod_prefix: "crate::",
             ns_sep: ".",
             #[cfg(feature = "cli")]
-            crate_meta: Rc::new(RefCell::new(None)),
+            crate_meta: None,
             base_url: "https://example.com",
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),

@@ -43,7 +43,7 @@ lazy_static! {
         meta.name = Some("test-k8s-cli".into());
         meta.version = Some("0.0.0".into());
         meta.is_cli = true;
-        state.crate_meta.borrow_mut().replace(meta);
+        state.set_meta(meta);
 
         let emitter = DefaultEmitter::from(state);
         emitter.generate(&SCHEMA).expect("codegen");

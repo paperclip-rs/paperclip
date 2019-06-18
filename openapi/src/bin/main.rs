@@ -55,16 +55,17 @@ fn parse_args_and_run() -> Result<(), Error> {
     let spec = raw.resolve()?;
 
     let mut state = EmitterState::default();
-    state.crate_meta.borrow_mut().replace(CrateMeta::default());
     if let Some(o) = opt.output {
         fs::create_dir_all(&o)?;
         state.working_dir = o;
     }
 
+    let mut meta = CrateMeta::default();
     if opt.cli {
-        state.crate_meta.borrow_mut().as_mut().map(|c| c.is_cli = true);
+        meta.is_cli = true;
     }
 
+    state.set_meta(meta);
     let emitter = DefaultEmitter::from(state);
     emitter.generate(&spec)
 }

@@ -48,9 +48,6 @@ pub trait Emitter: Sized {
     /// inside Rust modules in the configured working directory.
     fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
         let gen = CodegenEmitter(self);
-        let state = gen.state();
-        state.infer_crate_meta()?;
-
         // Generate file contents by accumulating definitions.
         for (name, schema) in &api.definitions {
             debug!("Creating definition {}", name);
@@ -58,6 +55,7 @@ pub trait Emitter: Sized {
             gen.generate_def_from_root(&schema)?;
         }
 
+        let state = gen.state();
         state.declare_modules()?;
         state.write_definitions()?;
 
