@@ -39,8 +39,10 @@ pub struct EmitterState {
     crate_meta: Option<Rc<RefCell<CrateMeta>>>,
     /// Unit types used by builders.
     unit_types: Rc<RefCell<HashSet<String>>>,
-    /// Generated CLI code.
-    cli_content: Rc<RefCell<String>>,
+    /// Generated CLI YAML for clap.
+    cli_yaml: Rc<RefCell<String>>,
+    /// Generated match arms for clap subcommands and matches.
+    cli_match_arms: Rc<RefCell<String>>,
 }
 
 /// Indicates a child module in codegen working directory.
@@ -80,6 +82,10 @@ extern crate serde_derive;
                         "
 #[macro_use]
 extern crate clap;
+
+pub mod cli {
+    include!(\"./cli.rs\");
+}
 ",
                     )
                 }
@@ -129,7 +135,9 @@ pub mod {name} {{
         info!("Adding builders to definitions.");
         let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
-        let mut cli_content = self.cli_content.borrow_mut();
+        let mut cli_yaml = self.cli_yaml.borrow_mut();
+        let mut match_arms = self.cli_match_arms.borrow_mut();
+        let is_cli = self.is_cli()?;
 
         for (mod_path, object) in &*def_mods {
             let mut builder_content = String::new();
@@ -145,13 +153,22 @@ pub mod {name} {{
                 builder_content.push('\n');
                 let _ = write!(builder_content, "{}", builder);
                 builder_content.push('\n');
-                let _ = write!(builder_content, "{}", builder.impl_repr());
+                let inner_repr = builder.impl_repr();
+                let _ = write!(builder_content, "{}", inner_repr);
+                if is_cli {
+                    inner_repr.write_arg_parsing(&mut builder_content)?;
+                }
+
                 repr.builders.push(builder);
             }
 
-            repr.write_clap_yaml(&mut *cli_content)?;
+            if is_cli {
+                repr.write_clap_yaml(&mut *cli_yaml)?;
+                repr.write_arg_match_arms(&mut *match_arms)?;
+            }
+
             let mut impl_content = String::from("\n");
-            let _ = write!(impl_content, "{}", repr);
+            write!(impl_content, "{}", repr)?;
 
             self.append_contents(&impl_content, mod_path)?;
             self.append_contents(&builder_content, mod_path)?;
@@ -306,6 +323,7 @@ pub mod client {{
         }
 
         if let Some(m) = self.infer_crate_meta()? {
+            // Clap YAML
             let meta = m.borrow();
             let clap_yaml = root.with_file_name("app.yaml");
             let base_content = format!(
@@ -321,23 +339,69 @@ subcommands:",
                 meta.version.as_ref().unwrap()
             );
 
+            let cli_mod = root.with_file_name("cli.rs");
             self.write_contents(&base_content, &clap_yaml)?;
+            self.append_contents(&*self.cli_yaml.borrow(), &clap_yaml)?;
 
-            self.append_contents(&*self.cli_content.borrow(), &clap_yaml)?;
+            // CLI module
+            self.write_contents(
+                "
+use clap::ArgMatches;
+use crate::client::{ApiError, Sendable};
+
+pub(super) fn response_future(client: &reqwest::r#async::Client, _matches: &ArgMatches<'_>,
+                              sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
+                             -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>
+{
+    match sub_cmd {",
+                &cli_mod,
+            )?;
+
+            let cli_content = &mut *self.cli_match_arms.borrow_mut();
+            cli_content.push_str(
+                "
+        _ => unimplemented!(),
+    }
+}
+",
+            );
+            self.append_contents(&cli_content, &cli_mod)?;
         }
 
+        // Main function
         let content = String::from(
             "
 use clap::App;
+use futures::Future;
 
 fn main() {
     let yml = load_yaml!(\"app.yaml\");
-    let matches = App::from_yaml(yml).get_matches();
+    let app = App::from_yaml(yml);
+    let matches = app.get_matches();
+    let (sub_cmd, sub_matches) = matches.subcommand();
+
+    let client = reqwest::r#async::Client::new();
+    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)
+        .map(|_| {
+            //
+        }).map_err(|e| {
+            println!(\"{}\", e);
+        });
+
+    tokio::run(f);
 }
 ",
         );
 
         self.append_contents(&content, &root)
+    }
+
+    /// Returns if this session is for generating CLI.
+    fn is_cli(&self) -> Result<bool, Error> {
+        Ok(self
+            .infer_crate_meta()?
+            .map(|m| m.borrow().is_cli)
+            .unwrap_or(false))
     }
 }
 
@@ -372,7 +436,7 @@ impl EmitterState {
     /// Creates a Cargo.toml manifest in the working directory (if it's a crate).
     fn create_manifest(&self) -> Result<(), Error> {
         let mut man_path = self.root_module_path();
-        let is_cli = man_path.ends_with("main.rs");
+        let is_cli = self.is_cli()?;
         man_path.set_file_name("Cargo.toml");
 
         let m = match self.infer_crate_meta()? {
@@ -413,7 +477,8 @@ serde_derive = \"1.0\"
                     "[lib]\npath = \"lib.rs\"".into()
                 },
                 if is_cli {
-                    "clap = { version = \"2.33\", features = [\"yaml\"] }\n"
+                    "clap = { version = \"2.33\", features = [\"yaml\"] }
+tokio = \"0.1\"\n"
                 } else {
                     ""
                 },
@@ -500,7 +565,8 @@ impl Default for EmitterState {
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
             unit_types: Rc::new(RefCell::new(HashSet::new())),
-            cli_content: Rc::new(RefCell::new(String::new())),
+            cli_yaml: Rc::new(RefCell::new(String::new())),
+            cli_match_arms: Rc::new(RefCell::new(String::new())),
         }
     }
 }

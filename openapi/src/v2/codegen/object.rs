@@ -214,10 +214,60 @@ pub struct ApiObjectImpl<'a> {
 }
 
 impl<'a> ApiObjectImpl<'a> {
-    /// Writes the required "structopt" definitions for this object.
+    /// Writes the required "clap" subcommand for this object in YAML.
     pub(super) fn write_clap_yaml<F>(&self, f: &mut F) -> fmt::Result
     where
         F: Write,
+    {
+        self.with_cli_cmd_and_builder(|name, builder| {
+            write!(f, "\n  - {}:", name)?;
+
+            builder
+                .struct_fields_iter()
+                .filter(|f| f.prop.is_parameter())
+                .enumerate()
+                .try_for_each(|(i, field)| {
+                    if i == 0 {
+                        f.write_str("\n      args:")?;
+                    }
+
+                    let field_name = field.name.to_kebab_case();
+                    write!(f, "\n        - {}:", &field_name)?;
+                    f.write_str("\n            long: ")?;
+                    f.write_str(&field_name)?;
+                    if field.prop.is_required() {
+                        f.write_str("\n            required: true")?;
+                    }
+
+                    f.write_str("\n            takes_value: true")
+                })
+        })?;
+
+        f.write_str("\n")
+    }
+
+    /// Writes the match arms associated with this object's operations.
+    pub(super) fn write_arg_match_arms<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        self.with_cli_cmd_and_builder(|name, builder| {
+            f.write_str("\n        \"")?;
+            f.write_str(&name)?;
+            f.write_str("\" =>\n            ")?;
+            f.write_str(&builder.helper_module_prefix)?;
+            f.write_str(&self.inner.path)?;
+            f.write_str("::")?;
+            builder.write_name(f)?;
+            f.write_str("::from_args(sub_matches).send_raw(client),")
+        })
+    }
+
+    /// Helper function for calling the given closure with the kebab-case
+    /// name of the builder (operation) and the actual builder.
+    fn with_cli_cmd_and_builder<F, E>(&self, mut call: F) -> Result<(), E>
+    where
+        F: FnMut(String, &ApiObjectBuilder<'_>) -> Result<(), E>,
     {
         // Ignore objects without any operations (all objects have a default builder).
         if self.builders.len() < 2 {
@@ -244,32 +294,10 @@ impl<'a> ApiObjectImpl<'a> {
             };
 
             name = name.to_kebab_case();
-            let mut has_one_option = false;
-            write!(f, "\n  - {}:", name)?;
-
-            builder
-                .struct_fields_iter()
-                .filter(|f| f.prop.is_parameter())
-                .enumerate()
-                .try_for_each(|(i, field)| {
-                    if i == 0 {
-                        has_one_option = true;
-                        f.write_str("\n      args:")?;
-                    }
-
-                    let field_name = field.name.to_kebab_case();
-                    write!(f, "\n        - {}:", &field_name)?;
-                    f.write_str("\n            long: ")?;
-                    f.write_str(&field_name)?;
-                    if field.prop.is_required() {
-                        f.write_str("\n            required: true")?;
-                    }
-
-                    f.write_str("\n            takes_value: true")
-                })?;
+            call(name, builder)?;
         }
 
-        f.write_str("\n")
+        Ok(())
     }
 
     /// Writes the associated function for this object for instantiating builders.
@@ -677,6 +705,77 @@ impl<'a, 'b> ApiObjectBuilderImpl<'a, 'b>
 where
     'b: 'a,
 {
+    /// Writes impl for getting args from `clap::ArgMatches`
+    pub(super) fn write_arg_parsing<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        if self.0.rel_path.is_none() && self.0.method.is_none() {
+            return Ok(());
+        }
+
+        let needs_container = self.0.needs_container();
+        f.write_str("\n#[allow(unused_variables)]\nimpl ")?;
+        self.0.write_name(f)?;
+        self.0
+            .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+        // NOTE: We're assuming that we've correctly given all the arg requirements to clap.
+        f.write_str(
+            " {\n    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>) -> Self {",
+        )?;
+        f.write_str("\n        ")?;
+        self.0.write_name(f)?;
+        f.write_str(" {")?;
+
+        if needs_container {
+            f.write_str("\n            inner: ")?;
+            self.0.write_container_name(f)?;
+            f.write_str(" {")?;
+        }
+
+        if self.0.body_required {
+            f.write_str("\n            body: Default::default(),")?;
+        }
+
+        let mut phantom = String::new();
+        self.0.struct_fields_iter().try_for_each(|field| {
+            let (sk, kk) = (field.name.to_snek_case(), field.name.to_kebab_case());
+            if field.prop.is_required() {
+                phantom.push_str("\n            _");
+                if field.prop.is_parameter() {
+                    phantom.push_str("param_");
+                }
+                phantom.push_str(&sk);
+                phantom.push_str(": core::marker::PhantomData,");
+            }
+
+            if field.prop.is_field() {
+                return Ok(());
+            }
+
+            f.write_str("\n            param_")?;
+            f.write_str(&sk)?;
+            // We're enforcing requirements in the CLI. We can relax here.
+            writeln!(
+                f,
+                ": matches.and_then(|m| {{
+                    m.value_of(\"{arg}\").map(|_| {{
+                        value_t!(m, \"{arg}\", {ty}).unwrap_or_else(|e| e.exit())
+                    }})
+                }}),",
+                arg = kk,
+                ty = field.ty
+            )
+        })?;
+
+        if needs_container {
+            f.write_str("\n            },")?;
+        }
+
+        f.write_str(&phantom)?;
+        f.write_str("\n        }\n    }\n}\n")
+    }
+
     /// Builds the method parameter type using the actual field type.
     ///
     /// For example, if a field is `Vec<T>`, then we replace it (in builder method)

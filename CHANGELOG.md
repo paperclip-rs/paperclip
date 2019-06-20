@@ -7,9 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Changelog
-- Root module (`mod.rs` or `lib.rs`) generation for codegen (previously we were only generating children modules).
+- Root module (`mod.rs`, `lib.rs` or `main.rs`) generation for codegen (previously we were only generating children modules).
 - Cargo manifest generation (gated by `"cli"` feature).
 - `[bin]` target (CLI) for generating crates.
+- CLI generation (fancy curl for your APIs).
 
 ### Changed
 - Codegen now writes the dependency traits, types and impls in the root module.
