@@ -31,3 +31,5 @@ test:
 	cd openapi/tests/test_pet && cargo build
 	cd openapi/tests/test_k8s && cargo build
 	cd openapi/tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo build
+	# Test that the CLI runs successfully.
+	./openapi/tests/test_k8s/target/debug/test-k8s-cli --help > /dev/null

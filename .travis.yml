@@ -42,6 +42,7 @@ matrix:
     - cargo build
     - cd ../test_k8s/cli
     - CARGO_TARGET_DIR=../target cargo build
+    - ../target/debug/test-k8s-cli --help > /dev/null
 
 deploy:
   provider: pages

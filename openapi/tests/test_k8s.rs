@@ -339,7 +339,7 @@ pub mod client {
     /// Represents an API client.
     pub trait ApiClient {
         /// Base path for this API.
-        fn base_url(&self) -> &'static str { \"https://example.com\" }
+        fn base_url(&self) -> &str { \"https://example.com\" }
 
         /// Consumes a method and a relative path and produces a request builder for a single API call.
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;

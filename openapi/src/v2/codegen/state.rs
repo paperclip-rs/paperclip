@@ -237,7 +237,7 @@ pub mod client {{
     /// Represents an API client.
     pub trait ApiClient {{
         /// Base path for this API.
-        fn base_url(&self) -> &'static str {{ \"{base_url}\" }}
+        fn base_url(&self) -> &str {{ \"{base_url}\" }}
 
         /// Consumes a method and a relative path and produces a request builder for a single API call.
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
@@ -334,6 +334,28 @@ version: {:?}
 settings:
 - SubcommandRequiredElseHelp
 
+args:
+    - ca-cert:
+        long: ca-cert
+        help: Path to CA certificate to be added to trust store.
+        takes_value: true
+    - client-cert:
+        long: client-cert
+        help: Path to certificate for TLS client verification.
+        takes_value: true
+        requires:
+            - client-key
+    - client-key:
+        long: client-key
+        help: Path to private key for TLS client verification.
+        takes_value: true
+        requires:
+            - client-cert
+    - host:
+        long: host
+        help: Base URL for your API.
+        takes_value: true
+
 subcommands:",
                 meta.name.as_ref().unwrap(),
                 meta.version.as_ref().unwrap()
@@ -347,9 +369,9 @@ subcommands:",
             self.write_contents(
                 "
 use clap::ArgMatches;
-use crate::client::{ApiError, Sendable};
+use crate::client::{ApiClient, ApiError, Sendable};
 
-pub(super) fn response_future(client: &reqwest::r#async::Client, _matches: &ArgMatches<'_>,
+pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
                               sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
                              -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>
 {
@@ -371,24 +393,107 @@ pub(super) fn response_future(client: &reqwest::r#async::Client, _matches: &ArgM
         // Main function
         let content = String::from(
             "
+use self::client::ApiClient;
 use clap::App;
-use futures::Future;
+use failure::Error;
+use openssl::pkcs12::Pkcs12;
+use openssl::pkey::PKey;
+use openssl::x509::X509;
 
-fn main() {
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+
+#[derive(Debug, Fail)]
+enum ClientError {
+    #[fail(display = \"I/O error: {}\", _0)]
+    Io(std::io::Error),
+    #[fail(display = \"OpenSSL error: {}\", _0)]
+    OpenSsl(openssl::error::ErrorStack),
+    #[fail(display = \"Client error: {}\", _0)]
+    Reqwest(reqwest::Error),
+    #[fail(display = \"URL error: {}\", _0)]
+    Url(reqwest::UrlError),
+    #[fail(display = \"{}\", _0)]
+    Api(self::client::ApiError),
+}
+
+fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
+    let mut data = vec![];
+    let mut fd = File::open(path.as_ref()).map_err(ClientError::Io)?;
+    fd.read_to_end(&mut data).map_err(ClientError::Io)?;
+    Ok(data)
+}
+
+struct WrappedClient {
+    inner: reqwest::r#async::Client,
+    url: String,
+}
+
+impl ApiClient for WrappedClient {
+    fn base_url(&self) -> &str {
+        &self.url
+    }
+
+    #[inline]
+    fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
+        self.inner.request_builder(method, rel_path)
+    }
+}
+
+fn run_app() -> Result<reqwest::r#async::Response, Error> {
     let yml = load_yaml!(\"app.yaml\");
     let app = App::from_yaml(yml);
     let matches = app.get_matches();
     let (sub_cmd, sub_matches) = matches.subcommand();
 
-    let client = reqwest::r#async::Client::new();
-    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)
-        .map(|_| {
-            //
-        }).map_err(|e| {
-            println!(\"{}\", e);
-        });
+    let mut client = reqwest::r#async::Client::builder();
 
-    tokio::run(f);
+    if let Some(p) = matches.value_of(\"ca-cert\") {
+        let ca_cert = X509::from_pem(&read_file(p)?)
+            .map_err(ClientError::OpenSsl)?;
+        let ca_der = ca_cert.to_der().map_err(ClientError::OpenSsl)?;
+        client = client.add_root_certificate(
+            reqwest::Certificate::from_der(&ca_der)
+                .map_err(ClientError::Reqwest)?
+        );
+    }
+
+    // FIXME: Is this the only way?
+    if let (Some(p1), Some(p2)) = (matches.value_of(\"client-key\"), matches.value_of(\"client-cert\")) {
+        let cert = X509::from_pem(&read_file(p2)?).map_err(ClientError::OpenSsl)?;
+        let key = PKey::private_key_from_pem(&read_file(p1)?)
+            .map_err(ClientError::OpenSsl)?;
+        let builder = Pkcs12::builder();
+        let pkcs12 = builder.build(\"foobar\", \"my-client\", &key, &cert)
+            .map_err(ClientError::OpenSsl)?;
+        let identity = reqwest::Identity::from_pkcs12_der(
+            &pkcs12.to_der().map_err(ClientError::OpenSsl)?,
+            \"foobar\"
+        ).map_err(ClientError::Reqwest)?;
+        client = client.identity(identity);
+    }
+
+    let client: Box<dyn ApiClient> = if let Some(u) = matches.value_of(\"host\") {
+        reqwest::Url::parse(u).map_err(ClientError::Url)?;
+        Box::new(WrappedClient {
+            inner: client.build().map_err(ClientError::Reqwest)?,
+            url: u.into(),
+        }) as Box<_>
+    } else {
+        Box::new(client.build().map_err(ClientError::Reqwest)?) as Box<_>
+    };
+
+    let f = self::cli::response_future(&*client, &matches, sub_cmd, sub_matches);
+    Ok(tokio::runtime::current_thread::block_on_all(f)
+        .map_err(ClientError::Api)?)
+}
+
+fn main() {
+    match run_app() {
+        Ok(_) => (),
+        Err(e) => println!(\"{}\", e),
+    }
 }
 ",
         );
@@ -478,6 +583,7 @@ serde_derive = \"1.0\"
                 },
                 if is_cli {
                     "clap = { version = \"2.33\", features = [\"yaml\"] }
+openssl = { version = \"0.10\", features = [\"vendored\"] }
 tokio = \"0.1\"\n"
                 } else {
                     ""
