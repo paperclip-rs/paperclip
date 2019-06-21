@@ -229,6 +229,18 @@ impl<'a> ApiObjectImpl<'a> {
                 .try_for_each(|(i, field)| {
                     if i == 0 {
                         f.write_str("\n      args:")?;
+                        if builder.body_required {
+                            write!(
+                                f,
+                                "
+        - payload:
+            long: payload
+            help: \"Path to payload (schema: {obj}) or pass '-' for stdin\"
+            takes_value: true
+            required: true",
+                                obj = self.inner.name
+                            )?;
+                        }
                     }
 
                     let field_name = field.name.to_kebab_case();
@@ -254,12 +266,12 @@ impl<'a> ApiObjectImpl<'a> {
         self.with_cli_cmd_and_builder(|name, builder| {
             f.write_str("\n        \"")?;
             f.write_str(&name)?;
-            f.write_str("\" =>\n            ")?;
+            f.write_str("\" =>\n            Ok(")?;
             f.write_str(&builder.helper_module_prefix)?;
             f.write_str(&self.inner.path)?;
             f.write_str("::")?;
             builder.write_name(f)?;
-            f.write_str("::from_args(sub_matches).send_raw(client),")
+            f.write_str("::from_args(sub_matches, is_verbose)?.send_raw(client)),")
         })
     }
 
@@ -721,9 +733,11 @@ where
             .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
         // NOTE: We're assuming that we've correctly given all the arg requirements to clap.
         f.write_str(
-            " {\n    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>) -> Self {",
+            " {
+    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>, is_verbose: bool) -> Result<Self, crate::ClientError> {
+        use crate::client::Sendable;",
         )?;
-        f.write_str("\n        ")?;
+        f.write_str("\n        let thing = ")?;
         self.0.write_name(f)?;
         f.write_str(" {")?;
 
@@ -734,7 +748,20 @@ where
         }
 
         if self.0.body_required {
-            f.write_str("\n            body: Default::default(),")?;
+            write!(
+                f,
+                "
+            body: {{
+                let path = matches.expect(\"no args for builder with body?\").value_of(\"payload\").expect(\"payload?\");
+                let fd: Box<dyn std::io::Read> = if path == \"-\" {{
+                    Box::new(std::io::stdin()) as Box<_>
+                }} else {{
+                    Box::new(std::fs::File::open(&path).map_err(crate::ClientError::Io)?) as Box<_>
+                }};
+
+                serde_json::from_reader(fd).map_err(crate::ClientError::Json)?
+            }},"
+            )?;
         }
 
         let mut phantom = String::new();
@@ -773,7 +800,19 @@ where
         }
 
         f.write_str(&phantom)?;
-        f.write_str("\n        }\n    }\n}\n")
+        f.write_str(
+            "
+        };
+
+        if is_verbose {
+            println!(\"{} {}\", Self::METHOD, thing.rel_path());
+        }
+
+        Ok(thing)
+    }
+}
+",
+        )
     }
 
     /// Builds the method parameter type using the actual field type.

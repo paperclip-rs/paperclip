@@ -355,6 +355,10 @@ args:
         long: host
         help: Base URL for your API.
         takes_value: true
+    - verbose:
+        short: v
+        long: verbose
+        help: Enable verbose mode.
 
 subcommands:",
                 meta.name.as_ref().unwrap(),
@@ -371,10 +375,11 @@ subcommands:",
 use clap::ArgMatches;
 use crate::client::{ApiClient, ApiError, Sendable};
 
-pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
+pub(super) fn response_future(client: &dyn ApiClient, matches: &ArgMatches<'_>,
                               sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
-                             -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>
+                             -> Result<Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>, crate::ClientError>
 {
+    let is_verbose = matches.is_present(\"verbose\");
     match sub_cmd {",
                 &cli_mod,
             )?;
@@ -396,6 +401,7 @@ pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
 use self::client::ApiClient;
 use clap::App;
 use failure::Error;
+use futures::Stream;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -416,6 +422,8 @@ enum ClientError {
     Url(reqwest::UrlError),
     #[fail(display = \"{}\", _0)]
     Api(self::client::ApiError),
+    #[fail(display = \"Payload error: {}\", _0)]
+    Json(serde_json::Error),
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
@@ -441,7 +449,7 @@ impl ApiClient for WrappedClient {
     }
 }
 
-fn run_app() -> Result<reqwest::r#async::Response, Error> {
+fn run_app() -> Result<(), Error> {
     let yml = load_yaml!(\"app.yaml\");
     let app = App::from_yaml(yml);
     let matches = app.get_matches();
@@ -484,15 +492,27 @@ fn run_app() -> Result<reqwest::r#async::Response, Error> {
         Box::new(client.build().map_err(ClientError::Reqwest)?) as Box<_>
     };
 
-    let f = self::cli::response_future(&*client, &matches, sub_cmd, sub_matches);
-    Ok(tokio::runtime::current_thread::block_on_all(f)
-        .map_err(ClientError::Api)?)
+    let f = self::cli::response_future(&*client, &matches, sub_cmd, sub_matches)?;
+    let resp = tokio::runtime::current_thread::block_on_all(f)
+        .map_err(ClientError::Api)?;
+
+    if matches.is_present(\"verbose\") {
+        println!(\"{}\", resp.status());
+    }
+
+    let f = resp.into_body().map_err(ClientError::Reqwest).for_each(|chunk| {
+        std::io::copy(&mut &*chunk, &mut std::io::stdout())
+            .map(|_| ())
+            .map_err(ClientError::Io)
+    });
+
+    tokio::runtime::current_thread::block_on_all(f)?;
+    Ok(())
 }
 
 fn main() {
-    match run_app() {
-        Ok(_) => (),
-        Err(e) => println!(\"{}\", e),
+    if let Err(e) = run_app() {
+        println!(\"{}\", e);
     }
 }
 ",
@@ -584,6 +604,7 @@ serde_derive = \"1.0\"
                 if is_cli {
                     "clap = { version = \"2.33\", features = [\"yaml\"] }
 openssl = { version = \"0.10\", features = [\"vendored\"] }
+serde_json = \"1.0\"
 tokio = \"0.1\"\n"
                 } else {
                     ""
