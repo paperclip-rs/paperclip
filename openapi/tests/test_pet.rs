@@ -68,7 +68,7 @@ pub mod tag {
 }
 
 pub mod client {
-    use futures::Future;
+    use futures::{Future, future};
 ",
         0,
     );

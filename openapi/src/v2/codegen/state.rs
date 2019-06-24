@@ -194,21 +194,14 @@ pub mod generics {
 
         content.clear();
         module.set_file_name("generics.rs");
-        content.push_str("pub trait Optional {}");
 
         for ty in &*types {
             content.push_str("\npub struct Missing");
             content.push_str(ty);
             content.push_str(";");
-            content.push_str("\nimpl Optional for Missing");
-            content.push_str(ty);
-            content.push_str(" {}");
             content.push_str("\npub struct ");
             content.push_str(ty);
             content.push_str("Exists;");
-            content.push_str("\nimpl Optional for ");
-            content.push_str(ty);
-            content.push_str("Exists {}");
         }
 
         content.push_str("\n");
@@ -223,7 +216,7 @@ pub mod generics {
         let deser = "resp.json::<Self::Output>().map_err(ApiError::Reqwest)";
         let content = format!("
 pub mod client {{
-    use futures::Future;
+    use futures::{{Future, future}};
 
     /// Common API errors.
     #[derive(Debug, Fail)]
@@ -236,17 +229,25 @@ pub mod client {{
 
     /// Represents an API client.
     pub trait ApiClient {{
-        /// Base path for this API.
-        fn base_url(&self) -> &str {{ \"{base_url}\" }}
-
         /// Consumes a method and a relative path and produces a request builder for a single API call.
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
+
+        /// Performs the HTTP request using the given `Request` object
+        /// and returns a `Response` future.
+        fn make_request(&self, req: reqwest::r#async::Request)
+                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>;
     }}
 
     impl ApiClient for reqwest::r#async::Client {{
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {{
-            self.request(method, &(String::from(self.base_url()) + rel_path))
+            self.request(method, &(String::from(\"{base_url}\") + rel_path))
+        }}
+
+        #[inline]
+        fn make_request(&self, req: reqwest::r#async::Request)
+                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send> {{
+            Box::new(self.execute(req)) as Box<_>
         }}
     }}
 
@@ -279,8 +280,13 @@ pub mod client {{
         /// Convenience method for returning a raw response after sending a request.
         fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError> + Send> {{
             let rel_path = self.rel_path();
-            let req = client.request_builder(Self::METHOD, &rel_path);
-            Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {{
+            let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
+            let req = match builder.build() {{
+                Ok(r) => r,
+                Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
+            }};
+
+            Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {{
                 if resp.status().is_success() {{
                     futures::future::ok(resp)
                 }} else {{
@@ -355,6 +361,7 @@ args:
         long: host
         help: Base URL for your API.
         takes_value: true
+        required: true
     - verbose:
         short: v
         long: verbose
@@ -375,11 +382,10 @@ subcommands:",
 use clap::ArgMatches;
 use crate::client::{ApiClient, ApiError, Sendable};
 
-pub(super) fn response_future(client: &dyn ApiClient, matches: &ArgMatches<'_>,
+pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
                               sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
                              -> Result<Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>, crate::ClientError>
 {
-    let is_verbose = matches.is_present(\"verbose\");
     match sub_cmd {",
                 &cli_mod,
             )?;
@@ -395,13 +401,13 @@ pub(super) fn response_future(client: &dyn ApiClient, matches: &ArgMatches<'_>,
             self.append_contents(&cli_content, &cli_mod)?;
         }
 
-        // Main function
+        // `main.rs`
         let content = String::from(
             "
 use self::client::ApiClient;
 use clap::App;
 use failure::Error;
-use futures::Stream;
+use futures::{Future, Stream};
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -434,18 +440,24 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
 }
 
 struct WrappedClient {
+    verbose: bool,
     inner: reqwest::r#async::Client,
     url: String,
 }
 
 impl ApiClient for WrappedClient {
-    fn base_url(&self) -> &str {
-        &self.url
+    fn make_request(&self, req: reqwest::r#async::Request)
+                   -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>
+    {
+        if self.verbose {
+            println!(\"{} {}\", req.method(), req.url());
+        }
+
+        self.inner.make_request(req)
     }
 
-    #[inline]
     fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-        self.inner.request_builder(method, rel_path)
+        self.inner.request(method, &(self.url.clone() + rel_path))
     }
 }
 
@@ -482,35 +494,38 @@ fn run_app() -> Result<(), Error> {
         client = client.identity(identity);
     }
 
-    let client: Box<dyn ApiClient> = if let Some(u) = matches.value_of(\"host\") {
-        reqwest::Url::parse(u).map_err(ClientError::Url)?;
-        Box::new(WrappedClient {
-            inner: client.build().map_err(ClientError::Reqwest)?,
-            url: u.into(),
-        }) as Box<_>
-    } else {
-        Box::new(client.build().map_err(ClientError::Reqwest)?) as Box<_>
+    let is_verbose = matches.is_present(\"verbose\");
+    let url = matches.value_of(\"host\").expect(\"required arg URL?\");
+    reqwest::Url::parse(url).map_err(ClientError::Url)?;
+    let client = WrappedClient {
+        inner: client.build().map_err(ClientError::Reqwest)?,
+        url: url.trim_end_matches('/').into(),
+        verbose: is_verbose,
     };
 
-    let f = self::cli::response_future(&*client, &matches, sub_cmd, sub_matches)?;
-    let resp = tokio::runtime::current_thread::block_on_all(f)
-        .map_err(ClientError::Api)?;
+    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?
+        .map_err(ClientError::Api)
+        .and_then(move |resp| {
+            if is_verbose {
+                println!(\"{}\", resp.status());
+            }
 
-    if matches.is_present(\"verbose\") {
-        println!(\"{}\", resp.status());
-    }
-
-    let f = resp.into_body().map_err(ClientError::Reqwest).for_each(|chunk| {
-        std::io::copy(&mut &*chunk, &mut std::io::stdout())
-            .map(|_| ())
-            .map_err(ClientError::Io)
-    });
+            resp.into_body().concat2().map_err(ClientError::Reqwest)
+        })
+        .map(|body| {
+            let mut body = std::io::Cursor::new(body);
+            let _ = std::io::copy(&mut body, &mut std::io::stdout())
+                .map_err(|e| {
+                    println!(\"Error writing to stodut: {}\", e);
+                });
+        });
 
     tokio::runtime::current_thread::block_on_all(f)?;
     Ok(())
 }
 
 fn main() {
+    env_logger::init();
     if let Err(e) = run_app() {
         println!(\"{}\", e);
     }
@@ -603,6 +618,7 @@ serde_derive = \"1.0\"
                 },
                 if is_cli {
                     "clap = { version = \"2.33\", features = [\"yaml\"] }
+env_logger = \"0.6\"
 openssl = { version = \"0.10\", features = [\"vendored\"] }
 serde_json = \"1.0\"
 tokio = \"0.1\"\n"

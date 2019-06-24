@@ -11,9 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Cargo manifest generation (gated by `"cli"` feature).
 - `[bin]` target (CLI) for generating crates.
 - CLI generation (fancy curl for your APIs).
+- `ApiClient::make_request` for sending a request and fetching a response future.
 
 ### Changed
 - Codegen now writes the dependency traits, types and impls in the root module.
+
+### Removed
+- `ApiClient::base_url` in favor of `ApiClient::make_request`
+- Redundant `Optional` trait for generated markers.
 
 ### Fixed
 - Import prefixes support in emitter (for codegen).

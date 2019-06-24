@@ -325,7 +325,7 @@ pub mod io {
 }
 
 pub mod client {
-    use futures::Future;
+    use futures::{Future, future};
 
     /// Common API errors.
     #[derive(Debug, Fail)]
@@ -338,17 +338,25 @@ pub mod client {
 
     /// Represents an API client.
     pub trait ApiClient {
-        /// Base path for this API.
-        fn base_url(&self) -> &str { \"https://example.com\" }
-
         /// Consumes a method and a relative path and produces a request builder for a single API call.
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
+
+        /// Performs the HTTP request using the given `Request` object
+        /// and returns a `Response` future.
+        fn make_request(&self, req: reqwest::r#async::Request)
+                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>;
     }
 
     impl ApiClient for reqwest::r#async::Client {
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-            self.request(method, &(String::from(self.base_url()) + rel_path))
+            self.request(method, &(String::from(\"https://example.com\") + rel_path))
+        }
+
+        #[inline]
+        fn make_request(&self, req: reqwest::r#async::Request)
+                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send> {
+            Box::new(self.execute(req)) as Box<_>
         }
     }
 
@@ -381,8 +389,13 @@ pub mod client {
         /// Convenience method for returning a raw response after sending a request.
         fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError> + Send> {
             let rel_path = self.rel_path();
-            let req = client.request_builder(Self::METHOD, &rel_path);
-            Box::new(self.modify(req).send().map_err(ApiError::Reqwest).and_then(move |resp| {
+            let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
+            let req = match builder.build() {
+                Ok(r) => r,
+                Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
+            };
+
+            Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {
                 if resp.status().is_success() {
                     futures::future::ok(resp)
                 } else {
@@ -395,6 +408,7 @@ pub mod client {
 
 pub mod generics {
     include!(\"./generics.rs\");
+}
 ",
         0,
     );
@@ -404,7 +418,8 @@ pub mod generics {
 fn test_generics_mod() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_k8s/generics.rs"),
-        "pub trait Optional {}",
+        "
+pub struct",
         0,
     );
 }

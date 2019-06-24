@@ -271,7 +271,7 @@ impl<'a> ApiObjectImpl<'a> {
             f.write_str(&self.inner.path)?;
             f.write_str("::")?;
             builder.write_name(f)?;
-            f.write_str("::from_args(sub_matches, is_verbose)?.send_raw(client)),")
+            f.write_str("::from_args(sub_matches)?.send_raw(client)),")
         })
     }
 
@@ -734,8 +734,7 @@ where
         // NOTE: We're assuming that we've correctly given all the arg requirements to clap.
         f.write_str(
             " {
-    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>, is_verbose: bool) -> Result<Self, crate::ClientError> {
-        use crate::client::Sendable;",
+    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>) -> Result<Self, crate::ClientError> {",
         )?;
         f.write_str("\n        let thing = ")?;
         self.0.write_name(f)?;
@@ -803,10 +802,6 @@ where
         f.write_str(
             "
         };
-
-        if is_verbose {
-            println!(\"{} {}\", Self::METHOD, thing.rel_path());
-        }
 
         Ok(thing)
     }
