@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `[bin]` target (CLI) for generating crates.
 - Support generating CLI (fancy curl for your APIs) which uses async/await and `runtime_tokio`.
 - `ApiClient::make_request` for sending a request and fetching a response future.
+- Support for operations returning array of objects.
 
 ### Changed
 - Codegen now writes the dependency traits, types and impls in the root module.

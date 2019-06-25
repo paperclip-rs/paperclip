@@ -39,7 +39,7 @@ definitions:
         format: int64
     type: object
 paths:
-  /pet/{petId}:
+  /pets/{petId}:
     get:
       description: Find pet by ID
       operationId: getPetById
@@ -47,7 +47,16 @@ paths:
         "200":
           schema:
             $ref: '#/definitions/Pet'
-  /pet:
+  /pets:
+    get:
+      description: Fetch list of pets
+      operationId: listPets
+      responses:
+        "200":
+          schema:
+            type: array
+            items:
+              $ref: '#/definitions/Pet'
     post:
       description: Add a new pet to the store
       operationId: addPet

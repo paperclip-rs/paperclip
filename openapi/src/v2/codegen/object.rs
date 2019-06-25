@@ -55,6 +55,8 @@ pub struct OpRequirement {
     pub params: Vec<Parameter>,
     /// Whether the object itself is required (in body) for this operation.
     pub body_required: bool,
+    /// Whether this operation returns a list of the associated `ApiObject`.
+    pub listable: bool,
     /// Type path for this operation's response.
     pub response_ty_path: Option<String>,
 }
@@ -150,6 +152,7 @@ impl ApiObject {
                     .iter()
                     .map(move |(&method, req)| ApiObjectBuilder {
                         idx,
+                        is_list_op: req.listable,
                         multiple_builders_exist: {
                             let mut iter =
                                 self.paths.values().flat_map(|path_ops| path_ops.req.iter());
@@ -414,6 +417,7 @@ impl<'a> ApiObjectImpl<'a> {
 #[derive(Default, Debug, Clone)]
 pub struct ApiObjectBuilder<'a> {
     idx: usize,
+    is_list_op: bool,
     multiple_builders_exist: bool,
     rel_path: Option<&'a str>,
     helper_module_prefix: &'a str,
@@ -898,11 +902,19 @@ where
         self.0
             .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
         f.write_str(" {\n    type Output = ")?;
+        if self.0.is_list_op {
+            f.write_str("Vec<")?;
+        }
+
         if let Some(resp) = self.0.response {
             // If we've acquired a response type, then write that.
             f.write_str(resp)?;
         } else {
             f.write_str(self.0.object)?;
+        }
+
+        if self.0.is_list_op {
+            f.write_str(">")?;
         }
 
         f.write_str(";\n\n    const METHOD: reqwest::Method = reqwest::Method::")?;

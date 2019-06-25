@@ -101,3 +101,29 @@ serde_derive = \"1.0\"
         0,
     );
 }
+
+#[test]
+fn test_array_response() {
+    // If an operation returns an array of objects, then we bind that
+    // operation to that object and do `Sendable<Output<Vec<Object>>>`.
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/pet.rs"),
+        "
+/// Builder created by [`Pet::list_pets`](./struct.Pet.html#method.list_pets) method for a `GET` operation associated with `Pet`.
+#[derive(Debug, Clone)]
+pub struct PetGetBuilder;
+
+
+impl crate::client::Sendable for PetGetBuilder {
+    type Output = Vec<Pet>;
+
+    const METHOD: reqwest::Method = reqwest::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/pets\".into()
+    }
+}
+",
+        2715,
+    );
+}

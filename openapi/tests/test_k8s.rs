@@ -917,6 +917,7 @@ use std::io::Read;
 use std::path::Path;
 
 #[derive(Debug, Fail)]
+#[allow(dead_code)]
 enum ClientError {
     #[fail(display = \"I/O error: {}\", _0)]
     Io(std::io::Error),

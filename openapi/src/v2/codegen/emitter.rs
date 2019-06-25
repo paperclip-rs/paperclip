@@ -262,6 +262,7 @@ where
                     ops.req.insert(
                         meth,
                         OpRequirement {
+                            listable: false,
                             id: op.operation_id.clone(),
                             description: op.description.clone(),
                             params,
@@ -281,44 +282,61 @@ where
                 unused_local_params = unused_params.clone();
             }
 
+            if op_addressed {
+                continue;
+            }
+
             // We haven't attached this operation to any object.
             // Let's try from the response maybe...
-            if !op_addressed {
-                if let Some(s) = self.get_2xx_response_schema(&op) {
-                    let mut def_mods = state.def_mods.borrow_mut();
-                    let schema = &*s.read();
-                    if schema.data_type() != Some(DataType::Object) {
-                        // FIXME: Handle response types that aren't object.
+            if let Some(s) = self.get_2xx_response_schema(&op) {
+                let mut def_mods = state.def_mods.borrow_mut();
+                let schema = &*s.read();
+
+                let mut listable = false;
+                let s = match schema.data_type() {
+                    // We can deal with object responses.
+                    Some(DataType::Object) => s.clone(),
+                    // We can also deal with array of objects by mapping
+                    // the operation to that object.
+                    Some(DataType::Array)
+                        if schema.items().unwrap().read().data_type() == Some(DataType::Object) =>
+                    {
+                        listable = true;
+                        (&**schema.items().unwrap()).clone()
+                    }
+                    // FIXME: Handle other types where we can't map an
+                    // operation to a known schema.
+                    _ => continue,
+                };
+
+                let schema = &*s.read();
+                let pat = self.def_mod_path(schema).ok();
+                let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
+                    Some(o) => o,
+                    None => {
+                        warn!(
+                            "Skipping unknown response schema for path {:?}: {:?}",
+                            path, schema
+                        );
                         continue;
                     }
+                };
 
-                    let pat = self.def_mod_path(schema).ok();
-                    let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
-                        Some(o) => o,
-                        None => {
-                            warn!(
-                                "Skipping unknown response schema for path {:?}: {:?}",
-                                path, schema
-                            );
-                            continue;
-                        }
-                    };
-
-                    let ops = obj
-                        .paths
-                        .entry(path.into())
-                        .or_insert_with(Default::default);
-                    ops.req.insert(
-                        meth,
-                        OpRequirement {
-                            id: op.operation_id.clone(),
-                            description: op.description.clone(),
-                            params: unused_local_params,
-                            body_required: false,
-                            response_ty_path: None,
-                        },
-                    );
-                }
+                let ops = obj
+                    .paths
+                    .entry(path.into())
+                    .or_insert_with(Default::default);
+                ops.req.insert(
+                    meth,
+                    OpRequirement {
+                        id: op.operation_id.clone(),
+                        description: op.description.clone(),
+                        params: unused_local_params,
+                        body_required: false,
+                        listable,
+                        response_ty_path: None,
+                    },
+                );
             }
         }
 
