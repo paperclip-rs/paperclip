@@ -47,8 +47,6 @@ paths:
         "200":
           schema:
             $ref: '#/definitions/Pet'
-      schemes:
-      - https
   /pet:
     post:
       description: Add a new pet to the store
@@ -63,5 +61,3 @@ paths:
         "200":
           schema:
             $ref: '#/definitions/Pet'
-      schemes:
-      - https

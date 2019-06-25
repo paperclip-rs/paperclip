@@ -326,12 +326,13 @@ pub mod io {
 
 pub mod client {
     use futures::{Future, future};
+    use parking_lot::Mutex;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
     pub enum ApiError {
         #[fail(display = \"API request failed for path: {} (code: {})\", _0, _1)]
-        Failure(String, reqwest::StatusCode),
+        Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
         #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
         Reqwest(reqwest::Error),
     }
@@ -399,7 +400,7 @@ pub mod client {
                 if resp.status().is_success() {
                     futures::future::ok(resp)
                 } else {
-                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status()).into())
+                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
                 }
             })) as Box<_>
         }
@@ -890,6 +891,208 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
 }
 
 #[test]
-fn test_cli() {
+fn test_cli_main() {
     let _ = &*CLI_CODEGEN;
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
+        "#![feature(async_await)]",
+        0,
+    );
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
+        "
+use self::client::{ApiClient, ApiError};
+use clap::App;
+use failure::Error;
+use futures::{Future, Stream};
+use futures_preview::compat::Future01CompatExt;
+use openssl::pkcs12::Pkcs12;
+use openssl::pkey::PKey;
+use openssl::x509::X509;
+
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+
+#[derive(Debug, Fail)]
+enum ClientError {
+    #[fail(display = \"I/O error: {}\", _0)]
+    Io(std::io::Error),
+    #[fail(display = \"OpenSSL error: {}\", _0)]
+    OpenSsl(openssl::error::ErrorStack),
+    #[fail(display = \"Client error: {}\", _0)]
+    Reqwest(reqwest::Error),
+    #[fail(display = \"URL error: {}\", _0)]
+    Url(reqwest::UrlError),
+    #[fail(display = \"{}\", _0)]
+    Api(self::client::ApiError),
+    #[fail(display = \"Payload error: {}\", _0)]
+    Json(serde_json::Error),
+    #[fail(display = \"\")]
+    Empty,
+}
+
+fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
+    let mut data = vec![];
+    let mut fd = File::open(path.as_ref()).map_err(ClientError::Io)?;
+    fd.read_to_end(&mut data).map_err(ClientError::Io)?;
+    Ok(data)
+}
+
+struct WrappedClient {
+    verbose: bool,
+    inner: reqwest::r#async::Client,
+    url: String,
+}
+
+impl ApiClient for WrappedClient {
+    fn make_request(&self, req: reqwest::r#async::Request)
+                   -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>
+    {
+        if self.verbose {
+            println!(\"{} {}\", req.method(), req.url());
+        }
+
+        self.inner.make_request(req)
+    }
+
+    fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
+        self.inner.request(method, &(self.url.clone() + rel_path))
+    }
+}
+
+fn parse_args_and_fetch()
+    -> Result<(WrappedClient, Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>), Error>
+{
+    let yml = load_yaml!(\"app.yaml\");
+    let app = App::from_yaml(yml);
+    let matches = app.get_matches();
+    let (sub_cmd, sub_matches) = matches.subcommand();
+
+    let mut client = reqwest::r#async::Client::builder();
+
+    if let Some(p) = matches.value_of(\"ca-cert\") {
+        let ca_cert = X509::from_pem(&read_file(p)?)
+            .map_err(ClientError::OpenSsl)?;
+        let ca_der = ca_cert.to_der().map_err(ClientError::OpenSsl)?;
+        client = client.add_root_certificate(
+            reqwest::Certificate::from_der(&ca_der)
+                .map_err(ClientError::Reqwest)?
+        );
+    }
+
+    // FIXME: Is this the only way?
+    if let (Some(p1), Some(p2)) = (matches.value_of(\"client-key\"), matches.value_of(\"client-cert\")) {
+        let cert = X509::from_pem(&read_file(p2)?).map_err(ClientError::OpenSsl)?;
+        let key = PKey::private_key_from_pem(&read_file(p1)?)
+            .map_err(ClientError::OpenSsl)?;
+        let builder = Pkcs12::builder();
+        let pkcs12 = builder.build(\"foobar\", \"my-client\", &key, &cert)
+            .map_err(ClientError::OpenSsl)?;
+        let identity = reqwest::Identity::from_pkcs12_der(
+            &pkcs12.to_der().map_err(ClientError::OpenSsl)?,
+            \"foobar\"
+        ).map_err(ClientError::Reqwest)?;
+        client = client.identity(identity);
+    }
+
+    let is_verbose = matches.is_present(\"verbose\");
+    let url = matches.value_of(\"host\").expect(\"required arg URL?\");
+    reqwest::Url::parse(url).map_err(ClientError::Url)?;
+    let client = WrappedClient {
+        inner: client.build().map_err(ClientError::Reqwest)?,
+        url: url.trim_end_matches('/').into(),
+        verbose: is_verbose,
+    };
+
+    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?;
+    Ok((client, f))
+}
+
+async fn run_app() -> Result<(), Error> {
+    let (client, f) = parse_args_and_fetch()?;
+    let response = match f.map_err(ClientError::Api).compat().await {
+        Ok(r) => r,
+        Err(ClientError::Api(ApiError::Failure(_, _, r))) => r.into_inner(),
+        Err(e) => return Err(e.into()),
+    };
+
+    let status = response.status();
+    if client.verbose {
+        println!(\"{}\", status);
+    }
+
+    let bytes = response
+        .into_body()
+        .concat2()
+        .map_err(ClientError::Reqwest)
+        .compat()
+        .await?;
+
+    let _ = std::io::copy(&mut &*bytes, &mut std::io::stdout());
+    if !status.is_success() {
+        Err(ClientError::Empty)?
+    }
+
+    Ok(())
+}
+
+#[runtime::main(runtime_tokio::Tokio)]
+async fn main() {
+    env_logger::init();
+    if let Err(e) = run_app().await {
+        println!(\"{}\", e);
+    }
+}
+",
+        3890,
+    );
+}
+
+#[test]
+fn test_clap_yaml() {
+    let _ = &*CLI_CODEGEN;
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/cli/app.yaml"),
+        "
+name: test-k8s-cli
+version: \"0.0.0\"
+
+settings:
+- SubcommandRequiredElseHelp
+
+args:
+    - ca-cert:
+        long: ca-cert
+        help: Path to CA certificate to be added to trust store.
+        takes_value: true
+    - client-cert:
+        long: client-cert
+        help: Path to certificate for TLS client verification.
+        takes_value: true
+        requires:
+            - client-key
+    - client-key:
+        long: client-key
+        help: Path to private key for TLS client verification.
+        takes_value: true
+        requires:
+            - client-cert
+    - host:
+        long: host
+        help: Base URL for your API.
+        takes_value: true
+        required: true
+    - verbose:
+        short: v
+        long: verbose
+        help: Enable verbose mode.
+
+subcommands:
+",
+        0,
+    );
 }

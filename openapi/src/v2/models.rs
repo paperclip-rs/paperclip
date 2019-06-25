@@ -128,7 +128,7 @@ pub struct Operation<S> {
     pub consumes: Vec<String>,
     #[serde(default)]
     pub produces: Vec<String>,
-    pub schemes: Vec<OperationProtocol>,
+    pub schemes: Option<Vec<OperationProtocol>>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
     pub parameters: Option<Vec<Parameter<S>>>,

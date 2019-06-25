@@ -287,25 +287,21 @@ impl<'a> ApiObjectImpl<'a> {
         }
 
         for builder in &self.builders {
-            let mut name = match builder.op_id {
-                Some(n) => n.into(),
+            let name = match builder.op_id {
+                Some(n) => n.to_kebab_case(),
                 None => {
-                    if let Some(name) = builder.con_fn_name() {
-                        name
-                    } else {
-                        if builder.method.is_some() || builder.rel_path.is_some() {
-                            warn!(
-                                "Unable to generate name for operation ({:?} {:?}). Skipping.",
-                                builder.method, builder.rel_path
-                            );
-                        }
-
-                        continue;
+                    if builder.method.is_some() || builder.rel_path.is_some() {
+                        // FIXME: Investigate what we should do in the absence of operation ID.
+                        warn!(
+                            "Unable to generate name for operation ({:?} {:?}). Skipping.",
+                            builder.method, builder.rel_path
+                        );
                     }
+
+                    continue;
                 }
             };
 
-            name = name.to_kebab_case();
             call(name, builder)?;
         }
 

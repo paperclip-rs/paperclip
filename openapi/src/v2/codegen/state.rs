@@ -67,6 +67,10 @@ impl EmitterState {
 
             if rel_parent.parent().is_none() && self.is_crate() {
                 mod_path = self.root_module_path();
+                let is_app = mod_path.ends_with("main.rs");
+                if is_app {
+                    contents.push_str("#![feature(async_await)]");
+                }
 
                 contents.push_str(
                     "
@@ -217,12 +221,13 @@ pub mod generics {
         let content = format!("
 pub mod client {{
     use futures::{{Future, future}};
+    use parking_lot::Mutex;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
     pub enum ApiError {{
         #[fail(display = \"API request failed for path: {{}} (code: {{}})\", _0, _1)]
-        Failure(String, reqwest::StatusCode),
+        Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
         #[fail(display = \"An error has occurred while performing the API request: {{}}\", _0)]
         Reqwest(reqwest::Error),
     }}
@@ -290,7 +295,7 @@ pub mod client {{
                 if resp.status().is_success() {{
                     futures::future::ok(resp)
                 }} else {{
-                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status()).into())
+                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
                 }}
             }})) as Box<_>
         }}
@@ -404,10 +409,11 @@ pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
         // `main.rs`
         let content = String::from(
             "
-use self::client::ApiClient;
+use self::client::{ApiClient, ApiError};
 use clap::App;
 use failure::Error;
 use futures::{Future, Stream};
+use futures_preview::compat::Future01CompatExt;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -430,6 +436,8 @@ enum ClientError {
     Api(self::client::ApiError),
     #[fail(display = \"Payload error: {}\", _0)]
     Json(serde_json::Error),
+    #[fail(display = \"\")]
+    Empty,
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
@@ -461,7 +469,9 @@ impl ApiClient for WrappedClient {
     }
 }
 
-fn run_app() -> Result<(), Error> {
+fn parse_args_and_fetch()
+    -> Result<(WrappedClient, Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>), Error>
+{
     let yml = load_yaml!(\"app.yaml\");
     let app = App::from_yaml(yml);
     let matches = app.get_matches();
@@ -503,30 +513,42 @@ fn run_app() -> Result<(), Error> {
         verbose: is_verbose,
     };
 
-    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?
-        .map_err(ClientError::Api)
-        .and_then(move |resp| {
-            if is_verbose {
-                println!(\"{}\", resp.status());
-            }
+    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?;
+    Ok((client, f))
+}
 
-            resp.into_body().concat2().map_err(ClientError::Reqwest)
-        })
-        .map(|body| {
-            let mut body = std::io::Cursor::new(body);
-            let _ = std::io::copy(&mut body, &mut std::io::stdout())
-                .map_err(|e| {
-                    println!(\"Error writing to stodut: {}\", e);
-                });
-        });
+async fn run_app() -> Result<(), Error> {
+    let (client, f) = parse_args_and_fetch()?;
+    let response = match f.map_err(ClientError::Api).compat().await {
+        Ok(r) => r,
+        Err(ClientError::Api(ApiError::Failure(_, _, r))) => r.into_inner(),
+        Err(e) => return Err(e.into()),
+    };
 
-    tokio::runtime::current_thread::block_on_all(f)?;
+    let status = response.status();
+    if client.verbose {
+        println!(\"{}\", status);
+    }
+
+    let bytes = response
+        .into_body()
+        .concat2()
+        .map_err(ClientError::Reqwest)
+        .compat()
+        .await?;
+
+    let _ = std::io::copy(&mut &*bytes, &mut std::io::stdout());
+    if !status.is_success() {
+        Err(ClientError::Empty)?
+    }
+
     Ok(())
 }
 
-fn main() {
+#[runtime::main(runtime_tokio::Tokio)]
+async fn main() {
     env_logger::init();
-    if let Err(e) = run_app() {
+    if let Err(e) = run_app().await {
         println!(\"{}\", e);
     }
 }
@@ -599,6 +621,7 @@ edition = \"2018\"
 failure = \"0.1\"
 failure_derive = \"0.1\"
 futures = \"0.1\"
+parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
 serde_derive = \"1.0\"
@@ -619,9 +642,11 @@ serde_derive = \"1.0\"
                 if is_cli {
                     "clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
+futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
 openssl = { version = \"0.10\", features = [\"vendored\"] }
 serde_json = \"1.0\"
-tokio = \"0.1\"\n"
+runtime = \"0.3.0-alpha.5\"
+runtime-tokio = \"0.3.0-alpha.4\"\n"
                 } else {
                     ""
                 },
