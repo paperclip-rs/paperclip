@@ -75,9 +75,9 @@ impl EmitterState {
                 contents.push_str(
                     "
 #[macro_use]
-extern crate failure_derive;
+extern crate failure;
 #[macro_use]
-extern crate serde_derive;
+extern crate serde;
 ",
                 );
 
@@ -620,12 +620,10 @@ edition = \"2018\"
 
 [dependencies]
 failure = \"0.1\"
-failure_derive = \"0.1\"
 futures = \"0.1\"
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
-serde_derive = \"1.0\"
 {}
 [workspace]
 ",
@@ -646,8 +644,9 @@ env_logger = \"0.6\"
 futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
 openssl = { version = \"0.10\", features = [\"vendored\"] }
 serde_json = \"1.0\"
-runtime = \"0.3.0-alpha.5\"
-runtime-tokio = \"0.3.0-alpha.4\"\n"
+runtime = { git = \"https://github.com/rustasync/runtime\" }
+runtime-tokio = { git = \"https://github.com/rustasync/runtime\" }
+"
                 } else {
                     ""
                 },

@@ -6,7 +6,6 @@ definitions:
         type: string
       id:
         type: integer
-        format: int64
     type: object
   Pet:
     description: A pet is a person's best friend
@@ -16,7 +15,6 @@ definitions:
     properties:
       id:
         type: integer
-        format: int64
       tags:
         type: array
         items:

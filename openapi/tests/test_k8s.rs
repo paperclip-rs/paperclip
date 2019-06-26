@@ -891,6 +891,35 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
 }
 
 #[test]
+fn test_cli_manifest() {
+    let _ = &*CLI_CODEGEN;
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/cli/Cargo.toml"),
+        "
+[[bin]]
+name = \"test-k8s-cli\"
+path = \"main.rs\"
+
+[dependencies]
+failure = \"0.1\"
+futures = \"0.1\"
+parking_lot = \"0.8\"
+reqwest = \"0.9\"
+serde = \"1.0\"
+clap = { version = \"2.33\", features = [\"yaml\"] }
+env_logger = \"0.6\"
+futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
+openssl = { version = \"0.10\", features = [\"vendored\"] }
+serde_json = \"1.0\"
+runtime = { git = \"https://github.com/rustasync/runtime\" }
+runtime-tokio = { git = \"https://github.com/rustasync/runtime\" }
+",
+        120,
+    );
+}
+
+#[test]
 fn test_cli_main() {
     let _ = &*CLI_CODEGEN;
 
@@ -1048,7 +1077,7 @@ async fn main() {
     }
 }
 ",
-        3890,
+        3876,
     );
 }
 

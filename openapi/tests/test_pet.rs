@@ -51,9 +51,9 @@ fn test_lib_creation() {
         &(ROOT.clone() + "/tests/test_pet/lib.rs"),
         "
 #[macro_use]
-extern crate failure_derive;
+extern crate failure;
 #[macro_use]
-extern crate serde_derive;
+extern crate serde;
 
 pub mod category {
     include!(\"./category.rs\");
@@ -89,14 +89,10 @@ path = \"lib.rs\"
 
 [dependencies]
 failure = \"0.1\"
-failure_derive = \"0.1\"
 futures = \"0.1\"
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
-serde_derive = \"1.0\"
-
-[workspace]
 ",
         0,
     );
