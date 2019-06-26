@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Gitbook for detailed documentation and walkthroughs.
 - Changelog
 - Root module (`mod.rs`, `lib.rs` or `main.rs`) generation for codegen (previously we were only generating children modules).
 - Cargo manifest generation (gated by `"cli"` feature).

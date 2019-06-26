@@ -4,168 +4,17 @@
 [![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip)
 [![Crates.io](https://img.shields.io/crates/v/paperclip.svg)](https://crates.io/crates/paperclip)
 
-WIP OpenAPI code generator for type-safe compile-time checked HTTP APIs in Rust.
+Paperclip is a WIP OpenAPI code generator for efficient type-safe compile-time checked HTTP APIs in Rust.
 
-## Features
+It's currently under active development and may not be ready for production use just yet.
 
-The following features are supported at the moment:
+You may be interested in:
 
- - Generates API objects from schemas in an OpenAPI v2 spec.
- - Generates builder structs for the API objects and HTTP operations.
- - Fulfilled builder structs send API calls and return response futures (only `https` and `application/json` is supported as of now).
-
-See the [projects](https://github.com/wafflespeanut/paperclip/projects) for tracking the features in queue.
-
-## Build script example
-
-Assuming you already have an OpenAPI v2 spec, let's generate code through a [build script](https://doc.rust-lang.org/cargo/reference/build-scripts.html).
-
-### `Cargo.toml`
-
-```toml
-[package]
-name = "my_awesome_app"
-version = "0.1.0"
-authors = ["Me <me@example.com>"]
-edition = "2018"
-build = "build.rs"
-
-[dependencies]
-# Crates required by the generated code!
-failure = "0.1"
-failure_derive = "0.1"
-futures = "0.1"
-reqwest = "0.9"
-serde = "1.0"
-serde_derive = "1.0"
-# Other crates I need...
-tokio = "0.1"
-
-[build-dependencies]
-paperclip = "0.1.0"
-```
-
-### `build.rs`
-
-> Here, I'm using the [kubernetes spec I already have in tree](./openapi/tests/k8s-v1.16.0-alpha.0-openapi-v2.json).
-
-```rust
-use paperclip::v2::{
-    self,
-    codegen::{DefaultEmitter, Emitter, EmitterState},
-    models::{Api, DefaultSchema},
-};
-
-use std::env;
-use std::fs::File;
-
-fn main() {
-    // Your spec path here.
-    let fd = File::open("../paperclip/openapi/tests/k8s-v1.16.0-alpha.0-openapi-v2.json").expect("schema?");
-    let raw: Api<DefaultSchema> = v2::from_reader(fd).expect("deserializing spec");
-    let schema = raw.resolve().expect("resolution");
-
-    let out_dir = env::var("OUT_DIR").unwrap();
-    let mut state = EmitterState::default();
-    state.mod_prefix = "crate::codegen::"; // prefix because we've isolated generated code (see main.rs).
-    state.working_dir = out_dir.into();
-
-    let emitter = DefaultEmitter::from(state);
-    emitter.generate(&schema).expect("codegen");
-}
-```
-
-### `src/main.rs`
-
-```rust
-#[macro_use] extern crate failure_derive;
-#[macro_use] extern crate serde_derive;
-
-mod codegen {
-    #![allow(dead_code)]
-    include!(concat!(env!("OUT_DIR"), "/mod.rs"));
-}
-
-use self::codegen::client::Sendable;
-use self::codegen::io::k8s::api::core::v1::node_list::NodeList;
-
-use futures::Future;
-use reqwest::r#async::Client;
-
-fn main() {
-    let client = Client::new();
-    let f = NodeList::get()
-        .limit(10)
-        .send(&client);
-
-    // NOTE: For Kubernetes, this works only if TLS is disabled!
-    tokio::run(f.map(|list| {
-        println!("{:?}", list);
-    }).map_err(|e| {
-        println!("{:?}", e);
-    }));
-}
-```
-
-## Compile-time checks?
-
-API calls often *require* some parameters. Should we miss those parameters when performing a request, either the client will produce a runtime error or the server will reject our request. Our generated client code on the other hand, uses markers to avoid this problem at compile-time.
-
-Let's change the [previous example](#srcmainrs) to fetch a service. In order to fetch a Kubernetes service, the [`name` and `namespace` parameters are required](https://kubernetes.io/docs/reference/generated/kubernetes-api/v1.14/#read-service-v1-core).
-
-```rust
-use self::codegen::io::k8s::api::core::v1::service::Service;
-
-fn main() {
-    let client = Client::new();
-    let f = Service::read_core_v1_namespaced_service()
-        .send(&client);
-    ...
-}
-```
-
-When we compile this, we'll get an error:
-
-```
-error[E0599]: no method named `send` found for type
-`codegen::io::k8s::api::core::v1::service::ServiceGetBuilder1<
-    codegen::generics::MissingName,
-    codegen::generics::MissingNamespace
->` in the current scope
-```
-
-We can see that the builder has been marked with `MissingName` and `MissingNamespace`. Let's try setting the name.
-
-```rust
-let f = Service::read_core_v1_namespaced_service()
-    .name("my_service")
-    .send(&client);
-```
-
-... and we'll get another error:
-
-```
-error[E0599]: no method named `send` found for type
-`codegen::io::k8s::api::core::v1::service::ServiceGetBuilder1<
-    codegen::generics::NameExists,
-    codegen::generics::MissingNamespace
->` in the current scope
-```
-
-Now, the name exists, but the namespace is still missing. Setting the namespace like so:
-
-```rust
-let f = Service::read_core_v1_namespaced_service()
-    .name("my_service")
-    .namespace("default")
-    .send(&client);
-```
-
-And the code will compile.
-
-## Motivation
-
-While [Serde](https://serde.rs/) makes it amazingly easy to write API objects, only the official codegen [supports generating proper APIs](https://github.com/swagger-api/swagger-codegen/tree/dedb5ce36d54495365da9a7d88d1e6e056cfe29f/samples/client/petstore/rust) and leverages the builder pattern for building API requests. I think we can build better APIs using pure Rust.
+ - [An overview](https://paperclip.waffles.space/)
+ - [Supported features](https://paperclip.waffles.space/features.html).
+ - [Features being worked on](https://github.com/wafflespeanut/paperclip/projects).
+ - [Examples](https://paperclip.waffles.space/examples.html).
+ - [API documentation](https://paperclip.waffles.space/paperclip).
 
 ## Developing locally
 
@@ -176,7 +25,7 @@ While [Serde](https://serde.rs/) makes it amazingly easy to write API objects, o
 
 This project welcomes all kinds of contributions. No contribution is too small!
 
-If you really wish to contribute to this project but don't know how to begin or if you need help with something related to this project, then feel free to send me an email or ping me in Discord (same handle).
+If you want to contribute to this project but don't know how to begin or if you need help with something related to this project, feel free to send me an email or ping me in Discord (same handle).
 
 ## Code of Conduct
 
@@ -198,3 +47,9 @@ at your option.
 I don't think proc macros are the right way to go for REST APIs. We need to be able to **see** the generated code somehow to identify names, fields, supported methods, etc. ([like this](https://paperclip.waffles.space/tests/test_k8s/api/)). With proc macros, you sorta have to guess.
 
 This doesn't mean you can't generate APIs in compile-time. The only difference is that you'll be using [build scripts](#build-script-example) instead and `include!` the relevant code. That said, [we're using proc-macros](./macros) for other things.
+
+> The error thrown at compile-time doesn't look like it's very useful. Isn't there a better way to do this?
+
+None that I can think of, sadly.
+
+**New ideas here needed.**

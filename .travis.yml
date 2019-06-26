@@ -1,6 +1,8 @@
 language: rust
 rust: nightly-2019-06-09
 cache: cargo
+node_js: "12"
+install: "npm install -g gitbook-cli"
 
 before_script:
 - cargo install cargo-sweep --force
@@ -43,6 +45,9 @@ matrix:
     - cd ../test_k8s/cli
     - CARGO_TARGET_DIR=../target cargo build
     - ../target/debug/test-k8s-cli --help > /dev/null
+    - cd ../../../
+    - gitbook build book/
+    - cp -r book/_book/* target/doc/
 
 deploy:
   provider: pages
