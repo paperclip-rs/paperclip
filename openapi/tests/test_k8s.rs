@@ -42,6 +42,7 @@ lazy_static! {
         let mut meta = CrateMeta::default();
         meta.name = Some("test-k8s-cli".into());
         meta.version = Some("0.0.0".into());
+        meta.authors = Some(vec!["Me <me@example.com>".into()]);
         meta.is_cli = true;
         state.set_meta(meta);
 
@@ -915,7 +916,7 @@ serde_json = \"1.0\"
 runtime = { git = \"https://github.com/rustasync/runtime\" }
 runtime-tokio = { git = \"https://github.com/rustasync/runtime\" }
 ",
-        120,
+        101,
     );
 }
 
