@@ -33,19 +33,19 @@ matrix:
     - CACHE_NAME=test
     script:
     - cargo test --all --all-features
-    - rm -rf target/doc
-    - cargo doc --all --all-features --no-deps
     - cd openapi/tests/test_k8s
     - cargo build
-    - cargo doc --all --all-features --no-deps
-    - cd -
-    - cp -r openapi/tests/test_k8s/target/doc target/doc/tests
-    - cd openapi/tests/test_pet
+    - cd ../test_pet
     - cargo build
     - cd ../test_k8s/cli
     - CARGO_TARGET_DIR=../target cargo build
     - ../target/debug/test-k8s-cli --help > /dev/null
-    - cd ../../../../
+  - name: docs
+    env:
+    - CACHE_NAME=docs
+    script:
+    - rm -rf target/doc
+    - cargo doc --all --all-features --no-deps
     - gitbook build book/
     - cp -r book/_book/* target/doc/
 
@@ -55,6 +55,6 @@ deploy:
   github_token: $GITHUB_TOKEN
   on:
     branch: master
-    condition: "$TRAVIS_JOB_NAME = test"
+    condition: "$TRAVIS_JOB_NAME = docs"
   local_dir: target/doc
   fqdn: paperclip.waffles.space

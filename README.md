@@ -10,7 +10,7 @@ It's currently under active development and may not be ready for production use 
 
 You may be interested in:
 
- - [An overview](https://paperclip.waffles.space/)
+ - [An overview](https://paperclip.waffles.space/).
  - [Supported features](https://paperclip.waffles.space/features.html).
  - [Features being worked on](https://github.com/wafflespeanut/paperclip/projects).
  - [Examples](https://paperclip.waffles.space/examples.html).
@@ -44,7 +44,7 @@ at your option.
 
 > Why is this generating raw Rust code instead of leveraging [procedural macros](https://doc.rust-lang.org/reference/procedural-macros.html) for compile-time codegen?
 
-I don't think proc macros are the right way to go for REST APIs. We need to be able to **see** the generated code somehow to identify names, fields, supported methods, etc. ([like this](https://paperclip.waffles.space/tests/test_k8s/api/)). With proc macros, you sorta have to guess.
+I don't think proc macros are the right way to go for REST APIs. We need to be able to **see** the generated code somehow to identify names, fields, supported methods, etc. With proc macros, you sorta have to guess.
 
 This doesn't mean you can't generate APIs in compile-time. The only difference is that you'll be using [build scripts](#build-script-example) instead and `include!` the relevant code. That said, [we're using proc-macros](./macros) for other things.
 
