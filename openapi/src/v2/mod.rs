@@ -192,6 +192,8 @@ impl<S: Schema> Api<S> {
             swagger: self.swagger,
             definitions: resolver.defs,
             paths: resolver.paths,
+            base_path: self.base_path,
+            host: self.host,
         })
     }
 }

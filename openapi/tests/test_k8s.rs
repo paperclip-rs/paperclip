@@ -352,7 +352,9 @@ pub mod client {
     impl ApiClient for reqwest::r#async::Client {
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-            self.request(method, &(String::from(\"https://example.com\") + rel_path))
+            let mut u = reqwest::Url::parse(\"https://example.com/\").expect(\"invalid host?\");
+            u.set_path(rel_path);
+            self.request(method, u)
         }
 
         #[inline]
@@ -975,7 +977,7 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
 struct WrappedClient {
     verbose: bool,
     inner: reqwest::r#async::Client,
-    url: String,
+    url: reqwest::Url,
 }
 
 impl ApiClient for WrappedClient {
@@ -990,7 +992,9 @@ impl ApiClient for WrappedClient {
     }
 
     fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-        self.inner.request(method, &(self.url.clone() + rel_path))
+        let mut u = self.url.clone();
+        u.set_path(rel_path);
+        self.inner.request(method, u)
     }
 }
 
@@ -1031,10 +1035,9 @@ fn parse_args_and_fetch()
 
     let is_verbose = matches.is_present(\"verbose\");
     let url = matches.value_of(\"host\").expect(\"required arg URL?\");
-    reqwest::Url::parse(url).map_err(ClientError::Url)?;
     let client = WrappedClient {
         inner: client.build().map_err(ClientError::Reqwest)?,
-        url: url.trim_end_matches('/').into(),
+        url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
         verbose: is_verbose,
     };
 
@@ -1078,7 +1081,7 @@ async fn main() {
     }
 }
 ",
-        3876,
+        3955,
     );
 }
 

@@ -99,6 +99,24 @@ serde = \"1.0\"
 }
 
 #[test]
+fn test_overridden_path() {
+    // We've specified `host` and `basePath` in our spec, so that should be used in place of the placeholder.
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/lib.rs"),
+        "
+    impl ApiClient for reqwest::r#async::Client {
+        #[inline]
+        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
+            let mut u = reqwest::Url::parse(\"https://pets.com/api\").expect(\"invalid host?\");
+            u.set_path(rel_path);
+            self.request(method, u)
+        }
+",
+        1228
+    );
+}
+
+#[test]
 fn test_array_response() {
     // If an operation returns an array of objects, then we bind that
     // operation to that object and do `Sendable<Output<Vec<Object>>>`.

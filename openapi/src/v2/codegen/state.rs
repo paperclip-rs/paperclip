@@ -1,11 +1,11 @@
 use super::{object::ApiObject, CrateMeta};
-#[cfg(feature = "cli")]
 use crate::error::PaperClipError;
 use failure::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
 use heck::SnekCase;
 use itertools::Itertools;
+use url::Url;
 
 use std::cell::RefCell;
 use std::collections::{HashMap, HashSet};
@@ -27,12 +27,12 @@ pub struct EmitterState {
     pub ns_sep: &'static str,
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
-    /// Base path for API.
-    pub base_url: &'static str,
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<ChildModule>>>>,
     /// Holds generated struct definitions for leaf modules.
     pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
+    /// Base URL for the API.
+    pub(super) base_url: RefCell<Url>,
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `"cli"` feature.
     #[cfg(feature = "cli")]
@@ -55,6 +55,24 @@ pub(super) struct ChildModule {
 }
 
 impl EmitterState {
+    /// Sets the base URL for this session.
+    ///
+    /// **NOTE:** Once `Emitter::generate` is called, this gets overridden
+    /// by `host` and `basePath` fields in spec (if they exist).
+    pub fn set_url(&self, url: &str) -> Result<(), Error> {
+        let u = Url::parse(url).map_err(|e| PaperClipError::InvalidBasePathURL(url.into(), e))?;
+        *self.base_url.borrow_mut() = u;
+        Ok(())
+    }
+
+    /// Base URL for this API.
+    ///
+    /// **NOTE:** Once `Emitter::generate` is called, this gets overridden
+    /// by `host` and `basePath` fields in spec (if they exist).
+    pub fn base_url(&self) -> String {
+        self.base_url.borrow().to_string()
+    }
+
     /// Once the emitter has generated the struct definitions,
     /// we can call this method to generate the module declarations
     /// from root.
@@ -246,7 +264,9 @@ pub mod client {{
     impl ApiClient for reqwest::r#async::Client {{
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {{
-            self.request(method, &(String::from(\"{base_url}\") + rel_path))
+            let mut u = reqwest::Url::parse(\"{base_url}\").expect(\"invalid host?\");
+            u.set_path(rel_path);
+            self.request(method, u)
         }}
 
         #[inline]
@@ -301,7 +321,7 @@ pub mod client {{
         }}
     }}
 }}
-", deserializer=deser, base_url=self.base_url);
+", deserializer=deser, base_url=&self.base_url.borrow());
 
         self.append_contents(&content, &module)
     }
@@ -451,7 +471,7 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
 struct WrappedClient {
     verbose: bool,
     inner: reqwest::r#async::Client,
-    url: String,
+    url: reqwest::Url,
 }
 
 impl ApiClient for WrappedClient {
@@ -466,7 +486,9 @@ impl ApiClient for WrappedClient {
     }
 
     fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-        self.inner.request(method, &(self.url.clone() + rel_path))
+        let mut u = self.url.clone();
+        u.set_path(rel_path);
+        self.inner.request(method, u)
     }
 }
 
@@ -507,10 +529,9 @@ fn parse_args_and_fetch()
 
     let is_verbose = matches.is_present(\"verbose\");
     let url = matches.value_of(\"host\").expect(\"required arg URL?\");
-    reqwest::Url::parse(url).map_err(ClientError::Url)?;
     let client = WrappedClient {
         inner: client.build().map_err(ClientError::Reqwest)?,
-        url: url.trim_end_matches('/').into(),
+        url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
         verbose: is_verbose,
     };
 
@@ -729,7 +750,7 @@ impl Default for EmitterState {
             ns_sep: ".",
             #[cfg(feature = "cli")]
             crate_meta: None,
-            base_url: "https://example.com",
+            base_url: RefCell::new("https://example.com".parse().expect("invalid URL?")),
             def_mods: Rc::new(RefCell::new(HashMap::new())),
             mod_children: Rc::new(RefCell::new(HashMap::new())),
             unit_types: Rc::new(RefCell::new(HashSet::new())),

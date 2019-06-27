@@ -32,6 +32,12 @@ pub enum PaperClipError {
         _0
     )]
     InvalidRefURI(String),
+    /// Invalid host for URL.
+    #[fail(display = "Cannot parse host {:?}: {}", _0, _1)]
+    InvalidHost(String, url::ParseError),
+    /// Invalid base path URL.
+    #[fail(display = "Cannot set URL {:?}: {}", _0, _1)]
+    InvalidBasePathURL(String, url::ParseError),
     /// The given schema object is an array, but the `items` field is missing.
     #[fail(display = "Mising item schema for array: {:?}", _0)]
     MissingArrayItem(Option<String>),

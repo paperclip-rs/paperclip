@@ -1,4 +1,6 @@
 swagger: "2.0"
+host: pets.com
+basePath: /api
 definitions:
   Tag:
     properties:

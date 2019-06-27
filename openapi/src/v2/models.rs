@@ -51,6 +51,9 @@ pub struct Api<S> {
     pub swagger: Version,
     pub definitions: BTreeMap<String, SchemaRepr<S>>,
     pub paths: BTreeMap<String, OperationMap<S>>,
+    pub host: Option<String>,
+    #[serde(rename = "basePath")]
+    pub base_path: Option<String>,
 }
 
 use crate as paperclip; // hack for proc macro

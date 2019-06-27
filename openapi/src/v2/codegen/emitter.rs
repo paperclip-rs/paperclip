@@ -8,6 +8,7 @@ use crate::v2::{
 };
 use failure::Error;
 use heck::{CamelCase, SnekCase};
+use url::Host;
 
 use std::collections::HashSet;
 use std::fmt::Debug;
@@ -47,6 +48,20 @@ pub trait Emitter: Sized {
     /// Entrypoint for emitter. Given an API spec, generate code
     /// inside Rust modules in the configured working directory.
     fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
+        let state = self.state();
+        if let Some(h) = api.host.as_ref() {
+            Host::parse(h).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
+            state
+                .base_url
+                .borrow_mut()
+                .set_host(Some(&h))
+                .expect("expected valid URL?");
+        }
+
+        if let Some(p) = api.base_path.as_ref() {
+            state.base_url.borrow_mut().set_path(p);
+        }
+
         let gen = CodegenEmitter(self);
         // Generate file contents by accumulating definitions.
         for (name, schema) in &api.definitions {
@@ -55,7 +70,6 @@ pub trait Emitter: Sized {
             gen.generate_def_from_root(&schema)?;
         }
 
-        let state = gen.state();
         state.declare_modules()?;
         state.write_definitions()?;
 
