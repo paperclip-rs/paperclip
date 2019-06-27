@@ -11,9 +11,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Root module (`mod.rs`, `lib.rs` or `main.rs`) generation for codegen (previously we were only generating children modules).
 - Cargo manifest generation (gated by `"cli"` feature).
 - `[bin]` target (CLI) for generating crates.
-- Support generating CLI (fancy curl for your APIs) which uses async/await and `runtime_tokio`.
+- CLI generation (fancy curl for your APIs) - generated app uses async/await and `runtime_tokio`.
 - `ApiClient::make_request` for sending a request and fetching a response future.
 - Support for operations returning array of objects.
+- Codegen uses `basePath` and `host` fields (if they exist) to override default base URL (`https://example.com`).
+- Uniqueness check for paths.
 
 ### Changed
 - Codegen now writes the dependency traits, types and impls in the root module.
@@ -23,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Redundant `Optional` trait for generated markers.
 
 ### Fixed
+- Templated paths are now validated against parameters.
 - Import prefixes support in emitter (for codegen).
 
 ## [0.1.0] - 2019-06-13

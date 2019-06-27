@@ -927,8 +927,8 @@ where
             .struct_fields_iter()
             .filter(|f| f.param_loc == Some(ParameterIn::Path))
             .try_for_each(|field| {
+                write!(path_items, ", {}=self.", &field.name)?;
                 let name = field.name.to_snek_case();
-                write!(path_items, ", {}=self.", name)?;
                 if needs_container {
                     path_items.write_str("inner.")?;
                 }

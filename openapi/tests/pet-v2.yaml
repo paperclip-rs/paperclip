@@ -40,6 +40,11 @@ definitions:
     type: object
 paths:
   /pets/{petId}:
+    parameters:
+    - name: petId
+      in: path
+      required: true
+      type: integer
     get:
       description: Find pet by ID
       operationId: getPetById

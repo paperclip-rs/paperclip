@@ -19,7 +19,7 @@ use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
 /// Holds the state for your schema emitter.
-#[derive(Debug, Clone)]
+#[derive(Debug)]
 pub struct EmitterState {
     /// Working directory - the path in which the necessary modules are generated.
     pub working_dir: PathBuf,
@@ -27,22 +27,26 @@ pub struct EmitterState {
     pub ns_sep: &'static str,
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
-    /// Maps parent mod to immediate children. Used for declaring modules.
-    pub(super) mod_children: Rc<RefCell<HashMap<PathBuf, HashSet<ChildModule>>>>,
-    /// Holds generated struct definitions for leaf modules.
-    pub(super) def_mods: Rc<RefCell<HashMap<PathBuf, ApiObject>>>,
     /// Base URL for the API.
     pub(super) base_url: RefCell<Url>,
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `"cli"` feature.
     #[cfg(feature = "cli")]
     crate_meta: Option<Rc<RefCell<CrateMeta>>>,
+
+    // MARK: Internal fields that should be reset for each session.
+    /// Maps parent mod to immediate children. Used for declaring modules.
+    pub(super) mod_children: RefCell<HashMap<PathBuf, HashSet<ChildModule>>>,
+    /// Holds generated struct definitions for leaf modules.
+    pub(super) def_mods: RefCell<HashMap<PathBuf, ApiObject>>,
+    /// Relative paths
+    pub(super) rel_paths: RefCell<HashSet<String>>,
     /// Unit types used by builders.
-    unit_types: Rc<RefCell<HashSet<String>>>,
+    unit_types: RefCell<HashSet<String>>,
     /// Generated CLI YAML for clap.
-    cli_yaml: Rc<RefCell<String>>,
+    cli_yaml: RefCell<String>,
     /// Generated match arms for clap subcommands and matches.
-    cli_match_arms: Rc<RefCell<String>>,
+    cli_match_arms: RefCell<String>,
 }
 
 /// Indicates a child module in codegen working directory.
@@ -71,6 +75,16 @@ impl EmitterState {
     /// by `host` and `basePath` fields in spec (if they exist).
     pub fn base_url(&self) -> String {
         self.base_url.borrow().to_string()
+    }
+
+    /// Resets internal state-related information used by the emitter.
+    pub(crate) fn reset_internal_fields(&self) {
+        *self.mod_children.borrow_mut() = Default::default();
+        *self.def_mods.borrow_mut() = Default::default();
+        *self.rel_paths.borrow_mut() = Default::default();
+        *self.unit_types.borrow_mut() = Default::default();
+        *self.cli_yaml.borrow_mut() = Default::default();
+        *self.cli_match_arms.borrow_mut() = Default::default();
     }
 
     /// Once the emitter has generated the struct definitions,
@@ -742,6 +756,20 @@ impl EmitterState {
 
 /* Other impls */
 
+impl Clone for EmitterState {
+    fn clone(&self) -> EmitterState {
+        EmitterState {
+            working_dir: self.working_dir.clone(),
+            mod_prefix: self.mod_prefix,
+            ns_sep: self.ns_sep,
+            #[cfg(feature = "cli")]
+            crate_meta: self.crate_meta.clone(),
+            base_url: self.base_url.clone(),
+            ..Default::default()
+        }
+    }
+}
+
 impl Default for EmitterState {
     fn default() -> EmitterState {
         EmitterState {
@@ -751,11 +779,12 @@ impl Default for EmitterState {
             #[cfg(feature = "cli")]
             crate_meta: None,
             base_url: RefCell::new("https://example.com".parse().expect("invalid URL?")),
-            def_mods: Rc::new(RefCell::new(HashMap::new())),
-            mod_children: Rc::new(RefCell::new(HashMap::new())),
-            unit_types: Rc::new(RefCell::new(HashSet::new())),
-            cli_yaml: Rc::new(RefCell::new(String::new())),
-            cli_match_arms: Rc::new(RefCell::new(String::new())),
+            def_mods: RefCell::new(HashMap::new()),
+            rel_paths: RefCell::new(HashSet::new()),
+            mod_children: RefCell::new(HashMap::new()),
+            unit_types: RefCell::new(HashSet::new()),
+            cli_yaml: RefCell::new(String::new()),
+            cli_match_arms: RefCell::new(String::new()),
         }
     }
 }

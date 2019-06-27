@@ -1,4 +1,4 @@
-use std::io;
+use std::collections::HashSet;
 use std::path::PathBuf;
 
 macro_rules! impl_err_from {
@@ -28,10 +28,18 @@ pub enum PaperClipError {
     ///
     /// Currently, we only support `#/definitions/YourType` in `$ref` field.
     #[fail(
-        display = "Invalid $ref URI: {}. Only relative URIs for definitions are supported right now.",
+        display = "Invalid $ref URI {:?}. Only relative URIs for definitions are supported right now.",
         _0
     )]
     InvalidRefURI(String),
+    /// Paths listed in the spec must be unique.
+    #[fail(display = "Path similar to {:?} already exists.", _0)]
+    RelativePathNotUnique(String),
+    #[fail(
+        display = "Parameter(s) {:?} aren't defined for templated path {:?}",
+        _1, _0
+    )]
+    MissingParametersInPath(String, HashSet<String>),
     /// Invalid host for URL.
     #[fail(display = "Cannot parse host {:?}: {}", _0, _1)]
     InvalidHost(String, url::ParseError),
@@ -74,7 +82,7 @@ pub enum PaperClipError {
     UnknownParameterType(String, String),
     /// I/O errors.
     #[fail(display = "I/O error: {}", _0)]
-    Io(io::Error),
+    Io(std::io::Error),
     /// JSON coding errors.
     #[fail(display = "JSON error: {}", _0)]
     Json(serde_json::Error),
@@ -87,7 +95,7 @@ pub enum PaperClipError {
     RustFmt(rustfmt_nightly::ErrorKind),
 }
 
-impl_err_from!(PaperClipError::io::Error > Io);
+impl_err_from!(PaperClipError::std::io::Error > Io);
 impl_err_from!(PaperClipError::serde_json::Error > Json);
 impl_err_from!(PaperClipError::serde_yaml::Error > Yaml);
 #[cfg(feature = "codegen-fmt")]

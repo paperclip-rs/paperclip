@@ -138,6 +138,6 @@ impl crate::client::Sendable for PetGetBuilder {
     }
 }
 ",
-        2715,
+        2851,
     );
 }

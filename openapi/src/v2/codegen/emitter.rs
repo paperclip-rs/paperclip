@@ -8,6 +8,7 @@ use crate::v2::{
 };
 use failure::Error;
 use heck::{CamelCase, SnekCase};
+use regex::{Captures, Regex};
 use url::Host;
 
 use std::collections::HashSet;
@@ -15,6 +16,10 @@ use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
+
+lazy_static! {
+    static ref PATH_TEMPLATE_REGEX: Regex = Regex::new(r"\{(.*?)\}").expect("path template regex");
+}
 
 /// Checks if the given type/format matches a known Rust type and returns it.
 fn matching_unit_type(
@@ -49,6 +54,8 @@ pub trait Emitter: Sized {
     /// inside Rust modules in the configured working directory.
     fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
         let state = self.state();
+        state.reset_internal_fields();
+
         if let Some(h) = api.host.as_ref() {
             Host::parse(h).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
             state
@@ -224,6 +231,28 @@ where
         Ok(())
     }
 
+    /// Checks whether this path is unique (regardless of its templating)
+    /// and returns the list of parameters that exist in the template.
+    ///
+    /// For example, `/api/{foo}` and `/api/{bar}` are the same, and we
+    /// should reject it.
+    fn validate_path_and_get_params(&self, path: &str) -> Result<HashSet<String>, Error> {
+        let mut params = HashSet::new();
+        let path_fmt = PATH_TEMPLATE_REGEX.replace_all(path, |c: &Captures| {
+            params.insert(c[1].into());
+            ":"
+        });
+
+        let state = self.state();
+        let mut paths = state.rel_paths.borrow_mut();
+        let value_absent = paths.insert(path_fmt.clone().into());
+        if value_absent {
+            Ok(params)
+        } else {
+            Err(PaperClipError::RelativePathNotUnique(path.into()).into())
+        }
+    }
+
     /// Given a path and an operation map, collect the stuff required
     /// for generating builders later.
     // FIXME: Cleanup before this infection spreads!
@@ -232,13 +261,14 @@ where
         path: &str,
         map: &OperationMap<E::Definition>,
     ) -> Result<(), Error> {
+        let mut template_params = self.validate_path_and_get_params(path)?;
         debug!("Collecting builder requirement for {:?}", path);
         let state = self.state();
 
         let mut unused_params = vec![];
         // Collect all the parameters local to some API call.
         if let Some(global_params) = map.parameters.as_ref() {
-            let (params, _) = self.collect_parameters(path, global_params)?;
+            let (params, _) = self.collect_parameters(path, global_params, &mut template_params)?;
             // FIXME: What if a body is "required" globally (for all operations)?
             // This means, operations can override the body with some other schema
             // and we may need to map it to the appropriate builders.
@@ -251,7 +281,8 @@ where
             let mut unused_local_params = vec![];
 
             if let Some(local_params) = op.parameters.as_ref() {
-                let (mut params, schema_path) = self.collect_parameters(path, local_params)?;
+                let (mut params, schema_path) =
+                    self.collect_parameters(path, local_params, &mut template_params)?;
                 // If we have unused params which don't exist in the method-specific
                 // params (which take higher precedence), then we can copy those inside.
                 for global_param in &unused_params {
@@ -369,6 +400,13 @@ where
             );
         }
 
+        if !template_params.is_empty() {
+            Err(PaperClipError::MissingParametersInPath(
+                path.into(),
+                template_params,
+            ))?;
+        }
+
         Ok(())
     }
 
@@ -392,6 +430,7 @@ where
         &self,
         path: &str,
         obj_params: &[models::Parameter<E::Definition>],
+        template_params: &mut HashSet<String>,
     ) -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
         let def_mods = self.state().def_mods.borrow();
         let mut schema_path = None;
@@ -407,6 +446,12 @@ where
                 })?;
                 schema_path = Some(pat);
                 continue;
+            }
+
+            // If this is a parameter that must exist in path, then remove it
+            // from the expected list of parameters.
+            if p.in_ == ParameterIn::Path {
+                template_params.remove(&p.name);
             }
 
             // Enforce that the parameter is a known type and collect it.
