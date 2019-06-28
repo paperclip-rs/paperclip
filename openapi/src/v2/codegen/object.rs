@@ -224,6 +224,9 @@ impl<'a> ApiObjectImpl<'a> {
     {
         self.with_cli_cmd_and_builder(|name, builder| {
             write!(f, "\n  - {}:", name)?;
+            if let Some(desc) = builder.description {
+                write!(f, "\n      about: {:?}", desc)?;
+            }
 
             builder
                 .struct_fields_iter()
@@ -252,6 +255,10 @@ impl<'a> ApiObjectImpl<'a> {
                     f.write_str(&field_name)?;
                     if field.prop.is_required() {
                         f.write_str("\n            required: true")?;
+                    }
+
+                    if let Some(desc) = field.desc {
+                        write!(f, "\n            help: {:?}", desc)?;
                     }
 
                     f.write_str("\n            takes_value: true")

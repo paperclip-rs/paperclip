@@ -97,14 +97,18 @@ fn test_resolved_schema() {
     );
 }
 
-fn assert_file_contains_content_at(path: &str, matching_content: &str, index: usize) {
+fn assert_file_contains_content_at(path: &str, matching_content: &str, index: Option<usize>) {
     let _ = &*CODEGEN;
 
     let mut contents = String::new();
     let mut fd = File::open(path).expect("missing file");
     fd.read_to_string(&mut contents).expect("reading file");
 
-    assert_eq!(contents.find(matching_content), Some(index));
+    if index.is_some() {
+        assert_eq!(contents.find(matching_content), index);
+    } else {
+        assert!(contents.find(matching_content).is_some());
+    }
 }
 
 #[test]
@@ -188,7 +192,7 @@ pub mod storage {
     include!(\"./storage/mod.rs\");
 }
 ",
-        0,
+        Some(0),
     );
 
     assert_file_contains_content_at(
@@ -214,7 +218,7 @@ pub mod job_status {
     include!(\"./job_status.rs\");
 }
 ",
-        0,
+        Some(0),
     );
 }
 
@@ -311,7 +315,7 @@ pub struct JsonSchemaProps {
     pub x_kubernetes_preserve_unknown_fields: Option<bool>,
 }
 ",
-        0,
+        Some(0),
     );
 }
 
@@ -414,7 +418,7 @@ pub mod generics {
     include!(\"./generics.rs\");
 }
 ",
-        0,
+        Some(0),
     );
 }
 
@@ -424,7 +428,7 @@ fn test_generics_mod() {
         &(ROOT.clone() + "/tests/test_k8s/generics.rs"),
         "
 pub struct",
-        0,
+        Some(0),
     );
 }
 
@@ -490,7 +494,7 @@ impl Into<ConfigMap> for ConfigMapPutBuilder1<crate::codegen::generics::NameExis
     }
 }
 ",
-        1889,
+        Some(1889),
     );
 }
 
@@ -542,7 +546,7 @@ impl PodBuilder {
     }
 }
 ",
-        4237,
+        Some(4237),
     )
 }
 
@@ -612,7 +616,7 @@ impl<Verbs> PolicyRuleBuilder<Verbs> {
     }
 }
 ",
-        1564,
+        Some(1564),
     );
 }
 
@@ -751,7 +755,7 @@ impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::co
     }
 }
 ",
-        440139,
+        Some(440139),
     );
 }
 
@@ -828,7 +832,7 @@ impl crate::codegen::client::Sendable for ApiGroupListGetBuilder {
     }
 }
 ",
-        979,
+        Some(979),
     );
 }
 
@@ -889,7 +893,7 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     }
 }
 ",
-        1686,
+        Some(1686),
     );
 }
 
@@ -918,7 +922,7 @@ serde_json = \"1.0\"
 runtime = { git = \"https://github.com/rustasync/runtime\" }
 runtime-tokio = { git = \"https://github.com/rustasync/runtime\" }
 ",
-        101,
+        Some(101),
     );
 }
 
@@ -929,7 +933,7 @@ fn test_cli_main() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
         "#![feature(async_await)]",
-        0,
+        Some(0),
     );
 
     assert_file_contains_content_at(
@@ -1081,7 +1085,7 @@ async fn main() {
     }
 }
 ",
-        3955,
+        Some(3955),
     );
 }
 
@@ -1127,6 +1131,30 @@ args:
 
 subcommands:
 ",
-        0,
+        Some(0),
+    );
+}
+
+#[test]
+fn test_clap_yaml_cmd_description() {
+    let _ = &*CLI_CODEGEN;
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/cli/app.yaml"),
+        "
+  - delete-apps-v1-namespaced-deployment:
+      about: \"delete a Deployment\"
+      args:
+        - payload:
+            long: payload
+            help: \"Path to payload (schema: DeleteOptions) or pass '-' for stdin\"
+            takes_value: true
+            required: true
+        - dry-run:
+            long: dry-run
+            help: \"When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed\"
+            takes_value: true
+",
+        None
     );
 }
