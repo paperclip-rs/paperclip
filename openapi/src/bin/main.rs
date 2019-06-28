@@ -2,16 +2,18 @@
 extern crate log;
 
 use failure::Error;
-use structopt::StructOpt;
-
 use paperclip::v2::{
     self,
     codegen::{CrateMeta, DefaultEmitter, Emitter, EmitterState},
     models::{Api, DefaultSchema},
 };
 use paperclip::PaperClipError;
+use reqwest::Client;
+use structopt::StructOpt;
+use url::Url;
 
 use std::fs::{self, File};
+use std::io::Cursor;
 use std::path::PathBuf;
 
 fn parse_version(s: &str) -> Result<OApiVersion, Error> {
@@ -22,6 +24,19 @@ fn parse_version(s: &str) -> Result<OApiVersion, Error> {
     })
 }
 
+fn parse_spec(s: &str) -> Result<Api<DefaultSchema>, Error> {
+    if let Ok(u) = Url::parse(s) {
+        let mut bytes = vec![];
+        let client = Client::new();
+        let mut resp = client.get(u).send()?;
+        resp.copy_to(&mut bytes)?;
+        Ok(v2::from_reader(Cursor::new(bytes))?)
+    } else {
+        let fd = File::open(s)?;
+        Ok(v2::from_reader(fd)?)
+    }
+}
+
 #[derive(Debug)]
 enum OApiVersion {
     V2,
@@ -30,9 +45,9 @@ enum OApiVersion {
 
 #[derive(Debug, StructOpt)]
 struct Opt {
-    /// Path to OpenAPI spec in JSON/YAML format.
-    #[structopt(parse(from_os_str))]
-    spec: PathBuf,
+    /// Path to OpenAPI spec in JSON/YAML format (also supports publicly accessible URLs).
+    #[structopt(parse(try_from_str = "parse_spec"))]
+    spec: Api<DefaultSchema>,
     /// OpenAPI version (e.g., v2).
     #[structopt(long = "api", parse(try_from_str = "parse_version"))]
     api: OApiVersion,
@@ -50,11 +65,9 @@ fn parse_args_and_run() -> Result<(), Error> {
         Err(PaperClipError::UnsupportedOpenAPIVersion)?;
     }
 
-    let fd = File::open(&opt.spec)?;
-    let raw: Api<DefaultSchema> = v2::from_reader(fd)?;
-    let spec = raw.resolve()?;
-
+    let spec = opt.spec.resolve()?;
     let mut state = EmitterState::default();
+
     if let Some(o) = opt.output {
         fs::create_dir_all(&o)?;
         state.working_dir = o;

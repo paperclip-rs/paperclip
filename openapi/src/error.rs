@@ -52,14 +52,14 @@ pub enum PaperClipError {
     /// The name for the given definition is missing or invalid.
     #[fail(display = "Invalid name for definition")]
     InvalidDefinitionName,
-    /// A valid path cannot be obtained for the given defition.
+    /// A valid path cannot be obtained for the given definition.
     #[fail(display = "Invalid path for definition: {:?}", _0)]
     InvalidDefinitionPath(PathBuf),
     /// A definition has been referenced but it's missing.
     #[fail(display = "Definition missing: {}", _0)]
     MissingDefinition(String),
     /// If a parameter uses a schema, then we expect it to exist in
-    /// the definition (for now).
+    /// the map of definitions (for now).
     #[fail(
         display = "Parameter {:?} in path {:?} defines a new schema, which is unsupported at this point.",
         _0, _1
