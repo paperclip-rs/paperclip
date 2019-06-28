@@ -1,6 +1,3 @@
-#[macro_use]
-extern crate log;
-
 use failure::Error;
 use paperclip::v2::{
     self,
@@ -86,6 +83,6 @@ fn parse_args_and_run() -> Result<(), Error> {
 fn main() {
     env_logger::init();
     if let Err(e) = parse_args_and_run() {
-        error!("{}", e);
+        eprintln!("{}", e);
     }
 }

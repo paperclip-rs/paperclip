@@ -1,4 +1,4 @@
-# Build script example
+# Generate client code using build script
 
 This example generates code using a [build script](https://doc.rust-lang.org/cargo/reference/build-scripts.html).
 

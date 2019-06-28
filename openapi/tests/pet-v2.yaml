@@ -45,6 +45,7 @@ paths:
       in: path
       required: true
       type: integer
+      description: ID of the pet.
     get:
       description: Find pet by ID
       operationId: getPetById

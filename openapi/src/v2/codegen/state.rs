@@ -396,8 +396,8 @@ args:
         takes_value: true
         requires:
             - client-cert
-    - host:
-        long: host
+    - url:
+        long: url
         help: Base URL for your API.
         takes_value: true
         required: true
