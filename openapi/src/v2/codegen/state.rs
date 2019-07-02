@@ -278,9 +278,9 @@ pub mod client {{
     impl ApiClient for reqwest::r#async::Client {{
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {{
-            let mut u = reqwest::Url::parse(\"{base_url}\").expect(\"invalid host?\");
-            u.set_path(rel_path);
-            self.request(method, u)
+            let mut u = String::from(\"{base_url}\");
+            u.push_str(rel_path.trim_start_matches('/'));
+            self.request(method, &u)
         }}
 
         #[inline]
@@ -501,7 +501,13 @@ impl ApiClient for WrappedClient {
 
     fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
         let mut u = self.url.clone();
-        u.set_path(rel_path);
+        let mut path = u.path().trim_matches('/').to_owned();
+        if !path.is_empty() {
+            path = String::from(\"/\") + &path;
+        }
+
+        path.push_str(rel_path);
+        u.set_path(&path);
         self.inner.request(method, u)
     }
 }
@@ -542,7 +548,7 @@ fn parse_args_and_fetch()
     }
 
     let is_verbose = matches.is_present(\"verbose\");
-    let url = matches.value_of(\"host\").expect(\"required arg URL?\");
+    let url = matches.value_of(\"url\").expect(\"required arg URL?\");
     let client = WrappedClient {
         inner: client.build().map_err(ClientError::Reqwest)?,
         url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
