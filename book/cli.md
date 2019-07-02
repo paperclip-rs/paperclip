@@ -3,7 +3,7 @@
 Install `paperclip` CLI with:
 
 ```
-cargo install paperclip
+cargo install paperclip --features cli
 ```
 
 ## Generate client library from CLI
