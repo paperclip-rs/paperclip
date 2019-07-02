@@ -5,6 +5,8 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+
+## [0.2.0] - 2019-07-03
 ### Added
 - Gitbook for detailed documentation and walkthroughs.
 - Changelog
@@ -15,7 +17,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ApiClient::make_request` for sending a request and fetching a response future.
 - Support for operations returning array of objects.
 - Codegen uses `basePath` and `host` fields (if they exist) to override default base URL (`https://example.com`).
-- Uniqueness check for paths.
+- API relative paths are checked for uniqueness.
 
 ### Changed
 - Codegen now writes the dependency traits, types and impls in the root module.
@@ -41,5 +43,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Loading OpenAPI v2 schema from JSON/YAML
 - Workspace, README, LICENSE, Makefile, CI config, etc.
 
-[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.1.0...HEAD
+[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.2.0...HEAD
 [0.1.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.1.0
+[0.2.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.2.0
