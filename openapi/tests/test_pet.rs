@@ -7,7 +7,7 @@ use paperclip::v2::{
     models::{Api, DefaultSchema},
 };
 
-use std::fs::{self, File};
+use std::fs::File;
 use std::io::Read;
 
 lazy_static! {
@@ -20,14 +20,22 @@ lazy_static! {
     static ref CODEGEN: () = {
         let mut state = EmitterState::default();
         state.working_dir = (&*ROOT).into();
-        state.working_dir.push("tests");
-        state.working_dir.push("test_pet");
-        if !state.working_dir.exists() {
-            fs::create_dir_all(&state.working_dir).expect("workdir");
-        }
-
+        state.working_dir.push("tests/test_pet");
         let mut meta = CrateMeta::default();
         meta.authors = Some(vec!["Me <me@example.com>".into()]);
+        state.set_meta(meta);
+
+        let emitter = DefaultEmitter::from(state);
+        emitter.generate(&SCHEMA).expect("codegen");
+    };
+    static ref CLI_CODEGEN: () = {
+        let _ = &*CODEGEN;
+        let mut state = EmitterState::default();
+        state.working_dir = (&*ROOT).into();
+        state.working_dir.push("tests/test_pet/cli");
+        let mut meta = CrateMeta::default();
+        meta.authors = Some(vec!["Me <me@example.com>".into()]);
+        meta.is_cli = true;
         state.set_meta(meta);
 
         let emitter = DefaultEmitter::from(state);
@@ -139,5 +147,25 @@ impl crate::client::Sendable for PetGetBuilder {
 }
 ",
         2851,
+    );
+}
+
+#[test]
+fn test_operation_with_payload_no_arguments() {
+    let _ = &*CLI_CODEGEN;
+    // An operation with no arguments should enforce payload if it needs one.
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/cli/app.yaml"),
+        "
+  - add-pet:
+      about: \"Add a new pet to the store\"
+      args:
+        - payload:
+            long: payload
+            help: \"Path to payload (schema: Pet) or pass '-' for stdin\"
+            takes_value: true
+            required: true
+",
+        824,
     );
 }

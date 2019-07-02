@@ -228,41 +228,43 @@ impl<'a> ApiObjectImpl<'a> {
                 write!(f, "\n      about: {:?}", desc)?;
             }
 
-            builder
+            let mut iter = builder
                 .struct_fields_iter()
                 .filter(|f| f.prop.is_parameter())
-                .enumerate()
-                .try_for_each(|(i, field)| {
-                    if i == 0 {
-                        f.write_str("\n      args:")?;
-                        if builder.body_required {
-                            write!(
-                                f,
-                                "
+                .peekable();
+
+            // Has at least one argument or body.
+            if iter.peek().is_some() || builder.body_required {
+                f.write_str("\n      args:")?;
+                if builder.body_required {
+                    write!(
+                        f,
+                        "
         - payload:
             long: payload
             help: \"Path to payload (schema: {obj}) or pass '-' for stdin\"
             takes_value: true
             required: true",
-                                obj = self.inner.name
-                            )?;
-                        }
-                    }
+                        obj = self.inner.name
+                    )?;
+                }
+            }
 
-                    let field_name = field.name.to_kebab_case();
-                    write!(f, "\n        - {}:", &field_name)?;
-                    f.write_str("\n            long: ")?;
-                    f.write_str(&field_name)?;
-                    if field.prop.is_required() {
-                        f.write_str("\n            required: true")?;
-                    }
+            iter.try_for_each(|field| {
+                let field_name = field.name.to_kebab_case();
+                write!(f, "\n        - {}:", &field_name)?;
+                f.write_str("\n            long: ")?;
+                f.write_str(&field_name)?;
+                if field.prop.is_required() {
+                    f.write_str("\n            required: true")?;
+                }
 
-                    if let Some(desc) = field.desc {
-                        write!(f, "\n            help: {:?}", desc)?;
-                    }
+                if let Some(desc) = field.desc {
+                    write!(f, "\n            help: {:?}", desc)?;
+                }
 
-                    f.write_str("\n            takes_value: true")
-                })
+                f.write_str("\n            takes_value: true")
+            })
         })?;
 
         f.write_str("\n")
