@@ -26,7 +26,7 @@ runtime = { git = "https://github.com/rustasync/runtime" }
 runtime-tokio = { git = "https://github.com/rustasync/runtime" }
 
 [build-dependencies]
-paperclip = "0"
+paperclip = "0.2"
 ```
 
 - Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/openapi/tests/pet-v2.yaml).
@@ -50,7 +50,7 @@ fn main() {
 
     let out_dir = env::var("OUT_DIR").unwrap();
     let mut state = EmitterState::default();
-    // prefix because we've isolated generated code (see main.rs).
+    // set prefix for using generated code inside `codegen` module (see main.rs).
     state.mod_prefix = "crate::codegen::";
     state.working_dir = out_dir.into();
 
@@ -60,8 +60,6 @@ fn main() {
 ```
 
 - Now, you can modify `src/main.rs` to make use of the generated code:
-
-> **NOTE:** I'm using async/await only to demonstrate the usage of the generated code. The generated client code uses the old futures 0.1 and won't switch to the new syntax until it's stablilized.
 
 ```rust
 #![feature(async_await)]
@@ -88,3 +86,73 @@ async fn main() -> Result<(), Error> {
     Ok(())
 }
 ```
+
+Some things to note:
+
+- I'm using async/await only to demonstrate the usage of the generated code. The generated client code uses the old [futures 0.1](https://docs.rs/futures/0.1.28/futures/) and won't switch to the new syntax until it's stablilized.
+- The names of associated functions for each [operation](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject) (such as `list_pets`) is obtained from `operationId` fields. But since it's optional and if the user has ignored it in their spec, then we use HTTP methods and number them if there are more than one.
+- The emitter tries to bind each operation to some model (based on `body` parameters and `2xx` responses). If it cannot bind it, then they're ignored (at this point).
+
+## Compile-time checks?
+
+API calls often *require* some parameters. Should we miss those parameters when performing a request, either the client will produce a runtime error or the server will reject our request. Our generated client code on the other hand, uses markers to avoid this problem at compile-time.
+
+For example, in order to fetch a pet, [`petId` parameter](https://github.com/wafflespeanut/paperclip/blob/fa95b023aaf8b6e396c899a93a9eda6fd791505c/openapi/tests/pet-v2.yaml#L42-L47) is required. Let's change the main function in the above example to fetch a pet without its ID.
+
+```rust
+let pet = Pet::get_pet_by_id().send(&client).compat().await?;
+```
+
+If we try and compile the program, then we'll get the following error:
+
+```
+error[E0599]: no method named `send` found for type
+`codegen::pet::PetGetBuilder1<codegen::generics::MissingPetId>`
+in the current scope
+```
+
+Note that there's the struct `PetGetBuilder1` has been marked with `MissingPetId`. And, `send` is implemented only when the builder has `PetIdExists` marker.
+
+Hence the fix would be to set the required parameter using the relevant method call (which transforms the builder struct).
+
+```rust
+let pet = Pet::get_pet_by_id()
+    .pet_id(25)
+    .send(&client)
+    .compat().await?;
+```
+
+... and the code will compile.
+
+The same applies to using API objects (with required fields). For example, the [`addPet` operation](https://github.com/wafflespeanut/paperclip/blob/master/openapi/tests/pet-v2.yaml#L66-L73) requires `Pet` object to be present in the HTTP body, but then `Pet` object itself requires [`id` and `name` fields](https://github.com/wafflespeanut/paperclip/blob/master/openapi/tests/pet-v2.yaml#L14-L16).
+
+So, if we did this:
+
+```rust
+let pet = Pet::add_pet().send(&client).compat().await?;
+```
+
+... we'd get an error during compilation:
+
+```
+no method named `send` found for type `codegen::pet::PetPostBuilder<
+    codegen::generics::MissingId,
+    codegen::generics::MissingName
+>` in the current scope
+```
+
+As we can see, the builder struct has been marked with `MissingId` and `MissingName`, but again `send` is implemented only if the struct had `IdExists` and `NameExists` markers.
+
+Now, we change the code to:
+
+```rust
+let pet = Pet::add_pet()
+    .id(25)
+    .name("Milo")
+    .send(&client)
+    .compat().await?;
+```
+
+... and the code will compile.
+
+> **NOTE:** The types of arguments are also checked.

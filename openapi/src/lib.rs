@@ -1,3 +1,9 @@
+//! Paperclip is a OpenAPI code generator for efficient type-safe
+//! compile-time checked HTTP APIs in Rust.
+//!
+//! See the [website](https://paperclip.waffles.space) for detailed
+//! documentation and examples.
+
 #[macro_use]
 extern crate failure;
 #[macro_use]
