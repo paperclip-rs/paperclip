@@ -43,14 +43,19 @@ lazy_static! {
     };
 }
 
-fn assert_file_contains_content_at(path: &str, matching_content: &str, index: usize) {
+fn assert_file_contains_content_at(path: &str, matching_content: &str, index: Option<usize>) {
     let _ = &*CODEGEN;
 
     let mut contents = String::new();
     let mut fd = File::open(path).expect("missing file");
     fd.read_to_string(&mut contents).expect("reading file");
 
-    assert_eq!(contents.find(matching_content), Some(index));
+    let result = contents.find(matching_content);
+    if let Some(idx) = index {
+        assert_eq!(result, Some(idx));
+    } else {
+        assert!(result.is_some());
+    }
 }
 
 #[test]
@@ -78,7 +83,7 @@ pub mod tag {
 pub mod client {
     use futures::{Future, future};
 ",
-        0,
+        Some(0),
     );
 }
 
@@ -102,7 +107,7 @@ parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
 ",
-        0,
+        Some(0),
     );
 }
 
@@ -120,7 +125,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        1228
+        Some(1228)
     );
 }
 
@@ -146,7 +151,7 @@ impl crate::client::Sendable for PetGetBuilder {
     }
 }
 ",
-        2851,
+        Some(2851),
     );
 }
 
@@ -166,6 +171,6 @@ fn test_operation_with_payload_no_arguments() {
             takes_value: true
             required: true
 ",
-        824,
+        None,
     );
 }
