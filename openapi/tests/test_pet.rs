@@ -120,7 +120,7 @@ fn test_overridden_path() {
     impl ApiClient for reqwest::r#async::Client {
         #[inline]
         fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-            let mut u = String::from(\"https://pets.com/api\");
+            let mut u = String::from(\"https://pets.com:8888/api\");
             u.push_str(rel_path.trim_start_matches('/'));
             self.request(method, &u)
         }

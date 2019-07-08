@@ -1,5 +1,5 @@
 swagger: "2.0"
-host: pets.com
+host: pets.com:8888
 basePath: /api
 definitions:
   Tag:

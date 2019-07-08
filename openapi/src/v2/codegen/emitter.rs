@@ -57,12 +57,20 @@ pub trait Emitter: Sized {
         state.reset_internal_fields();
 
         if let Some(h) = api.host.as_ref() {
-            Host::parse(h).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
-            state
-                .base_url
-                .borrow_mut()
-                .set_host(Some(&h))
-                .expect("expected valid URL?");
+            let mut parts = h.split(':');
+            let mut u = state.base_url.borrow_mut();
+            if let Some(host) = parts.next() {
+                Host::parse(host).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
+                u.set_host(Some(&host))
+                    .expect("expected valid host in URL?");
+            }
+
+            if let Some(port) = parts.next() {
+                let p = port.parse::<u16>().map_err(|_| {
+                    PaperClipError::InvalidHost(h.into(), url::ParseError::InvalidPort)
+                })?;
+                u.set_port(Some(p)).expect("expected valid port in URL?");
+            }
         }
 
         if let Some(p) = api.base_path.as_ref() {
