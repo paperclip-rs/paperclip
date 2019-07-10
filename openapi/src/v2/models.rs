@@ -15,6 +15,19 @@ pub enum Version {
     V2,
 }
 
+/// Trait for returning OpenAPI data type and format for the implementor.
+pub trait TypedData {
+    /// The OpenAPI type for this implementor.
+    fn data_type() -> DataType {
+        DataType::Object
+    }
+
+    /// The optional OpenAPI data format for this implementor.
+    fn format() -> Option<DataTypeFormat> {
+        None
+    }
+}
+
 /// Supported data types.
 #[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -46,7 +59,7 @@ pub enum DataTypeFormat {
 }
 
 /// OpenAPI v2 spec.
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 pub struct Api<S> {
     pub swagger: Version,
     pub definitions: BTreeMap<String, SchemaRepr<S>>,
@@ -224,6 +237,12 @@ impl<S> DerefMut for SchemaRepr<S> {
     }
 }
 
+impl<S> From<S> for SchemaRepr<S> {
+    fn from(t: S) -> Self {
+        SchemaRepr::Raw(t.into())
+    }
+}
+
 impl<S> Clone for SchemaRepr<S> {
     fn clone(&self) -> Self {
         match *self {
@@ -239,5 +258,48 @@ impl<S> Clone for SchemaRepr<S> {
 impl Display for HttpMethod {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
+    }
+}
+
+impl Default for Version {
+    fn default() -> Self {
+        Version::V2
+    }
+}
+
+macro_rules! impl_type_simple {
+    ($ty:ty, $dt:expr, $df:expr) => {
+        impl TypedData for $ty {
+            fn data_type() -> DataType {
+                $dt
+            }
+            fn format() -> Option<DataTypeFormat> {
+                $df
+            }
+        }
+    };
+}
+
+impl_type_simple!(char, DataType::String, None);
+impl_type_simple!(String, DataType::String, None);
+impl_type_simple!(bool, DataType::Boolean, None);
+impl_type_simple!(f32, DataType::Number, Some(DataTypeFormat::Float));
+impl_type_simple!(f64, DataType::Number, Some(DataTypeFormat::Double));
+impl_type_simple!(i8, DataType::Integer, Some(DataTypeFormat::Int32));
+impl_type_simple!(i16, DataType::Integer, Some(DataTypeFormat::Int32));
+impl_type_simple!(i32, DataType::Integer, Some(DataTypeFormat::Int32));
+impl_type_simple!(u8, DataType::Integer, Some(DataTypeFormat::Int32));
+impl_type_simple!(u16, DataType::Integer, Some(DataTypeFormat::Int32));
+impl_type_simple!(u32, DataType::Integer, Some(DataTypeFormat::Int32));
+impl_type_simple!(i64, DataType::Integer, Some(DataTypeFormat::Int64));
+impl_type_simple!(i128, DataType::Integer, Some(DataTypeFormat::Int64));
+impl_type_simple!(isize, DataType::Integer, Some(DataTypeFormat::Int64));
+impl_type_simple!(u64, DataType::Integer, Some(DataTypeFormat::Int64));
+impl_type_simple!(u128, DataType::Integer, Some(DataTypeFormat::Int64));
+impl_type_simple!(usize, DataType::Integer, Some(DataTypeFormat::Int64));
+
+impl<T> TypedData for Vec<T> {
+    fn data_type() -> DataType {
+        DataType::Array
     }
 }

@@ -69,8 +69,22 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     .expect("parsing schema field?");
     fields.extend(default_fields.named);
 
+    let mut defaults = quote!();
+    for field in fields {
+        let f_name = field.ident.as_ref().expect("fields not named?");
+        defaults.extend(quote!(#f_name: Default::default(),));
+    }
+
     let gen = quote! {
         #item_ast
+
+        impl Default for #name {
+            fn default() -> #name {
+                #name {
+                    #defaults
+                }
+            }
+        }
 
         impl #impl_generics paperclip::v2::Schema for #name #ty_generics #where_clause {
             #[inline]

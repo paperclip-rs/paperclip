@@ -18,6 +18,12 @@ impl<S> Clone for RcRefCell<S> {
     }
 }
 
+impl<S> From<S> for RcRefCell<S> {
+    fn from(s: S) -> Self {
+        RcRefCell(Rc::new(RefCell::new(s)))
+    }
+}
+
 impl<S> Deref for RcRefCell<S> {
     type Target = Rc<RefCell<S>>;
 
@@ -41,13 +47,19 @@ where
         D: Deserializer<'de>,
     {
         let value = S::deserialize(deserializer)?;
-        Ok(RcRefCell(Rc::new(RefCell::new(value))))
+        Ok(value.into())
     }
 }
 
 /// Wrapper over `Arc<RwLock<T>>` to offer deserialization support.
 #[derive(Debug)]
 pub struct ArcRwLock<S>(Arc<RwLock<S>>);
+
+impl<S> From<S> for ArcRwLock<S> {
+    fn from(s: S) -> Self {
+        ArcRwLock(Arc::new(RwLock::new(s)))
+    }
+}
 
 impl<S> Clone for ArcRwLock<S> {
     fn clone(&self) -> Self {
@@ -78,6 +90,6 @@ where
         D: Deserializer<'de>,
     {
         let value = S::deserialize(deserializer)?;
-        Ok(ArcRwLock(Arc::new(RwLock::new(value))))
+        Ok(value.into())
     }
 }

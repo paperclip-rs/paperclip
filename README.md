@@ -4,7 +4,11 @@
 [![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip)
 [![Crates.io](https://img.shields.io/crates/v/paperclip.svg)](https://crates.io/crates/paperclip)
 
-Paperclip is a OpenAPI code generator for efficient type-safe compile-time checked HTTP APIs in Rust.
+Paperclip offers tooling for the [OpenAPI specification](https://github.com/OAI/OpenAPI-Specification/). Once complete, it will provide:
+
+- Code generation for efficient, type-safe, compile-time checked HTTP APIs (server, client and CLI) in Rust.
+- Support for processing, validating and hosting OpenAPI spec.
+- Customization for spec and code generation.
 
 It's currently under active development and may not be ready for production use just yet.
 
