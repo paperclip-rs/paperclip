@@ -13,6 +13,9 @@ use std::mem;
 
 const DEF_REF_PREFIX: &str = "#/definitions/";
 
+type ResolvableDefinitions<S> = BTreeMap<String, SchemaRepr<S>>;
+type ResolvableOperations<S> = BTreeMap<String, OperationMap<SchemaRepr<S>>>;
+
 /// API schema resolver. This visits each definition and resolves
 /// `$ref` field (if any) by finding the associated definition and
 /// replacing the field with a reference to the actual definition.
@@ -24,23 +27,13 @@ pub(crate) struct Resolver<S> {
     /// Set containing cyclic definition names.
     cyclic_defs: HashSet<String>,
     /// Actual definitions.
-    pub defs: BTreeMap<String, SchemaRepr<S>>,
+    pub defs: ResolvableDefinitions<S>,
     /// Paths and the corresponding operations.
-    pub paths: BTreeMap<String, OperationMap<S>>,
+    pub paths: ResolvableOperations<S>,
 }
 
-impl<S>
-    From<(
-        BTreeMap<String, SchemaRepr<S>>,
-        BTreeMap<String, OperationMap<S>>,
-    )> for Resolver<S>
-{
-    fn from(
-        (defs, paths): (
-            BTreeMap<String, SchemaRepr<S>>,
-            BTreeMap<String, OperationMap<S>>,
-        ),
-    ) -> Self {
+impl<S> From<(ResolvableDefinitions<S>, ResolvableOperations<S>)> for Resolver<S> {
+    fn from((defs, paths): (ResolvableDefinitions<S>, ResolvableOperations<S>)) -> Self {
         Resolver {
             cur_def: RefCell::new(None),
             cur_def_cyclic: Cell::new(false),
@@ -146,7 +139,7 @@ where
     }
 
     /// Resolve a given operation.
-    fn resolve_operations(&self, map: &mut OperationMap<S>) -> Result<(), Error> {
+    fn resolve_operations(&self, map: &mut OperationMap<SchemaRepr<S>>) -> Result<(), Error> {
         for op in map.methods.values_mut() {
             self.resolve_parameters(&mut op.parameters)?;
             for response in op.responses.values_mut() {
@@ -160,7 +153,10 @@ where
     }
 
     /// Resolve the given bunch of parameters.
-    fn resolve_parameters(&self, params: &mut Option<Vec<Parameter<S>>>) -> Result<(), Error> {
+    fn resolve_parameters(
+        &self,
+        params: &mut Option<Vec<Parameter<SchemaRepr<S>>>>,
+    ) -> Result<(), Error> {
         if let Some(params) = params.as_mut() {
             for param in params.iter_mut() {
                 if let Some(schema) = param.schema.as_mut() {

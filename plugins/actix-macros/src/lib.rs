@@ -59,7 +59,9 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
             const NAME: &'static str = #op_name;
 
             fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchema> {
-                unimplemented!();
+                let mut op = paperclip::v2::models::Operation::default();
+                op.operation_id = Some(#op_name.into());
+                op
             }
         }
     };

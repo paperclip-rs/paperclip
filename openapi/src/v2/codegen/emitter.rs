@@ -3,7 +3,9 @@ use super::state::{ChildModule, EmitterState};
 use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
-    models::{self, Api, DataType, DataTypeFormat, Operation, OperationMap, ParameterIn},
+    models::{
+        self, Api, DataType, DataTypeFormat, Operation, OperationMap, ParameterIn, SchemaRepr,
+    },
     Schema,
 };
 use failure::Error;
@@ -267,7 +269,7 @@ where
     fn collect_requirements_for_path(
         &self,
         path: &str,
-        map: &OperationMap<E::Definition>,
+        map: &OperationMap<SchemaRepr<E::Definition>>,
     ) -> Result<(), Error> {
         let mut template_params = self.validate_path_and_get_params(path)?;
         debug!("Collecting builder requirement for {:?}", path);
@@ -423,7 +425,7 @@ where
     /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
     fn get_2xx_response_schema<'o>(
         &self,
-        op: &'o Operation<E::Definition>,
+        op: &'o Operation<SchemaRepr<E::Definition>>,
     ) -> Option<&'o ArcRwLock<E::Definition>> {
         op.responses
             .iter()
@@ -437,7 +439,7 @@ where
     fn collect_parameters(
         &self,
         path: &str,
-        obj_params: &[models::Parameter<E::Definition>],
+        obj_params: &[models::Parameter<SchemaRepr<E::Definition>>],
         template_params: &mut HashSet<String>,
     ) -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
         let def_mods = self.state().def_mods.borrow();

@@ -59,10 +59,13 @@ pub enum DataTypeFormat {
 }
 
 /// OpenAPI v2 spec.
+pub type Api<S> = GenericApi<SchemaRepr<S>>;
+
+/// OpenAPI v2 spec generic over schema.
 #[derive(Clone, Debug, Default, Deserialize)]
-pub struct Api<S> {
+pub struct GenericApi<S> {
     pub swagger: Version,
-    pub definitions: BTreeMap<String, SchemaRepr<S>>,
+    pub definitions: BTreeMap<String, S>,
     pub paths: BTreeMap<String, OperationMap<S>>,
     pub host: Option<String>,
     #[serde(rename = "basePath")]
@@ -113,11 +116,11 @@ pub struct Parameter<S> {
     pub name: String,
     #[serde(default)]
     pub required: bool,
-    pub schema: Option<SchemaRepr<S>>,
+    pub schema: Option<S>,
     #[serde(rename = "type")]
     pub data_type: Option<DataType>,
     pub format: Option<DataTypeFormat>,
-    pub items: Option<SchemaRepr<S>>,
+    pub items: Option<S>,
 }
 
 /// The location of the parameter.
@@ -134,7 +137,7 @@ pub enum ParameterIn {
 /// An operation.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Default, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Operation<S> {
     pub operation_id: Option<String>,
@@ -156,7 +159,7 @@ pub struct Operation<S> {
 #[derive(Clone, Debug, Deserialize)]
 pub struct Response<S> {
     pub description: Option<String>,
-    pub schema: Option<SchemaRepr<S>>,
+    pub schema: Option<S>,
 }
 
 /// The HTTP method used for an operation.
