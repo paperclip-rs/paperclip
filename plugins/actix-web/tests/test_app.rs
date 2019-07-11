@@ -29,7 +29,7 @@ pub struct Counter {
 #[test]
 fn test_app() {
     #[api_v2_operation]
-    fn test(body: web::Json<Counter>) -> web::Json<Counter> {
+    fn echo_counter(body: web::Json<Counter>) -> web::Json<Counter> {
         body
     }
 
@@ -38,7 +38,8 @@ fn test_app() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::resource("/test1").to(test))
+                .service(web::resource("/all-methods-echo").to(echo_counter))
+                .service(web::resource("/post-echo").route(web::post().to(echo_counter)))
                 .build()
         },
         |addr| {
@@ -53,7 +54,7 @@ fn test_app() {
                 {
                   "definitions": {},
                   "paths": {
-                    "/test1": {
+                    "/all-methods-echo": {
                       "delete": {
                         "responses": {}
                       },
@@ -73,6 +74,11 @@ fn test_app() {
                         "responses": {}
                       },
                       "put": {
+                        "responses": {}
+                      }
+                    },
+                    "/post-echo": {
+                      "post": {
                         "responses": {}
                       }
                     }

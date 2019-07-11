@@ -4,7 +4,7 @@ pub use actix_web::{
     body, client, cookie, dev, error, guard, http, middleware, test, Error, Factory, HttpRequest,
     HttpResponse, HttpServer, Responder, Route,
 };
-pub use paperclip_actix_macros::{api_v2_schema, api_v2_operation};
+pub use paperclip_actix_macros::{api_v2_operation, api_v2_schema};
 
 use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse};
@@ -14,7 +14,7 @@ use parking_lot::RwLock;
 use std::collections::BTreeMap;
 use std::sync::Arc;
 
-/// Wrapper for actix-web [`App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
+/// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
     spec: Arc<RwLock<GenericApi<DefaultSchemaRaw>>>,
     inner: actix_web::App<T, B>,
@@ -57,7 +57,6 @@ pub trait Apiv2Schema {
     /// Returns the schema for this object.
     fn schema() -> DefaultSchemaRaw;
 }
-
 
 /// Represents a OpenAPI v2 operation convertible. This is auto-implemented by
 /// [`api_v2_operation`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_operation.html) macro.
@@ -109,7 +108,7 @@ where
         }
     }
 
-    /// Builds and returns the actix-web `App`.
+    /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
         self.inner
     }
