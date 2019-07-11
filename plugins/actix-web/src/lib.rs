@@ -8,13 +8,13 @@ pub use paperclip_actix_macros::*;
 
 use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse};
-use paperclip::v2::models::{DefaultSchemaRaw, GenericApi, Operation};
+use paperclip::v2::models::{DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap};
 use parking_lot::RwLock;
 
+use std::collections::BTreeMap;
 use std::sync::Arc;
 
 pub struct App<T, B> {
-    paths: Vec<String>,
     spec: Arc<RwLock<GenericApi<DefaultSchemaRaw>>>,
     inner: actix_web::App<T, B>,
 }
@@ -24,7 +24,6 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
 
     fn record_operations(self) -> Self::Wrapper {
         App {
-            paths: vec![],
             spec: Arc::new(RwLock::new(GenericApi::default())),
             inner: self,
         }
@@ -39,6 +38,8 @@ pub trait OpenApiExt<T, B> {
 
 pub trait Mountable {
     fn path(&self) -> &str;
+
+    fn operations(&self) -> &BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>;
 }
 
 pub trait Apiv2Schema {
@@ -62,13 +63,20 @@ where
         InitError = (),
     >,
 {
-    pub fn service<F>(mut self, factory: F) -> Self
+    pub fn service<F>(self, factory: F) -> Self
     where
         F: Mountable + HttpServiceFactory + 'static,
     {
-        self.paths.push(factory.path().into());
+        {
+            let mut api = self.spec.write();
+            let map = api
+                .paths
+                .entry(factory.path().into())
+                .or_insert_with(OperationMap::default);
+            map.methods.extend(factory.operations().clone().into_iter());
+        }
+
         App {
-            paths: self.paths,
             spec: self.spec,
             inner: self.inner.service(factory),
         }
@@ -76,7 +84,6 @@ where
 
     pub fn with_json_spec_at(self, path: &str) -> Self {
         App {
-            paths: self.paths,
             inner: self
                 .inner
                 .service(actix_web::web::resource(path).to(SpecHandler(self.spec.clone()))),

@@ -24,6 +24,33 @@ pub struct Counter {
     count: u32,
 }
 
+#[test]
+fn test_app() {
+    #[api_v2_operation]
+    fn test(body: web::Json<Counter>) -> web::Json<Counter> {
+        body
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .record_operations()
+                .with_json_spec_at("/swagger.json")
+                .service(web::resource("/test1").to(test))
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/swagger.json", addr))
+                .send()
+                .expect("request failed?");
+            assert_eq!(resp.status().as_u16(), 200);
+            let json = resp.json::<serde_json::Value>().expect("json error");
+            assert_eq!(json["swagger"], "2.0");
+        },
+    );
+}
+
 fn run_and_check_app<F, G, T, B, U>(factory: F, check: G) -> U
 where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
@@ -62,31 +89,4 @@ where
     let ret = check(addr);
     server.stop(false);
     ret
-}
-
-#[test]
-fn test_app() {
-    #[api_v2_operation]
-    fn test(body: web::Json<Counter>) -> web::Json<Counter> {
-        body
-    }
-
-    run_and_check_app(
-        || {
-            App::new()
-                .record_operations()
-                .with_json_spec_at("/swagger.json")
-                .service(web::resource("/test1").to(test))
-                .build()
-        },
-        |addr| {
-            let mut resp = CLIENT
-                .get(&format!("http://{}/swagger.json", addr))
-                .send()
-                .expect("request failed?");
-            assert_eq!(resp.status().as_u16(), 200);
-            let json = resp.json::<serde_json::Value>().expect("json error");
-            assert_eq!(json["swagger"], "2.0");
-        },
-    );
 }

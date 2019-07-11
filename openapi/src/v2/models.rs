@@ -4,6 +4,9 @@ use super::{im::ArcRwLock, Schema};
 use crate::error::PaperClipError;
 use failure::Error;
 
+#[cfg(feature = "actix")]
+use actix_http::http::Method;
+
 use std::collections::BTreeMap;
 use std::fmt::{self, Display};
 use std::ops::{Deref, DerefMut};
@@ -99,7 +102,7 @@ pub enum SchemaRepr<S> {
 /// Path item.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct OperationMap<S> {
     #[serde(flatten)]
     pub methods: BTreeMap<HttpMethod, Operation<S>>,
@@ -185,6 +188,21 @@ pub enum HttpMethod {
     Options,
     Head,
     Patch,
+}
+
+#[cfg(feature = "actix")]
+impl From<&Method> for HttpMethod {
+    fn from(method: &Method) -> HttpMethod {
+        match method.as_str() {
+            "PUT" => HttpMethod::Put,
+            "POST" => HttpMethod::Post,
+            "DELETE" => HttpMethod::Delete,
+            "OPTIONS" => HttpMethod::Options,
+            "HEAD" => HttpMethod::Head,
+            "PATCH" => HttpMethod::Patch,
+            _ => HttpMethod::Get,
+        }
+    }
 }
 
 /// The protocol used for an operation.

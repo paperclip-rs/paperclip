@@ -17,6 +17,7 @@ path = "src/bin/main.rs"
 required-features = ["default", "cli"]
 
 [dependencies]
+actix-http = "0.2.5"
 env_logger = "0.6.1"
 failure = "0.1.5"
 failure_derive = "0.1.5"
@@ -41,6 +42,7 @@ url = "1.7.2"
 env_logger = "0.6.1"
 
 [features]
+actix = ["v2"]
 default = ["v2", "codegen"]
 v2 = []
 codegen = ["heck"]
