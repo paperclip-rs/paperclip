@@ -56,9 +56,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         impl paperclip_actix::ApiOperation for #name {
-            const NAME: &'static str = #op_name;
-
-            fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchema> {
+            fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
                 let mut op = paperclip::v2::models::Operation::default();
                 op.operation_id = Some(#op_name.into());
                 op
@@ -115,7 +113,7 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
         let gen = quote! {
             {
-                let mut s = paperclip::v2::models::DefaultSchema::default();
+                let mut s = paperclip::v2::models::DefaultSchemaRaw::default();
                 s.data_type = Some(#ty::data_type());
                 s.format = #ty::format();
                 schema.properties.insert(#field_name.into(), s.into());
@@ -134,9 +132,9 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
         impl #impl_generics paperclip_actix::Apiv2Schema for #name #ty_generics #where_clause {
             const NAME: &'static str = #schema_name;
 
-            fn schema() -> paperclip::v2::models::DefaultSchema {
+            fn schema() -> paperclip::v2::models::DefaultSchemaRaw {
                 use paperclip::v2::models::{DataType, DataTypeFormat, TypedData};
-                let mut schema = paperclip::v2::models::DefaultSchema::default();
+                let mut schema = paperclip::v2::models::DefaultSchemaRaw::default();
                 #props_gen
                 schema
             }

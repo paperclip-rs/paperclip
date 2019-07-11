@@ -1,7 +1,8 @@
 //! Interior mutability stuff.
 
+use crate::v2::models::SchemaRepr;
 use parking_lot::RwLock;
-use serde::{Deserialize, Deserializer};
+use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use std::cell::RefCell;
 use std::ops::{Deref, DerefMut};
@@ -35,6 +36,18 @@ impl<S> Deref for RcRefCell<S> {
 impl<S> DerefMut for RcRefCell<S> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         &mut self.0
+    }
+}
+
+impl<T> Serialize for RcRefCell<T>
+where
+    T: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.borrow().serialize(serializer)
     }
 }
 
@@ -81,6 +94,18 @@ impl<S> DerefMut for ArcRwLock<S> {
     }
 }
 
+impl<T> Serialize for ArcRwLock<T>
+where
+    T: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        self.0.read().serialize(serializer)
+    }
+}
+
 impl<'de, S> Deserialize<'de> for ArcRwLock<S>
 where
     S: Deserialize<'de>,
@@ -91,5 +116,20 @@ where
     {
         let value = S::deserialize(deserializer)?;
         Ok(value.into())
+    }
+}
+
+impl<T> Serialize for SchemaRepr<T>
+where
+    T: Serialize,
+{
+    fn serialize<S>(&self, serializer: S) -> Result<S::Ok, S::Error>
+    where
+        S: Serializer,
+    {
+        match self {
+            SchemaRepr::Raw(s) => s.serialize(serializer),
+            SchemaRepr::Resolved { new, .. } => new.serialize(serializer),
+        }
     }
 }

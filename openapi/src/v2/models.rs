@@ -9,7 +9,7 @@ use std::fmt::{self, Display};
 use std::ops::{Deref, DerefMut};
 
 /// OpenAPI version.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum Version {
     #[serde(rename = "2.0")]
     V2,
@@ -29,7 +29,7 @@ pub trait TypedData {
 }
 
 /// Supported data types.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum DataType {
     Integer,
@@ -42,7 +42,7 @@ pub enum DataType {
 }
 
 /// Supported data type formats.
-#[derive(Clone, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(untagged, rename_all = "lowercase")]
 pub enum DataTypeFormat {
     Int32,
@@ -62,13 +62,14 @@ pub enum DataTypeFormat {
 pub type Api<S> = GenericApi<SchemaRepr<S>>;
 
 /// OpenAPI v2 spec generic over schema.
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct GenericApi<S> {
     pub swagger: Version,
     pub definitions: BTreeMap<String, S>,
     pub paths: BTreeMap<String, OperationMap<S>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub host: Option<String>,
-    #[serde(rename = "basePath")]
+    #[serde(rename = "basePath", skip_serializing_if = "Option::is_none")]
     pub base_path: Option<String>,
 }
 
@@ -78,7 +79,7 @@ use crate as paperclip; // hack for proc macro
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 #[api_v2_schema]
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DefaultSchema {}
 
 /// Wrapper for schema. This uses `Arc<RwLock<S>>` for interior
@@ -98,33 +99,38 @@ pub enum SchemaRepr<S> {
 /// Path item.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct OperationMap<S> {
     #[serde(flatten)]
     pub methods: BTreeMap<HttpMethod, Operation<S>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<Parameter<S>>>,
 }
 
 /// Request parameter.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Parameter<S> {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(rename = "in")]
     pub in_: ParameterIn,
     pub name: String,
     #[serde(default)]
     pub required: bool,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub schema: Option<S>,
-    #[serde(rename = "type")]
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
     pub data_type: Option<DataType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub format: Option<DataTypeFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<S>,
 }
 
 /// The location of the parameter.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub enum ParameterIn {
     Query,
@@ -137,33 +143,39 @@ pub enum ParameterIn {
 /// An operation.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
-#[derive(Clone, Debug, Default, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Operation<S> {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_id: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     // FIXME: Switch to `mime::MediaType` (which adds serde support) once 0.4 is released.
     #[serde(default)]
     pub consumes: Vec<String>,
     #[serde(default)]
     pub produces: Vec<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub schemes: Option<Vec<OperationProtocol>>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub parameters: Option<Vec<Parameter<S>>>,
 }
 
 /// HTTP response.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject
-#[derive(Clone, Debug, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct Response<S> {
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub schema: Option<S>,
 }
 
 /// The HTTP method used for an operation.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum HttpMethod {
     Get,
@@ -176,7 +188,7 @@ pub enum HttpMethod {
 }
 
 /// The protocol used for an operation.
-#[derive(Clone, Copy, Debug, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum OperationProtocol {
     Http,
