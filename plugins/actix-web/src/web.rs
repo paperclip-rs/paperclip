@@ -4,6 +4,8 @@ use actix_web::dev::{AppService, HttpServiceFactory, ServiceRequest, ServiceResp
 use actix_web::{http::Method, Error, Factory, FromRequest, Responder};
 use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation};
 
+use std::collections::BTreeMap;
+
 const METHODS: &[Method] = &[
     Method::GET,
     Method::PUT,
@@ -14,10 +16,9 @@ const METHODS: &[Method] = &[
     Method::PATCH,
 ];
 
-use std::collections::BTreeMap;
-
 pub use actix_web::web::{Json, Path};
 
+/// Wrapper for actix-web [`Resource`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html)
 pub struct Resource<T> {
     path: String,
     operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
@@ -59,6 +60,7 @@ where
         InitError = (),
     >,
 {
+    /// See actix-web [`Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
     pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
         F: ApiOperation + Factory<I, R> + 'static,
@@ -77,6 +79,7 @@ where
     }
 }
 
+/// See actix-web [`web::resource`](https://docs.rs/actix-web/*/actix_web/web/fn.resource.html).
 pub fn resource(
     path: &str,
 ) -> Resource<

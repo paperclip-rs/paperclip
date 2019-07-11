@@ -9,7 +9,6 @@
 
 extern crate proc_macro;
 
-use heck::MixedCase;
 use proc_macro::{Span, TokenStream};
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, ReturnType, Type};
@@ -27,8 +26,6 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     let name = item_ast.ident.clone();
-    let op_name = name.to_string().to_mixed_case();
-
     let mut arg_types = quote!();
     let mut arg_names = quote!();
     for arg in &item_ast.decl.inputs {
@@ -58,7 +55,6 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
         impl paperclip_actix::ApiOperation for #name {
             fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
                 let mut op = paperclip::v2::models::Operation::default();
-                op.operation_id = Some(#op_name.into());
                 op
             }
         }

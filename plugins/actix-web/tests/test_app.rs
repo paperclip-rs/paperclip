@@ -2,6 +2,8 @@
 extern crate lazy_static;
 #[macro_use]
 extern crate serde;
+#[macro_use]
+extern crate serde_json;
 
 use actix_rt::System;
 use actix_service::NewService;
@@ -34,19 +36,50 @@ fn test_app() {
     run_and_check_app(
         || {
             App::new()
-                .record_operations()
-                .with_json_spec_at("/swagger.json")
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
                 .service(web::resource("/test1").to(test))
                 .build()
         },
         |addr| {
             let mut resp = CLIENT
-                .get(&format!("http://{}/swagger.json", addr))
+                .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
-            assert_eq!(resp.status().as_u16(), 200);
-            let json = resp.json::<serde_json::Value>().expect("json error");
-            assert_eq!(json["swagger"], "2.0");
+
+            check_json(
+                &mut resp,
+                json!(
+                {
+                  "definitions": {},
+                  "paths": {
+                    "/test1": {
+                      "delete": {
+                        "responses": {}
+                      },
+                      "get": {
+                        "responses": {}
+                      },
+                      "head": {
+                        "responses": {}
+                      },
+                      "options": {
+                        "responses": {}
+                      },
+                      "patch": {
+                        "responses": {}
+                      },
+                      "post": {
+                        "responses": {}
+                      },
+                      "put": {
+                        "responses": {}
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
         },
     );
 }
@@ -89,4 +122,10 @@ where
     let ret = check(addr);
     server.stop(false);
     ret
+}
+
+fn check_json(resp: &mut reqwest::Response, expected: serde_json::Value) {
+    assert_eq!(resp.status().as_u16(), 200);
+    let json = resp.json::<serde_json::Value>().expect("json error");
+    assert_eq!(json.to_string(), expected.to_string());
 }

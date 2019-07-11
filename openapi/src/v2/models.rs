@@ -154,9 +154,9 @@ pub struct Operation<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     // FIXME: Switch to `mime::MediaType` (which adds serde support) once 0.4 is released.
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub consumes: Vec<String>,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub produces: Vec<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub schemes: Option<Vec<OperationProtocol>>,
