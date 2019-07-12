@@ -153,15 +153,10 @@ where
     }
 
     /// Resolve the given bunch of parameters.
-    fn resolve_parameters(
-        &self,
-        params: &mut Option<Vec<Parameter<SchemaRepr<S>>>>,
-    ) -> Result<(), Error> {
-        if let Some(params) = params.as_mut() {
-            for param in params.iter_mut() {
-                if let Some(schema) = param.schema.as_mut() {
-                    self.resolve_definitions(schema)?;
-                }
+    fn resolve_parameters(&self, params: &mut Vec<Parameter<SchemaRepr<S>>>) -> Result<(), Error> {
+        for param in params.iter_mut() {
+            if let Some(schema) = param.schema.as_mut() {
+                self.resolve_definitions(schema)?;
             }
         }
 

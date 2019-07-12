@@ -12,7 +12,7 @@ pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream
             if let Some((_, ty)) = Container::matches(&cap.ty) {
                 body_schema = Some(ty);
                 gen.extend(quote!(
-                    op.parameters = Some(vec![Parameter {
+                    op.parameters.push(Parameter {
                         description: None,
                         in_: ParameterIn::Body,
                         name: "body".into(),
@@ -27,7 +27,7 @@ pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream
                         data_type: None,
                         format: None,
                         items: None,
-                    }]);
+                    });
                 ));
 
                 break;
@@ -44,8 +44,19 @@ pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream
         ReturnType::Type(_, ref ty) => ty,
     };
 
-    if let Some((_, _)) = Container::matches(ret) {
-        gen.extend(quote!());
+    if let Some((_, ty)) = Container::matches(ret) {
+        gen.extend(quote!(
+            op.responses.insert("200".into(), Response {
+                description: None,
+                schema: if let Some(n) = #ty::NAME {
+                    let mut def = DefaultSchemaRaw::default();
+                    def.reference = Some(String::from("#/definitions/") + n);
+                    Some(def)
+                } else {
+                    Some(#ty::schema())
+                },
+            });
+        ));
     }
 
     let mut def = quote!();

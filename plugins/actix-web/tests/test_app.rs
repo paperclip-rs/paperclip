@@ -73,7 +73,13 @@ fn test_app() {
                   "paths": {
                     "/get-counter": {
                       "get": {
-                        "responses": {}
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Counter"
+                            }
+                          }
+                        }
                       }
                     },
                     "/post-echo": {
@@ -86,7 +92,13 @@ fn test_app() {
                             "$ref": "#/definitions/Counter"
                           }
                         }],
-                        "responses": {}
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Counter"
+                            }
+                          }
+                        }
                       }
                     }
                   },

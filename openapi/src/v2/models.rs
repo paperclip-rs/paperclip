@@ -105,10 +105,10 @@ pub enum SchemaRepr<S> {
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct OperationMap<S> {
-    #[serde(flatten)]
+    #[serde(flatten, default = "BTreeMap::default")]
     pub methods: BTreeMap<HttpMethod, Operation<S>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parameters: Option<Vec<Parameter<S>>>,
+    #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
+    pub parameters: Vec<Parameter<S>>,
 }
 
 /// Request parameter.
@@ -159,12 +159,12 @@ pub struct Operation<S> {
     pub consumes: Vec<String>,
     #[serde(default, skip_serializing_if = "Vec::is_empty")]
     pub produces: Vec<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub schemes: Option<Vec<OperationProtocol>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub schemes: Vec<OperationProtocol>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub parameters: Option<Vec<Parameter<S>>>,
+    #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
+    pub parameters: Vec<Parameter<S>>,
 }
 
 /// HTTP response.

@@ -275,66 +275,59 @@ where
         debug!("Collecting builder requirement for {:?}", path);
         let state = self.state();
 
-        let mut unused_params = vec![];
         // Collect all the parameters local to some API call.
-        if let Some(global_params) = map.parameters.as_ref() {
-            let (params, _) = self.collect_parameters(path, global_params, &mut template_params)?;
-            // FIXME: What if a body is "required" globally (for all operations)?
-            // This means, operations can override the body with some other schema
-            // and we may need to map it to the appropriate builders.
-            unused_params = params;
-        }
+        let (unused_params, _) =
+            self.collect_parameters(path, &map.parameters, &mut template_params)?;
+        // FIXME: What if a body is "required" globally (for all operations)?
+        // This means, operations can override the body with some other schema
+        // and we may need to map it to the appropriate builders.
 
         // Now collect the parameters local to an API call operation (method).
         for (&meth, op) in &map.methods {
             let mut op_addressed = false;
             let mut unused_local_params = vec![];
 
-            if let Some(local_params) = op.parameters.as_ref() {
-                let (mut params, schema_path) =
-                    self.collect_parameters(path, local_params, &mut template_params)?;
-                // If we have unused params which don't exist in the method-specific
-                // params (which take higher precedence), then we can copy those inside.
-                for global_param in &unused_params {
-                    if params
-                        .iter()
-                        .find(|p| p.name == global_param.name)
-                        .is_none()
-                    {
-                        params.push(global_param.clone());
-                    }
+            let (mut params, schema_path) =
+                self.collect_parameters(path, &op.parameters, &mut template_params)?;
+            // If we have unused params which don't exist in the method-specific
+            // params (which take higher precedence), then we can copy those inside.
+            for global_param in &unused_params {
+                if params
+                    .iter()
+                    .find(|p| p.name == global_param.name)
+                    .is_none()
+                {
+                    params.push(global_param.clone());
                 }
+            }
 
-                // If there's a matching object, add the params to its operation.
-                if let Some(pat) = schema_path.as_ref() {
-                    op_addressed = true;
-                    let mut def_mods = state.def_mods.borrow_mut();
-                    let obj = def_mods.get_mut(pat).expect("bleh?");
-                    let ops = obj
-                        .paths
-                        .entry(path.into())
-                        .or_insert_with(Default::default);
-                    ops.req.insert(
-                        meth,
-                        OpRequirement {
-                            listable: false,
-                            id: op.operation_id.clone(),
-                            description: op.description.clone(),
-                            params,
-                            body_required: true,
-                            response_ty_path: if let Some(s) = self.get_2xx_response_schema(&op) {
-                                let schema = &*s.read();
-                                Some(self.build_def(schema, false)?.known_type())
-                            } else {
-                                None
-                            },
+            // If there's a matching object, add the params to its operation.
+            if let Some(pat) = schema_path.as_ref() {
+                op_addressed = true;
+                let mut def_mods = state.def_mods.borrow_mut();
+                let obj = def_mods.get_mut(pat).expect("bleh?");
+                let ops = obj
+                    .paths
+                    .entry(path.into())
+                    .or_insert_with(Default::default);
+                ops.req.insert(
+                    meth,
+                    OpRequirement {
+                        listable: false,
+                        id: op.operation_id.clone(),
+                        description: op.description.clone(),
+                        params,
+                        body_required: true,
+                        response_ty_path: if let Some(s) = self.get_2xx_response_schema(&op) {
+                            let schema = &*s.read();
+                            Some(self.build_def(schema, false)?.known_type())
+                        } else {
+                            None
                         },
-                    );
-                } else {
-                    unused_local_params = params;
-                }
+                    },
+                );
             } else {
-                unused_local_params = unused_params.clone();
+                unused_local_params = params;
             }
 
             if op_addressed {
