@@ -60,9 +60,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
 
         impl paperclip_actix::ApiOperation for #name {
-            fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
-                #op
-            }
+            #op
         }
     };
 
@@ -93,7 +91,7 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
         _ => return call_site_error_with_msg("expected struct for schema"),
     };
 
-    // FIXME: Use path segments to find renamed fields.
+    // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
     let mut props_gen = quote! {};
     for field in fields {
         let field_name = field

@@ -57,7 +57,19 @@ fn test_app() {
                 &mut resp,
                 json!(
                 {
-                  "definitions": {},
+                  "definitions": {
+                    "Counter": {
+                      "properties": {
+                        "count": {
+                          "type": "integer",
+                          "format": "int32"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
                   "paths": {
                     "/get-counter": {
                       "get": {
@@ -71,15 +83,7 @@ fn test_app() {
                           "name": "body",
                           "required": true,
                           "schema": {
-                            "properties": {
-                              "count": {
-                                "type": "integer",
-                                "format": "int32"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
-                            }
+                            "$ref": "#/definitions/Counter"
                           }
                         }],
                         "responses": {}

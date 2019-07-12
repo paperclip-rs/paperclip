@@ -84,6 +84,9 @@ impl<T: TypedData> Apiv2Schema for T {
 pub trait ApiOperation {
     /// Returns the definition for this operation.
     fn operation() -> Operation<DefaultSchemaRaw>;
+
+    /// Returns the definitions used by this operation.
+    fn definitions() -> BTreeMap<String, DefaultSchemaRaw>;
 }
 
 impl<T, B> App<T, B>
@@ -109,6 +112,8 @@ where
                 .entry(factory.path().into())
                 .or_insert_with(OperationMap::default);
             map.methods.extend(factory.operations().clone().into_iter());
+            api.definitions
+                .extend(factory.definitions().clone().into_iter());
         }
 
         App {

@@ -2,24 +2,28 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{FnArg, GenericArgument, ItemFn, PathArguments, ReturnType, Type};
 
+/// Attempts to come up with `ApiOperation` impl based on the given function definition.
 pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream, TokenStream> {
-    let mut gen = quote!(
-        use paperclip_actix::Apiv2Schema;
-        use paperclip::v2::models::*;
-
-        let mut op = Operation::default();
-    );
+    let mut gen = quote!();
+    let mut body_schema = None;
 
     for arg in &f.decl.inputs {
         if let FnArg::Captured(ref cap) = &arg {
             if let Some((_, ty)) = Container::matches(&cap.ty) {
+                body_schema = Some(ty);
                 gen.extend(quote!(
                     op.parameters = Some(vec![Parameter {
                         description: None,
                         in_: ParameterIn::Body,
                         name: "body".into(),
                         required: true,
-                        schema: Some(#ty::schema()),
+                        schema: if let Some(n) = #ty::NAME {
+                            let mut def = DefaultSchemaRaw::default();
+                            def.reference = Some(String::from("#/definitions/") + n);
+                            Some(def)
+                        } else {
+                            Some(#ty::schema())
+                        },
                         data_type: None,
                         format: None,
                         items: None,
@@ -44,9 +48,34 @@ pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream
         gen.extend(quote!());
     }
 
-    gen.extend(quote!(op));
+    let mut def = quote!();
+    if let Some(ty) = body_schema {
+        def.extend(quote!(
+            if let Some(n) = #ty::NAME {
+                map.insert(n.into(), #ty::schema());
+            }
+        ));
+    }
 
-    Ok(gen)
+    Ok(quote!(
+        fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
+            use paperclip_actix::Apiv2Schema;
+            use paperclip::v2::models::*;
+
+            let mut op = Operation::default();
+            #gen
+            op
+        }
+
+        fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
+            use paperclip::v2::models::*;
+            use paperclip_actix::Apiv2Schema;
+
+            let mut map = std::collections::BTreeMap::new();
+            #def
+            map
+        }
+    ))
 }
 
 macro_rules! str_enum {

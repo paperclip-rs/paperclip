@@ -98,6 +98,8 @@ where
             }
         }
 
+        self.definitions.extend(route.definitions.into_iter());
+
         Resource {
             path: self.path,
             operations: self.operations,
@@ -133,6 +135,7 @@ pub fn resource(
 pub struct Route {
     method: Option<HttpMethod>,
     operation: Option<Operation<DefaultSchemaRaw>>,
+    definitions: BTreeMap<String, DefaultSchemaRaw>,
     inner: actix_web::Route,
 }
 
@@ -143,6 +146,7 @@ impl Route {
         Route {
             method: None,
             operation: None,
+            definitions: BTreeMap::new(),
             inner: actix_web::Route::new(),
         }
     }
@@ -152,6 +156,7 @@ impl Route {
         Route {
             method: Some(HttpMethod::from(&method)),
             operation: self.operation,
+            definitions: self.definitions,
             inner: self.inner.method(method),
         }
     }
@@ -166,6 +171,7 @@ impl Route {
         Route {
             method: self.method,
             operation: Some(F::operation()),
+            definitions: F::definitions(),
             inner: self.inner.to(handler),
         }
     }
