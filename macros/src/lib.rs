@@ -252,7 +252,10 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
         pub format: Option<paperclip::v2::models::DataTypeFormat>,
     ));
 
-    gen.extend(quote!(#[serde(default)] pub properties: std::collections::BTreeMap<String, ));
+    gen.extend(quote!(
+        #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
+        pub properties: std::collections::BTreeMap<String,
+    ));
     add_self(&mut gen);
 
     gen.extend(quote!(
@@ -268,7 +271,7 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     add_self(&mut gen);
 
     gen.extend(quote!(
-        #[serde(default)]
+        #[serde(default, skip_serializing_if = "std::collections::BTreeSet::is_empty")]
         pub required: std::collections::BTreeSet<String>,
     ));
 

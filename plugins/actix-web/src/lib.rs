@@ -8,7 +8,9 @@ pub use paperclip_actix_macros::{api_v2_operation, api_v2_schema};
 
 use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse};
-use paperclip::v2::models::{DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap};
+use paperclip::v2::models::{
+    DataType, DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap, TypedData,
+};
 use parking_lot::RwLock;
 
 use std::collections::BTreeMap;
@@ -39,23 +41,42 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
     }
 }
 
-/// Indicates that this thingmabob has a path and a bunch of operations.
+/// Indicates that this thingmabob has a path and a bunch of definitions and operations.
 pub trait Mountable {
     /// Where this thing gets mounted.
     fn path(&self) -> &str;
 
     /// Map of HTTP methods and the associated API operations.
     fn operations(&self) -> &BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>;
+
+    /// The definitions recorded by this object.
+    fn definitions(&self) -> &BTreeMap<String, DefaultSchemaRaw>;
 }
 
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
 /// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
 pub trait Apiv2Schema {
     /// Name of this schema. This is the object's name.
-    const NAME: &'static str;
+    const NAME: Option<&'static str>;
 
     /// Returns the schema for this object.
     fn schema() -> DefaultSchemaRaw;
+}
+
+impl<T: TypedData> Apiv2Schema for T {
+    const NAME: Option<&'static str> = None;
+
+    fn schema() -> DefaultSchemaRaw {
+        let mut schema = DefaultSchemaRaw::default();
+        schema.data_type = Some(T::data_type());
+        schema.format = T::format();
+
+        if let DataType::Array = T::data_type() {
+            schema.items = Some(T::schema().into());
+        }
+
+        schema
+    }
 }
 
 /// Represents a OpenAPI v2 operation convertible. This is auto-implemented by

@@ -24,6 +24,7 @@ pub use actix_web::web::{Json, Path};
 pub struct Resource<T> {
     path: String,
     operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
+    definitions: BTreeMap<String, DefaultSchemaRaw>,
     inner: actix_web::Resource<T>,
 }
 
@@ -49,6 +50,10 @@ impl<T> Mountable for Resource<T> {
 
     fn operations(&self) -> &BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
         &self.operations
+    }
+
+    fn definitions(&self) -> &BTreeMap<String, DefaultSchemaRaw> {
+        &self.definitions
     }
 }
 
@@ -76,6 +81,7 @@ where
         Resource {
             path: self.path,
             operations: self.operations,
+            definitions: self.definitions,
             inner: self.inner.to(handler),
         }
     }
@@ -95,6 +101,7 @@ where
         Resource {
             path: self.path,
             operations: self.operations,
+            definitions: self.definitions,
             inner: self.inner.route(route.inner),
         }
     }
@@ -115,6 +122,7 @@ pub fn resource(
     Resource {
         path: path.into(),
         operations: BTreeMap::new(),
+        definitions: BTreeMap::new(),
         inner: actix_web::web::resource(path),
     }
 }

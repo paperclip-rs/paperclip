@@ -9,6 +9,8 @@
 
 extern crate proc_macro;
 
+mod schema;
+
 use proc_macro::{Span, TokenStream};
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, ReturnType, Type};
@@ -36,12 +38,17 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
     }
 
-    let ret = match &item_ast.decl.output {
-        ReturnType::Default => return call_site_error_with_msg("Function must return something"),
-        ReturnType::Type(_, ref ty) => ty,
+    let op = match schema::infer_operation_definition(&item_ast) {
+        Ok(o) => o,
+        Err(ts) => return ts,
     };
 
     let block = &item_ast.block;
+    let ret = match &item_ast.decl.output {
+        ReturnType::Type(_, ref ty) => ty,
+        // unreachable because we've already dealt with this in `infer_operation_definition`
+        ReturnType::Default => unreachable!(),
+    };
 
     let gen = quote! {
         #[allow(non_camel_case_types)]
@@ -54,8 +61,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
         impl paperclip_actix::ApiOperation for #name {
             fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
-                let mut op = paperclip::v2::models::Operation::default();
-                op
+                #op
             }
         }
     };
@@ -107,14 +113,14 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             _ => return call_site_error_with_msg("unsupported type for schema"),
         };
 
-        let gen = quote! {
+        let gen = quote!(
             {
-                let mut s = paperclip::v2::models::DefaultSchemaRaw::default();
+                let mut s = DefaultSchemaRaw::default();
                 s.data_type = Some(#ty::data_type());
                 s.format = #ty::format();
                 schema.properties.insert(#field_name.into(), s.into());
             }
-        };
+        );
 
         props_gen.extend(gen);
     }
@@ -123,14 +129,12 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let gen = quote! {
         #item_ast
 
-        impl #impl_generics paperclip::v2::models::TypedData for #name #ty_generics #where_clause {}
-
         impl #impl_generics paperclip_actix::Apiv2Schema for #name #ty_generics #where_clause {
-            const NAME: &'static str = #schema_name;
+            const NAME: Option<&'static str> = Some(#schema_name);
 
             fn schema() -> paperclip::v2::models::DefaultSchemaRaw {
-                use paperclip::v2::models::{DataType, DataTypeFormat, TypedData};
-                let mut schema = paperclip::v2::models::DefaultSchemaRaw::default();
+                use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw, TypedData};
+                let mut schema = DefaultSchemaRaw::default();
                 #props_gen
                 schema
             }

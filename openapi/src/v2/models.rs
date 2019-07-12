@@ -45,8 +45,8 @@ pub enum DataType {
 }
 
 /// Supported data type formats.
-#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(untagged, rename_all = "lowercase")]
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = "lowercase")]
 pub enum DataTypeFormat {
     Int32,
     Int64,
@@ -58,7 +58,8 @@ pub enum DataTypeFormat {
     #[serde(rename = "date-time")]
     DateTime,
     Password,
-    Other(String),
+    #[serde(other)]
+    Other,
 }
 
 /// OpenAPI v2 spec.
@@ -331,7 +332,7 @@ impl_type_simple!(u64, DataType::Integer, Some(DataTypeFormat::Int64));
 impl_type_simple!(u128, DataType::Integer, Some(DataTypeFormat::Int64));
 impl_type_simple!(usize, DataType::Integer, Some(DataTypeFormat::Int64));
 
-impl<T> TypedData for Vec<T> {
+impl<T: TypedData> TypedData for Vec<T> {
     fn data_type() -> DataType {
         DataType::Array
     }

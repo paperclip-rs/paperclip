@@ -19,9 +19,8 @@ lazy_static! {
 }
 
 #[api_v2_schema]
-#[derive(Deserialize, Serialize)]
+#[derive(Default, Deserialize, Serialize)]
 pub struct Counter {
-    #[serde(rename = "counterName")]
     name: String,
     count: u32,
 }
@@ -33,13 +32,19 @@ fn test_app() {
         body
     }
 
+    #[api_v2_operation]
+    fn some_counter() -> web::Json<Counter> {
+        web::Json(Counter::default())
+    }
+
     run_and_check_app(
         || {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::resource("/all-methods-echo").to(echo_counter))
+                // .service(web::resource("/all-methods-echo").to(echo_counter))
                 .service(web::resource("/post-echo").route(web::post().to(echo_counter)))
+                .service(web::resource("/get-counter").route(web::get().to(some_counter)))
                 .build()
         },
         |addr| {
@@ -54,31 +59,29 @@ fn test_app() {
                 {
                   "definitions": {},
                   "paths": {
-                    "/all-methods-echo": {
-                      "delete": {
-                        "responses": {}
-                      },
+                    "/get-counter": {
                       "get": {
-                        "responses": {}
-                      },
-                      "head": {
-                        "responses": {}
-                      },
-                      "options": {
-                        "responses": {}
-                      },
-                      "patch": {
-                        "responses": {}
-                      },
-                      "post": {
-                        "responses": {}
-                      },
-                      "put": {
                         "responses": {}
                       }
                     },
                     "/post-echo": {
                       "post": {
+                        "parameters": [{
+                          "in": "body",
+                          "name": "body",
+                          "required": true,
+                          "schema": {
+                            "properties": {
+                              "count": {
+                                "type": "integer",
+                                "format": "int32"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            }
+                          }
+                        }],
                         "responses": {}
                       }
                     }
@@ -133,5 +136,16 @@ where
 fn check_json(resp: &mut reqwest::Response, expected: serde_json::Value) {
     assert_eq!(resp.status().as_u16(), 200);
     let json = resp.json::<serde_json::Value>().expect("json error");
-    assert_eq!(json.to_string(), expected.to_string());
+
+    if json != expected {
+        panic!(
+            "assertion failed:
+  left: {}
+
+ right: {}
+",
+            json.to_string(),
+            expected.to_string()
+        )
+    }
 }
