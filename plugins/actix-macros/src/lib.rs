@@ -11,6 +11,7 @@ extern crate proc_macro;
 
 mod schema;
 
+use self::schema::OperationProducer;
 use proc_macro::{Span, TokenStream};
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, ReturnType, Type};
@@ -20,6 +21,7 @@ fn call_site_error_with_msg(msg: &str) -> TokenStream {
     (quote! {}).into()
 }
 
+/// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
 #[proc_macro_attribute]
 pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let item_ast: ItemFn = match syn::parse(input) {
@@ -38,7 +40,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
     }
 
-    let op = match schema::infer_operation_definition(&item_ast) {
+    let op = match OperationProducer::from(&item_ast).generate_definition() {
         Ok(o) => o,
         Err(ts) => return ts,
     };
@@ -67,6 +69,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     gen.into()
 }
 
+/// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
 #[proc_macro_attribute]
 pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let item_ast: DeriveInput = match syn::parse(input) {

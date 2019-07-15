@@ -2,16 +2,96 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::{FnArg, GenericArgument, ItemFn, PathArguments, ReturnType, Type};
 
-/// Attempts to come up with `ApiOperation` impl based on the given function definition.
-pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream, TokenStream> {
-    let mut gen = quote!();
-    let mut body_schema = None;
+/// Factory struct for producing operation definitions.
+pub struct OperationProducer<'a> {
+    f: &'a ItemFn,
+    body_schema: Option<&'a Type>,
+    stream: proc_macro2::TokenStream,
+}
 
-    for arg in &f.decl.inputs {
-        if let FnArg::Captured(ref cap) = &arg {
-            if let Some((_, ty)) = Container::matches(&cap.ty) {
-                body_schema = Some(ty);
-                gen.extend(quote!(
+impl<'a> From<&'a ItemFn> for OperationProducer<'a> {
+    fn from(f: &'a ItemFn) -> Self {
+        OperationProducer {
+            f,
+            body_schema: None,
+            stream: quote!(),
+        }
+    }
+}
+
+impl<'a> OperationProducer<'a> {
+    /// Attempts to come up with `ApiOperation` impl based on the given function definition.
+    pub fn generate_definition(mut self) -> Result<proc_macro2::TokenStream, TokenStream> {
+        for arg in &self.f.decl.inputs {
+            if let FnArg::Captured(ref cap) = &arg {
+                self.add_param_from_input_arg(&cap.ty);
+            }
+        }
+
+        let ret = match &self.f.decl.output {
+            ReturnType::Default => {
+                return Err(crate::call_site_error_with_msg(
+                    "function must return something",
+                ))
+            }
+            ReturnType::Type(_, ref ty) => ty,
+        };
+
+        match Container::matches(ret) {
+            Some((c, ty)) if c.is_format() => {
+                self.stream.extend(quote!(
+                    op.responses.insert("200".into(), Response {
+                        description: None,
+                        schema: if let Some(n) = #ty::NAME {
+                            let mut def = DefaultSchemaRaw::default();
+                            def.reference = Some(String::from("#/definitions/") + n);
+                            Some(def)
+                        } else {
+                            Some(#ty::schema())
+                        },
+                    });
+                ));
+            }
+            _ => (),
+        }
+
+        let mut def = quote!();
+        if let Some(ty) = self.body_schema {
+            def.extend(quote!(
+                if let Some(n) = #ty::NAME {
+                    map.insert(n.into(), #ty::schema());
+                }
+            ));
+        }
+
+        let gen = &self.stream;
+        Ok(quote!(
+            fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
+                use paperclip_actix::Apiv2Schema;
+                use paperclip::v2::models::*;
+
+                let mut op = Operation::default();
+                #gen
+                op
+            }
+
+            fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
+                use paperclip::v2::models::*;
+                use paperclip_actix::Apiv2Schema;
+
+                let mut map = std::collections::BTreeMap::new();
+                #def
+                map
+            }
+        ))
+    }
+
+    /// Checks arg type and updates the token stream as required.
+    fn add_param_from_input_arg(&mut self, ty: &'a Type) {
+        match Container::matches(ty) {
+            Some((c, ty)) if c.is_format() && self.body_schema.is_none() => {
+                self.body_schema = Some(ty);
+                self.stream.extend(quote!(
                     op.parameters.push(Parameter {
                         description: None,
                         in_: ParameterIn::Body,
@@ -29,66 +109,35 @@ pub fn infer_operation_definition(f: &ItemFn) -> Result<proc_macro2::TokenStream
                         items: None,
                     });
                 ));
-
-                break;
             }
-        }
-    }
-
-    let ret = match &f.decl.output {
-        ReturnType::Default => {
-            return Err(crate::call_site_error_with_msg(
-                "function must return something",
-            ))
-        }
-        ReturnType::Type(_, ref ty) => ty,
-    };
-
-    if let Some((_, ty)) = Container::matches(ret) {
-        gen.extend(quote!(
-            op.responses.insert("200".into(), Response {
-                description: None,
-                schema: if let Some(n) = #ty::NAME {
-                    let mut def = DefaultSchemaRaw::default();
-                    def.reference = Some(String::from("#/definitions/") + n);
-                    Some(def)
-                } else {
-                    Some(#ty::schema())
-                },
-            });
-        ));
-    }
-
-    let mut def = quote!();
-    if let Some(ty) = body_schema {
-        def.extend(quote!(
-            if let Some(n) = #ty::NAME {
-                map.insert(n.into(), #ty::schema());
+            Some((Container::Path, ty)) => {
+                if let Type::Path(ref p) = ty {
+                    if let Some(seg) = p.path.segments.last() {
+                        let inner = &seg.value().ident;
+                        self.stream.extend(quote!(
+                            let def = #inner::schema();
+                            for (k, v) in def.properties {
+                                op.parameters.push(Parameter {
+                                    description: None,
+                                    in_: ParameterIn::Path,
+                                    name: k,
+                                    required: true,
+                                    schema: None,
+                                    data_type: v.data_type,
+                                    format: v.format,
+                                    items: None,
+                                });
+                            }
+                        ));
+                    }
+                }
             }
-        ));
+            _ => (),
+        }
     }
-
-    Ok(quote!(
-        fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
-            use paperclip_actix::Apiv2Schema;
-            use paperclip::v2::models::*;
-
-            let mut op = Operation::default();
-            #gen
-            op
-        }
-
-        fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
-            use paperclip::v2::models::*;
-            use paperclip_actix::Apiv2Schema;
-
-            let mut map = std::collections::BTreeMap::new();
-            #def
-            map
-        }
-    ))
 }
 
+/// We use this to ease enum definition, `AsRef<str>` impl and variants list (array).
 macro_rules! str_enum {
     ($arr_name:ident > $name:ident: $($var:ident),+) => {
         #[derive(Copy, Clone, Debug)]
@@ -103,7 +152,7 @@ macro_rules! str_enum {
             fn as_ref(&self) -> &str {
                 match self {
                     $(
-                        $var => stringify!($var),
+                        $var => stringify!($var)
                     ),+
                 }
             }
@@ -112,10 +161,21 @@ macro_rules! str_enum {
 }
 
 str_enum! { SUPPORTED_CONTAINERS > Container:
-    Json
+    Json,
+    Path
 }
 
 impl Container {
+    /// Checks whether this is a data format.
+    fn is_format(self) -> bool {
+        match self {
+            Container::Json => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this matches a container and returns it along with
+    /// the contained type (if any).
     fn matches(ty: &Type) -> Option<(Container, &Type)> {
         match ty {
             Type::Path(ref p) => p.path.segments.last().and_then(|seg| {

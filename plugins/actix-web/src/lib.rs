@@ -55,6 +55,8 @@ pub trait Mountable {
 
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
 /// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
+///
+/// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
     /// Name of this schema. This is the object's name.
     const NAME: Option<&'static str>;

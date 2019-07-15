@@ -20,21 +20,21 @@ lazy_static! {
 
 #[api_v2_schema]
 #[derive(Default, Deserialize, Serialize)]
-pub struct Counter {
+pub struct Pet {
     name: String,
-    count: u32,
+    id: u64,
 }
 
 #[test]
-fn test_app() {
+fn test_simple_app() {
     #[api_v2_operation]
-    fn echo_counter(body: web::Json<Counter>) -> web::Json<Counter> {
+    fn echo_pet(body: web::Json<Pet>) -> web::Json<Pet> {
         body
     }
 
     #[api_v2_operation]
-    fn some_counter() -> web::Json<Counter> {
-        web::Json(Counter::default())
+    fn some_pet() -> web::Json<Pet> {
+        web::Json(Pet::default())
     }
 
     run_and_check_app(
@@ -42,9 +42,9 @@ fn test_app() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                // .service(web::resource("/all-methods-echo").to(echo_counter))
-                .service(web::resource("/post-echo").route(web::post().to(echo_counter)))
-                .service(web::resource("/get-counter").route(web::get().to(some_counter)))
+                // .service(web::resource("/all-methods-test").to(test))
+                .service(web::resource("/echo").route(web::post().to(echo_pet)))
+                .service(web::resource("/random").route(web::get().to(some_pet)))
                 .build()
         },
         |addr| {
@@ -55,14 +55,13 @@ fn test_app() {
 
             check_json(
                 &mut resp,
-                json!(
-                {
+                json!({
                   "definitions": {
-                    "Counter": {
+                    "Pet": {
                       "properties": {
-                        "count": {
+                        "id": {
                           "type": "integer",
-                          "format": "int32"
+                          "format": "int64"
                         },
                         "name": {
                           "type": "string"
@@ -71,34 +70,94 @@ fn test_app() {
                     }
                   },
                   "paths": {
-                    "/get-counter": {
+                    "/random": {
                       "get": {
                         "responses": {
                           "200": {
                             "schema": {
-                              "$ref": "#/definitions/Counter"
+                              "$ref": "#/definitions/Pet"
                             }
                           }
                         }
                       }
                     },
-                    "/post-echo": {
+                    "/echo": {
                       "post": {
                         "parameters": [{
                           "in": "body",
                           "name": "body",
                           "required": true,
                           "schema": {
-                            "$ref": "#/definitions/Counter"
+                            "$ref": "#/definitions/Pet"
                           }
                         }],
                         "responses": {
                           "200": {
                             "schema": {
-                              "$ref": "#/definitions/Counter"
+                              "$ref": "#/definitions/Pet"
                             }
                           }
                         }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_path_param_struct() {
+    #[api_v2_schema]
+    #[derive(Deserialize)]
+    #[allow(dead_code)]
+    struct KnownResourceBadge {
+        resource: String,
+        name: String,
+    }
+
+    #[api_v2_operation]
+    fn get_known_badge(_p: web::Path<KnownResourceBadge>) -> String {
+        String::from("some base64 data")
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(
+                    web::resource("/{resource}/v/{name}").route(web::get().to(get_known_badge)),
+                )
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "definitions": {},
+                  "paths": {
+                    "/{resource}/v/{name}": {
+                      "get": {
+                        "parameters": [{
+                          "in": "path",
+                          "name": "name",
+                          "required": true,
+                          "type": "string"
+                        }, {
+                          "in": "path",
+                          "name": "resource",
+                          "required": true,
+                          "type": "string"
+                        }],
+                        "responses": {}
                       }
                     }
                   },
