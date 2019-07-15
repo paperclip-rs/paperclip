@@ -42,7 +42,6 @@ fn test_simple_app() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                // .service(web::resource("/all-methods-test").to(test))
                 .service(web::resource("/echo").route(web::post().to(echo_pet)))
                 .service(web::resource("/random").route(web::get().to(some_pet)))
                 .build()
@@ -60,8 +59,8 @@ fn test_simple_app() {
                     "Pet": {
                       "properties": {
                         "id": {
-                          "type": "integer",
-                          "format": "int64"
+                          "format": "int64",
+                          "type": "integer"
                         },
                         "name": {
                           "type": "string"
@@ -70,8 +69,16 @@ fn test_simple_app() {
                     }
                   },
                   "paths": {
-                    "/random": {
-                      "get": {
+                    "/echo": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
                         "responses": {
                           "200": {
                             "schema": {
@@ -81,16 +88,8 @@ fn test_simple_app() {
                         }
                       }
                     },
-                    "/echo": {
-                      "post": {
-                        "parameters": [{
-                          "in": "body",
-                          "name": "body",
-                          "required": true,
-                          "schema": {
-                            "$ref": "#/definitions/Pet"
-                          }
-                        }],
+                    "/random": {
+                      "get": {
                         "responses": {
                           "200": {
                             "schema": {
@@ -109,7 +108,7 @@ fn test_simple_app() {
 }
 
 #[test]
-fn test_path_param_struct() {
+fn test_path_params() {
     #[api_v2_schema]
     #[derive(Deserialize)]
     #[allow(dead_code)]
@@ -118,9 +117,26 @@ fn test_path_param_struct() {
         name: String,
     }
 
+    #[api_v2_schema]
+    #[derive(Deserialize)]
+    #[allow(dead_code)]
+    struct BadgeBody {
+        b64_data: String,
+    }
+
     #[api_v2_operation]
-    fn get_known_badge(_p: web::Path<KnownResourceBadge>) -> String {
-        String::from("some base64 data")
+    fn get_known_badge_1(_p: web::Path<KnownResourceBadge>) -> String {
+        String::from("some data")
+    }
+
+    #[api_v2_operation]
+    fn get_known_badge_2(_p: web::Path<(String, String)>) -> String {
+        String::from("some data")
+    }
+
+    #[api_v2_operation]
+    fn post_badge_2(_p: web::Path<(String, String)>) -> String {
+        String::from("some data")
     }
 
     run_and_check_app(
@@ -128,8 +144,11 @@ fn test_path_param_struct() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
+                .service(web::resource("/v1/{resource}/v/{name}").to(get_known_badge_1))
                 .service(
-                    web::resource("/{resource}/v/{name}").route(web::get().to(get_known_badge)),
+                    web::resource("/v2/{resource}/v/{name}")
+                        .route(web::get().to(get_known_badge_2))
+                        .route(web::post().to(post_badge_2)),
                 )
                 .build()
         },
@@ -144,19 +163,56 @@ fn test_path_param_struct() {
                 json!({
                   "definitions": {},
                   "paths": {
-                    "/{resource}/v/{name}": {
+                    "/v1/{resource}/v/{name}": {
+                      "delete": {
+                        "responses": {}
+                      },
                       "get": {
-                        "parameters": [{
-                          "in": "path",
-                          "name": "name",
-                          "required": true,
-                          "type": "string"
-                        }, {
-                          "in": "path",
-                          "name": "resource",
-                          "required": true,
-                          "type": "string"
-                        }],
+                        "responses": {}
+                      },
+                      "head": {
+                        "responses": {}
+                      },
+                      "options": {
+                        "responses": {}
+                      },
+                      "parameters": [{
+                        "in": "path",
+                        "name": "name",
+                        "required": true,
+                        "type": "string"
+                      }, {
+                        "in": "path",
+                        "name": "resource",
+                        "required": true,
+                        "type": "string"
+                      }],
+                      "patch": {
+                        "responses": {}
+                      },
+                      "post": {
+                        "responses": {}
+                      },
+                      "put": {
+                        "responses": {}
+                      }
+                    },
+                    "/v2/{resource}/v/{name}": {
+                      "get": {
+                        "responses": {}
+                      },
+                      "parameters": [{
+                        "in": "path",
+                        "name": "name",
+                        "required": true,
+                        "type": "string"
+                      }, {
+                        "in": "path",
+                        "name": "resource",
+                        "required": true,
+                        "type": "string"
+                      }],
+                      "post": {
                         "responses": {}
                       }
                     }

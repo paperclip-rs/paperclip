@@ -10,7 +10,6 @@ use crate::v2::{
 };
 use failure::Error;
 use heck::{CamelCase, SnekCase};
-use regex::{Captures, Regex};
 use url::Host;
 
 use std::collections::HashSet;
@@ -18,10 +17,6 @@ use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
-
-lazy_static! {
-    static ref PATH_TEMPLATE_REGEX: Regex = Regex::new(r"\{(.*?)\}").expect("path template regex");
-}
 
 /// Checks if the given type/format matches a known Rust type and returns it.
 fn matching_unit_type(
@@ -248,9 +243,9 @@ where
     /// should reject it.
     fn validate_path_and_get_params(&self, path: &str) -> Result<HashSet<String>, Error> {
         let mut params = HashSet::new();
-        let path_fmt = PATH_TEMPLATE_REGEX.replace_all(path, |c: &Captures| {
-            params.insert(c[1].into());
-            ":"
+        let path_fmt = Api::<()>::path_parameters_map(path, |p| {
+            params.insert(p.into());
+            ":".into()
         });
 
         let state = self.state();

@@ -74,8 +74,11 @@ where
         I: FromRequest + 'static,
         R: Responder + 'static,
     {
+        let mut op = F::operation();
+        op.set_parameter_names_from_path_template(&self.path);
+
         for method in METHODS {
-            self.operations.insert(method.into(), F::operation());
+            self.operations.insert(method.into(), op.clone());
         }
 
         Resource {
@@ -88,7 +91,9 @@ where
 
     /// See [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
     pub fn route(mut self, route: Route) -> Self {
-        if let Some(op) = route.operation {
+        if let Some(mut op) = route.operation {
+            op.set_parameter_names_from_path_template(&self.path);
+
             if let Some(meth) = route.method {
                 self.operations.insert(meth, op);
             } else {

@@ -111,25 +111,46 @@ impl<'a> OperationProducer<'a> {
                 ));
             }
             Some((Container::Path, ty)) => {
-                if let Type::Path(ref p) = ty {
-                    if let Some(seg) = p.path.segments.last() {
-                        let inner = &seg.value().ident;
-                        self.stream.extend(quote!(
-                            let def = #inner::schema();
-                            for (k, v) in def.properties {
+                match ty {
+                    Type::Path(ref p) => {
+                        if let Some(seg) = p.path.segments.last() {
+                            let inner = &seg.value().ident;
+                            self.stream.extend(quote!(
+                                let def = #inner::schema();
+                                for (k, v) in def.properties {
+                                    op.parameters.push(Parameter {
+                                        description: None,
+                                        in_: ParameterIn::Path,
+                                        name: k,
+                                        required: true,
+                                        schema: None,
+                                        data_type: v.data_type,
+                                        format: v.format,
+                                        items: None,
+                                    });
+                                }
+                            ));
+                        }
+                    }
+                    Type::Tuple(ref t) => {
+                        for ty in &t.elems {
+                            // NOTE: We're setting empty name, because we don't know
+                            // the name in this context. We'll get it when we add services.
+                            self.stream.extend(quote!(
                                 op.parameters.push(Parameter {
+                                    name: String::new(),
                                     description: None,
                                     in_: ParameterIn::Path,
-                                    name: k,
                                     required: true,
                                     schema: None,
-                                    data_type: v.data_type,
-                                    format: v.format,
+                                    data_type: Some(#ty::data_type()),
+                                    format: #ty::format(),
                                     items: None,
                                 });
-                            }
-                        ));
+                            ));
+                        }
                     }
+                    _ => (),
                 }
             }
             _ => (),

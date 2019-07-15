@@ -109,13 +109,15 @@ where
     {
         {
             let mut api = self.spec.write();
+            api.definitions
+                .extend(factory.definitions().clone().into_iter());
+
             let map = api
                 .paths
                 .entry(factory.path().into())
                 .or_insert_with(OperationMap::default);
             map.methods.extend(factory.operations().clone().into_iter());
-            api.definitions
-                .extend(factory.definitions().clone().into_iter());
+            map.normalize();
         }
 
         App {

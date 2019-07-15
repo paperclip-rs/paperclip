@@ -3,13 +3,20 @@
 use super::{im::ArcRwLock, Schema};
 use crate::error::PaperClipError;
 use failure::Error;
+use regex::{Captures, Regex};
 
 #[cfg(feature = "actix")]
 use actix_http::http::Method;
 
-use std::collections::BTreeMap;
+use std::borrow::Cow;
+use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{self, Display};
 use std::ops::{Deref, DerefMut};
+
+lazy_static! {
+    /// Regex that can be used for fetching templated path parameters.
+    static ref PATH_TEMPLATE_REGEX: Regex = Regex::new(r"\{(.*?)\}").expect("path template regex");
+}
 
 /// OpenAPI version.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
@@ -77,6 +84,17 @@ pub struct GenericApi<S> {
     pub base_path: Option<String>,
 }
 
+impl<S> GenericApi<S> {
+    /// Gets the parameters from the given path template and calls
+    /// the given function with the parameter names.
+    pub fn path_parameters_map(
+        path: &str,
+        mut f: impl FnMut(&str) -> Cow<'static, str>,
+    ) -> Cow<'_, str> {
+        PATH_TEMPLATE_REGEX.replace_all(path, |c: &Captures| f(&c[1]))
+    }
+}
+
 use crate as paperclip; // hack for proc macro
 
 /// Default schema if your schema doesn't have any custom fields.
@@ -111,10 +129,46 @@ pub struct OperationMap<S> {
     pub parameters: Vec<Parameter<S>>,
 }
 
+impl<S> OperationMap<S> {
+    /// Normalizes this operation map.
+    /// - Collects and removes parameters shared across operations
+    /// and adds them to the list global to this map.
+    pub fn normalize(&mut self) {
+        let mut shared_params = BTreeSet::new();
+        for op in self.methods.values() {
+            let params = op.parameters.iter().map(|p| p.name.clone()).collect();
+            if shared_params.is_empty() {
+                shared_params = params;
+            } else {
+                shared_params = &shared_params & &params;
+            }
+        }
+
+        for name in &shared_params {
+            for op in self.methods.values_mut() {
+                let idx = op
+                    .parameters
+                    .iter()
+                    .position(|p| p.name == name.as_str())
+                    .expect("collected parameter missing?");
+                let p = op.parameters.swap_remove(idx);
+                if self
+                    .parameters
+                    .iter()
+                    .find(|p| p.name == name.as_str())
+                    .is_none()
+                {
+                    self.parameters.push(p);
+                }
+            }
+        }
+    }
+}
+
 /// Request parameter.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Parameter<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -165,6 +219,38 @@ pub struct Operation<S> {
     pub responses: BTreeMap<String, Response<S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
     pub parameters: Vec<Parameter<S>>,
+}
+
+impl<S> Operation<S> {
+    /// Overwrites the names of parameters in this operation using the
+    /// given path template.
+    ///
+    /// # Panics
+    ///
+    /// This method will panic if there's a mismatch between the parameters
+    /// in this operation and those in the given path template.
+    pub fn set_parameter_names_from_path_template(&mut self, path: &str) {
+        let mut params = self
+            .parameters
+            .iter_mut()
+            .filter(|p| p.in_ == ParameterIn::Path)
+            .peekable();
+        Api::<()>::path_parameters_map(path, |p| {
+            let mut param = params
+                .next()
+                .unwrap_or_else(|| panic!("missing parameter {} in path {}", p, path));
+            param.name = p.into();
+            ":".into()
+        });
+
+        if params.peek().is_some() {
+            panic!(
+                "{} parameter(s) haven't been addressed by path {}",
+                params.count(),
+                path
+            );
+        }
+    }
 }
 
 /// HTTP response.
