@@ -35,8 +35,8 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     for arg in &item_ast.decl.inputs {
         if let FnArg::Captured(ref cap) = &arg {
             let (pat, ty) = (&cap.pat, &cap.ty);
-            arg_types.extend(quote!(#ty));
-            arg_names.extend(quote!(#pat));
+            arg_types.extend(quote!(#ty,));
+            arg_names.extend(quote!(#pat,));
         }
     }
 
@@ -142,6 +142,5 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
         }
     };
 
-    // panic!("{}", gen);
     gen.into()
 }

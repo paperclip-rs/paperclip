@@ -135,7 +135,7 @@ fn test_path_params() {
     }
 
     #[api_v2_operation]
-    fn post_badge_2(_p: web::Path<(String, String)>) -> String {
+    fn post_badge_2(_p: web::Path<(String, String)>, _b: web::Json<BadgeBody>) -> String {
         String::from("some data")
     }
 
@@ -161,7 +161,15 @@ fn test_path_params() {
             check_json(
                 &mut resp,
                 json!({
-                  "definitions": {},
+                  "definitions": {
+                    "BadgeBody": {
+                      "properties": {
+                        "b64_data": {
+                          "type": "string"
+                        }
+                      }
+                    }
+                  },
                   "paths": {
                     "/v1/{resource}/v/{name}": {
                       "delete": {
@@ -213,6 +221,14 @@ fn test_path_params() {
                         "type": "string"
                       }],
                       "post": {
+                        "parameters": [{
+                          "in": "body",
+                          "name": "body",
+                          "required": true,
+                          "schema": {
+                            "$ref": "#/definitions/BadgeBody"
+                          }
+                        }],
                         "responses": {}
                       }
                     }
