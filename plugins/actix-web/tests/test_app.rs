@@ -65,7 +65,8 @@ fn test_simple_app() {
                         "name": {
                           "type": "string"
                         }
-                      }
+                      },
+                      "required":["id","name"]
                     }
                   },
                   "paths": {
@@ -120,17 +121,25 @@ fn test_path_params() {
     #[api_v2_schema]
     #[derive(Deserialize)]
     #[allow(dead_code)]
+    struct BadgeParams {
+        res: Option<u16>,
+        color: String,
+    }
+
+    #[api_v2_schema]
+    #[derive(Deserialize)]
+    #[allow(dead_code)]
     struct BadgeBody {
-        b64_data: String,
+        data: String,
     }
 
     #[api_v2_operation]
-    fn get_known_badge_1(_p: web::Path<KnownResourceBadge>) -> String {
+    fn get_known_badge_1(_p: web::Path<KnownResourceBadge>, _q: web::Query<BadgeParams>) -> String {
         String::from("some data")
     }
 
     #[api_v2_operation]
-    fn get_known_badge_2(_p: web::Path<(String, String)>) -> String {
+    fn get_known_badge_2(_p: web::Path<(String, String)>, _q: web::Query<BadgeParams>) -> String {
         String::from("some data")
     }
 
@@ -164,10 +173,11 @@ fn test_path_params() {
                   "definitions": {
                     "BadgeBody": {
                       "properties": {
-                        "b64_data": {
+                        "data": {
                           "type": "string"
                         }
-                      }
+                      },
+                      "required":["data"]
                     }
                   },
                   "paths": {
@@ -185,10 +195,21 @@ fn test_path_params() {
                         "responses": {}
                       },
                       "parameters": [{
+                        "in": "query",
+                        "name": "color",
+                        "required": true,
+                        "type": "string"
+                      }, {
                         "in": "path",
                         "name": "name",
                         "required": true,
                         "type": "string"
+                      }, {
+                        "format": "int32",
+                        "in": "query",
+                        "name": "res",
+                        "required": false,
+                        "type": "integer"
                       }, {
                         "in": "path",
                         "name": "resource",
@@ -207,6 +228,18 @@ fn test_path_params() {
                     },
                     "/v2/{resource}/v/{name}": {
                       "get": {
+                        "parameters": [{
+                          "in": "query",
+                          "name": "color",
+                          "required": true,
+                          "type": "string"
+                        }, {
+                          "format": "int32",
+                          "in": "query",
+                          "name": "res",
+                          "required": false,
+                          "type": "integer"
+                        }],
                         "responses": {}
                       },
                       "parameters": [{

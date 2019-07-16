@@ -16,7 +16,7 @@ const METHODS: &[Method] = &[
     Method::PATCH,
 ];
 
-pub use actix_web::web::{Json, Path};
+pub use actix_web::web::{Json, Path, Query};
 
 /* Resource */
 

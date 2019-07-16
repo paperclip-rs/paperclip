@@ -423,3 +423,13 @@ impl<T: TypedData> TypedData for Vec<T> {
         DataType::Array
     }
 }
+
+impl<T: TypedData> TypedData for Option<T> {
+    fn data_type() -> DataType {
+        T::data_type()
+    }
+
+    fn format() -> Option<DataTypeFormat> {
+        T::format()
+    }
+}

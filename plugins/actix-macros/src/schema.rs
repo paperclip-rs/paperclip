@@ -110,47 +110,52 @@ impl<'a> OperationProducer<'a> {
                     });
                 ));
             }
-            Some((Container::Path, ty)) => {
-                match ty {
-                    Type::Path(ref p) => {
-                        if let Some(seg) = p.path.segments.last() {
-                            let inner = &seg.value().ident;
-                            self.stream.extend(quote!(
-                                let def = #inner::schema();
-                                for (k, v) in def.properties {
-                                    op.parameters.push(Parameter {
-                                        description: None,
-                                        in_: ParameterIn::Path,
-                                        name: k,
-                                        required: true,
-                                        schema: None,
-                                        data_type: v.data_type,
-                                        format: v.format,
-                                        items: None,
-                                    });
-                                }
-                            ));
-                        }
-                    }
-                    Type::Tuple(ref t) => {
-                        for ty in &t.elems {
-                            // NOTE: We're setting empty name, because we don't know
-                            // the name in this context. We'll get it when we add services.
-                            self.stream.extend(quote!(
+            Some((c, ty)) if c.is_extractor() => {
+                if let Type::Path(ref p) = ty {
+                    if let Some(seg) = p.path.segments.last() {
+                        let inner = &seg.value().ident;
+                        let (p_in, required) = match c {
+                            Container::Path => (quote!(ParameterIn::Path), quote!(true)),
+                            Container::Query => (
+                                quote!(ParameterIn::Query),
+                                quote!(def.required.contains(&k)),
+                            ),
+                            _ => unreachable!(),
+                        };
+
+                        self.stream.extend(quote!(
+                            let def = #inner::schema();
+                            for (k, v) in def.properties {
                                 op.parameters.push(Parameter {
-                                    name: String::new(),
                                     description: None,
-                                    in_: ParameterIn::Path,
-                                    required: true,
+                                    in_: #p_in,
+                                    required: #required,
+                                    name: k,
                                     schema: None,
-                                    data_type: Some(#ty::data_type()),
-                                    format: #ty::format(),
+                                    data_type: v.data_type,
+                                    format: v.format,
                                     items: None,
                                 });
-                            ));
-                        }
+                            }
+                        ));
                     }
-                    _ => (),
+                } else if let Type::Tuple(ref t) = ty {
+                    for ty in &t.elems {
+                        // NOTE: We're setting empty name, because we don't know
+                        // the name in this context. We'll get it when we add services.
+                        self.stream.extend(quote!(
+                            op.parameters.push(Parameter {
+                                name: String::new(),
+                                description: None,
+                                in_: ParameterIn::Path,
+                                required: true,
+                                schema: None,
+                                data_type: Some(#ty::data_type()),
+                                format: #ty::format(),
+                                items: None,
+                            });
+                        ));
+                    }
                 }
             }
             _ => (),
@@ -183,7 +188,8 @@ macro_rules! str_enum {
 
 str_enum! { SUPPORTED_CONTAINERS > Container:
     Json,
-    Path
+    Path,
+    Query
 }
 
 impl Container {
@@ -191,6 +197,14 @@ impl Container {
     fn is_format(self) -> bool {
         match self {
             Container::Json => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this is an extractor.
+    fn is_extractor(self) -> bool {
+        match self {
+            Container::Path | Container::Query => true,
             _ => false,
         }
     }

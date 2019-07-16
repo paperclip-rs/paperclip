@@ -14,7 +14,7 @@ mod schema;
 use self::schema::OperationProducer;
 use proc_macro::{Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, ReturnType, Type};
+use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, PathArguments, ReturnType, Type};
 
 fn call_site_error_with_msg(msg: &str) -> TokenStream {
     Span::call_site().error(msg);
@@ -102,26 +102,46 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             .as_ref()
             .expect("missing field name?")
             .to_string();
-        let ty = match field.ty {
+
+        let mut is_required = true;
+        let ty_ref = match field.ty {
             Type::Path(ref p) => {
-                &p.path
+                let ty = p
+                    .path
                     .segments
                     .last()
-                    .expect("expected type for struct field")
-                    .value()
-                    .ident
+                    .map(|p| p.into_value())
+                    .expect("expected type for struct field");
+
+                let (ty_name, ty_args) = (&ty.ident, &ty.arguments);
+                if p.path.segments.len() == 1 && ty_name == "Option" {
+                    is_required = false;
+                }
+
+                match ty_args {
+                    PathArguments::AngleBracketed(_) if !ty_args.is_empty() => {
+                        quote!(#ty_name::#ty_args)
+                    }
+                    _ => quote!(#ty),
+                }
             }
             _ => return call_site_error_with_msg("unsupported type for schema"),
         };
 
-        let gen = quote!(
+        let mut gen = quote!(
             {
                 let mut s = DefaultSchemaRaw::default();
-                s.data_type = Some(#ty::data_type());
-                s.format = #ty::format();
+                s.data_type = Some(#ty_ref::data_type());
+                s.format = #ty_ref::format();
                 schema.properties.insert(#field_name.into(), s.into());
             }
         );
+
+        if is_required {
+            gen.extend(quote! {
+                schema.required.insert(#field_name.into());
+            });
+        }
 
         props_gen.extend(gen);
     }
