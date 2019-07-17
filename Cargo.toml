@@ -4,6 +4,3 @@ members = [
   "openapi",
   "plugins/actix-web"
 ]
-
-[patch.crates-io]
-actix-web = { git = "https://github.com/actix/actix-web" }

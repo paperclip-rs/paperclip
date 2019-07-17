@@ -43,7 +43,7 @@ fn test_simple_app() {
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/echo").route(web::post().to(echo_pet)))
-                .service(web::resource("/random").route(web::get().to(some_pet)))
+                .service(web::resource("/random").to(some_pet))
                 .build()
         },
         |addr| {
@@ -90,7 +90,61 @@ fn test_simple_app() {
                       }
                     },
                     "/random": {
+                      "delete": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      },
                       "get": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      },
+                      "head": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      },
+                      "options": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      },
+                      "patch": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      },
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      },
+                      "put": {
                         "responses": {
                           "200": {
                             "schema": {
@@ -109,10 +163,10 @@ fn test_simple_app() {
 }
 
 #[test]
-fn test_path_params() {
+#[allow(dead_code)]
+fn test_params() {
     #[api_v2_schema]
     #[derive(Deserialize)]
-    #[allow(dead_code)]
     struct KnownResourceBadge {
         resource: String,
         name: String,
@@ -120,7 +174,6 @@ fn test_path_params() {
 
     #[api_v2_schema]
     #[derive(Deserialize)]
-    #[allow(dead_code)]
     struct BadgeParams {
         res: Option<u16>,
         color: String,
@@ -128,24 +181,32 @@ fn test_path_params() {
 
     #[api_v2_schema]
     #[derive(Deserialize)]
-    #[allow(dead_code)]
     struct BadgeBody {
         data: String,
     }
 
     #[api_v2_operation]
     fn get_known_badge_1(_p: web::Path<KnownResourceBadge>, _q: web::Query<BadgeParams>) -> String {
-        String::from("some data")
+        String::new()
     }
 
     #[api_v2_operation]
     fn get_known_badge_2(_p: web::Path<(String, String)>, _q: web::Query<BadgeParams>) -> String {
-        String::from("some data")
+        String::new()
+    }
+
+    #[api_v2_operation]
+    fn post_badge_1(
+        _p: web::Path<KnownResourceBadge>,
+        _q: web::Query<BadgeParams>,
+        _f: web::Form<BadgeBody>,
+    ) -> String {
+        String::new()
     }
 
     #[api_v2_operation]
     fn post_badge_2(_p: web::Path<(String, String)>, _b: web::Json<BadgeBody>) -> String {
-        String::from("some data")
+        String::new()
     }
 
     run_and_check_app(
@@ -153,7 +214,11 @@ fn test_path_params() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::resource("/v1/{resource}/v/{name}").to(get_known_badge_1))
+                .service(
+                    web::resource("/v1/{resource}/v/{name}")
+                        .route(web::Route::new().to(get_known_badge_1))
+                        .route(web::post().to(post_badge_1)),
+                )
                 .service(
                     web::resource("/v2/{resource}/v/{name}")
                         .route(web::get().to(get_known_badge_2))
@@ -220,6 +285,12 @@ fn test_path_params() {
                         "responses": {}
                       },
                       "post": {
+                        "parameters": [{
+                          "in": "formData",
+                          "name": "data",
+                          "required": true,
+                          "type": "string"
+                        }],
                         "responses": {}
                       },
                       "put": {

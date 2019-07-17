@@ -120,6 +120,11 @@ impl<'a> OperationProducer<'a> {
                                 quote!(ParameterIn::Query),
                                 quote!(def.required.contains(&k)),
                             ),
+                            // FIXME: body and formData parameters are mutually exclusive.
+                            Container::Form => (
+                                quote!(ParameterIn::FormData),
+                                quote!(def.required.contains(&k)),
+                            ),
                             _ => unreachable!(),
                         };
 
@@ -189,7 +194,8 @@ macro_rules! str_enum {
 str_enum! { SUPPORTED_CONTAINERS > Container:
     Json,
     Path,
-    Query
+    Query,
+    Form
 }
 
 impl Container {
@@ -204,7 +210,7 @@ impl Container {
     /// Checks whether this is an extractor.
     fn is_extractor(self) -> bool {
         match self {
-            Container::Path | Container::Query => true,
+            Container::Path | Container::Query | Container::Form => true,
             _ => false,
         }
     }

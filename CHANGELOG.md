@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Paperclip's `#[api_v2_schema]` derives raw schema structs (i.e., no smart pointers) along with actual schema structs for other users and plugins. An effect of this would be that now there's a `DefaultSchemaRaw` in addition to `DefaultSchema`.
 - Experimental Actix plugin for hosting v2 spec as a JSON by marking models and operations.
 
+### Changed
+- During serialization, optional schema fields are skipped when empty/null.
+
 ### Fixed
 - Allowing ports in `host` field in v2 spec.
 

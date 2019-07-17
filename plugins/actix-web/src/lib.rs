@@ -1,5 +1,6 @@
 pub mod web;
 
+#[doc(inline)]
 pub use self::web::{Resource, Route};
 pub use paperclip_actix_macros::{api_v2_operation, api_v2_schema};
 

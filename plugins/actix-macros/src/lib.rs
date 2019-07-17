@@ -48,7 +48,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let block = &item_ast.block;
     let ret = match &item_ast.decl.output {
         ReturnType::Type(_, ref ty) => ty,
-        // unreachable because we've already dealt with this in `infer_operation_definition`
+        // unreachable because we've already dealt with this in `OperationProducer::generate_definition`
         ReturnType::Default => unreachable!(),
     };
 
