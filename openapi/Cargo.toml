@@ -1,9 +1,9 @@
 [package]
 name = "paperclip"
-version = "0.2.0"
+version = "0.2.1"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
-description = "WIP OpenAPI codegen for type-safe compile-time checked HTTP APIs"
+description = "WIP OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
 documentation = "https://paperclip.waffles.space/paperclip"
 keywords = ["openapi", "api", "swagger", "http", "web"]
 license = "MIT OR Apache-2.0"

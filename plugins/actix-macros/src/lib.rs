@@ -57,7 +57,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
         #[derive(Clone)]
         struct #name;
 
-        impl actix_web::Factory<(#arg_types), #ret> for #name {
+        impl actix_web::dev::Factory<(#arg_types), #ret> for #name {
             fn call(&self, (#arg_names): (#arg_types)) -> #ret #block
         }
 

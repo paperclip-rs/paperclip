@@ -1,7 +1,13 @@
+pub use actix_web::web::{
+    block, scope, service, to, to_async, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
+    HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
+    ServiceConfig,
+};
+
 use crate::{ApiOperation, Mountable};
 use actix_service::NewService;
-use actix_web::dev::{AppService, HttpServiceFactory, ServiceRequest, ServiceResponse};
-use actix_web::{http::Method, Error, Factory, FromRequest, Responder};
+use actix_web::dev::{AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse};
+use actix_web::{http::Method, Error, FromRequest, Responder};
 use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation};
 
 use std::collections::BTreeMap;
@@ -15,8 +21,6 @@ const METHODS: &[Method] = &[
     Method::HEAD,
     Method::PATCH,
 ];
-
-pub use actix_web::web::{Json, Path, Query};
 
 /* Resource */
 

@@ -1,13 +1,11 @@
 pub mod web;
 
-pub use actix_web::{
-    body, client, cookie, dev, error, guard, http, middleware, test, Error, Factory, HttpRequest,
-    HttpResponse, HttpServer, Responder, Route,
-};
+pub use self::web::{Resource, Route};
 pub use paperclip_actix_macros::{api_v2_operation, api_v2_schema};
 
 use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse};
+use actix_web::{web::HttpResponse, Error};
 use paperclip::v2::models::{
     DataType, DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap, TypedData,
 };
@@ -147,7 +145,7 @@ where
 #[derive(Clone)]
 struct SpecHandler(Arc<RwLock<GenericApi<DefaultSchemaRaw>>>);
 
-impl Factory<(), HttpResponse> for SpecHandler {
+impl actix_web::dev::Factory<(), HttpResponse> for SpecHandler {
     fn call(&self, _: ()) -> HttpResponse {
         HttpResponse::Ok().json(&*self.0.read())
     }

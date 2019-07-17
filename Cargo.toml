@@ -6,4 +6,4 @@ members = [
 ]
 
 [patch.crates-io]
-actix-web = { git = "https://github.com/wafflespeanut/actix-web" }
+actix-web = { git = "https://github.com/actix/actix-web" }
