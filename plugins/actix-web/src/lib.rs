@@ -1,7 +1,7 @@
 pub mod web;
 
 #[doc(inline)]
-pub use self::web::{Resource, Route};
+pub use self::web::{Resource, Route, Scope};
 pub use paperclip_actix_macros::{api_v2_operation, api_v2_schema};
 
 use actix_service::NewService;
@@ -21,7 +21,7 @@ pub struct App<T, B> {
     inner: actix_web::App<T, B>,
 }
 
-/// Extension trait for applications.
+/// Extension trait for actix-web applications.
 pub trait OpenApiExt<T, B> {
     type Wrapper;
 
@@ -46,10 +46,22 @@ pub trait Mountable {
     fn path(&self) -> &str;
 
     /// Map of HTTP methods and the associated API operations.
-    fn operations(&self) -> &BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>;
+    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>;
 
     /// The definitions recorded by this object.
-    fn definitions(&self) -> &BTreeMap<String, DefaultSchemaRaw>;
+    fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw>;
+
+    /// Updates the given map of operations with operations tracked by this object.
+    ///
+    /// **NOTE:** Overriding implementations must ensure that the `OperationMap`
+    /// is normalized before updating the input map.
+    fn update_operations(&mut self, map: &mut BTreeMap<String, OperationMap<DefaultSchemaRaw>>) {
+        let op_map = map
+            .entry(self.path().into())
+            .or_insert_with(OperationMap::default);
+        op_map.methods.extend(self.operations().into_iter());
+        op_map.normalize();
+    }
 }
 
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
@@ -102,39 +114,29 @@ where
     >,
 {
     /// See [`actix_web::App::service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.service).
-    pub fn service<F>(self, factory: F) -> Self
+    pub fn service<F>(mut self, mut factory: F) -> Self
     where
         F: Mountable + HttpServiceFactory + 'static,
     {
         {
             let mut api = self.spec.write();
-            api.definitions
-                .extend(factory.definitions().clone().into_iter());
-
-            let map = api
-                .paths
-                .entry(factory.path().into())
-                .or_insert_with(OperationMap::default);
-            map.methods.extend(factory.operations().clone().into_iter());
-            map.normalize();
+            api.definitions.extend(factory.definitions().into_iter());
+            factory.update_operations(&mut api.paths);
         }
 
-        App {
-            spec: self.spec,
-            inner: self.inner.service(factory),
-        }
+        self.inner = self.inner.service(factory);
+        self
     }
 
     /// Mounts the specification for all operations and definitions
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
-    pub fn with_json_spec_at(self, path: &str) -> Self {
-        App {
-            inner: self
-                .inner
-                .service(actix_web::web::resource(path).to(SpecHandler(self.spec.clone()))),
-            spec: self.spec,
-        }
+    pub fn with_json_spec_at(mut self, path: &str) -> Self {
+        self.inner = self.inner.service(
+            actix_web::web::resource(path)
+                .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
+        );
+        self
     }
 
     /// Builds and returns the `actix_web::App`.

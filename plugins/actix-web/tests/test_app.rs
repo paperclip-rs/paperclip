@@ -215,14 +215,17 @@ fn test_params() {
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
                 .service(
-                    web::resource("/v1/{resource}/v/{name}")
-                        .route(web::Route::new().to(get_known_badge_1))
-                        .route(web::post().to(post_badge_1)),
-                )
-                .service(
-                    web::resource("/v2/{resource}/v/{name}")
-                        .route(web::get().to(get_known_badge_2))
-                        .route(web::post().to(post_badge_2)),
+                    web::scope("/api")
+                        .service(
+                            web::resource("/v1/{resource}/v/{name}")
+                                .route(web::Route::new().to(get_known_badge_1))
+                                .route(web::post().to(post_badge_1)),
+                        )
+                        .service(
+                            web::resource("/v2/{resource}/v/{name}")
+                                .route(web::get().to(get_known_badge_2))
+                                .route(web::post().to(post_badge_2)),
+                        ),
                 )
                 .build()
         },
@@ -246,7 +249,7 @@ fn test_params() {
                     }
                   },
                   "paths": {
-                    "/v1/{resource}/v/{name}": {
+                    "/api/v1/{resource}/v/{name}": {
                       "delete": {
                         "responses": {}
                       },
@@ -297,7 +300,7 @@ fn test_params() {
                         "responses": {}
                       }
                     },
-                    "/v2/{resource}/v/{name}": {
+                    "/api/v2/{resource}/v/{name}": {
                       "get": {
                         "parameters": [{
                           "in": "query",
@@ -363,9 +366,11 @@ where
         let sys = System::new("test");
         for port in 3000..30000 {
             let addr = format!("127.0.0.1:{}", port);
-            println!("Trying to bind to {}", addr);
             let server = match HttpServer::new(factory.clone()).bind(&addr) {
-                Ok(s) => s,
+                Ok(srv) => {
+                    println!("Bound to {}", addr);
+                    srv
+                },
                 Err(_) => continue,
             };
 

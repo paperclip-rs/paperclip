@@ -1,5 +1,5 @@
 pub use actix_web::web::{
-    block, scope, service, to, to_async, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
+    block, service, to, to_async, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
     HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
     ServiceConfig,
 };
@@ -8,9 +8,10 @@ use crate::{ApiOperation, Mountable};
 use actix_service::NewService;
 use actix_web::dev::{AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse};
 use actix_web::{http::Method, Error, FromRequest, Responder};
-use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation};
+use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
 
 use std::collections::BTreeMap;
+use std::mem;
 
 const METHODS: &[Method] = &[
     Method::GET,
@@ -30,6 +31,29 @@ pub struct Resource<T> {
     operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
     inner: actix_web::Resource<T>,
+}
+
+impl Resource<()> {
+    /// See [`actix_web::Resource::new`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.new).
+    #[allow(clippy::new_ret_no_self)]
+    pub fn new(
+        path: &str,
+    ) -> Resource<
+        impl NewService<
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        >,
+    > {
+        Resource {
+            path: path.into(),
+            operations: BTreeMap::new(),
+            definitions: BTreeMap::new(),
+            inner: actix_web::Resource::new(path),
+        }
+    }
 }
 
 impl<T> HttpServiceFactory for Resource<T>
@@ -52,12 +76,12 @@ impl<T> Mountable for Resource<T> {
         &self.path
     }
 
-    fn operations(&self) -> &BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
-        &self.operations
+    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+        mem::replace(&mut self.operations, BTreeMap::new())
     }
 
-    fn definitions(&self) -> &BTreeMap<String, DefaultSchemaRaw> {
-        &self.definitions
+    fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
+        mem::replace(&mut self.definitions, BTreeMap::new())
     }
 }
 
@@ -85,12 +109,8 @@ where
             self.operations.insert(method.into(), op.clone());
         }
 
-        Resource {
-            path: self.path,
-            operations: self.operations,
-            definitions: self.definitions,
-            inner: self.inner.to(handler),
-        }
+        self.inner = self.inner.to(handler);
+        self
     }
 
     /// See [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
@@ -108,13 +128,8 @@ where
         }
 
         self.definitions.extend(route.definitions.into_iter());
-
-        Resource {
-            path: self.path,
-            operations: self.operations,
-            definitions: self.definitions,
-            inner: self.inner.route(route.inner),
-        }
+        self.inner = self.inner.route(route.inner);
+        self
     }
 }
 
@@ -130,12 +145,115 @@ pub fn resource(
         InitError = (),
     >,
 > {
-    Resource {
-        path: path.into(),
-        operations: BTreeMap::new(),
-        definitions: BTreeMap::new(),
-        inner: actix_web::web::resource(path),
+    Resource::new(path)
+}
+
+/* Scope */
+
+/// Wrapper for [`actix_web::Scope`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html)
+pub struct Scope<T> {
+    path: String,
+    path_map: BTreeMap<String, OperationMap<DefaultSchemaRaw>>,
+    definitions: BTreeMap<String, DefaultSchemaRaw>,
+    inner: actix_web::Scope<T>,
+}
+
+impl Scope<()> {
+    /// See [`actix_web::Scope::new`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.new)
+    #[allow(clippy::new_ret_no_self)]
+    pub fn new(
+        path: &str,
+    ) -> Scope<
+        impl NewService<
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        >,
+    > {
+        Scope {
+            path: path.into(),
+            path_map: BTreeMap::new(),
+            definitions: BTreeMap::new(),
+            inner: actix_web::Scope::new(path),
+        }
     }
+}
+
+impl<T> HttpServiceFactory for Scope<T>
+where
+    T: NewService<
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        > + 'static,
+{
+    fn register(self, config: &mut AppService) {
+        self.inner.register(config)
+    }
+}
+
+impl<T> Scope<T>
+where
+    T: NewService<
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse,
+        Error = Error,
+        InitError = (),
+    >,
+{
+    /// See [`actix_web::Scope::service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.service).
+    pub fn service<F>(mut self, mut factory: F) -> Self
+    where
+        F: Mountable + HttpServiceFactory + 'static,
+    {
+        self.definitions.extend(factory.definitions().into_iter());
+        let mut path_map = BTreeMap::new();
+        factory.update_operations(&mut path_map);
+        for (path, map) in path_map {
+            self.path_map.insert(self.path.clone() + &path, map);
+        }
+
+        self.inner = self.inner.service(factory);
+        self
+    }
+}
+
+impl<T> Mountable for Scope<T> {
+    fn path(&self) -> &str {
+        unimplemented!("Scope has multiple paths. Use `update_operations` object instead.");
+    }
+
+    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+        unimplemented!("Scope has multiple operation maps. Use `update_operations` object instead.")
+    }
+
+    fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
+        mem::replace(&mut self.definitions, BTreeMap::new())
+    }
+
+    fn update_operations(&mut self, map: &mut BTreeMap<String, OperationMap<DefaultSchemaRaw>>) {
+        *map = mem::replace(&mut self.path_map, BTreeMap::new());
+    }
+}
+
+/// See [`actix_web::web::scope`](https://docs.rs/actix-web/*/actix_web/web/fn.scope.html).
+pub fn scope(
+    path: &str,
+) -> Scope<
+    impl NewService<
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse,
+        Error = Error,
+        InitError = (),
+    >,
+> {
+    Scope::new(path)
 }
 
 /* Route */
@@ -161,28 +279,23 @@ impl Route {
     }
 
     /// See [`actix_web::Route::method`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.method)
-    pub fn method(self, method: Method) -> Self {
-        Route {
-            method: Some(HttpMethod::from(&method)),
-            operation: self.operation,
-            definitions: self.definitions,
-            inner: self.inner.method(method),
-        }
+    pub fn method(mut self, method: Method) -> Self {
+        self.method = Some(HttpMethod::from(&method));
+        self.inner = self.inner.method(method);
+        self
     }
 
     /// See [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
-    pub fn to<F, I, R>(self, handler: F) -> Self
+    pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
         F: ApiOperation + Factory<I, R> + 'static,
         I: FromRequest + 'static,
         R: Responder + 'static,
     {
-        Route {
-            method: self.method,
-            operation: Some(F::operation()),
-            definitions: F::definitions(),
-            inner: self.inner.to(handler),
-        }
+        self.operation = Some(F::operation());
+        self.definitions = F::definitions();
+        self.inner = self.inner.to(handler);
+        self
     }
 }
 
