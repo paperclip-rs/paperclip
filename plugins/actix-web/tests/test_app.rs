@@ -370,7 +370,7 @@ where
                 Ok(srv) => {
                     println!("Bound to {}", addr);
                     srv
-                },
+                }
                 Err(_) => continue,
             };
 

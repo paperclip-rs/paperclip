@@ -1,12 +1,12 @@
 pub use actix_web::web::{
     block, service, to, to_async, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
     HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
-    ServiceConfig,
 };
 
 use crate::{ApiOperation, Mountable};
 use actix_service::NewService;
 use actix_web::dev::{AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse};
+use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
 use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
 
@@ -211,15 +211,54 @@ where
     where
         F: Mountable + HttpServiceFactory + 'static,
     {
+        self.update_from_mountable(&mut factory);
+        self.inner = self.inner.service(factory);
+        self
+    }
+
+    /// See [`actix_web::Scope::guard`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.guard).
+    pub fn guard<G: Guard + 'static>(mut self, guard: G) -> Self {
+        self.inner = self.inner.guard(guard);
+        self
+    }
+
+    /// See [`actix_web::Scope::data`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.data).
+    pub fn data<U: 'static>(mut self, data: U) -> Self {
+        self.inner = self.inner.data(data);
+        self
+    }
+
+    /// See [`actix_web::Scope::configure`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.configure).
+    pub fn configure<F>(mut self, f: F) -> Self
+    where
+        F: FnOnce(&mut ServiceConfig<actix_web::Scope<T>>),
+    {
+        let mut cfg = ServiceConfig {
+            path_map: BTreeMap::new(),
+            definitions: BTreeMap::new(),
+            scope: Some(self.inner),
+        };
+
+        f(&mut cfg);
+        self.inner = cfg
+            .scope
+            .take()
+            .expect("missing scope object after configuring?");
+        self.update_from_mountable(&mut cfg);
+        self
+    }
+
+    /// Updates `self` using the given `Mountable` object.
+    fn update_from_mountable<M>(&mut self, factory: &mut M)
+    where
+        M: Mountable,
+    {
         self.definitions.extend(factory.definitions().into_iter());
         let mut path_map = BTreeMap::new();
         factory.update_operations(&mut path_map);
         for (path, map) in path_map {
             self.path_map.insert(self.path.clone() + &path, map);
         }
-
-        self.inner = self.inner.service(factory);
-        self
     }
 }
 
@@ -337,4 +376,76 @@ pub fn options() -> Route {
 /// See [`actix_web::web::head`](https://docs.rs/actix-web/*/actix_web/web/fn.head.html).
 pub fn head() -> Route {
     method(Method::HEAD)
+}
+
+/* Service config */
+
+/// Wrapper for [`actix_web::web::ServiceConfig`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html).
+pub struct ServiceConfig<S = actix_web::Scope> {
+    path_map: BTreeMap<String, OperationMap<DefaultSchemaRaw>>,
+    definitions: BTreeMap<String, DefaultSchemaRaw>,
+    scope: Option<S>,
+}
+
+impl<T> Mountable for ServiceConfig<T> {
+    fn path(&self) -> &str {
+        unimplemented!("ServiceConfig has multiple paths. Use `update_operations` object instead.");
+    }
+
+    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+        unimplemented!(
+            "ServiceConfig has multiple operation maps. Use `update_operations` object instead."
+        )
+    }
+
+    fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
+        mem::replace(&mut self.definitions, BTreeMap::new())
+    }
+
+    fn update_operations(&mut self, map: &mut BTreeMap<String, OperationMap<DefaultSchemaRaw>>) {
+        *map = mem::replace(&mut self.path_map, BTreeMap::new());
+    }
+}
+
+impl<T> ServiceConfig<actix_web::Scope<T>>
+where
+    T: NewService<
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse,
+        Error = Error,
+        InitError = (),
+    >,
+{
+    /// See [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
+    pub fn route(&mut self, path: &str, route: Route) -> &mut Self {
+        self.service(Resource::new(path).route(route))
+    }
+
+    /// See [`actix_web::web::ServiceConfig::service`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.service).
+    pub fn service<F>(&mut self, mut factory: F) -> &mut Self
+    where
+        F: Mountable + HttpServiceFactory + 'static,
+    {
+        self.definitions.extend(factory.definitions().into_iter());
+        factory.update_operations(&mut self.path_map);
+        self.scope = self.scope.take().map(|s| s.service(factory));
+        self
+    }
+
+    /// See [`actix_web::web::ServiceConfig::external_resource`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.external_resource).
+    ///
+    /// **NOTE:** This method is a proxy i.e., it doesn't affect spec generation.
+    pub fn external_resource<N, U>(&mut self, name: N, url: U) -> &mut Self
+    where
+        N: AsRef<str>,
+        U: AsRef<str>,
+    {
+        self.scope = self.scope.take().map(|s| {
+            s.configure(|cfg| {
+                cfg.external_resource(name, url);
+            })
+        });
+        self
+    }
 }

@@ -25,7 +25,8 @@ pub struct App<T, B> {
 pub trait OpenApiExt<T, B> {
     type Wrapper;
 
-    /// Consumes this app and produces its wrapper.
+    /// Consumes this app and produces its wrapper to start tracking
+    /// paths and their corresponding operations.
     fn wrap_api(self) -> Self::Wrapper;
 }
 

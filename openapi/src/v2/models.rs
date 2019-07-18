@@ -144,6 +144,9 @@ impl<S> OperationMap<S> {
             }
         }
 
+        // FIXME: A parameter defined at path level could be overridden at
+        // the operation level with a different type. We shouldn't remove such
+        // path-level parameters.
         for name in &shared_params {
             for op in self.methods.values_mut() {
                 let idx = op
@@ -388,41 +391,77 @@ impl Default for Version {
 }
 
 macro_rules! impl_type_simple {
+    ($ty:ty, $dt:expr) => {
+        impl TypedData for $ty {
+            fn data_type() -> DataType {
+                $dt
+            }
+        }
+    };
     ($ty:ty, $dt:expr, $df:expr) => {
         impl TypedData for $ty {
             fn data_type() -> DataType {
                 $dt
             }
             fn format() -> Option<DataTypeFormat> {
-                $df
+                Some($df)
             }
         }
     };
 }
 
-impl_type_simple!(char, DataType::String, None);
-impl_type_simple!(String, DataType::String, None);
-impl_type_simple!(bool, DataType::Boolean, None);
-impl_type_simple!(f32, DataType::Number, Some(DataTypeFormat::Float));
-impl_type_simple!(f64, DataType::Number, Some(DataTypeFormat::Double));
-impl_type_simple!(i8, DataType::Integer, Some(DataTypeFormat::Int32));
-impl_type_simple!(i16, DataType::Integer, Some(DataTypeFormat::Int32));
-impl_type_simple!(i32, DataType::Integer, Some(DataTypeFormat::Int32));
-impl_type_simple!(u8, DataType::Integer, Some(DataTypeFormat::Int32));
-impl_type_simple!(u16, DataType::Integer, Some(DataTypeFormat::Int32));
-impl_type_simple!(u32, DataType::Integer, Some(DataTypeFormat::Int32));
-impl_type_simple!(i64, DataType::Integer, Some(DataTypeFormat::Int64));
-impl_type_simple!(i128, DataType::Integer, Some(DataTypeFormat::Int64));
-impl_type_simple!(isize, DataType::Integer, Some(DataTypeFormat::Int64));
-impl_type_simple!(u64, DataType::Integer, Some(DataTypeFormat::Int64));
-impl_type_simple!(u128, DataType::Integer, Some(DataTypeFormat::Int64));
-impl_type_simple!(usize, DataType::Integer, Some(DataTypeFormat::Int64));
-
-impl<T: TypedData> TypedData for Vec<T> {
-    fn data_type() -> DataType {
-        DataType::Array
-    }
+macro_rules! impl_type_array {
+    ($ty:ty) => {
+        impl<T: TypedData> TypedData for $ty {
+            fn data_type() -> DataType {
+                DataType::Array
+            }
+        }
+    };
 }
+
+impl_type_simple!(char, DataType::String);
+impl_type_simple!(String, DataType::String);
+impl_type_simple!(bool, DataType::Boolean);
+impl_type_simple!(f32, DataType::Number, DataTypeFormat::Float);
+impl_type_simple!(f64, DataType::Number, DataTypeFormat::Double);
+impl_type_simple!(i8, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(i16, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(i32, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(u8, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(u16, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(u32, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(i64, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(i128, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
+
+use std::collections::*;
+
+impl_type_array!(Vec<T>);
+impl_type_array!(HashSet<T>);
+impl_type_array!(LinkedList<T>);
+impl_type_array!(VecDeque<T>);
+impl_type_array!(BTreeSet<T>);
+impl_type_array!(BinaryHeap<T>);
+impl_type_array!([T; 0]);
+impl_type_array!([T; 1]);
+impl_type_array!([T; 2]);
+impl_type_array!([T; 3]);
+impl_type_array!([T; 4]);
+impl_type_array!([T; 5]);
+impl_type_array!([T; 6]);
+impl_type_array!([T; 7]);
+impl_type_array!([T; 8]);
+impl_type_array!([T; 9]);
+impl_type_array!([T; 10]);
+impl_type_array!([T; 11]);
+impl_type_array!([T; 12]);
+impl_type_array!([T; 13]);
+impl_type_array!([T; 14]);
+impl_type_array!([T; 15]);
 
 impl<T: TypedData> TypedData for Option<T> {
     fn data_type() -> DataType {
