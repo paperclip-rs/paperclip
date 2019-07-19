@@ -18,15 +18,21 @@ lazy_static! {
     static ref CLIENT: reqwest::Client = reqwest::Client::new();
 }
 
-#[api_v2_schema]
-#[derive(Default, Deserialize, Serialize)]
-pub struct Pet {
-    name: String,
-    id: u64,
-}
-
 #[test]
 fn test_simple_app() {
+    #[api_v2_schema]
+    #[derive(Default, Deserialize, Serialize)]
+    struct Pet {
+        name: String,
+        id: u64,
+    }
+
+    #[api_v2_schema]
+    #[derive(Deserialize, Serialize)]
+    struct SomeResource {
+        name: String,
+    }
+
     #[api_v2_operation]
     fn echo_pet(body: web::Json<Pet>) -> web::Json<Pet> {
         body
@@ -37,13 +43,17 @@ fn test_simple_app() {
         web::Json(Pet::default())
     }
 
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
+            .service(web::resource("/random").to(some_pet));
+    }
+
     run_and_check_app(
         || {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::resource("/echo").route(web::post().to(echo_pet)))
-                .service(web::resource("/random").to(some_pet))
+                .service(web::scope("/api").configure(config))
                 .build()
         },
         |addr| {
@@ -70,7 +80,7 @@ fn test_simple_app() {
                     }
                   },
                   "paths": {
-                    "/echo": {
+                    "/api/echo": {
                       "parameters": [{
                         "in": "body",
                         "name": "body",
@@ -89,7 +99,7 @@ fn test_simple_app() {
                         }
                       }
                     },
-                    "/random": {
+                    "/api/random": {
                       "delete": {
                         "responses": {
                           "200": {

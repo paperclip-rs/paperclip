@@ -1,3 +1,5 @@
+//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
+
 pub use actix_web::web::{
     block, service, to, to_async, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
     HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
@@ -5,12 +7,17 @@ pub use actix_web::web::{
 
 use crate::{ApiOperation, Mountable};
 use actix_service::NewService;
-use actix_web::dev::{AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse};
+use actix_web::dev::{
+    AppService, AsyncFactory, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse,
+    Transform,
+};
 use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
+use futures::future::IntoFuture;
 use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
 
 use std::collections::BTreeMap;
+use std::fmt::Debug;
 use std::mem;
 
 const METHODS: &[Method] = &[
@@ -26,27 +33,16 @@ const METHODS: &[Method] = &[
 /* Resource */
 
 /// Wrapper for [`actix_web::Resource`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html)
-pub struct Resource<T> {
+pub struct Resource<R = actix_web::Resource> {
     path: String,
     operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
-    inner: actix_web::Resource<T>,
+    inner: R,
 }
 
-impl Resource<()> {
-    /// See [`actix_web::Resource::new`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.new).
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new(
-        path: &str,
-    ) -> Resource<
-        impl NewService<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse,
-            Error = Error,
-            InitError = (),
-        >,
-    > {
+impl Resource {
+    /// Wrapper for [`actix_web::Resource::new`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.new).
+    pub fn new(path: &str) -> Resource {
         Resource {
             path: path.into(),
             operations: BTreeMap::new(),
@@ -56,7 +52,7 @@ impl Resource<()> {
     }
 }
 
-impl<T> HttpServiceFactory for Resource<T>
+impl<T> HttpServiceFactory for Resource<actix_web::Resource<T>>
 where
     T: NewService<
             Config = (),
@@ -68,6 +64,21 @@ where
 {
     fn register(self, config: &mut AppService) {
         self.inner.register(config)
+    }
+}
+
+impl<T> actix_service::IntoNewService<T> for Resource<actix_web::Resource<T>>
+where
+    T: NewService<
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        > + 'static,
+{
+    fn into_new_service(self) -> T {
+        self.inner.into_new_service()
     }
 }
 
@@ -85,7 +96,7 @@ impl<T> Mountable for Resource<T> {
     }
 }
 
-impl<T> Resource<T>
+impl<T> Resource<actix_web::Resource<T>>
 where
     T: NewService<
         Config = (),
@@ -95,25 +106,23 @@ where
         InitError = (),
     >,
 {
-    /// See [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
-    pub fn to<F, I, R>(mut self, handler: F) -> Self
-    where
-        F: ApiOperation + Factory<I, R> + 'static,
-        I: FromRequest + 'static,
-        R: Responder + 'static,
-    {
-        let mut op = F::operation();
-        op.set_parameter_names_from_path_template(&self.path);
-
-        for method in METHODS {
-            self.operations.insert(method.into(), op.clone());
-        }
-
-        self.inner = self.inner.to(handler);
+    /// Proxy for [`actix_web::Resource::name`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.name).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn name(mut self, name: &str) -> Self {
+        self.inner = self.inner.name(name);
         self
     }
 
-    /// See [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
+    /// Proxy for [`actix_web::Resource::guard`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.guard).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn guard<G: Guard + 'static>(mut self, guard: G) -> Self {
+        self.inner = self.inner.guard(guard);
+        self
+    }
+
+    /// Wrapper for [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
     pub fn route(mut self, route: Route) -> Self {
         if let Some(mut op) = route.operation {
             op.set_parameter_names_from_path_template(&self.path);
@@ -131,47 +140,159 @@ where
         self.inner = self.inner.route(route.inner);
         self
     }
+
+    /// Proxy for [`actix_web::Resource::data`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.data).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn data<U: 'static>(mut self, data: U) -> Self {
+        self.inner = self.inner.data(data);
+        self
+    }
+
+    /// Wrapper for [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
+    pub fn to<F, I, R>(mut self, handler: F) -> Self
+    where
+        F: ApiOperation + Factory<I, R> + 'static,
+        I: FromRequest + 'static,
+        R: Responder + 'static,
+    {
+        self.update_from_handler::<F>();
+        self.inner = self.inner.to(handler);
+        self
+    }
+
+    /// Wrapper for [`actix_web::Resource::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to_async).
+    #[allow(clippy::wrong_self_convention)]
+    pub fn to_async<F, I, R>(mut self, handler: F) -> Self
+    where
+        F: ApiOperation + AsyncFactory<I, R> + 'static,
+        I: FromRequest + 'static,
+        R: IntoFuture + 'static,
+        R::Item: Responder,
+        R::Error: Into<Error>,
+    {
+        self.update_from_handler::<F>();
+        self.inner = self.inner.to_async(handler);
+        self
+    }
+
+    /// Proxy for [`actix_web::web::Resource::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn wrap<M, F>(
+        self,
+        mw: F,
+    ) -> Resource<
+        actix_web::Resource<
+            impl NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            >,
+        >,
+    >
+    where
+        M: Transform<
+            T::Service,
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        >,
+        F: actix_service::IntoTransform<M, T::Service>,
+    {
+        Resource {
+            path: self.path,
+            operations: self.operations,
+            definitions: self.definitions,
+            inner: self.inner.wrap(mw),
+        }
+    }
+
+    /// Proxy for [`actix_web::web::Resource::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap_fn).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn wrap_fn<F, R>(
+        self,
+        mw: F,
+    ) -> Resource<
+        actix_web::Resource<
+            impl NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            >,
+        >,
+    >
+    where
+        F: FnMut(ServiceRequest, &mut T::Service) -> R + Clone,
+        R: IntoFuture<Item = ServiceResponse, Error = Error>,
+    {
+        Resource {
+            path: self.path,
+            operations: self.operations,
+            definitions: self.definitions,
+            inner: self.inner.wrap(mw),
+        }
+    }
+
+    /// Proxy for [`actix_web::web::Resource::default_service`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.default_service).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn default_service<F, U>(mut self, f: F) -> Self
+    where
+        F: actix_service::IntoNewService<U>,
+        U: NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            > + 'static,
+        U::InitError: Debug,
+    {
+        self.inner = self.inner.default_service(f);
+        self
+    }
+
+    /// Updates this resource using the given handler.
+    fn update_from_handler<F>(&mut self)
+    where
+        F: ApiOperation,
+    {
+        let mut op = F::operation();
+        op.set_parameter_names_from_path_template(&self.path);
+
+        for method in METHODS {
+            self.operations.insert(method.into(), op.clone());
+        }
+
+        self.definitions.extend(F::definitions().into_iter());
+    }
 }
 
-/// See [`actix_web::web::resource`](https://docs.rs/actix-web/*/actix_web/web/fn.resource.html).
-pub fn resource(
-    path: &str,
-) -> Resource<
-    impl NewService<
-        Config = (),
-        Request = ServiceRequest,
-        Response = ServiceResponse,
-        Error = Error,
-        InitError = (),
-    >,
-> {
+/// Wrapper for [`actix_web::web::resource`](https://docs.rs/actix-web/*/actix_web/web/fn.resource.html).
+pub fn resource(path: &str) -> Resource {
     Resource::new(path)
 }
 
 /* Scope */
 
 /// Wrapper for [`actix_web::Scope`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html)
-pub struct Scope<T> {
+pub struct Scope<S = actix_web::Scope> {
     path: String,
     path_map: BTreeMap<String, OperationMap<DefaultSchemaRaw>>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
-    inner: actix_web::Scope<T>,
+    inner: S,
 }
 
-impl Scope<()> {
-    /// See [`actix_web::Scope::new`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.new)
-    #[allow(clippy::new_ret_no_self)]
-    pub fn new(
-        path: &str,
-    ) -> Scope<
-        impl NewService<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse,
-            Error = Error,
-            InitError = (),
-        >,
-    > {
+impl Scope {
+    /// Wrapper for [`actix_web::Scope::new`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.new)
+    pub fn new(path: &str) -> Self {
         Scope {
             path: path.into(),
             path_map: BTreeMap::new(),
@@ -181,7 +302,7 @@ impl Scope<()> {
     }
 }
 
-impl<T> HttpServiceFactory for Scope<T>
+impl<T> HttpServiceFactory for Scope<actix_web::Scope<T>>
 where
     T: NewService<
             Config = (),
@@ -196,7 +317,7 @@ where
     }
 }
 
-impl<T> Scope<T>
+impl<T> Scope<actix_web::Scope<T>>
 where
     T: NewService<
         Config = (),
@@ -206,29 +327,23 @@ where
         InitError = (),
     >,
 {
-    /// See [`actix_web::Scope::service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.service).
-    pub fn service<F>(mut self, mut factory: F) -> Self
-    where
-        F: Mountable + HttpServiceFactory + 'static,
-    {
-        self.update_from_mountable(&mut factory);
-        self.inner = self.inner.service(factory);
-        self
-    }
-
-    /// See [`actix_web::Scope::guard`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.guard).
+    /// Proxy for [`actix_web::Scope::guard`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.guard).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
     pub fn guard<G: Guard + 'static>(mut self, guard: G) -> Self {
         self.inner = self.inner.guard(guard);
         self
     }
 
-    /// See [`actix_web::Scope::data`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.data).
+    /// Proxy for [`actix_web::Scope::data`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.data).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
     pub fn data<U: 'static>(mut self, data: U) -> Self {
         self.inner = self.inner.data(data);
         self
     }
 
-    /// See [`actix_web::Scope::configure`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.configure).
+    /// Wrapper for [`actix_web::Scope::configure`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.configure).
     pub fn configure<F>(mut self, f: F) -> Self
     where
         F: FnOnce(&mut ServiceConfig<actix_web::Scope<T>>),
@@ -246,6 +361,104 @@ where
             .expect("missing scope object after configuring?");
         self.update_from_mountable(&mut cfg);
         self
+    }
+
+    /// Wrapper for [`actix_web::Scope::service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.service).
+    pub fn service<F>(mut self, mut factory: F) -> Self
+    where
+        F: Mountable + HttpServiceFactory + 'static,
+    {
+        self.update_from_mountable(&mut factory);
+        self.inner = self.inner.service(factory);
+        self
+    }
+
+    /// Wrapper for [`actix_web::Scope::route`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.route).
+    pub fn route(self, path: &str, route: Route) -> Self {
+        self.service(resource(path).route(route))
+    }
+
+    /// Proxy for [`actix_web::web::Scope::default_service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.default_service).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn default_service<F, U>(mut self, f: F) -> Self
+    where
+        F: actix_service::IntoNewService<U>,
+        U: NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            > + 'static,
+        U::InitError: Debug,
+    {
+        self.inner = self.inner.default_service(f);
+        self
+    }
+
+    /// Proxy for [`actix_web::web::Scope::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.wrap).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn wrap<M, F>(
+        self,
+        mw: F,
+    ) -> Scope<
+        actix_web::Scope<
+            impl NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            >,
+        >,
+    >
+    where
+        M: Transform<
+            T::Service,
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        >,
+        F: actix_service::IntoTransform<M, T::Service>,
+    {
+        Scope {
+            path: self.path,
+            path_map: self.path_map,
+            definitions: self.definitions,
+            inner: self.inner.wrap(mw),
+        }
+    }
+
+    /// Proxy for [`actix_web::web::Scope::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.wrap_fn).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn wrap_fn<F, R>(
+        self,
+        mw: F,
+    ) -> Scope<
+        actix_web::Scope<
+            impl NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            >,
+        >,
+    >
+    where
+        F: FnMut(ServiceRequest, &mut T::Service) -> R + Clone,
+        R: IntoFuture<Item = ServiceResponse, Error = Error>,
+    {
+        Scope {
+            path: self.path,
+            path_map: self.path_map,
+            definitions: self.definitions,
+            inner: self.inner.wrap(mw),
+        }
     }
 
     /// Updates `self` using the given `Mountable` object.
@@ -280,18 +493,8 @@ impl<T> Mountable for Scope<T> {
     }
 }
 
-/// See [`actix_web::web::scope`](https://docs.rs/actix-web/*/actix_web/web/fn.scope.html).
-pub fn scope(
-    path: &str,
-) -> Scope<
-    impl NewService<
-        Config = (),
-        Request = ServiceRequest,
-        Response = ServiceResponse,
-        Error = Error,
-        InitError = (),
-    >,
-> {
+/// Wrapper for [`actix_web::web::scope`](https://docs.rs/actix-web/*/actix_web/web/fn.scope.html).
+pub fn scope(path: &str) -> Scope {
     Scope::new(path)
 }
 
@@ -305,8 +508,22 @@ pub struct Route {
     inner: actix_web::Route,
 }
 
+impl NewService for Route {
+    type Config = ();
+    type Request = ServiceRequest;
+    type Response = ServiceResponse;
+    type Error = Error;
+    type InitError = ();
+    type Service = <actix_web::Route as NewService>::Service;
+    type Future = <actix_web::Route as NewService>::Future;
+
+    fn new_service(&self, cfg: &Self::Config) -> Self::Future {
+        self.inner.new_service(cfg)
+    }
+}
+
 impl Route {
-    /// See [`actix_web::Route::new`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.new)
+    /// Wrapper for [`actix_web::Route::new`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.new)
     #[allow(clippy::new_without_default)]
     pub fn new() -> Route {
         Route {
@@ -317,14 +534,22 @@ impl Route {
         }
     }
 
-    /// See [`actix_web::Route::method`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.method)
+    /// Wrapper for [`actix_web::Route::method`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.method)
     pub fn method(mut self, method: Method) -> Self {
         self.method = Some(HttpMethod::from(&method));
         self.inner = self.inner.method(method);
         self
     }
 
-    /// See [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
+    /// Proxy for [`actix_web::Route::guard`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.guard).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn guard<G: Guard + 'static>(mut self, guard: G) -> Self {
+        self.inner = self.inner.guard(guard);
+        self
+    }
+
+    /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
     pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
         F: ApiOperation + Factory<I, R> + 'static,
@@ -336,44 +561,60 @@ impl Route {
         self.inner = self.inner.to(handler);
         self
     }
+
+    /// Wrapper for [`actix_web::Route::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to_async)
+    #[allow(clippy::wrong_self_convention)]
+    pub fn to_async<F, I, R>(mut self, handler: F) -> Self
+    where
+        F: ApiOperation + AsyncFactory<I, R> + 'static,
+        I: FromRequest + 'static,
+        R: IntoFuture + 'static,
+        R::Item: Responder,
+        R::Error: Into<Error>,
+    {
+        self.operation = Some(F::operation());
+        self.definitions = F::definitions();
+        self.inner = self.inner.to_async(handler);
+        self
+    }
 }
 
-/// See [`actix_web::web::method`](https://docs.rs/actix-web/*/actix_web/web/fn.method.html).
+/// Wrapper for [`actix_web::web::method`](https://docs.rs/actix-web/*/actix_web/web/fn.method.html).
 pub fn method(method: Method) -> Route {
     Route::new().method(method)
 }
 
-/// See [`actix_web::web::get`](https://docs.rs/actix-web/*/actix_web/web/fn.get.html).
+/// Wrapper for [`actix_web::web::get`](https://docs.rs/actix-web/*/actix_web/web/fn.get.html).
 pub fn get() -> Route {
     method(Method::GET)
 }
 
-/// See [`actix_web::web::put`](https://docs.rs/actix-web/*/actix_web/web/fn.put.html).
+/// Wrapper for [`actix_web::web::put`](https://docs.rs/actix-web/*/actix_web/web/fn.put.html).
 pub fn put() -> Route {
     method(Method::PUT)
 }
 
-/// See [`actix_web::web::post`](https://docs.rs/actix-web/*/actix_web/web/fn.post.html).
+/// Wrapper for [`actix_web::web::post`](https://docs.rs/actix-web/*/actix_web/web/fn.post.html).
 pub fn post() -> Route {
     method(Method::POST)
 }
 
-/// See [`actix_web::web::patch`](https://docs.rs/actix-web/*/actix_web/web/fn.patch.html).
+/// Wrapper for [`actix_web::web::patch`](https://docs.rs/actix-web/*/actix_web/web/fn.patch.html).
 pub fn patch() -> Route {
     method(Method::PATCH)
 }
 
-/// See [`actix_web::web::delete`](https://docs.rs/actix-web/*/actix_web/web/fn.delete.html).
+/// Wrapper for [`actix_web::web::delete`](https://docs.rs/actix-web/*/actix_web/web/fn.delete.html).
 pub fn delete() -> Route {
     method(Method::DELETE)
 }
 
-/// See [`actix_web::web::options`](https://docs.rs/actix-web/*/actix_web/web/fn.options.html).
+/// Wrapper for [`actix_web::web::options`](https://docs.rs/actix-web/*/actix_web/web/fn.options.html).
 pub fn options() -> Route {
     method(Method::OPTIONS)
 }
 
-/// See [`actix_web::web::head`](https://docs.rs/actix-web/*/actix_web/web/fn.head.html).
+/// Wrapper for [`actix_web::web::head`](https://docs.rs/actix-web/*/actix_web/web/fn.head.html).
 pub fn head() -> Route {
     method(Method::HEAD)
 }
@@ -417,12 +658,12 @@ where
         InitError = (),
     >,
 {
-    /// See [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
+    /// Wrapper for [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
     pub fn route(&mut self, path: &str, route: Route) -> &mut Self {
         self.service(Resource::new(path).route(route))
     }
 
-    /// See [`actix_web::web::ServiceConfig::service`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.service).
+    /// Wrapper for [`actix_web::web::ServiceConfig::service`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.service).
     pub fn service<F>(&mut self, mut factory: F) -> &mut Self
     where
         F: Mountable + HttpServiceFactory + 'static,
@@ -433,9 +674,9 @@ where
         self
     }
 
-    /// See [`actix_web::web::ServiceConfig::external_resource`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.external_resource).
+    /// Proxy for [`actix_web::web::ServiceConfig::external_resource`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.external_resource).
     ///
-    /// **NOTE:** This method is a proxy i.e., it doesn't affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     pub fn external_resource<N, U>(&mut self, name: N, url: U) -> &mut Self
     where
         N: AsRef<str>,
