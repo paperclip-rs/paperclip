@@ -44,6 +44,16 @@ Licensed under either of
 
 at your option.
 
+## Sponsors
+
+Folks who have sponsored for the development of this project:
+
+<table>
+  <tr>
+    <td><a href="https://offscale.io"><img src="https://avatars1.githubusercontent.com/u/11748352" width="150"></a>
+  </tr>
+</table>
+
 ## FAQ
 
 > Why is this generating raw Rust code instead of leveraging [procedural macros](https://doc.rust-lang.org/reference/procedural-macros.html) for compile-time codegen?
