@@ -457,7 +457,7 @@ where
             path: self.path,
             path_map: self.path_map,
             definitions: self.definitions,
-            inner: self.inner.wrap(mw),
+            inner: self.inner.wrap_fn(mw),
         }
     }
 
