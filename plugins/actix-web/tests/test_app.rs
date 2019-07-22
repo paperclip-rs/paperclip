@@ -12,7 +12,7 @@ use actix_web::{App, Error, HttpServer};
 use paperclip_actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
 
-use std::collections::HashSet;
+use std::collections::{BTreeMap, HashSet};
 use std::sync::mpsc;
 use std::thread;
 
@@ -350,6 +350,69 @@ fn test_params() {
                           }
                         }],
                         "responses": {}
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_map_in_out() {
+    #[api_v2_schema]
+    #[derive(Serialize)]
+    struct Image {
+        data: String,
+    }
+
+    #[api_v2_operation]
+    fn some_images() -> web::Json<BTreeMap<String, Image>> {
+        unimplemented!();
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images").route(web::get().to(some_images)))
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "definitions": {
+                    "Image": {
+                      "properties": {
+                        "data": {
+                          "type": "string"
+                        }
+                      },
+                      "required": ["data"]
+                    }
+                  },
+                  "paths": {
+                    "/images": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "additionalProperties": {
+                                "$ref": "#/definitions/Image"
+                              },
+                              "type": "object"
+                            }
+                          }
+                        }
                       }
                     }
                   },

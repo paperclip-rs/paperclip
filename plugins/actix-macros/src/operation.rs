@@ -87,6 +87,9 @@ impl<'a> OperationProducer<'a> {
                 if let Some(s) = schema.items {
                     schema = *s;
                     continue
+                } else if let Some(s) = schema.extra_props {
+                    schema = *s;
+                    continue
                 } else if let Some(n) = schema.name.take() {
                     schema.remove_refs();
                     map.insert(n, schema);

@@ -182,6 +182,21 @@ macro_rules! impl_schema_array {
     };
 }
 
+macro_rules! impl_schema_map {
+    ($ty:ty) => {
+        impl<K: AsRef<str>, V: Apiv2Schema> Apiv2Schema for $ty {
+            const NAME: Option<&'static str> = None;
+
+            fn raw_schema() -> DefaultSchemaRaw {
+                let mut schema = DefaultSchemaRaw::default();
+                schema.data_type = Some(DataType::Object);
+                schema.extra_props = Some(V::schema_with_ref().into());
+                schema
+            }
+        }
+    };
+}
+
 use std::collections::*;
 
 impl_schema_array!(Vec<T>);
@@ -207,6 +222,9 @@ impl_schema_array!([T; 13]);
 impl_schema_array!([T; 14]);
 impl_schema_array!([T; 15]);
 impl_schema_array!([T; 16]);
+
+impl_schema_map!(HashMap<K, V>);
+impl_schema_map!(BTreeMap<K, V>);
 
 /// Represents a OpenAPI v2 operation convertible. This is auto-implemented by
 /// framework-specific macros:
