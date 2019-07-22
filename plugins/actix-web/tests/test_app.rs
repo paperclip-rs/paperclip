@@ -10,12 +10,15 @@ use actix_service::NewService;
 use actix_web::dev::{MessageBody, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, HttpServer};
 use paperclip_actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
+use parking_lot::Mutex;
 
+use std::collections::HashSet;
 use std::sync::mpsc;
 use std::thread;
 
 lazy_static! {
     static ref CLIENT: reqwest::Client = reqwest::Client::new();
+    static ref PORTS: Mutex<HashSet<u16>> = Mutex::new(HashSet::new());
 }
 
 #[api_v2_schema]
@@ -436,6 +439,10 @@ where
     let _ = thread::spawn(move || {
         let sys = System::new("test");
         for port in 3000..30000 {
+            if !PORTS.lock().insert(port) {
+                continue;
+            }
+
             let addr = format!("127.0.0.1:{}", port);
             let server = match HttpServer::new(factory.clone()).bind(&addr) {
                 Ok(srv) => {
