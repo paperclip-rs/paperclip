@@ -4,4 +4,4 @@
 * [Examples](examples.md)
   * [Build script](build-script.md)
   * [CLI](cli.md)
-* [Features](features.md)
+  * [Actix-web plugin](actix-plugin.md)

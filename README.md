@@ -15,9 +15,8 @@ It's currently under active development and may not be ready for production use 
 You may be interested in:
 
  - [An overview](https://paperclip.waffles.space/).
- - [Supported features](https://paperclip.waffles.space/features.html).
- - [Features being worked on](https://github.com/wafflespeanut/paperclip/projects).
  - [Examples](https://paperclip.waffles.space/examples.html).
+ - [Features being worked on](https://github.com/wafflespeanut/paperclip/projects).
  - [API documentation](https://paperclip.waffles.space/paperclip).
 
 ## Developing locally
@@ -50,7 +49,7 @@ Folks who have sponsored for the development of this project:
 
 <table>
   <tr>
-    <td><a href="https://offscale.io"><img src="https://avatars1.githubusercontent.com/u/11748352" width="150"></a>
+    <td><a href="https://offscale.io"><img src="https://avatars1.githubusercontent.com/u/11748352" width="100"></a>
   </tr>
 </table>
 
@@ -66,4 +65,4 @@ This doesn't mean you can't generate APIs in compile-time. The only difference i
 
 None that I can think of, sadly.
 
-**New ideas here needed.**
+**New ideas are here needed.**
