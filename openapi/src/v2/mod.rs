@@ -85,19 +85,19 @@ pub mod codegen;
 pub mod im;
 pub mod models;
 mod resolver;
+pub mod schema;
 
-use self::models::{DataType, DataTypeFormat, SchemaRepr};
 use self::resolver::Resolver;
 use crate::error::PaperClipError;
 use failure::Error;
 use serde::Deserialize;
 
-use std::collections::{BTreeMap, BTreeSet};
 use std::io::{Read, Seek, SeekFrom};
 
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
 pub use self::models::{Api, DefaultSchema};
+pub use self::schema::Schema;
 
 /// Deserialize the schema from the given reader. Currently, this only supports
 /// JSON and YAML formats.
@@ -117,65 +117,6 @@ where
     }
 
     Ok(serde_yaml::from_reader(reader)?)
-}
-
-/// Interface for the [`Schema`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject) object.
-///
-/// This is only used for resolving the definitions.
-///
-/// **NOTE:** Don't implement this by yourself! Please use the `#[api_v2_schema]`
-/// proc macro attribute instead.
-pub trait Schema: Sized {
-    /// Description for this schema, if any (`description` field).
-    fn description(&self) -> Option<&str>;
-
-    /// Reference to some other schema, if any (`$ref` field).
-    fn reference(&self) -> Option<&str>;
-
-    /// Data type of this schema, if any (`type` field).
-    fn data_type(&self) -> Option<DataType>;
-
-    /// Data type format used by this schema, if any (`format` field).
-    fn format(&self) -> Option<&DataTypeFormat>;
-
-    /// Schema for array definitions, if any (`items` field).
-    fn items(&self) -> Option<&SchemaRepr<Self>>;
-
-    /// Mutable access to the `items` field, if it exists.
-    fn items_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
-
-    /// Value schema for maps (`additional_properties` field).
-    fn additional_properties(&self) -> Option<&SchemaRepr<Self>>;
-
-    /// Mutable access to `additional_properties` field, if it's a map.
-    fn additional_properties_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
-
-    /// Map of names and schema for properties, if it's an object (`properties` field)
-    fn properties(&self) -> Option<&BTreeMap<String, SchemaRepr<Self>>>;
-
-    /// Mutable access to `properties` field.
-    fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, SchemaRepr<Self>>>;
-
-    /// Returns the required properties (if any) for this object.
-    fn required_properties(&self) -> Option<&BTreeSet<String>>;
-
-    /// Set whether this definition is cyclic. This is done by the resolver.
-    fn set_cyclic(&mut self, cyclic: bool);
-
-    /// Returns whether this definition is cyclic.
-    ///
-    /// **NOTE:** This is not part of the schema object, but it's
-    /// set by the resolver using `set_cyclic` for codegen.
-    fn is_cyclic(&self) -> bool;
-
-    /// Name of this schema, if any.
-    ///
-    /// **NOTE:** This is not part of the schema object, but it's
-    /// set by the resolver using `set_name` for codegen.
-    fn name(&self) -> Option<&str>;
-
-    /// Sets the name for this schema. This is done by the resolver.
-    fn set_name(&mut self, name: &str);
 }
 
 impl<S: Schema> Api<S> {

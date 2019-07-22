@@ -68,6 +68,30 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
             }
         }
 
+        impl #raw_struct_name {
+            /// Recursively removes all `$ref` values in this schema.
+            pub fn remove_refs(&mut self) {
+                self.properties.values_mut().for_each(|s| s.remove_refs());
+                self.items.as_mut().map(|s| s.remove_refs());
+                self.extra_props.as_mut().map(|s| s.remove_refs());
+                self.reference = None;
+            }
+
+            /// Recursively removes all properties other than `$ref` value
+            /// if the `$ref` is non-null.
+            pub fn retain_ref(&mut self) {
+                if self.reference.is_some() {
+                    let ref_ = self.reference.take();
+                    *self = Self::default();
+                    self.reference = ref_;
+                } else {
+                    self.properties.values_mut().for_each(|s| s.retain_ref());
+                    self.items.as_mut().map(|s| s.retain_ref());
+                    self.extra_props.as_mut().map(|s| s.retain_ref());
+                }
+            }
+        }
+
         impl #impl_generics paperclip::v2::Schema for #name #ty_generics #where_clause {
             #[inline]
             fn name(&self) -> Option<&str> {
@@ -278,13 +302,14 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     if is_ref {
         gen.extend(quote!(
             #[serde(skip)]
-            name: Option<String>,
-            #[serde(skip)]
             cyclic: bool,
         ));
     }
 
     quote!({
+        #[doc(hidden)]
+        #[serde(skip)]
+        pub name: Option<String>,
         #gen
     })
 }

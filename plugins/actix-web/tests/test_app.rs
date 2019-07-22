@@ -18,15 +18,15 @@ lazy_static! {
     static ref CLIENT: reqwest::Client = reqwest::Client::new();
 }
 
+#[api_v2_schema]
+#[derive(Deserialize, Serialize)]
+struct Pet {
+    name: String,
+    id: Option<u64>,
+}
+
 #[test]
 fn test_simple_app() {
-    #[api_v2_schema]
-    #[derive(Default, Deserialize, Serialize)]
-    struct Pet {
-        name: String,
-        id: u64,
-    }
-
     #[api_v2_schema]
     #[derive(Deserialize, Serialize)]
     struct SomeResource {
@@ -40,7 +40,7 @@ fn test_simple_app() {
 
     #[api_v2_operation]
     fn some_pet() -> web::Json<Pet> {
-        web::Json(Pet::default())
+        unimplemented!();
     }
 
     fn config(cfg: &mut web::ServiceConfig) {
@@ -76,7 +76,7 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["id","name"]
+                      "required":["name"]
                     }
                   },
                   "paths": {
@@ -197,12 +197,12 @@ fn test_params() {
 
     #[api_v2_operation]
     fn get_known_badge_1(_p: web::Path<KnownResourceBadge>, _q: web::Query<BadgeParams>) -> String {
-        String::new()
+        unimplemented!();
     }
 
     #[api_v2_operation]
     fn get_known_badge_2(_p: web::Path<(String, String)>, _q: web::Query<BadgeParams>) -> String {
-        String::new()
+        unimplemented!();
     }
 
     #[api_v2_operation]
@@ -211,12 +211,12 @@ fn test_params() {
         _q: web::Query<BadgeParams>,
         _f: web::Form<BadgeBody>,
     ) -> String {
-        String::new()
+        unimplemented!();
     }
 
     #[api_v2_operation]
     fn post_badge_2(_p: web::Path<(String, String)>, _b: web::Json<BadgeBody>) -> String {
-        String::new()
+        unimplemented!();
     }
 
     run_and_check_app(
@@ -347,6 +347,67 @@ fn test_params() {
                           }
                         }],
                         "responses": {}
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_list_in_out() {
+    #[api_v2_operation]
+    fn get_pets() -> web::Json<Vec<Pet>> {
+        unimplemented!();
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/pets").route(web::get().to(get_pets)))
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "definitions": {
+                    "Pet": {
+                      "properties": {
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required":["name"]
+                    }
+                  },
+                  "paths": {
+                    "/pets": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              }
+                            }
+                          }
+                        }
                       }
                     }
                   },

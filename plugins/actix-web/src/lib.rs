@@ -9,9 +9,7 @@ use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{web::HttpResponse, Error};
 use futures::IntoFuture;
-use paperclip::v2::models::{
-    DataType, DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap, TypedData,
-};
+use paperclip::v2::models::{DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap};
 use parking_lot::RwLock;
 
 use std::collections::BTreeMap;
@@ -66,44 +64,6 @@ pub trait Mountable {
         op_map.methods.extend(self.operations().into_iter());
         op_map.normalize();
     }
-}
-
-/// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
-/// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
-///
-/// This is implemented for primitive types by default.
-pub trait Apiv2Schema {
-    /// Name of this schema. This is the object's name.
-    const NAME: Option<&'static str>;
-
-    /// Returns the schema for this object.
-    fn schema() -> DefaultSchemaRaw;
-}
-
-impl<T: TypedData> Apiv2Schema for T {
-    const NAME: Option<&'static str> = None;
-
-    fn schema() -> DefaultSchemaRaw {
-        let mut schema = DefaultSchemaRaw::default();
-        schema.data_type = Some(T::data_type());
-        schema.format = T::format();
-
-        if let DataType::Array = T::data_type() {
-            schema.items = Some(T::schema().into());
-        }
-
-        schema
-    }
-}
-
-/// Represents a OpenAPI v2 operation convertible. This is auto-implemented by
-/// [`api_v2_operation`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_operation.html) macro.
-pub trait ApiOperation {
-    /// Returns the definition for this operation.
-    fn operation() -> Operation<DefaultSchemaRaw>;
-
-    /// Returns the definitions used by this operation.
-    fn definitions() -> BTreeMap<String, DefaultSchemaRaw>;
 }
 
 impl<T, B> App<T, B>

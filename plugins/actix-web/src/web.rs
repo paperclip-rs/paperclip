@@ -5,7 +5,7 @@ pub use actix_web::web::{
     HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
 };
 
-use crate::{ApiOperation, Mountable};
+use crate::Mountable;
 use actix_service::NewService;
 use actix_web::dev::{
     AppService, AsyncFactory, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse,
@@ -15,6 +15,7 @@ use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
 use futures::future::IntoFuture;
 use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
+use paperclip::v2::schema::Apiv2Operation;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
@@ -152,7 +153,7 @@ where
     /// Wrapper for [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
     pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
-        F: ApiOperation + Factory<I, R> + 'static,
+        F: Apiv2Operation + Factory<I, R> + 'static,
         I: FromRequest + 'static,
         R: Responder + 'static,
     {
@@ -165,7 +166,7 @@ where
     #[allow(clippy::wrong_self_convention)]
     pub fn to_async<F, I, R>(mut self, handler: F) -> Self
     where
-        F: ApiOperation + AsyncFactory<I, R> + 'static,
+        F: Apiv2Operation + AsyncFactory<I, R> + 'static,
         I: FromRequest + 'static,
         R: IntoFuture + 'static,
         R::Item: Responder,
@@ -262,7 +263,7 @@ where
     /// Updates this resource using the given handler.
     fn update_from_handler<F>(&mut self)
     where
-        F: ApiOperation,
+        F: Apiv2Operation,
     {
         let mut op = F::operation();
         op.set_parameter_names_from_path_template(&self.path);
@@ -552,7 +553,7 @@ impl Route {
     /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
     pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
-        F: ApiOperation + Factory<I, R> + 'static,
+        F: Apiv2Operation + Factory<I, R> + 'static,
         I: FromRequest + 'static,
         R: Responder + 'static,
     {
@@ -566,7 +567,7 @@ impl Route {
     #[allow(clippy::wrong_self_convention)]
     pub fn to_async<F, I, R>(mut self, handler: F) -> Self
     where
-        F: ApiOperation + AsyncFactory<I, R> + 'static,
+        F: Apiv2Operation + AsyncFactory<I, R> + 'static,
         I: FromRequest + 'static,
         R: IntoFuture + 'static,
         R::Item: Responder,

@@ -9,17 +9,12 @@
 
 extern crate proc_macro;
 
-mod schema;
+mod operation;
 
-use self::schema::OperationProducer;
+use self::operation::OperationProducer;
 use proc_macro::{Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, PathArguments, ReturnType, Type};
-
-fn call_site_error_with_msg(msg: &str) -> TokenStream {
-    Span::call_site().error(msg);
-    (quote! {}).into()
-}
+use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, PathArguments, ReturnType, Token, Type};
 
 /// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
 #[proc_macro_attribute]
@@ -61,7 +56,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
             fn call(&self, (#arg_names): (#arg_types)) -> #ret #block
         }
 
-        impl paperclip_actix::ApiOperation for #name {
+        impl paperclip::v2::schema::Apiv2Operation for #name {
             #op
         }
     };
@@ -113,17 +108,11 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
                     .map(|p| p.into_value())
                     .expect("expected type for struct field");
 
-                let (ty_name, ty_args) = (&ty.ident, &ty.arguments);
-                if p.path.segments.len() == 1 && ty_name == "Option" {
+                if p.path.segments.len() == 1 && &ty.ident == "Option" {
                     is_required = false;
                 }
 
-                match ty_args {
-                    PathArguments::AngleBracketed(_) if !ty_args.is_empty() => {
-                        quote!(#ty_name::#ty_args)
-                    }
-                    _ => quote!(#ty),
-                }
+                address_type_for_fn_call(&field.ty)
             }
             _ => return call_site_error_with_msg("unsupported type for schema"),
         };
@@ -150,12 +139,15 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     let gen = quote! {
         #item_ast
 
-        impl #impl_generics paperclip_actix::Apiv2Schema for #name #ty_generics #where_clause {
+        impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             const NAME: Option<&'static str> = Some(#schema_name);
 
-            fn schema() -> paperclip::v2::models::DefaultSchemaRaw {
-                use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw, TypedData};
+            fn raw_schema() -> paperclip::v2::models::DefaultSchemaRaw {
+                use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw};
+                use paperclip::v2::schema::TypedData;
+
                 let mut schema = DefaultSchemaRaw::default();
+                schema.name = Some(#schema_name.into()); // Add name for later use.
                 #props_gen
                 schema
             }
@@ -163,4 +155,30 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     };
 
     gen.into()
+}
+
+/// An associated function of a generic type, say, a vector cannot be called
+/// like `Vec::foo` as it doesn't have a default type. We should instead call
+/// `Vec::<T>::foo`. This function takes care of that special treatment.
+fn address_type_for_fn_call(old_ty: &Type) -> Type {
+    let mut ty = old_ty.clone();
+    if let Type::Path(ref mut p) = &mut ty {
+        p.path.segments.pairs_mut().for_each(|mut pair| {
+            let is_empty = pair.value().arguments.is_empty();
+            let args = &mut pair.value_mut().arguments;
+            match args {
+                PathArguments::AngleBracketed(ref mut brack_args) if !is_empty => {
+                    brack_args.colon2_token = Some(Token![::](proc_macro2::Span::call_site()));
+                }
+                _ => (),
+            }
+        });
+    }
+
+    ty
+}
+
+fn call_site_error_with_msg(msg: &str) -> TokenStream {
+    Span::call_site().error(msg);
+    (quote! {}).into()
 }
