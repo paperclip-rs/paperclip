@@ -1,0 +1,33 @@
+//! Core types and traits associated with the
+//! [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
+
+pub mod models;
+mod resolver;
+pub mod schema;
+
+pub use self::models::{Api, DefaultSchema};
+pub use self::schema::Schema;
+pub use paperclip_macros::*;
+
+use self::resolver::Resolver;
+use crate::error::ValidationError;
+
+impl<S: Schema> Api<S> {
+    /// Consumes this API schema, resolves the references and returns
+    /// the resolved schema.
+    ///
+    /// This walks recursively, collects the referenced schema objects,
+    /// substitutes the referenced IDs with the pointer to schema objects
+    /// and returns the resolved object or an error if it encountered one.
+    pub fn resolve(self) -> Result<Api<S>, ValidationError> {
+        let mut resolver = Resolver::from((self.definitions, self.paths));
+        resolver.resolve()?;
+        Ok(Api {
+            swagger: self.swagger,
+            definitions: resolver.defs,
+            paths: resolver.paths,
+            base_path: self.base_path,
+            host: self.host,
+        })
+    }
+}

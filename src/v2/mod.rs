@@ -1,4 +1,4 @@
-//! Types and traits related to the [OpenAPI v2 spec](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
+//! Utilities related to the [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
 //!
 //! # Detailed example
 //!
@@ -26,7 +26,7 @@
 //! [kube-spec]: https://github.com/kubernetes/kubernetes/tree/afd928b8bc81cea385eba4c94558373df7aeae75/api/openapi-spec
 //!
 //! ```rust,no_run
-//! #[macro_use] extern crate paperclip_macros;
+//! #[macro_use] extern crate paperclip;
 //! #[macro_use] extern crate serde_derive; // NOTE: We're using serde for decoding stuff.
 //!
 //! use paperclip::v2::{self, Api};
@@ -82,22 +82,17 @@
 
 #[cfg(feature = "codegen")]
 pub mod codegen;
-pub mod im;
-pub mod models;
-mod resolver;
-pub mod schema;
 
-use self::resolver::Resolver;
 use crate::error::PaperClipError;
-use failure::Error;
 use serde::Deserialize;
 
 use std::io::{Read, Seek, SeekFrom};
 
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
-pub use self::models::{Api, DefaultSchema};
-pub use self::schema::Schema;
+pub use paperclip_core::im;
+pub use paperclip_core::v2::models::{self, Api, DefaultSchema};
+pub use paperclip_core::v2::schema::{self, Schema};
 
 /// Deserialize the schema from the given reader. Currently, this only supports
 /// JSON and YAML formats.
@@ -117,24 +112,4 @@ where
     }
 
     Ok(serde_yaml::from_reader(reader)?)
-}
-
-impl<S: Schema> Api<S> {
-    /// Consumes this API schema, resolves the references and returns
-    /// the resolved schema.
-    ///
-    /// This walks recursively, collects the referenced schema objects,
-    /// substitutes the referenced IDs with the pointer to schema objects
-    /// and returns the resolved object or an error if it encountered one.
-    pub fn resolve(self) -> Result<Api<S>, Error> {
-        let mut resolver = Resolver::from((self.definitions, self.paths));
-        resolver.resolve()?;
-        Ok(Api {
-            swagger: self.swagger,
-            definitions: resolver.defs,
-            paths: resolver.paths,
-            base_path: self.base_path,
-            host: self.host,
-        })
-    }
 }

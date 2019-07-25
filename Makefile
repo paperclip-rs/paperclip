@@ -4,9 +4,9 @@ all: fmt build test
 clean:
 	rm -rf Cargo.lock
 	rm -rf target
-	rm -rf openapi/tests/test_k8s
-	git checkout openapi/tests/test_k8s
-	rm -rf openapi/tests/test_pet
+	rm -rf tests/test_k8s
+	git checkout tests/test_k8s
+	rm -rf tests/test_pet
 
 prepare:
 	rustup override set nightly-2019-06-09
@@ -28,8 +28,8 @@ test:
 	cargo clippy --all -- -D clippy::all
 	cargo test --all --all-features
 	# Compile the code generated through tests.
-	cd openapi/tests/test_pet && cargo build
-	cd openapi/tests/test_k8s && cargo build
-	cd openapi/tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo build
+	cd tests/test_pet && cargo build
+	cd tests/test_k8s && cargo build
+	cd tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo build
 	# Test that the CLI runs successfully.
-	./openapi/tests/test_k8s/target/debug/test-k8s-cli --help > /dev/null
+	./tests/test_k8s/target/debug/test-k8s-cli --help > /dev/null

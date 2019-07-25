@@ -18,26 +18,6 @@ use std::fs;
 use std::ops::Deref;
 use std::path::PathBuf;
 
-/// Checks if the given type/format matches a known Rust type and returns it.
-fn matching_unit_type(
-    format: Option<&DataTypeFormat>,
-    type_: Option<DataType>,
-) -> Option<&'static str> {
-    match format {
-        Some(DataTypeFormat::Int32) => Some("i32"),
-        Some(DataTypeFormat::Int64) => Some("i64"),
-        Some(DataTypeFormat::Float) => Some("f32"),
-        Some(DataTypeFormat::Double) => Some("f64"),
-        _ => match type_ {
-            Some(DataType::Integer) => Some("i64"),
-            Some(DataType::Number) => Some("f64"),
-            Some(DataType::Boolean) => Some("bool"),
-            Some(DataType::String) => Some("String"),
-            _ => None,
-        },
-    }
-}
-
 /// `Emitter` represents the interface for generating the relevant
 /// modules, API object definitions and the associated calls.
 pub trait Emitter: Sized {
@@ -602,5 +582,25 @@ impl EmittedUnit {
             EmittedUnit::Known(s) => s,
             _ => panic!("Emitted unit is not a known type"),
         }
+    }
+}
+
+/// Checks if the given type/format matches a known Rust type and returns it.
+fn matching_unit_type(
+    format: Option<&DataTypeFormat>,
+    type_: Option<DataType>,
+) -> Option<&'static str> {
+    match format {
+        Some(DataTypeFormat::Int32) => Some("i32"),
+        Some(DataTypeFormat::Int64) => Some("i64"),
+        Some(DataTypeFormat::Float) => Some("f32"),
+        Some(DataTypeFormat::Double) => Some("f64"),
+        _ => match type_ {
+            Some(DataType::Integer) => Some("i64"),
+            Some(DataType::Number) => Some("f64"),
+            Some(DataType::Boolean) => Some("bool"),
+            Some(DataType::String) => Some("String"),
+            _ => None,
+        },
     }
 }

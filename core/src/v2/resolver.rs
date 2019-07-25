@@ -2,8 +2,7 @@ use super::{
     models::{OperationMap, Parameter, SchemaRepr},
     Schema,
 };
-use crate::error::PaperClipError;
-use failure::Error;
+use crate::error::ValidationError;
 
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, HashSet};
@@ -49,7 +48,7 @@ where
     S: Schema,
 {
     /// Visit definitions and resolve them!
-    pub fn resolve(&mut self) -> Result<(), Error> {
+    pub fn resolve(&mut self) -> Result<(), ValidationError> {
         // FIXME: We don't support definitions that refer another definition
         // directly from the root. Should we?
         for (name, schema) in &self.defs {
@@ -92,7 +91,10 @@ where
     /// contain any reference.
     // FIXME: This means we currently don't support definitions which
     // directly refer some other definition (basically a type alias). Should we?
-    fn resolve_definitions_no_root_ref(&self, schema: &SchemaRepr<S>) -> Result<(), Error> {
+    fn resolve_definitions_no_root_ref(
+        &self,
+        schema: &SchemaRepr<S>,
+    ) -> Result<(), ValidationError> {
         let mut schema = schema.write();
         if let Some(mut inner) = schema.items_mut().take() {
             return self.resolve_definitions(&mut inner);
@@ -113,7 +115,7 @@ where
 
     /// Resolve the given definition. If it contains a reference, find and assign it,
     /// otherwise traverse further.
-    fn resolve_definitions(&self, schema: &mut SchemaRepr<S>) -> Result<(), Error> {
+    fn resolve_definitions(&self, schema: &mut SchemaRepr<S>) -> Result<(), ValidationError> {
         let ref_def = {
             if let Some(ref_name) = schema.read().reference() {
                 trace!("Resolving {}", ref_name);
@@ -139,7 +141,10 @@ where
     }
 
     /// Resolve a given operation.
-    fn resolve_operations(&self, map: &mut OperationMap<SchemaRepr<S>>) -> Result<(), Error> {
+    fn resolve_operations(
+        &self,
+        map: &mut OperationMap<SchemaRepr<S>>,
+    ) -> Result<(), ValidationError> {
         for op in map.methods.values_mut() {
             self.resolve_parameters(&mut op.parameters)?;
             for response in op.responses.values_mut() {
@@ -153,7 +158,10 @@ where
     }
 
     /// Resolve the given bunch of parameters.
-    fn resolve_parameters(&self, params: &mut Vec<Parameter<SchemaRepr<S>>>) -> Result<(), Error> {
+    fn resolve_parameters(
+        &self,
+        params: &mut Vec<Parameter<SchemaRepr<S>>>,
+    ) -> Result<(), ValidationError> {
         for param in params.iter_mut() {
             if let Some(schema) = param.schema.as_mut() {
                 self.resolve_definitions(schema)?;
@@ -164,10 +172,10 @@ where
     }
 
     /// Given a name (from `$ref` field), get a reference to the definition.
-    fn resolve_definition_reference(&self, name: &str) -> Result<SchemaRepr<S>, Error> {
+    fn resolve_definition_reference(&self, name: &str) -> Result<SchemaRepr<S>, ValidationError> {
         if !name.starts_with(DEF_REF_PREFIX) {
             // FIXME: Bad
-            return Err(PaperClipError::InvalidRefURI(name.into()))?;
+            return Err(ValidationError::InvalidRefURI(name.into()))?;
         }
 
         let name = &name[DEF_REF_PREFIX.len()..];
@@ -179,7 +187,7 @@ where
         let schema = self
             .defs
             .get(name)
-            .ok_or_else(|| PaperClipError::MissingDefinition(name.into()))?;
+            .ok_or_else(|| ValidationError::MissingDefinition(name.into()))?;
         Ok(schema.clone())
     }
 }

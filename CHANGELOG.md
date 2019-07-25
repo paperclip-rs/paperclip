@@ -8,9 +8,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 - Paperclip's `#[api_v2_schema]` derives raw schema structs (i.e., no smart pointers) along with actual schema structs for other users and plugins. An effect of this would be that now there's a `DefaultSchemaRaw` in addition to `DefaultSchema`.
 - `TypedData`, `Apiv2Schema` and `Apiv2Operation` traits for deriving v2 spec for server plugins.
-- Experimental Actix plugin for hosting v2 spec as a JSON by marking models and operations using proc macro attributes.
+- `paperclip-core` crate for segregating core types and traits.
+- `paperclip-actix` crate as an actix-web plugin for hosting v2 spec as a JSON by marking models and operations using proc macro attributes.
 
 ### Changed
+- Moved away from workspaces to individual crates and added features for paperclip.
+- `Api::<S>::resolve` now returns `ValidationError` instead of `failure::Error`.
 - During serialization, optional schema fields are skipped when empty/null.
 
 ### Fixed

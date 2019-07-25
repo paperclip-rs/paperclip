@@ -6,6 +6,7 @@
 use super::RUST_KEYWORDS;
 use crate::v2::models::{HttpMethod, ParameterIn};
 use heck::{CamelCase, KebabCase, SnekCase};
+use lazy_static::lazy_static;
 use regex::{Captures, Regex};
 
 use std::collections::{BTreeMap, HashSet};

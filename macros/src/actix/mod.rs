@@ -1,27 +1,18 @@
 //! Convenience macros for the [actix-web](https://github.com/wafflespeanut/paperclip/tree/master/plugins/actix-web)
-//! OpenAPI plugin.
-//!
-//! You shouldn't need to depend on this, because the attributes here are
-//! already exposed by that plugin.
-
-#![feature(proc_macro_diagnostic)]
-#![recursion_limit = "128"]
-
-extern crate proc_macro;
+//! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
 mod operation;
 
 use self::operation::OperationProducer;
-use proc_macro::{Span, TokenStream};
+use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, PathArguments, ReturnType, Token, Type};
 
-/// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
-#[proc_macro_attribute]
-pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
+/// Actual parser and emitter for `api_v2_operation` macro.
+pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     let item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
-        Err(_) => return call_site_error_with_msg("operation must be a function"),
+        Err(_) => return crate::call_site_error_with_msg("operation must be a function"),
     };
 
     let name = item_ast.ident.clone();
@@ -64,12 +55,11 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-/// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
-#[proc_macro_attribute]
-pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
+/// Actual parser and emitter for `api_v2_schema` macro.
+pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast: DeriveInput = match syn::parse(input) {
         Ok(s) => s,
-        Err(_) => return call_site_error_with_msg("schema must be struct or enum"),
+        Err(_) => return crate::call_site_error_with_msg("schema must be struct or enum"),
     };
 
     let name = &item_ast.ident;
@@ -81,12 +71,12 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
         Data::Struct(ref s) => match &s.fields {
             Fields::Named(ref f) => &f.named,
             _ => {
-                return call_site_error_with_msg(
+                return crate::call_site_error_with_msg(
                     "expected struct with zero or more fields for schema",
                 )
             }
         },
-        _ => return call_site_error_with_msg("expected struct for schema"),
+        _ => return crate::call_site_error_with_msg("expected struct for schema"),
     };
 
     // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
@@ -114,7 +104,7 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
                 address_type_for_fn_call(&field.ty)
             }
-            _ => return call_site_error_with_msg("unsupported type for schema"),
+            _ => return crate::call_site_error_with_msg("unsupported type for schema"),
         };
 
         let mut gen = quote!(
@@ -176,9 +166,4 @@ fn address_type_for_fn_call(old_ty: &Type) -> Type {
     }
 
     ty
-}
-
-fn call_site_error_with_msg(msg: &str) -> TokenStream {
-    Span::call_site().error(msg);
-    (quote! {}).into()
 }

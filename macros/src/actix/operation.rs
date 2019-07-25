@@ -243,7 +243,7 @@ impl Container {
                         .iter()
                         .find(|&c| seg.value().ident == c)
                         // Prefix that type with `::` if necessary.
-                        .map(|c| (*c, crate::address_type_for_fn_call(ty)));
+                        .map(|c| (*c, super::address_type_for_fn_call(ty)));
                 }
 
                 None

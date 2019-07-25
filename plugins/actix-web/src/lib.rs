@@ -1,15 +1,16 @@
 pub mod web;
 
-#[doc(inline)]
 pub use self::web::{Resource, Route, Scope};
-pub use paperclip_actix_macros::{api_v2_operation, api_v2_schema};
+pub use paperclip_macros::{api_v2_operation, api_v2_schema};
 
 use self::web::{Data, ServiceConfig};
 use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{web::HttpResponse, Error};
 use futures::IntoFuture;
-use paperclip::v2::models::{DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap};
+use paperclip_core::v2::models::{
+    DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap,
+};
 use parking_lot::RwLock;
 
 use std::collections::BTreeMap;

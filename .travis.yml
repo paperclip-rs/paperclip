@@ -33,7 +33,7 @@ matrix:
     - CACHE_NAME=test
     script:
     - cargo test --all --all-features
-    - cd openapi/tests/test_k8s
+    - cd tests/test_k8s
     - cargo build
     - cd ../test_pet
     - cargo build

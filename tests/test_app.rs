@@ -9,7 +9,7 @@ use actix_rt::System;
 use actix_service::NewService;
 use actix_web::dev::{MessageBody, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, HttpServer};
-use paperclip_actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
+use paperclip::actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashSet};

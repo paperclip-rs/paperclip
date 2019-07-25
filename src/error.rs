@@ -17,21 +17,15 @@ pub type PaperClipResult<T> = Result<T, PaperClipError>;
 /// Global error which encapsulates all related errors.
 #[derive(Debug, Fail)]
 pub enum PaperClipError {
+    /// Error encountered during spec validation.
+    #[fail(display = "{}", _0)]
+    Validation(paperclip_core::ValidationError),
     /// The given directory cannot be used for generating code.
     #[fail(display = "Cannot generate code in the given directory")]
     InvalidCodegenDirectory,
     /// Currently, we only support OpenAPI v2, and eventually v3.
     #[fail(display = "This version of OpenAPI is unsupported.")]
     UnsupportedOpenAPIVersion,
-    /// Failed to resolve the schema because an invalid URI was provided for
-    /// `$ref` field.
-    ///
-    /// Currently, we only support `#/definitions/YourType` in `$ref` field.
-    #[fail(
-        display = "Invalid $ref URI {:?}. Only relative URIs for definitions are supported right now.",
-        _0
-    )]
-    InvalidRefURI(String),
     /// Paths listed in the spec must be unique.
     #[fail(display = "Path similar to {:?} already exists.", _0)]
     RelativePathNotUnique(String),
@@ -55,9 +49,6 @@ pub enum PaperClipError {
     /// A valid path cannot be obtained for the given definition.
     #[fail(display = "Invalid path for definition: {:?}", _0)]
     InvalidDefinitionPath(PathBuf),
-    /// A definition has been referenced but it's missing.
-    #[fail(display = "Definition missing: {}", _0)]
-    MissingDefinition(String),
     /// If a parameter uses a schema, then we expect it to exist in
     /// the map of definitions (for now).
     #[fail(
@@ -65,15 +56,6 @@ pub enum PaperClipError {
         _0, _1
     )]
     UnsupportedParameterDefinition(String, String),
-    /// If a parameter specifies body, then schema must be specified.
-    #[fail(
-        display = "Parameter {:?} in path {:?} is a body but the schema is missing",
-        _0, _1
-    )]
-    MissingSchemaForBodyParameter(String, String),
-    /// If a parameter doesn't specify a body, then it must have a type.
-    #[fail(display = "Parameter {:?} in path {:?} must have a type", _0, _1)]
-    MissingParameterType(String, String),
     /// The type of this parameter is not known.
     #[fail(
         display = "Parameter {:?} in path {:?} doesn't have a known type",
@@ -98,5 +80,6 @@ pub enum PaperClipError {
 impl_err_from!(PaperClipError::std::io::Error > Io);
 impl_err_from!(PaperClipError::serde_json::Error > Json);
 impl_err_from!(PaperClipError::serde_yaml::Error > Yaml);
+impl_err_from!(PaperClipError::paperclip_core::ValidationError > Validation);
 #[cfg(feature = "codegen-fmt")]
 impl_err_from!(PaperClipError::rustfmt_nightly::ErrorKind > RustFmt);

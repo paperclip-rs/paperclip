@@ -1,315 +1,47 @@
 //! Convenience macros for [paperclip](https://github.com/wafflespeanut/paperclip).
 //!
-//! You shouldn't need to depend on this, because the attributes here are
-//! already exposed by paperclip.
+//! You shouldn't need to depend on this, because the stuff here is
+//! already exposed by the corresponding crates.
 
 #![feature(proc_macro_diagnostic)]
 #![recursion_limit = "512"]
 
 extern crate proc_macro;
 
+#[cfg(feature = "actix")]
+mod actix;
+#[cfg(feature = "default")]
+mod core;
+
 use proc_macro::{Span, TokenStream};
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, FieldsNamed, Ident};
 
 /// Converts your struct to support deserializing from an OpenAPI v2
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
 /// object ([example](https://paperclip.waffles.space/paperclip/v2/)). This adds the necessary fields (in addition to your own fields) and implements the
 /// `Schema` trait for parsing and codegen.
+#[cfg(feature = "v2")]
 #[proc_macro_attribute]
-pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    let mut item_ast: DeriveInput = match syn::parse(input) {
-        Ok(s) => s,
-        Err(_) => return call_site_error_with_msg("error parsing derive input"),
-    };
-
-    let name = item_ast.ident.clone();
-    let generics = item_ast.generics.clone();
-    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-
-    // Generate raw schema struct.
-    let mut raw_item_ast = item_ast.clone();
-    let raw_defaults = match raw_schema(&mut raw_item_ast) {
-        Ok(s) => s,
-        Err(ts) => return ts,
-    };
-
-    let raw_struct_name = &raw_item_ast.ident;
-    let mut gen = quote!(
-        /// **NOTE:** This is the raw version i.e., it doesn't have
-        /// smart pointers to reuse definitions throughout the spec.
-        /// Instead, it contains the actual schema with unresolved
-        /// `$ref` fields.
-        ///
-        #raw_item_ast
-    );
-
-    let defaults = match actual_schema(&mut item_ast) {
-        Ok(s) => s,
-        Err(ts) => return ts,
-    };
-
-    gen.extend(quote! {
-        #item_ast
-
-        impl Default for #name {
-            fn default() -> Self {
-                #name {
-                    #defaults
-                }
-            }
-        }
-
-        impl Default for #raw_struct_name {
-            fn default() -> Self {
-                #raw_struct_name {
-                    #raw_defaults
-                }
-            }
-        }
-
-        impl #raw_struct_name {
-            /// Recursively removes all `$ref` values in this schema.
-            pub fn remove_refs(&mut self) {
-                self.properties.values_mut().for_each(|s| s.remove_refs());
-                self.items.as_mut().map(|s| s.remove_refs());
-                self.extra_props.as_mut().map(|s| s.remove_refs());
-                self.reference = None;
-            }
-
-            /// Recursively removes all properties other than `$ref` value
-            /// if the `$ref` is non-null.
-            pub fn retain_ref(&mut self) {
-                if self.reference.is_some() {
-                    let ref_ = self.reference.take();
-                    *self = Self::default();
-                    self.reference = ref_;
-                } else {
-                    self.properties.values_mut().for_each(|s| s.retain_ref());
-                    self.items.as_mut().map(|s| s.retain_ref());
-                    self.extra_props.as_mut().map(|s| s.retain_ref());
-                }
-            }
-        }
-
-        impl #impl_generics paperclip::v2::Schema for #name #ty_generics #where_clause {
-            #[inline]
-            fn name(&self) -> Option<&str> {
-                self.name.as_ref().map(String::as_str)
-            }
-
-            #[inline]
-            fn set_name(&mut self, name: &str) {
-                self.name = Some(name.into());
-            }
-
-            #[inline]
-            fn set_cyclic(&mut self, cyclic: bool) {
-                self.cyclic = cyclic;
-            }
-
-            #[inline]
-            fn is_cyclic(&self) -> bool {
-                self.cyclic
-            }
-
-            #[inline]
-            fn description(&self) -> Option<&str> {
-                self.description.as_ref().map(String::as_str)
-            }
-
-            #[inline]
-            fn reference(&self) -> Option<&str> {
-                self.reference.as_ref().map(String::as_str)
-            }
-
-            #[inline]
-            fn data_type(&self) -> Option<paperclip::v2::models::DataType> {
-                self.data_type
-            }
-
-            #[inline]
-            fn format(&self) -> Option<&paperclip::v2::models::DataTypeFormat> {
-                self.format.as_ref()
-            }
-
-            #[inline]
-            fn items(&self) -> Option<&paperclip::v2::models::SchemaRepr<Self>> {
-                self.items.as_ref()
-            }
-
-            #[inline]
-            fn items_mut(&mut self) -> Option<&mut paperclip::v2::models::SchemaRepr<Self>> {
-                self.items.as_mut()
-            }
-
-            #[inline]
-            fn additional_properties(&self) -> Option<&paperclip::v2::models::SchemaRepr<Self>> {
-                self.extra_props.as_ref()
-            }
-
-            #[inline]
-            fn additional_properties_mut(&mut self) -> Option<&mut paperclip::v2::models::SchemaRepr<Self>> {
-                self.extra_props.as_mut()
-            }
-
-            #[inline]
-            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<Self>>> {
-                if self.properties.is_empty() {
-                    None
-                } else {
-                    Some(&self.properties)
-                }
-            }
-
-            #[inline]
-            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<Self>>> {
-                if self.properties.is_empty() {
-                    None
-                } else {
-                    Some(&mut self.properties)
-                }
-            }
-
-            #[inline]
-            fn required_properties(&self) -> Option<&std::collections::BTreeSet<String>> {
-                if self.required.is_empty() {
-                    None
-                } else {
-                    Some(&self.required)
-                }
-            }
-        }
-    });
-
-    gen.into()
+pub fn api_v2_schema_struct(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    self::core::emit_v2_schema_struct(input)
 }
 
+/// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
+#[cfg(all(feature = "actix"))]
+#[proc_macro_attribute]
+pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_operation(input)
+}
+
+/// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
+#[cfg(all(feature = "actix"))]
+#[proc_macro_attribute]
+pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_definition(input)
+}
+
+/// Generate an error in the call site and return empty token stream.
 fn call_site_error_with_msg(msg: &str) -> TokenStream {
     Span::call_site().error(msg);
     (quote! {}).into()
-}
-
-/// Generates a raw schema struct with suffix "{structName}Raw".
-fn raw_schema(item_ast: &mut DeriveInput) -> Result<proc_macro2::TokenStream, TokenStream> {
-    let ident = Ident::new(
-        &format!("{}Raw", item_ast.ident),
-        proc_macro2::Span::call_site(),
-    );
-    item_ast.ident = ident.clone();
-
-    let fields = named_fields(item_ast)?;
-    let default_fields: FieldsNamed =
-        syn::parse2(schema_fields(&ident, false)).expect("parsing schema fields?");
-    fields.named.extend(default_fields.named);
-
-    let mut defaults = quote!();
-    for field in &fields.named {
-        let f_name = field.ident.as_ref().expect("fields not named?");
-        defaults.extend(quote!(#f_name: Default::default(),));
-    }
-
-    Ok(defaults)
-}
-
-/// Generates the actual schema struct with the actual name.
-fn actual_schema(item_ast: &mut DeriveInput) -> Result<proc_macro2::TokenStream, TokenStream> {
-    let name = item_ast.ident.clone();
-    let fields = named_fields(item_ast)?;
-
-    let default_fields: FieldsNamed =
-        syn::parse2(schema_fields(&name, true)).expect("parsing schema fields?");
-    fields.named.extend(default_fields.named);
-
-    let mut defaults = quote!();
-    for field in &fields.named {
-        let f_name = field.ident.as_ref().expect("fields not named?");
-        defaults.extend(quote!(#f_name: Default::default(),));
-    }
-
-    Ok(defaults)
-}
-
-/// Extracts named fields from the given struct.
-fn named_fields(item_ast: &mut DeriveInput) -> Result<&mut FieldsNamed, TokenStream> {
-    match &mut item_ast.data {
-        Data::Struct(s) => match &mut s.fields {
-            Fields::Named(ref mut f) => Ok(f),
-            _ => Err(call_site_error_with_msg(
-                "expected struct with zero or more fields for schema",
-            )),
-        },
-        _ => Err(call_site_error_with_msg("expected struct for schema")),
-    }
-}
-
-/// Generates fields for a schema struct using its name. Also takes a
-/// boolean to indicate whether this struct's fields hold references.
-fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
-    let mut gen = quote!();
-    let add_self = |gen: &mut proc_macro2::TokenStream| {
-        if is_ref {
-            gen.extend(quote!(paperclip::v2::models::SchemaRepr<#name>>,));
-        } else {
-            gen.extend(quote!(Box<#name>>,));
-        }
-    };
-
-    gen.extend(quote!(
-        #[serde(rename = "$ref", skip_serializing_if = "Option::is_none")]
-        pub reference: Option<String>,
-    ));
-    gen.extend(quote!(
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub title: Option<String>,
-    ));
-    gen.extend(quote!(
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub description: Option<String>,
-    ));
-    gen.extend(quote!(
-        #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
-        pub data_type: Option<paperclip::v2::models::DataType>,
-    ));
-    gen.extend(quote!(
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub format: Option<paperclip::v2::models::DataTypeFormat>,
-    ));
-
-    gen.extend(quote!(
-        #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
-        pub properties: std::collections::BTreeMap<String,
-    ));
-    add_self(&mut gen);
-
-    gen.extend(quote!(
-        #[serde(skip_serializing_if = "Option::is_none")]
-        pub items: Option<
-    ));
-    add_self(&mut gen);
-
-    gen.extend(quote!(
-        #[serde(rename = "additionalProperties", skip_serializing_if = "Option::is_none")]
-        pub extra_props: Option<
-    ));
-    add_self(&mut gen);
-
-    gen.extend(quote!(
-        #[serde(default, skip_serializing_if = "std::collections::BTreeSet::is_empty")]
-        pub required: std::collections::BTreeSet<String>,
-    ));
-
-    if is_ref {
-        gen.extend(quote!(
-            #[serde(skip)]
-            cyclic: bool,
-        ));
-    }
-
-    quote!({
-        #[doc(hidden)]
-        #[serde(skip)]
-        pub name: Option<String>,
-        #gen
-    })
 }

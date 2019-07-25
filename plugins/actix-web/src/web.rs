@@ -14,8 +14,8 @@ use actix_web::dev::{
 use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
 use futures::future::IntoFuture;
-use paperclip::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
-use paperclip::v2::schema::Apiv2Operation;
+use paperclip_core::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
+use paperclip_core::v2::schema::Apiv2Operation;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
