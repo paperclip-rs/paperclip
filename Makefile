@@ -28,8 +28,8 @@ test:
 	cargo clippy --all -- -D clippy::all
 	cargo test --all --all-features
 	# Compile the code generated through tests.
-	cd tests/test_pet && cargo build
-	cd tests/test_k8s && cargo build
+	cd tests/test_pet && cargo check
+	cd tests/test_k8s && cargo check
 	cd tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo build
 	# Test that the CLI runs successfully.
 	./tests/test_k8s/target/debug/test-k8s-cli --help > /dev/null

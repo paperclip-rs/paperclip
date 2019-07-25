@@ -34,9 +34,9 @@ matrix:
     script:
     - cargo test --all --all-features
     - cd tests/test_k8s
-    - cargo build
+    - cargo check
     - cd ../test_pet
-    - cargo build
+    - cargo check
     - cd ../test_k8s/cli
     - CARGO_TARGET_DIR=../target cargo build
     - ../target/debug/test-k8s-cli --help > /dev/null
