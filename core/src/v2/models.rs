@@ -177,6 +177,8 @@ pub struct Parameter<S> {
     pub format: Option<DataTypeFormat>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<S>,
+    #[serde(default, rename = "enum", skip_serializing_if = "BTreeSet::is_empty")]
+    pub enum_: BTreeSet<String>,
 }
 
 impl<S> Parameter<S> {

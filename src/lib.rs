@@ -19,5 +19,9 @@ pub use paperclip_macros::api_v2_schema_struct as api_v2_schema;
 
 #[cfg(feature = "actix")]
 pub mod actix {
-    pub use paperclip_actix::*;
+    //! Plugin types, traits and macros for actix-web framework.
+
+    #[doc(inline)]
+    pub use paperclip_actix::{api_v2_operation, api_v2_schema};
+    pub use paperclip_actix::{web, App, Mountable, OpenApiExt};
 }

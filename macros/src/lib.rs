@@ -27,14 +27,14 @@ pub fn api_v2_schema_struct(_attr: TokenStream, input: TokenStream) -> TokenStre
 }
 
 /// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
-#[cfg(all(feature = "actix"))]
+#[cfg(feature = "actix")]
 #[proc_macro_attribute]
 pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_operation(input)
 }
 
 /// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
-#[cfg(all(feature = "actix"))]
+#[cfg(feature = "actix")]
 #[proc_macro_attribute]
 pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_definition(input)

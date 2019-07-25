@@ -6,7 +6,7 @@ mod operation;
 use self::operation::OperationProducer;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, FnArg, ItemFn, PathArguments, ReturnType, Token, Type};
+use syn::{Data, DataEnum, DeriveInput, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token, Type};
 
 /// Actual parser and emitter for `api_v2_operation` macro.
 pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
@@ -66,63 +66,23 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let generics = &item_ast.generics;
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    // FIXME: Support enums and unit structs.
-    let fields = match &item_ast.data {
-        Data::Struct(ref s) => match &s.fields {
-            Fields::Named(ref f) => &f.named,
-            _ => {
-                return crate::call_site_error_with_msg(
-                    "expected struct with zero or more fields for schema",
-                )
-            }
-        },
-        _ => return crate::call_site_error_with_msg("expected struct for schema"),
-    };
-
     // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
     let mut props_gen = quote! {};
-    for field in fields {
-        let field_name = field
-            .ident
-            .as_ref()
-            .expect("missing field name?")
-            .to_string();
 
-        let mut is_required = true;
-        let ty_ref = match field.ty {
-            Type::Path(ref p) => {
-                let ty = p
-                    .path
-                    .segments
-                    .last()
-                    .map(|p| p.into_value())
-                    .expect("expected type for struct field");
+    // FIXME: Support enums and unit structs.
+    let result = match &item_ast.data {
+        Data::Struct(ref s) => match &s.fields {
+            Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),
+            _ => Err(crate::call_site_error_with_msg(
+                "expected struct with zero or more fields for schema",
+            )),
+        },
+        Data::Enum(ref e) => handle_enum(e, &mut props_gen),
+        _ => Err(crate::call_site_error_with_msg("expected struct for schema")),
+    };
 
-                if p.path.segments.len() == 1 && &ty.ident == "Option" {
-                    is_required = false;
-                }
-
-                address_type_for_fn_call(&field.ty)
-            }
-            _ => return crate::call_site_error_with_msg("unsupported type for schema"),
-        };
-
-        let mut gen = quote!(
-            {
-                let mut s = DefaultSchemaRaw::default();
-                s.data_type = Some(#ty_ref::data_type());
-                s.format = #ty_ref::format();
-                schema.properties.insert(#field_name.into(), s.into());
-            }
-        );
-
-        if is_required {
-            gen.extend(quote! {
-                schema.required.insert(#field_name.into());
-            });
-        }
-
-        props_gen.extend(gen);
+    if let Err(ts) = result {
+        return ts
     }
 
     let schema_name = name.to_string();
@@ -145,6 +105,73 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     gen.into()
+}
+
+/// Generates code for a struct with fields.
+fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenStream) -> Result<(), TokenStream> {
+    for field in &fields.named {
+        let field_name = field
+            .ident
+            .as_ref()
+            .expect("missing field name?")
+            .to_string();
+
+        let mut is_required = true;
+        let ty_ref = match field.ty {
+            Type::Path(ref p) => {
+                let ty = p
+                    .path
+                    .segments
+                    .last()
+                    .map(|p| p.into_value())
+                    .expect("expected type for struct field");
+
+                if p.path.segments.len() == 1 && &ty.ident == "Option" {
+                    is_required = false;
+                }
+
+                address_type_for_fn_call(&field.ty)
+            }
+            _ => return Err(crate::call_site_error_with_msg("unsupported type for schema")),
+        };
+
+        let mut gen = quote!(
+            {
+                let s = #ty_ref::raw_schema();
+                schema.properties.insert(#field_name.into(), s.into());
+            }
+        );
+
+        if is_required {
+            gen.extend(quote! {
+                schema.required.insert(#field_name.into());
+            });
+        }
+
+        props_gen.extend(gen);
+    }
+
+    Ok(())
+}
+
+/// Generates code for an enum (if supported).
+fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) -> Result<(), TokenStream> {
+    props_gen.extend(quote!(
+        schema.data_type = Some(DataType::String);
+    ));
+
+    for var in &e.variants {
+        let name = var.ident.to_string();
+        if var.fields != Fields::Unit {
+            return Err(crate::call_site_error_with_msg("only unit variants are supported in enums."))
+        }
+
+        props_gen.extend(quote!(
+            schema.enum_.insert(#name.into());
+        ));
+    }
+
+    Ok(())
 }
 
 /// An associated function of a generic type, say, a vector cannot be called

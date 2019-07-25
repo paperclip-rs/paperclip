@@ -122,6 +122,7 @@ impl<'a> OperationProducer<'a> {
                     data_type: None,
                     format: None,
                     items: None,
+                    enum_: Default::default(),
                 });
             ));
             self.body_schema = Some(ty);
@@ -155,6 +156,7 @@ impl<'a> OperationProducer<'a> {
                                 data_type: v.data_type,
                                 format: v.format,
                                 items: None,
+                                enum_: v.enum_,
                             });
                         }
                     ));
@@ -164,15 +166,17 @@ impl<'a> OperationProducer<'a> {
                     // NOTE: We're setting empty name, because we don't know
                     // the name in this context. We'll get it when we add services.
                     self.stream.extend(quote!(
+                        let def = #ty::raw_schema();
                         op.parameters.push(Parameter {
                             name: String::new(),
                             description: None,
                             in_: ParameterIn::Path,
                             required: true,
                             schema: None,
-                            data_type: Some(#ty::data_type()),
-                            format: #ty::format(),
+                            data_type: def.data_type,
+                            format: def.format,
                             items: None,
+                            enum_: def.enum_,
                         });
                     ));
                 }

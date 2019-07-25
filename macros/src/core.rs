@@ -274,6 +274,11 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     add_self(&mut gen);
 
     gen.extend(quote!(
+        #[serde(default, rename = "enum", skip_serializing_if = "BTreeSet::is_empty")]
+        pub enum_: std::collections::BTreeSet<String>,
+    ));
+
+    gen.extend(quote!(
         #[serde(rename = "additionalProperties", skip_serializing_if = "Option::is_none")]
         pub extra_props: Option<
     ));

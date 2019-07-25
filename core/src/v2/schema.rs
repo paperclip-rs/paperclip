@@ -1,3 +1,5 @@
+//! Traits used for code and spec generation.
+
 use super::models::{DataType, DataTypeFormat, DefaultSchemaRaw, Operation, SchemaRepr};
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -112,16 +114,6 @@ impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
 
-impl<T: TypedData> TypedData for Option<T> {
-    fn data_type() -> DataType {
-        T::data_type()
-    }
-
-    fn format() -> Option<DataTypeFormat> {
-        T::format()
-    }
-}
-
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
 /// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
 ///
@@ -164,6 +156,14 @@ impl<T: TypedData> Apiv2Schema for T {
         schema.data_type = Some(T::data_type());
         schema.format = T::format();
         schema
+    }
+}
+
+impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
+    const NAME: Option<&'static str> = T::NAME;
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        T::raw_schema()
     }
 }
 

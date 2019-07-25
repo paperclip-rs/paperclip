@@ -23,8 +23,17 @@ lazy_static! {
 
 #[api_v2_schema]
 #[derive(Deserialize, Serialize)]
+enum PetClass {
+    Dog,
+    Cat,
+    EverythingElse,
+}
+
+#[api_v2_schema]
+#[derive(Deserialize, Serialize)]
 struct Pet {
     name: String,
+    class: PetClass,
     id: Option<u64>,
 }
 
@@ -71,6 +80,10 @@ fn test_simple_app() {
                   "definitions": {
                     "Pet": {
                       "properties": {
+                        "class": {
+                          "enum": ["Cat", "Dog", "EverythingElse"],
+                          "type": "string"
+                        },
                         "id": {
                           "format": "int64",
                           "type": "integer"
@@ -79,7 +92,7 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["name"]
+                      "required":["class", "name"]
                     }
                   },
                   "paths": {
@@ -425,8 +438,22 @@ fn test_map_in_out() {
 
 #[test]
 fn test_list_in_out() {
+    #[api_v2_schema]
+    #[derive(Serialize, Deserialize)]
+    enum Sort {
+        Asc,
+        Desc,
+    }
+
+    #[api_v2_schema]
+    #[derive(Serialize, Deserialize)]
+    struct Params {
+        sort: Option<Sort>,
+        limit: Option<u16>,
+    }
+
     #[api_v2_operation]
-    fn get_pets() -> web::Json<Vec<Pet>> {
+    fn get_pets(_q: web::Query<Params>) -> web::Json<Vec<Pet>> {
         unimplemented!();
     }
 
@@ -450,6 +477,10 @@ fn test_list_in_out() {
                   "definitions": {
                     "Pet": {
                       "properties": {
+                        "class": {
+                          "enum": ["Cat", "Dog", "EverythingElse"],
+                          "type": "string"
+                        },
                         "id": {
                           "format": "int64",
                           "type": "integer"
@@ -458,7 +489,7 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["name"]
+                      "required":["class", "name"]
                     }
                   },
                   "paths": {
@@ -474,7 +505,20 @@ fn test_list_in_out() {
                             }
                           }
                         }
-                      }
+                      },
+                      "parameters": [{
+                        "format": "int32",
+                        "in": "query",
+                        "name": "limit",
+                        "required": false,
+                        "type": "integer"
+                      }, {
+                        "enum": ["Asc", "Desc"],
+                        "in": "query",
+                        "name": "sort",
+                        "required": false,
+                        "type": "string"
+                      }],
                     }
                   },
                   "swagger": "2.0"
