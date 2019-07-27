@@ -8,7 +8,7 @@ cargo install paperclip --features cli
 
 ## Generate client library from CLI
 
-Generate the client library for some spec using the following command:
+You can generate the client library for some spec using the following command:
 
 ```
 paperclip --api v2 -o pet https://raw.githubusercontent.com/wafflespeanut/paperclip/master/openapi/tests/pet-v2.yaml
