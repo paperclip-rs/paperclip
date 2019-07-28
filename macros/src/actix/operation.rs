@@ -1,6 +1,9 @@
 use quote::quote;
 use syn::{FnArg, GenericArgument, ItemFn, PathArguments, ReturnType, Type};
 
+// Import necessary because we also have a variant below.
+use std::option::Option;
+
 /// Factory struct for producing operation definitions.
 pub struct OperationProducer<'a> {
     f: &'a ItemFn,
@@ -200,18 +203,19 @@ macro_rules! str_enum {
     };
 }
 
-str_enum! { SUPPORTED_CONTAINERS > Container:
-    Json,
-    Path,
-    Query,
-    Form
-}
-
 impl Container {
     /// Checks whether this is a data format.
     fn is_format(self) -> bool {
         match self {
             Container::Json => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this is a wrapper that could have a container.
+    fn is_wrapper(self) -> bool {
+        match self {
+            Container::Result | Container::Option => true,
             _ => false,
         }
     }
@@ -238,8 +242,15 @@ impl Container {
                     return SUPPORTED_CONTAINERS
                         .iter()
                         .find(|&c| seg.value().ident == c)
-                        // Prefix that type with `::` if necessary.
-                        .map(|c| (*c, super::address_type_for_fn_call(ty)));
+                        .and_then(|c| {
+                            if c.is_wrapper() {
+                                // If it's a wrapper, go another round.
+                                Self::matches(ty)
+                            } else {
+                                // Prefix that type with `::` if necessary.
+                                Some((*c, super::address_type_for_fn_call(ty)))
+                            }
+                        });
                 }
 
                 None
@@ -247,4 +258,13 @@ impl Container {
             _ => None,
         }
     }
+}
+
+str_enum! { SUPPORTED_CONTAINERS > Container:
+    Json,
+    Path,
+    Query,
+    Form,
+    Result,
+    Option
 }

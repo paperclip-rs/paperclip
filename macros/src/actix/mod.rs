@@ -44,21 +44,25 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
                 .unwrap()
                 .warning("operation doesn't seem to return a response.")
                 .emit();
-            quote!(()).into()
+            quote!(())
         }
     };
 
     let block = &item_ast.block;
     let op = OperationProducer::from(&item_ast).generate_definition();
 
+    let factory_impl = quote!(
+        impl actix_web::dev::Factory<(#arg_types), #ret> for #name {
+            fn call(&self, (#arg_names): (#arg_types)) -> #ret #block
+        }
+    );
+
     let gen = quote! {
         #[allow(non_camel_case_types)]
         #[derive(Clone)]
         struct #name;
 
-        impl actix_web::dev::Factory<(#arg_types), #ret> for #name {
-            fn call(&self, (#arg_names): (#arg_types)) -> #ret #block
-        }
+        #factory_impl
 
         impl paperclip::v2::schema::Apiv2Operation for #name {
             #op

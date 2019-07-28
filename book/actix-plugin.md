@@ -156,7 +156,7 @@ Affected entity | Missing feature(s)
 --------------- | ---------------
 [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc.
 [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Headers as parameters.
-[Responses](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responsesObject) | Response codes other than `200 OK` and `400 Bad Request`.
+[Responses](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responsesObject) | Response codes other than `200 OK`.
 Security ([definitions](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityDefinitionsObject) and [requirements](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityRequirementObject)) | Authentication and Authorization.
 
 #### Performance implications?

@@ -123,15 +123,27 @@ impl<S> OperationMap<S> {
     /// - Collects and removes parameters shared across operations
     /// and adds them to the list global to this map.
     pub fn normalize(&mut self) {
-        let mut shared_params = BTreeSet::new();
+        // We're using `Option<BTreeSet>` over `BTreeSet` because we need to
+        // differentiate between the first operation that we use for initial
+        // value of the set and  an operation that doesn't have any parameters.
+        let mut shared_params = None;
         for op in self.methods.values() {
-            let params = op.parameters.iter().map(|p| p.name.clone()).collect();
-            if shared_params.is_empty() {
-                shared_params = params;
+            let params = op
+                .parameters
+                .iter()
+                .map(|p| p.name.clone())
+                .collect::<BTreeSet<_>>();
+            if let Some(p) = shared_params.take() {
+                shared_params = Some(&p & &params); // set intersection
             } else {
-                shared_params = &shared_params & &params;
+                shared_params = Some(params);
             }
         }
+
+        let shared_params = match shared_params {
+            Some(p) => p,
+            None => return,
+        };
 
         // FIXME: A parameter defined at path level could be overridden at
         // the operation level with a different type. We shouldn't remove such
