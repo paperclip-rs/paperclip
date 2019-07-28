@@ -6,7 +6,7 @@ mod operation;
 use self::operation::OperationProducer;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DataEnum, DeriveInput, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token, Type};
+use syn::{Data, DataEnum, DeriveInput, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token, TraitBound, Type};
 
 /// Actual parser and emitter for `api_v2_operation` macro.
 pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
@@ -63,13 +63,20 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     let name = &item_ast.ident;
-    let generics = &item_ast.generics;
+
+    // Add `Apiv2Schema` bound for impl if the type is generic.
+    let mut generics = item_ast.generics.clone();
+    let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
+        .expect("expected to parse trait bound");
+    generics.type_params_mut().for_each(|param| {
+        param.bounds.push(bound.clone().into());
+    });
+
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
     let mut props_gen = quote! {};
 
-    // FIXME: Support enums and unit structs.
     let result = match &item_ast.data {
         Data::Struct(ref s) => match &s.fields {
             Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),

@@ -96,6 +96,22 @@ macro_rules! impl_type_simple {
     };
 }
 
+impl<'a> TypedData for &'a str {
+    fn data_type() -> DataType {
+        DataType::String
+    }
+}
+
+impl<'a, T: TypedData> TypedData for &'a T {
+    fn data_type() -> DataType {
+        T::data_type()
+    }
+
+    fn format() -> Option<DataTypeFormat> {
+        T::format()
+    }
+}
+
 impl_type_simple!(char, DataType::String);
 impl_type_simple!(String, DataType::String);
 impl_type_simple!(bool, DataType::Boolean);
@@ -164,6 +180,14 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
+    }
+}
+
+impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
+    const NAME: Option<&'static str> = None;
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        Vec::<T>::raw_schema()
     }
 }
 

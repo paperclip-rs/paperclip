@@ -26,7 +26,7 @@ runtime = { git = "https://github.com/rustasync/runtime" }
 runtime-tokio = { git = "https://github.com/rustasync/runtime" }
 
 [build-dependencies]
-paperclip = "0.2"
+paperclip = "0"
 ```
 
 - Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/openapi/tests/pet-v2.yaml).
