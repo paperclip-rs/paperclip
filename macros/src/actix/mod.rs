@@ -7,16 +7,22 @@ use self::operation::OperationProducer;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::spanned::Spanned;
-use syn::{Data, DataEnum, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token, TraitBound, Type};
+use syn::{
+    Data, DataEnum, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token,
+    TraitBound, Type,
+};
 
 /// Actual parser and emitter for `api_v2_operation` macro.
 pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     let item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
         Err(e) => {
-            e.span().unwrap().error("operation must be a function.").emit();
-            return quote!().into()
-        },
+            e.span()
+                .unwrap()
+                .error("operation must be a function.")
+                .emit();
+            return quote!().into();
+        }
     };
 
     let name = item_ast.ident.clone();
@@ -33,9 +39,13 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     let ret = match &item_ast.decl.output {
         ReturnType::Type(_, ref ty) => quote!(#ty),
         ReturnType::Default => {
-            item_ast.span().unwrap().warning("operation doesn't seem to return a response.").emit();
+            item_ast
+                .span()
+                .unwrap()
+                .warning("operation doesn't seem to return a response.")
+                .emit();
             quote!(()).into()
-        },
+        }
     };
 
     let block = &item_ast.block;
@@ -83,14 +93,25 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     match &item_ast.data {
         Data::Struct(ref s) => match &s.fields {
             Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),
-            Fields::Unnamed(ref f) =>
-                f.span().unwrap().warning("tuple structs do not have named fields and hence will have empty schema.").emit(),
-            Fields::Unit =>
-                s.struct_token.span().unwrap().warning("unit structs do not have any fields and hence will have empty schema.").emit(),
+            Fields::Unnamed(ref f) => f
+                .span()
+                .unwrap()
+                .warning("tuple structs do not have named fields and hence will have empty schema.")
+                .emit(),
+            Fields::Unit => s
+                .struct_token
+                .span()
+                .unwrap()
+                .warning("unit structs do not have any fields and hence will have empty schema.")
+                .emit(),
         },
         Data::Enum(ref e) => handle_enum(e, &mut props_gen),
-        Data::Union(ref u) =>
-            u.union_token.span().unwrap().error("unions are unsupported for deriving schema").emit(),
+        Data::Union(ref u) => u
+            .union_token
+            .span()
+            .unwrap()
+            .error("unions are unsupported for deriving schema")
+            .emit(),
     };
 
     let schema_name = name.to_string();
@@ -141,9 +162,14 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
                 address_type_for_fn_call(&field.ty)
             }
             _ => {
-                field.ty.span().unwrap().warning("unsupported field type will be ignored.").emit();
-                continue
-            },
+                field
+                    .ty
+                    .span()
+                    .unwrap()
+                    .warning("unsupported field type will be ignored.")
+                    .emit();
+                continue;
+            }
         };
 
         let mut gen = quote!(
@@ -174,13 +200,19 @@ fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) {
         match &var.fields {
             Fields::Unit => (),
             Fields::Named(ref f) => {
-                f.span().unwrap().warning("skipping enum variant with named fields in schema.").emit();
-                continue
-            },
+                f.span()
+                    .unwrap()
+                    .warning("skipping enum variant with named fields in schema.")
+                    .emit();
+                continue;
+            }
             Fields::Unnamed(ref f) => {
-                f.span().unwrap().warning("skipping tuple enum variant in schema.").emit();
-                continue
-            },
+                f.span()
+                    .unwrap()
+                    .warning("skipping tuple enum variant in schema.")
+                    .emit();
+                continue;
+            }
         }
 
         props_gen.extend(quote!(

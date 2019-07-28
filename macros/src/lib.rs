@@ -15,7 +15,7 @@ mod core;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{DeriveInput, spanned::Spanned};
+use syn::{spanned::Spanned, DeriveInput};
 
 /// Converts your struct to support deserializing from an OpenAPI v2
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
@@ -50,7 +50,10 @@ fn span_error_with_msg<T: Spanned>(it: &T, msg: &str) -> TokenStream {
 /// Parses this token stream expecting a struct/enum and fails with an error otherwise.
 fn expect_struct_or_enum(ts: TokenStream) -> Result<DeriveInput, TokenStream> {
     syn::parse(ts).map_err(|e| {
-        e.span().unwrap().error("expected struct or enum for deriving schema.").emit();
+        e.span()
+            .unwrap()
+            .error("expected struct or enum for deriving schema.")
+            .emit();
         quote!().into()
     })
 }

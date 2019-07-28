@@ -51,3 +51,11 @@ v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 codegen = ["heck", "lazy_static", "regex"]
 cli = ["default", "env_logger", "structopt", "git2", "reqwest"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
+
+[workspace]
+members = [
+    ".",
+    "core",
+    "macros",
+    "plugins/actix-web",
+]

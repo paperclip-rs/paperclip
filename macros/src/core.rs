@@ -2,8 +2,8 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DeriveInput, Fields, FieldsNamed, Ident};
 use syn::spanned::Spanned;
+use syn::{Data, DeriveInput, Fields, FieldsNamed, Ident};
 
 /// Actual parser and emitter for `api_v2_schema_struct` macro.
 pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
@@ -220,14 +220,17 @@ fn named_fields(item_ast: &mut DeriveInput) -> Result<&mut FieldsNamed, TokenStr
     if let Data::Struct(s) = &mut item_ast.data {
         match &mut s.fields {
             Fields::Named(ref mut f) => Ok(f),
-            Fields::Unnamed(ref f) => Err(crate::span_error_with_msg(f, "expected struct with zero or more fields for schema")),
+            Fields::Unnamed(ref f) => Err(crate::span_error_with_msg(
+                f,
+                "expected struct with zero or more fields for schema",
+            )),
             f @ Fields::Unit => {
                 *f = Fields::Named(syn::parse2(quote!({})).expect("parsing empty named fields"));
                 match f {
                     Fields::Named(ref mut f) => Ok(f),
                     _ => unreachable!(),
                 }
-            },
+            }
         }
     } else {
         span.unwrap().error("expected struct for schema").emit();
