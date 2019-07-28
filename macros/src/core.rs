@@ -3,12 +3,13 @@
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::{Data, DeriveInput, Fields, FieldsNamed, Ident};
+use syn::spanned::Spanned;
 
 /// Actual parser and emitter for `api_v2_schema_struct` macro.
 pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
-    let mut item_ast: DeriveInput = match syn::parse(input) {
-        Ok(s) => s,
-        Err(_) => return crate::call_site_error_with_msg("error parsing derive input"),
+    let mut item_ast = match crate::expect_struct_or_enum(input) {
+        Ok(i) => i,
+        Err(ts) => return ts,
     };
 
     let name = item_ast.ident.clone();
@@ -215,16 +216,22 @@ fn actual_schema(item_ast: &mut DeriveInput) -> Result<proc_macro2::TokenStream,
 
 /// Extracts named fields from the given struct.
 fn named_fields(item_ast: &mut DeriveInput) -> Result<&mut FieldsNamed, TokenStream> {
-    match &mut item_ast.data {
-        Data::Struct(s) => match &mut s.fields {
+    let span = item_ast.span();
+    if let Data::Struct(s) = &mut item_ast.data {
+        match &mut s.fields {
             Fields::Named(ref mut f) => Ok(f),
-            _ => Err(crate::call_site_error_with_msg(
-                "expected struct with zero or more fields for schema",
-            )),
-        },
-        _ => Err(crate::call_site_error_with_msg(
-            "expected struct for schema",
-        )),
+            Fields::Unnamed(ref f) => Err(crate::span_error_with_msg(f, "expected struct with zero or more fields for schema")),
+            f @ Fields::Unit => {
+                *f = Fields::Named(syn::parse2(quote!({})).expect("parsing empty named fields"));
+                match f {
+                    Fields::Named(ref mut f) => Ok(f),
+                    _ => unreachable!(),
+                }
+            },
+        }
+    } else {
+        span.unwrap().error("expected struct for schema").emit();
+        Err(quote!().into())
     }
 }
 

@@ -13,8 +13,9 @@ mod actix;
 #[cfg(feature = "default")]
 mod core;
 
-use proc_macro::{Span, TokenStream};
+use proc_macro::TokenStream;
 use quote::quote;
+use syn::{DeriveInput, spanned::Spanned};
 
 /// Converts your struct to support deserializing from an OpenAPI v2
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
@@ -40,8 +41,16 @@ pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_definition(input)
 }
 
-/// Generate an error in the call site and return empty token stream.
-fn call_site_error_with_msg(msg: &str) -> TokenStream {
-    Span::call_site().error(msg);
+/// Generate an error at the call site and return empty token stream.
+fn span_error_with_msg<T: Spanned>(it: &T, msg: &str) -> TokenStream {
+    it.span().unwrap().error(msg).emit();
     (quote! {}).into()
+}
+
+/// Parses this token stream expecting a struct/enum and fails with an error otherwise.
+fn expect_struct_or_enum(ts: TokenStream) -> Result<DeriveInput, TokenStream> {
+    syn::parse(ts).map_err(|e| {
+        e.span().unwrap().error("expected struct or enum for deriving schema.").emit();
+        quote!().into()
+    })
 }

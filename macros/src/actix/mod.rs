@@ -6,13 +6,17 @@ mod operation;
 use self::operation::OperationProducer;
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{Data, DataEnum, DeriveInput, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token, TraitBound, Type};
+use syn::spanned::Spanned;
+use syn::{Data, DataEnum, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token, TraitBound, Type};
 
 /// Actual parser and emitter for `api_v2_operation` macro.
 pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     let item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
-        Err(_) => return crate::call_site_error_with_msg("operation must be a function"),
+        Err(e) => {
+            e.span().unwrap().error("operation must be a function.").emit();
+            return quote!().into()
+        },
     };
 
     let name = item_ast.ident.clone();
@@ -26,17 +30,16 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
         }
     }
 
-    let op = match OperationProducer::from(&item_ast).generate_definition() {
-        Ok(o) => o,
-        Err(ts) => return ts,
+    let ret = match &item_ast.decl.output {
+        ReturnType::Type(_, ref ty) => quote!(#ty),
+        ReturnType::Default => {
+            item_ast.span().unwrap().warning("operation doesn't seem to return a response.").emit();
+            quote!(()).into()
+        },
     };
 
     let block = &item_ast.block;
-    let ret = match &item_ast.decl.output {
-        ReturnType::Type(_, ref ty) => ty,
-        // unreachable because we've already dealt with this in `OperationProducer::generate_definition`
-        ReturnType::Default => unreachable!(),
-    };
+    let op = OperationProducer::from(&item_ast).generate_definition();
 
     let gen = quote! {
         #[allow(non_camel_case_types)]
@@ -57,9 +60,9 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
 
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
-    let item_ast: DeriveInput = match syn::parse(input) {
-        Ok(s) => s,
-        Err(_) => return crate::call_site_error_with_msg("schema must be struct or enum"),
+    let item_ast = match crate::expect_struct_or_enum(input) {
+        Ok(i) => i,
+        Err(ts) => return ts,
     };
 
     let name = &item_ast.ident;
@@ -77,20 +80,18 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
     let mut props_gen = quote! {};
 
-    let result = match &item_ast.data {
+    match &item_ast.data {
         Data::Struct(ref s) => match &s.fields {
             Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),
-            _ => Err(crate::call_site_error_with_msg(
-                "expected struct with zero or more fields for schema",
-            )),
+            Fields::Unnamed(ref f) =>
+                f.span().unwrap().warning("tuple structs do not have named fields and hence will have empty schema.").emit(),
+            Fields::Unit =>
+                s.struct_token.span().unwrap().warning("unit structs do not have any fields and hence will have empty schema.").emit(),
         },
         Data::Enum(ref e) => handle_enum(e, &mut props_gen),
-        _ => Err(crate::call_site_error_with_msg("expected struct for schema")),
+        Data::Union(ref u) =>
+            u.union_token.span().unwrap().error("unions are unsupported for deriving schema").emit(),
     };
-
-    if let Err(ts) = result {
-        return ts
-    }
 
     let schema_name = name.to_string();
     let gen = quote! {
@@ -115,7 +116,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
 }
 
 /// Generates code for a struct with fields.
-fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenStream) -> Result<(), TokenStream> {
+fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenStream) {
     for field in &fields.named {
         let field_name = field
             .ident
@@ -139,7 +140,10 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
 
                 address_type_for_fn_call(&field.ty)
             }
-            _ => return Err(crate::call_site_error_with_msg("unsupported type for schema")),
+            _ => {
+                field.ty.span().unwrap().warning("unsupported field type will be ignored.").emit();
+                continue
+            },
         };
 
         let mut gen = quote!(
@@ -157,28 +161,32 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
 
         props_gen.extend(gen);
     }
-
-    Ok(())
 }
 
 /// Generates code for an enum (if supported).
-fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) -> Result<(), TokenStream> {
+fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) {
     props_gen.extend(quote!(
         schema.data_type = Some(DataType::String);
     ));
 
     for var in &e.variants {
         let name = var.ident.to_string();
-        if var.fields != Fields::Unit {
-            return Err(crate::call_site_error_with_msg("only unit variants are supported in enums."))
+        match &var.fields {
+            Fields::Unit => (),
+            Fields::Named(ref f) => {
+                f.span().unwrap().warning("skipping enum variant with named fields in schema.").emit();
+                continue
+            },
+            Fields::Unnamed(ref f) => {
+                f.span().unwrap().warning("skipping tuple enum variant in schema.").emit();
+                continue
+            },
         }
 
         props_gen.extend(quote!(
             schema.enum_.insert(#name.into());
         ));
     }
-
-    Ok(())
 }
 
 /// An associated function of a generic type, say, a vector cannot be called

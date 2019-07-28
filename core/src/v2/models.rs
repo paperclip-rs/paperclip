@@ -91,7 +91,7 @@ use crate as paperclip; // hack for proc macro
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
 #[api_v2_schema_struct]
 #[derive(Clone, Debug, Serialize, Deserialize)]
-pub struct DefaultSchema {}
+pub struct DefaultSchema;
 
 /// Wrapper for schema. This uses `Arc<RwLock<S>>` for interior
 /// mutability and differentiates raw schema from resolved schema

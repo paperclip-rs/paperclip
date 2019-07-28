@@ -1,4 +1,3 @@
-use proc_macro::TokenStream;
 use quote::quote;
 use syn::{FnArg, GenericArgument, ItemFn, PathArguments, ReturnType, Type};
 
@@ -23,35 +22,28 @@ impl<'a> From<&'a ItemFn> for OperationProducer<'a> {
 
 impl<'a> OperationProducer<'a> {
     /// Attempts to come up with `Apiv2Operation` impl based on the given function definition.
-    pub fn generate_definition(mut self) -> Result<proc_macro2::TokenStream, TokenStream> {
+    pub fn generate_definition(mut self) -> proc_macro2::TokenStream {
         for arg in &self.f.decl.inputs {
             if let FnArg::Captured(ref cap) = &arg {
                 self.add_param_from_input_arg(&cap.ty);
             }
         }
 
-        let ret = match &self.f.decl.output {
-            ReturnType::Default => {
-                return Err(crate::call_site_error_with_msg(
-                    "function must return something",
-                ))
-            }
-            ReturnType::Type(_, ref ty) => ty,
-        };
-
-        if let Some((c, ty)) = Container::matches(ret) {
-            self.add_def_from_ty(&ty);
-            if c.is_format() {
-                self.stream.extend(quote!(
-                    op.responses.insert("200".into(), Response {
-                        description: None,
-                        schema: Some({
-                            let mut def = #ty::schema_with_ref();
-                            def.retain_ref();
-                            def
-                        }),
-                    });
-                ));
+        if let ReturnType::Type(_, ref ret) = &self.f.decl.output {
+            if let Some((c, ty)) = Container::matches(ret) {
+                self.add_def_from_ty(&ty);
+                if c.is_format() {
+                    self.stream.extend(quote!(
+                        op.responses.insert("200".into(), Response {
+                            description: None,
+                            schema: Some({
+                                let mut def = #ty::schema_with_ref();
+                                def.retain_ref();
+                                def
+                            }),
+                        });
+                    ));
+                }
             }
         }
 
@@ -60,7 +52,7 @@ impl<'a> OperationProducer<'a> {
         }
 
         let (gen, def) = (&self.stream, &self.defs);
-        Ok(quote!(
+        quote!(
             fn operation() -> paperclip::v2::models::Operation<paperclip::v2::models::DefaultSchemaRaw> {
                 use paperclip::v2::{models::*, schema::{Apiv2Schema, TypedData}};
 
@@ -76,7 +68,7 @@ impl<'a> OperationProducer<'a> {
                 #def
                 map
             }
-        ))
+        )
     }
 
     /// Given a type, add code to get schema at runtime.
