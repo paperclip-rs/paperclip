@@ -153,11 +153,11 @@ where
     /// Wrapper for [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
     pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation + Factory<I, R> + 'static,
+        F: Apiv2Operation<I, R> + Factory<I, R> + 'static,
         I: FromRequest + 'static,
         R: Responder + 'static,
     {
-        self.update_from_handler::<F>();
+        self.update_from_handler::<F, I, R>();
         self.inner = self.inner.to(handler);
         self
     }
@@ -166,13 +166,13 @@ where
     #[allow(clippy::wrong_self_convention)]
     pub fn to_async<F, I, R>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation + AsyncFactory<I, R> + 'static,
+        F: Apiv2Operation<I, R> + AsyncFactory<I, R> + 'static,
         I: FromRequest + 'static,
         R: IntoFuture + 'static,
         R::Item: Responder,
         R::Error: Into<Error>,
     {
-        self.update_from_handler::<F>();
+        self.update_from_handler::<F, I, R>();
         self.inner = self.inner.to_async(handler);
         self
     }
@@ -261,9 +261,9 @@ where
     }
 
     /// Updates this resource using the given handler.
-    fn update_from_handler<F>(&mut self)
+    fn update_from_handler<F, I, R>(&mut self)
     where
-        F: Apiv2Operation,
+        F: Apiv2Operation<I, R>,
     {
         let mut op = F::operation();
         op.set_parameter_names_from_path_template(&self.path);
@@ -553,7 +553,7 @@ impl Route {
     /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
     pub fn to<F, I, R>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation + Factory<I, R> + 'static,
+        F: Apiv2Operation<I, R> + Factory<I, R> + 'static,
         I: FromRequest + 'static,
         R: Responder + 'static,
     {
@@ -567,7 +567,7 @@ impl Route {
     #[allow(clippy::wrong_self_convention)]
     pub fn to_async<F, I, R>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation + AsyncFactory<I, R> + 'static,
+        F: Apiv2Operation<I, R> + AsyncFactory<I, R> + 'static,
         I: FromRequest + 'static,
         R: IntoFuture + 'static,
         R::Item: Responder,

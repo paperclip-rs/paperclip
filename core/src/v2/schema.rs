@@ -136,10 +136,12 @@ impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
     /// Name of this schema. This is the object's name.
-    const NAME: Option<&'static str>;
+    const NAME: Option<&'static str> = None;
 
     /// Returns the raw schema for this object.
-    fn raw_schema() -> DefaultSchemaRaw;
+    fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
 
     /// Returns the schema with a reference (if this is an object).
     ///
@@ -165,8 +167,6 @@ pub trait Apiv2Schema {
 }
 
 impl<T: TypedData> Apiv2Schema for T {
-    const NAME: Option<&'static str> = None;
-
     fn raw_schema() -> DefaultSchemaRaw {
         let mut schema = DefaultSchemaRaw::default();
         schema.data_type = Some(T::data_type());
@@ -174,6 +174,8 @@ impl<T: TypedData> Apiv2Schema for T {
         schema
     }
 }
+
+impl<T> Apiv2Schema for Option<T> {}
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     const NAME: Option<&'static str> = T::NAME;
@@ -183,9 +185,17 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     }
 }
 
-impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
-    const NAME: Option<&'static str> = None;
+impl<T, E> Apiv2Schema for Result<T, E> {}
 
+impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
+    const NAME: Option<&'static str> = T::NAME;
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        T::raw_schema()
+    }
+}
+
+impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
     fn raw_schema() -> DefaultSchemaRaw {
         Vec::<T>::raw_schema()
     }
@@ -194,8 +204,6 @@ impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
 macro_rules! impl_schema_array {
     ($ty:ty) => {
         impl<T: Apiv2Schema> Apiv2Schema for $ty {
-            const NAME: Option<&'static str> = None;
-
             fn raw_schema() -> DefaultSchemaRaw {
                 let mut schema = DefaultSchemaRaw::default();
                 schema.data_type = Some(DataType::Array);
@@ -209,8 +217,6 @@ macro_rules! impl_schema_array {
 macro_rules! impl_schema_map {
     ($ty:ty) => {
         impl<K: AsRef<str>, V: Apiv2Schema> Apiv2Schema for $ty {
-            const NAME: Option<&'static str> = None;
-
             fn raw_schema() -> DefaultSchemaRaw {
                 let mut schema = DefaultSchemaRaw::default();
                 schema.data_type = Some(DataType::Object);
@@ -254,7 +260,10 @@ impl_schema_map!(BTreeMap<K, V>);
 /// framework-specific macros:
 ///
 /// - [`paperclip_actix::api_v2_operation`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_operation.html).
-pub trait Apiv2Operation {
+///
+/// **NOTE:** The type parameters specified here aren't used by the trait itself,
+/// but *can* be used for constraining stuff in framework-related impls.
+pub trait Apiv2Operation<T, R> {
     /// Returns the definition for this operation.
     fn operation() -> Operation<DefaultSchemaRaw>;
 

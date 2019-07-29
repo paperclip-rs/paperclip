@@ -1,18 +1,17 @@
 //! Convenience macros for the [actix-web](https://github.com/wafflespeanut/paperclip/tree/master/plugins/actix-web)
 //! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
-mod operation;
-
-use self::operation::OperationProducer;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::spanned::Spanned;
 use syn::{
-    Data, DataEnum, Fields, FieldsNamed, FnArg, ItemFn, PathArguments, ReturnType, Token,
-    TraitBound, Type,
+    Data, DataEnum, Fields, FieldsNamed, ItemFn, PathArguments, ReturnType, Token, TraitBound, Type,
 };
 
 /// Actual parser and emitter for `api_v2_operation` macro.
+///
+/// **NOTE:** This is a no-op right now. It's only reserved for
+/// future use to avoid introducing breaking changes.
 pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     let item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
@@ -25,51 +24,18 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
         }
     };
 
-    let name = item_ast.ident.clone();
-    let mut arg_types = quote!();
-    let mut arg_names = quote!();
-    for arg in &item_ast.decl.inputs {
-        if let FnArg::Captured(ref cap) = &arg {
-            let (pat, ty) = (&cap.pat, &cap.ty);
-            arg_types.extend(quote!(#ty,));
-            arg_names.extend(quote!(#pat,));
-        }
+    if let ReturnType::Default = &item_ast.decl.output {
+        item_ast
+            .span()
+            .unwrap()
+            .warning("operation doesn't seem to return a response.")
+            .emit();
     }
 
-    let ret = match &item_ast.decl.output {
-        ReturnType::Type(_, ref ty) => quote!(#ty),
-        ReturnType::Default => {
-            item_ast
-                .span()
-                .unwrap()
-                .warning("operation doesn't seem to return a response.")
-                .emit();
-            quote!(())
-        }
-    };
-
-    let block = &item_ast.block;
-    let op = OperationProducer::from(&item_ast).generate_definition();
-
-    let factory_impl = quote!(
-        impl actix_web::dev::Factory<(#arg_types), #ret> for #name {
-            fn call(&self, (#arg_names): (#arg_types)) -> #ret #block
-        }
-    );
-
-    let gen = quote! {
-        #[allow(non_camel_case_types)]
-        #[derive(Clone)]
-        struct #name;
-
-        #factory_impl
-
-        impl paperclip::v2::schema::Apiv2Operation for #name {
-            #op
-        }
-    };
-
-    gen.into()
+    quote!(
+        #item_ast
+    )
+    .into()
 }
 
 /// Actual parser and emitter for `api_v2_schema` macro.

@@ -1,6 +1,8 @@
 //! Core types and traits associated with the
 //! [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
 
+#[cfg(feature = "actix")]
+mod actix;
 pub mod models;
 mod resolver;
 pub mod schema;

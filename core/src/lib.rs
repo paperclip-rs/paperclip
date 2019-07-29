@@ -1,3 +1,4 @@
+#![feature(specialization)]
 //! Core structs and traits for paperclip.
 
 #[macro_use]
