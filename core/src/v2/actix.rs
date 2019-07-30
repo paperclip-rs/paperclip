@@ -1,7 +1,10 @@
 use super::models::{DefaultSchemaRaw, Operation, Parameter, ParameterIn, Response};
 use super::schema::{Apiv2Operation, Apiv2Schema};
-use actix_web::web::{Form, Json, Path, Query};
-use futures::future::Future;
+use actix_web::{
+    web::{Form, Json, Path, Query},
+    HttpRequest, HttpResponse, Responder,
+};
+use futures::future::IntoFuture;
 
 use std::collections::BTreeMap;
 
@@ -71,33 +74,6 @@ where
     }
 }
 
-impl<T, E> Apiv2Schema for dyn Future<Item = T, Error = E> {}
-
-impl<T: Apiv2Schema, E> Apiv2Schema for dyn Future<Item = T, Error = E> {
-    const NAME: Option<&'static str> = T::NAME;
-
-    fn raw_schema() -> DefaultSchemaRaw {
-        T::raw_schema()
-    }
-}
-
-impl<T, E> OperationModifier for dyn Future<Item = T, Error = E>
-where
-    T: OperationModifier,
-{
-    fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
-        T::update_parameter(op);
-    }
-
-    default fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
-        T::update_response(op);
-    }
-
-    default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
-        T::update_definitions(map);
-    }
-}
-
 impl<T> Apiv2Schema for Json<T> {}
 
 /// JSON needs specialization because it updates the global definitions.
@@ -145,6 +121,11 @@ where
         );
     }
 }
+
+impl Apiv2Schema for HttpResponse {}
+// We don't know what we should do with `HttpResponse`
+// as it could be anything.
+impl OperationModifier for HttpResponse {}
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     impl<T> Apiv2Schema for $ty {}
@@ -215,11 +196,112 @@ impl_path_tuple!(A, B, C);
 impl_path_tuple!(A, B, C, D);
 impl_path_tuple!(A, B, C, D, E);
 
+// Our goal is to implement `OperationModifier` for everything. The problem
+// is that we can't specialize these impls for foreign trait implementors
+// because we're already specializing it for actix types (which are also foreign).
+// So, rustc will complain when it finds that a foreign type *may* implement
+// a foreign trait in the future, which could then introduce a conflict in
+// our `OperationModifier` impl. One solution would be to use trait-specific
+// wrappers which can then be added to the actual code using proc macros later.
+
+/// Wrapper for wrapping over `impl Future` thingies (to avoid breakage).
+pub struct FutureWrapper<T>(pub T);
+
+/// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).
+pub struct ResponderWrapper<T>(pub T);
+
+impl<T: Responder> Apiv2Schema for ResponderWrapper<T> {
+    default const NAME: Option<&'static str> = None;
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        DefaultSchemaRaw::default()
+    }
+}
+
+impl<T: Responder> Responder for ResponderWrapper<T> {
+    type Error = T::Error;
+    type Future = T::Future;
+
+    #[inline]
+    fn respond_to(self, req: &HttpRequest) -> Self::Future {
+        self.0.respond_to(req)
+    }
+}
+
+impl<I> Apiv2Schema for FutureWrapper<I>
+where
+    I: IntoFuture,
+    I::Item: Apiv2Schema,
+{
+    const NAME: Option<&'static str> = I::Item::NAME;
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        I::Item::raw_schema()
+    }
+}
+
+impl<I> OperationModifier for FutureWrapper<I>
+where
+    I: IntoFuture,
+    I::Item: OperationModifier,
+{
+    fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+        I::Item::update_parameter(op);
+    }
+
+    fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
+        I::Item::update_response(op);
+    }
+
+    fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
+        I::Item::update_definitions(map);
+    }
+}
+
+impl<I> IntoFuture for FutureWrapper<I>
+where
+    I: IntoFuture,
+{
+    type Future = I::Future;
+    type Item = I::Item;
+    type Error = I::Error;
+
+    #[inline]
+    fn into_future(self) -> Self::Future {
+        self.0.into_future()
+    }
+}
+
 macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
     impl<U, $($ty,)* R> Apiv2Operation<($($ty,)*), R> for U
         where U: Fn($($ty,)*) -> R,
               $($ty: OperationModifier,)*
               R: OperationModifier,
+    {
+        default fn operation() -> Operation<DefaultSchemaRaw> {
+            let mut op = Operation::default();
+            $(
+                $ty::update_parameter(&mut op);
+            )*
+            R::update_response(&mut op);
+            op
+        }
+
+        default fn definitions() -> BTreeMap<String, DefaultSchemaRaw> {
+            let mut map = BTreeMap::new();
+            $(
+                $ty::update_definitions(&mut map);
+            )*
+            R::update_definitions(&mut map);
+            map
+        }
+    }
+
+    impl<U, $($ty,)* R> Apiv2Operation<($($ty,)*), R> for U
+        where U: Fn($($ty,)*) -> R,
+              $($ty: OperationModifier,)*
+              R: OperationModifier + IntoFuture,
+              R::Item: OperationModifier,
     {
         fn operation() -> Operation<DefaultSchemaRaw> {
             let mut op = Operation::default();

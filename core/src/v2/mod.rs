@@ -7,6 +7,9 @@ pub mod models;
 mod resolver;
 pub mod schema;
 
+#[cfg(feature = "actix")]
+pub use self::actix::{FutureWrapper, ResponderWrapper};
+
 pub use self::models::{Api, DefaultSchema};
 pub use self::schema::Schema;
 pub use paperclip_macros::*;

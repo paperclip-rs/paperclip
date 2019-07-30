@@ -8,7 +8,8 @@ extern crate serde_json;
 use actix_rt::System;
 use actix_service::NewService;
 use actix_web::dev::{MessageBody, ServiceRequest, ServiceResponse};
-use actix_web::{App, Error, HttpServer};
+use actix_web::{App, Error, HttpServer, Responder};
+use futures::Future;
 use paperclip::actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
 
@@ -519,6 +520,96 @@ fn test_list_in_out() {
                         "required": false,
                         "type": "string"
                       }],
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+#[allow(unreachable_code)]
+fn test_impl_traits() {
+    #[api_v2_operation]
+    fn index() -> impl Responder {
+        unimplemented!();
+    }
+
+    #[api_v2_schema]
+    #[derive(Serialize, Deserialize)]
+    struct Params {
+        limit: Option<u16>,
+    }
+
+    #[api_v2_operation]
+    fn get_pets(_q: web::Query<Params>) -> impl Future<Item = web::Json<Vec<Pet>>, Error = ()> {
+        futures::future::err(())
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/").route(web::get().to(index)))
+                .service(web::resource("/pets").route(web::get().to_async(get_pets)))
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "definitions": {
+                    "Pet": {
+                      "properties": {
+                        "class": {
+                          "enum": ["Cat", "Dog", "EverythingElse"],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required":["class", "name"]
+                    }
+                  },
+                  "paths": {
+                    "/": {
+                      "get": {
+                        "responses": {}
+                      }
+                    },
+                    "/pets": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "parameters": [{
+                        "format": "int32",
+                        "in": "query",
+                        "name": "limit",
+                        "required": false,
+                        "type": "integer"
+                      }]
                     }
                   },
                   "swagger": "2.0"

@@ -13,7 +13,7 @@ use syn::{
 /// **NOTE:** This is a no-op right now. It's only reserved for
 /// future use to avoid introducing breaking changes.
 pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
-    let item_ast: ItemFn = match syn::parse(input) {
+    let mut item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
         Err(e) => {
             e.span()
@@ -24,12 +24,40 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
         }
     };
 
-    if let ReturnType::Default = &item_ast.decl.output {
-        item_ast
+    let mut wrapper = None;
+    match &mut item_ast.decl.output {
+        ReturnType::Default => item_ast
             .span()
             .unwrap()
             .warning("operation doesn't seem to return a response.")
-            .emit();
+            .emit(),
+        ReturnType::Type(_, ty) => {
+            let t = quote!(#ty).to_string();
+            // FIXME: This is a hack for functions returning known
+            // `impl Trait`. Need a better way!
+            if t.contains("Future") {
+                wrapper = Some(quote!(paperclip::actix::FutureWrapper));
+            } else if t.contains("Responder") {
+                wrapper = Some(quote!(paperclip::actix::ResponderWrapper));
+            }
+
+            if let (Type::ImplTrait(_), Some(ref w)) = (&**ty, wrapper.as_ref()) {
+                *ty = Box::new(syn::parse2(quote!(#w<#ty>)).expect("parsing wrapper type"));
+            }
+        }
+    }
+
+    if let Some(w) = wrapper {
+        let block = item_ast.block;
+        item_ast.block = Box::new(
+            syn::parse2(quote!(
+                {
+                    let f = #block;
+                    #w(f)
+                }
+            ))
+            .expect("parsing wrapped block"),
+        );
     }
 
     quote!(

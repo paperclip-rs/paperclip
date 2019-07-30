@@ -43,6 +43,7 @@ url = "1.7"
 actix-rt = "0.2.3"
 actix-service = "0.4.1"
 actix-web = "1.0.4"
+futures = "0.1"
 
 [features]
 actix = ["paperclip-macros/actix", "paperclip-actix"]
