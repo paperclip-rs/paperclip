@@ -405,6 +405,11 @@ args:
         short: v
         long: verbose
         help: Enable verbose mode.
+    - timeout:
+        short: t
+        long: timeout
+        help: Set the request timeout.
+        takes_value: true
 
 subcommands:",
                 meta.name.as_ref().unwrap(),
@@ -455,6 +460,7 @@ use openssl::x509::X509;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
+use std::time::Duration;
 
 #[derive(Debug, Fail)]
 #[allow(dead_code)]
@@ -545,6 +551,10 @@ fn parse_args_and_fetch()
             \"foobar\"
         ).map_err(ClientError::Reqwest)?;
         client = client.identity(identity);
+    }
+
+    if let Some(timeout) = matches.value_of(\"timeout\") {
+        client = client.timeout(Duration::new(timeout.parse::<u64>().expect(\"could not parse timeout value\"), 0))
     }
 
     let is_verbose = matches.is_present(\"verbose\");
