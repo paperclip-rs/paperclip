@@ -7,8 +7,8 @@ extern crate serde_json;
 
 use actix_rt::System;
 use actix_service::NewService;
-use actix_web::dev::{MessageBody, ServiceRequest, ServiceResponse};
-use actix_web::{App, Error, HttpServer, Responder};
+use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
+use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use futures::Future;
 use paperclip::actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
@@ -52,7 +52,7 @@ fn test_simple_app() {
     }
 
     #[api_v2_operation]
-    fn some_pet() -> web::Json<Pet> {
+    fn some_pet(_data: web::Data<String>) -> web::Json<Pet> {
         unimplemented!();
     }
 
@@ -544,7 +544,10 @@ fn test_impl_traits() {
     }
 
     #[api_v2_operation]
-    fn get_pets(_q: web::Query<Params>) -> impl Future<Item = web::Json<Vec<Pet>>, Error = ()> {
+    fn get_pets(
+        _data: web::Data<String>,
+        _q: web::Query<Params>,
+    ) -> impl Future<Item = web::Json<Vec<Pet>>, Error = ()> {
         futures::future::err(())
     }
 
@@ -610,6 +613,58 @@ fn test_impl_traits() {
                         "required": false,
                         "type": "integer"
                       }]
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_custom_extractor_empty_schema() {
+    #[api_v2_schema(empty)]
+    struct SomeUselessThing<T>(T);
+
+    impl FromRequest for SomeUselessThing<String> {
+        type Error = Error;
+        type Future = Result<Self, Self::Error>;
+        type Config = ();
+
+        fn from_request(_req: &HttpRequest, _payload: &mut Payload) -> Self::Future {
+            Ok(SomeUselessThing(String::from("booya")))
+        }
+    }
+
+    #[api_v2_operation]
+    fn index(_req: HttpRequest, _payload: String, _thing: SomeUselessThing<String>) -> () {
+        unimplemented!();
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/").route(web::get().to(index)))
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "definitions": {},
+                  "paths": {
+                    "/": {
+                      "get": {
+                        "responses": {}
+                      }
                     }
                   },
                   "swagger": "2.0"

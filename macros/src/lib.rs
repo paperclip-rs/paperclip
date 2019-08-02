@@ -15,7 +15,13 @@ mod core;
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::{spanned::Spanned, DeriveInput};
+use syn::{
+    parse::{Parse, ParseStream},
+    punctuated::Punctuated,
+    spanned::Spanned,
+    token::Comma,
+    DeriveInput, NestedMeta,
+};
 
 /// Converts your struct to support deserializing from an OpenAPI v2
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
@@ -37,8 +43,8 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
 /// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
 #[cfg(feature = "actix")]
 #[proc_macro_attribute]
-pub fn api_v2_schema(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    self::actix::emit_v2_definition(input)
+pub fn api_v2_schema(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_definition(attrs, input)
 }
 
 /// Generate an error at the call site and return empty token stream.
@@ -56,4 +62,27 @@ fn expect_struct_or_enum(ts: TokenStream) -> Result<DeriveInput, TokenStream> {
             .emit();
         quote!().into()
     })
+}
+
+/// Helper struct for parsing proc-macro input attributes.
+#[derive(Default)]
+struct MacroAttribute(Punctuated<NestedMeta, Comma>);
+
+impl Parse for MacroAttribute {
+    fn parse(input: ParseStream) -> syn::Result<Self> {
+        Ok(MacroAttribute(input.call(Punctuated::parse_terminated)?))
+    }
+}
+
+#[cfg(feature = "actix")]
+fn parse_input_attrs(ts: TokenStream) -> MacroAttribute {
+    syn::parse(ts.clone())
+        .map_err(|e| {
+            e.span()
+                .unwrap()
+                .warning("cannot parse proc-macro input attributes.")
+                .emit();
+        })
+        .ok()
+        .unwrap_or_default()
 }

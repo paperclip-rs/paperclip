@@ -1,7 +1,7 @@
 use super::models::{DefaultSchemaRaw, Operation, Parameter, ParameterIn, Response};
 use super::schema::{Apiv2Operation, Apiv2Schema};
 use actix_web::{
-    web::{Form, Json, Path, Query},
+    web::{Bytes, Data, Form, Json, Path, Payload, Query},
     HttpRequest, HttpResponse, Responder,
 };
 use futures::future::IntoFuture;
@@ -74,6 +74,20 @@ where
     }
 }
 
+// We don't know what we should do with these abstractions
+// as they could be anything.
+impl<T> Apiv2Schema for Data<T> {}
+
+macro_rules! impl_empty({ $($ty:ty),+ } => {
+    $(
+        impl Apiv2Schema for $ty {}
+    )+
+});
+
+impl_empty!(HttpRequest, HttpResponse, Bytes, Payload);
+
+// Other extractors
+
 impl<T> Apiv2Schema for Json<T> {}
 
 /// JSON needs specialization because it updates the global definitions.
@@ -121,11 +135,6 @@ where
         );
     }
 }
-
-impl Apiv2Schema for HttpResponse {}
-// We don't know what we should do with `HttpResponse`
-// as it could be anything.
-impl OperationModifier for HttpResponse {}
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     impl<T> Apiv2Schema for $ty {}

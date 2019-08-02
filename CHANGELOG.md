@@ -5,6 +5,9 @@ The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 ## [Unreleased]
+### Added
+- Actix plugin: Callers of `#[api_v2_schema]` can specify `empty` to implement empty schema for any type and ignore the warning.
+- Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 
 ## [0.3.0] - 2019-07-30
 ### Added

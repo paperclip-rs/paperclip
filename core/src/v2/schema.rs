@@ -166,6 +166,8 @@ pub trait Apiv2Schema {
     }
 }
 
+impl Apiv2Schema for () {}
+
 impl<T: TypedData> Apiv2Schema for T {
     fn raw_schema() -> DefaultSchemaRaw {
         let mut schema = DefaultSchemaRaw::default();

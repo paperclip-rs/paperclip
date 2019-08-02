@@ -1,12 +1,23 @@
 //! Convenience macros for the [actix-web](https://github.com/wafflespeanut/paperclip/tree/master/plugins/actix-web)
 //! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
+use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::spanned::Spanned;
 use syn::{
-    Data, DataEnum, Fields, FieldsNamed, ItemFn, PathArguments, ReturnType, Token, TraitBound, Type,
+    Data, DataEnum, Fields, FieldsNamed, ItemFn, Meta, NestedMeta, PathArguments, ReturnType,
+    Token, TraitBound, Type,
 };
+
+const SCHEMA_MACRO: &str = "api_v2_schema";
+
+lazy_static! {
+    static ref EMPTY_SCHEMA_HELP: String = format!(
+        "you can mark the struct with #[{}(empty)] to ignore this warning.",
+        SCHEMA_MACRO
+    );
+}
 
 /// Actual parser and emitter for `api_v2_operation` macro.
 ///
@@ -67,23 +78,38 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
 }
 
 /// Actual parser and emitter for `api_v2_schema` macro.
-pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
+pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
         Ok(i) => i,
         Err(ts) => return ts,
     };
 
+    let attrs = crate::parse_input_attrs(attrs);
+    let needs_empty_schema = attrs.0.iter().any(|meta| match meta {
+        NestedMeta::Meta(Meta::Word(ref n)) if n == "empty" => true,
+        _ => false,
+    });
+
     let name = &item_ast.ident;
 
     // Add `Apiv2Schema` bound for impl if the type is generic.
     let mut generics = item_ast.generics.clone();
-    let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
-        .expect("expected to parse trait bound");
-    generics.type_params_mut().for_each(|param| {
-        param.bounds.push(bound.clone().into());
-    });
+    if !needs_empty_schema {
+        let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
+            .expect("expected to parse trait bound");
+        generics.type_params_mut().for_each(|param| {
+            param.bounds.push(bound.clone().into());
+        });
+    }
 
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    if needs_empty_schema {
+        return quote!(
+            #item_ast
+
+            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
+        ).into();
+    }
 
     // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
     let mut props_gen = quote! {};
@@ -91,17 +117,20 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     match &item_ast.data {
         Data::Struct(ref s) => match &s.fields {
             Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),
-            Fields::Unnamed(ref f) => f
-                .span()
-                .unwrap()
-                .warning("tuple structs do not have named fields and hence will have empty schema.")
-                .emit(),
-            Fields::Unit => s
-                .struct_token
-                .span()
-                .unwrap()
-                .warning("unit structs do not have any fields and hence will have empty schema.")
-                .emit(),
+            Fields::Unnamed(ref f) => {
+                let s = f.span().unwrap();
+                s.warning(
+                    "tuple structs do not have named fields and hence will have empty schema.",
+                )
+                .emit();
+                s.help(&*EMPTY_SCHEMA_HELP).emit();
+            }
+            Fields::Unit => {
+                let s = s.struct_token.span().unwrap();
+                s.warning("unit structs do not have any fields and hence will have empty schema.")
+                    .emit();
+                s.help(&*EMPTY_SCHEMA_HELP).emit();
+            }
         },
         Data::Enum(ref e) => handle_enum(e, &mut props_gen),
         Data::Union(ref u) => u
