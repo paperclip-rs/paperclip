@@ -1,3 +1,5 @@
+#[cfg(feature = "cli")]
+use super::template::{self, TEMPLATE};
 use super::{object::ApiObject, CrateMeta};
 use crate::error::PaperClipError;
 use failure::Error;
@@ -92,6 +94,7 @@ impl EmitterState {
     /// from root.
     pub(crate) fn declare_modules(&self) -> Result<(), Error> {
         info!("Writing module declarations.");
+        let is_app = self.is_cli()?;
         let mods = self.mod_children.borrow();
         for (rel_parent, children) in &*mods {
             let mut mod_path = self.working_dir.join(&rel_parent);
@@ -99,7 +102,6 @@ impl EmitterState {
 
             if rel_parent.parent().is_none() && self.is_crate() {
                 mod_path = self.root_module_path();
-                let is_app = mod_path.ends_with("main.rs");
                 if is_app {
                     contents.push_str("#![feature(async_await)]");
                 }
@@ -113,7 +115,7 @@ extern crate serde;
 ",
                 );
 
-                if mod_path.ends_with("main.rs") {
+                if is_app {
                     contents.push_str(
                         "
 #[macro_use]
@@ -363,7 +365,7 @@ pub mod client {{
     /// Adds CLI-related deps for the given object (if needed).
     fn add_cli_deps_if_needed(&self) -> Result<(), Error> {
         let root = self.root_module_path();
-        if !root.ends_with("main.rs") {
+        if !self.is_cli()? {
             return Ok(());
         }
 
@@ -660,50 +662,17 @@ impl EmitterState {
 
         let meta = m.borrow();
         if self.is_crate() {
-            let content = format!(
-                "[package]
-name = {:?}
-version = {:?}
-authors = {:?}
-edition = \"2018\"
-
-{}
-
-[dependencies]
-failure = \"0.1\"
-futures = \"0.1\"
-parking_lot = \"0.8\"
-reqwest = \"0.9\"
-serde = \"1.0\"
-{}
-[workspace]
-",
-                meta.name.as_ref().unwrap(),
-                meta.version.as_ref().unwrap(),
-                meta.authors.as_ref().unwrap(),
-                if is_cli {
-                    format!(
-                        "[[bin]]\nname = {:?}\npath = \"main.rs\"",
-                        meta.name.as_ref().unwrap()
-                    )
-                } else {
-                    "[lib]\npath = \"lib.rs\"".into()
+            let contents = template::render(
+                TEMPLATE::CARGO_MANIFEST,
+                &ManifestContext {
+                    name: &format!("{:?}", meta.name.as_ref().unwrap()),
+                    version: &format!("{:?}", meta.version.as_ref().unwrap()),
+                    authors: &format!("{:?}", meta.authors.as_ref().unwrap()),
+                    is_cli,
                 },
-                if is_cli {
-                    "clap = { version = \"2.33\", features = [\"yaml\"] }
-env_logger = \"0.6\"
-futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
-openssl = { version = \"0.10\", features = [\"vendored\"] }
-serde_json = \"1.0\"
-runtime = { git = \"https://github.com/rustasync/runtime\" }
-runtime-tokio = { git = \"https://github.com/rustasync/runtime\" }
-"
-                } else {
-                    ""
-                },
-            );
+            )?;
 
-            self.write_contents(&content, &man_path)?;
+            self.write_contents(&contents, &man_path)?;
         }
 
         Ok(())
@@ -815,4 +784,13 @@ impl PartialEq for ChildModule {
     fn eq(&self, other: &Self) -> bool {
         self.name == other.name
     }
+}
+
+#[cfg(feature = "cli")]
+#[derive(serde::Serialize)]
+struct ManifestContext<'a> {
+    name: &'a str,
+    version: &'a str,
+    authors: &'a str,
+    is_cli: bool,
 }

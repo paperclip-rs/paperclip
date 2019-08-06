@@ -10,6 +10,7 @@ license = "MIT OR Apache-2.0"
 homepage = "https://github.com/wafflespeanut/paperclip"
 repository = "https://github.com/wafflespeanut/paperclip"
 readme = "README.md"
+build = "src/build/build.rs"
 
 [[bin]]
 name = "paperclip"
@@ -37,6 +38,7 @@ serde_derive = "1.0"
 serde_json = "1.0"
 serde_yaml = "0.8"
 structopt = { version = "0.2", optional = true }
+tinytemplate = { version = "1.0", optional = true }
 url = "1.7"
 
 [dev-dependencies]
@@ -50,7 +52,7 @@ actix = ["paperclip-macros/actix", "paperclip-actix"]
 default = ["v2", "codegen"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 codegen = ["heck", "lazy_static", "regex"]
-cli = ["default", "env_logger", "structopt", "git2", "reqwest"]
+cli = ["default", "env_logger", "structopt", "git2", "reqwest", "tinytemplate"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
 
 [workspace]

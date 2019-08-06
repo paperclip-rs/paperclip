@@ -914,6 +914,7 @@ futures = \"0.1\"
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
+
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
 futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }

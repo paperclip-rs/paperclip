@@ -18,6 +18,7 @@ build = "build.rs"
 # Crates required by the generated code!
 failure = "0.1"
 futures = "0.1"
+parking_lot = "0.8"
 reqwest = "0.9"
 serde = "1.0"
 # Other crates I'm using for this example.

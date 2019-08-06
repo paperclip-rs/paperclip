@@ -5,6 +5,7 @@ mod author;
 mod emitter;
 pub mod object;
 mod state;
+include!(concat!(env!("OUT_DIR"), "/template.rs"));
 
 pub use self::emitter::{EmittedUnit, Emitter};
 pub use self::state::EmitterState;

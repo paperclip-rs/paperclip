@@ -21,7 +21,10 @@ doc:
 
 build:
 	cargo build
+	cargo build --features v2
 	cargo build --features default
+	cargo build --features actix
+	cargo build --features cli
 	cargo build --all --all-features
 
 test:
