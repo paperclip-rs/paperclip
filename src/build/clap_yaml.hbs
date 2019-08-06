@@ -1,0 +1,40 @@
+
+name: { name | unescaped }
+version: { version | unescaped }
+
+settings:
+- SubcommandRequiredElseHelp
+
+args:
+    - ca-cert:
+        long: ca-cert
+        help: Path to CA certificate to be added to trust store.
+        takes_value: true
+    - client-cert:
+        long: client-cert
+        help: Path to certificate for TLS client verification.
+        takes_value: true
+        requires:
+            - client-key
+    - client-key:
+        long: client-key
+        help: Path to private key for TLS client verification.
+        takes_value: true
+        requires:
+            - client-cert
+    - url:
+        long: url
+        help: Base URL for your API.
+        takes_value: true
+        required: true
+    - verbose:
+        short: v
+        long: verbose
+        help: Enable verbose mode.
+    - timeout:
+        short: t
+        long: timeout
+        help: Set the request timeout.
+        takes_value: true
+
+subcommands:

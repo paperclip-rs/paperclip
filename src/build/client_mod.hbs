@@ -1,0 +1,85 @@
+
+pub mod client \{
+    use futures::\{Future, future};
+    use parking_lot::Mutex;
+
+    /// Common API errors.
+    #[derive(Debug, Fail)]
+    pub enum ApiError \{
+        #[fail(display = "API request failed for path: \{} (code: \{})", _0, _1)]
+        Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
+        #[fail(display = "An error has occurred while performing the API request: \{}", _0)]
+        Reqwest(reqwest::Error),
+    }
+
+    /// Represents an API client.
+    pub trait ApiClient \{
+        /// Consumes a method and a relative path and produces a request builder for a single API call.
+        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
+
+        /// Performs the HTTP request using the given `Request` object
+        /// and returns a `Response` future.
+        fn make_request(&self, req: reqwest::r#async::Request)
+                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>;
+    }
+
+    impl ApiClient for reqwest::r#async::Client \{
+        #[inline]
+        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder \{
+            let mut u = String::from("{base_url | unescaped}");
+            u.push_str(rel_path.trim_start_matches('/'));
+            self.request(method, &u)
+        }
+
+        #[inline]
+        fn make_request(&self, req: reqwest::r#async::Request)
+                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send> \{
+            Box::new(self.execute(req)) as Box<_>
+        }
+    }
+
+    /// A trait for indicating that the implementor can send an API call.
+    pub trait Sendable \{
+        /// The output object from this API request.
+        type Output: serde::de::DeserializeOwned + Send + 'static;
+
+        /// HTTP method used by this call.
+        const METHOD: reqwest::Method;
+
+        /// Relative URL for this API call formatted appropriately with parameter values.
+        ///
+        /// **NOTE:** This URL **must** begin with `/`.
+        fn rel_path(&self) -> std::borrow::Cow<'static, str>;
+
+        /// Modifier for this object. Builders override this method if they
+        /// wish to add query parameters, set body, etc.
+        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder \{
+            req
+        }
+
+        /// Sends the request and returns a future for the response object.
+        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> \{
+            Box::new(self.send_raw(client).and_then(|mut resp| \{
+                {deserializer | unescaped}
+            })) as Box<_>
+        }
+
+        /// Convenience method for returning a raw response after sending a request.
+        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError> + Send> \{
+            let rel_path = self.rel_path();
+            let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
+            let req = match builder.build() \{
+                Ok(r) => r,
+                Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
+            };
+
+            Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| \{
+                if resp.status().is_success() \{
+                    futures::future::ok(resp)
+                } else \{
+                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
+                }
+            })) as Box<_>
+        }
+    }
+}

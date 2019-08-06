@@ -51,8 +51,8 @@ futures = "0.1"
 actix = ["paperclip-macros/actix", "paperclip-actix"]
 default = ["v2", "codegen"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
-codegen = ["heck", "lazy_static", "regex"]
-cli = ["default", "env_logger", "structopt", "git2", "reqwest", "tinytemplate"]
+codegen = ["heck", "lazy_static", "regex", "tinytemplate"]
+cli = ["default", "env_logger", "structopt", "git2", "reqwest"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
 
 [workspace]

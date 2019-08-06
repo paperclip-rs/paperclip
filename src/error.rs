@@ -75,7 +75,7 @@ pub enum PaperClipError {
     /// Errors from rustfmt.
     #[fail(display = "Rustfmt formatting error: {}", _0)]
     RustFmt(rustfmt_nightly::ErrorKind),
-    #[cfg(feature = "cli")]
+    #[cfg(feature = "codegen")]
     /// Errors in templating.
     #[fail(display = "Templating error: {}", _0)]
     Templating(tinytemplate::error::Error),
@@ -87,5 +87,5 @@ impl_err_from!(PaperClipError::serde_yaml::Error > Yaml);
 impl_err_from!(PaperClipError::paperclip_core::ValidationError > Validation);
 #[cfg(feature = "codegen-fmt")]
 impl_err_from!(PaperClipError::rustfmt_nightly::ErrorKind > RustFmt);
-#[cfg(feature = "cli")]
+#[cfg(feature = "codegen")]
 impl_err_from!(PaperClipError::tinytemplate::error::Error > Templating);

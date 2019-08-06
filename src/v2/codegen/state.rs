@@ -1,4 +1,3 @@
-#[cfg(feature = "cli")]
 use super::template::{self, TEMPLATE};
 use super::{object::ApiObject, CrateMeta};
 use crate::error::PaperClipError;
@@ -252,94 +251,15 @@ pub mod generics {
     pub(crate) fn add_client_deps(&self) -> Result<(), Error> {
         let module = self.root_module_path();
         let deser = "resp.json::<Self::Output>().map_err(ApiError::Reqwest)";
-        let content = format!("
-pub mod client {{
-    use futures::{{Future, future}};
-    use parking_lot::Mutex;
+        let contents = template::render(
+            TEMPLATE::CLIENT_MOD,
+            &ClientModContext {
+                deserializer: deser,
+                base_url: self.base_url.borrow().as_str(),
+            },
+        )?;
 
-    /// Common API errors.
-    #[derive(Debug, Fail)]
-    pub enum ApiError {{
-        #[fail(display = \"API request failed for path: {{}} (code: {{}})\", _0, _1)]
-        Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
-        #[fail(display = \"An error has occurred while performing the API request: {{}}\", _0)]
-        Reqwest(reqwest::Error),
-    }}
-
-    /// Represents an API client.
-    pub trait ApiClient {{
-        /// Consumes a method and a relative path and produces a request builder for a single API call.
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
-
-        /// Performs the HTTP request using the given `Request` object
-        /// and returns a `Response` future.
-        fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>;
-    }}
-
-    impl ApiClient for reqwest::r#async::Client {{
-        #[inline]
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {{
-            let mut u = String::from(\"{base_url}\");
-            u.push_str(rel_path.trim_start_matches('/'));
-            self.request(method, &u)
-        }}
-
-        #[inline]
-        fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send> {{
-            Box::new(self.execute(req)) as Box<_>
-        }}
-    }}
-
-    /// A trait for indicating that the implementor can send an API call.
-    pub trait Sendable {{
-        /// The output object from this API request.
-        type Output: serde::de::DeserializeOwned + Send + 'static;
-
-        /// HTTP method used by this call.
-        const METHOD: reqwest::Method;
-
-        /// Relative URL for this API call formatted appropriately with parameter values.
-        ///
-        /// **NOTE:** This URL **must** begin with `/`.
-        fn rel_path(&self) -> std::borrow::Cow<'static, str>;
-
-        /// Modifier for this object. Builders override this method if they
-        /// wish to add query parameters, set body, etc.
-        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {{
-            req
-        }}
-
-        /// Sends the request and returns a future for the response object.
-        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> {{
-            Box::new(self.send_raw(client).and_then(|mut resp| {{
-                {deserializer}
-            }})) as Box<_>
-        }}
-
-        /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError> + Send> {{
-            let rel_path = self.rel_path();
-            let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
-            let req = match builder.build() {{
-                Ok(r) => r,
-                Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
-            }};
-
-            Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {{
-                if resp.status().is_success() {{
-                    futures::future::ok(resp)
-                }} else {{
-                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
-                }}
-            }})) as Box<_>
-        }}
-    }}
-}}
-", deserializer=deser, base_url=&self.base_url.borrow());
-
-        self.append_contents(&content, &module)
+        self.append_contents(&contents, &module)
     }
 
     /// Writes the given contents to a file at the given path (truncating the file if it exists).
@@ -373,50 +293,13 @@ pub mod client {{
             // Clap YAML
             let meta = m.borrow();
             let clap_yaml = root.with_file_name("app.yaml");
-            let base_content = format!(
-                "
-name: {}
-version: {:?}
-
-settings:
-- SubcommandRequiredElseHelp
-
-args:
-    - ca-cert:
-        long: ca-cert
-        help: Path to CA certificate to be added to trust store.
-        takes_value: true
-    - client-cert:
-        long: client-cert
-        help: Path to certificate for TLS client verification.
-        takes_value: true
-        requires:
-            - client-key
-    - client-key:
-        long: client-key
-        help: Path to private key for TLS client verification.
-        takes_value: true
-        requires:
-            - client-cert
-    - url:
-        long: url
-        help: Base URL for your API.
-        takes_value: true
-        required: true
-    - verbose:
-        short: v
-        long: verbose
-        help: Enable verbose mode.
-    - timeout:
-        short: t
-        long: timeout
-        help: Set the request timeout.
-        takes_value: true
-
-subcommands:",
-                meta.name.as_ref().unwrap(),
-                meta.version.as_ref().unwrap()
-            );
+            let base_content = template::render(
+                TEMPLATE::CLAP_YAML,
+                &ClapYamlContext {
+                    name: meta.name.as_ref().unwrap(),
+                    version: &format!("{:?}", meta.version.as_ref().unwrap()),
+                },
+            )?;
 
             let cli_mod = root.with_file_name("cli.rs");
             self.write_contents(&base_content, &clap_yaml)?;
@@ -448,168 +331,8 @@ pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
         }
 
         // `main.rs`
-        let content = String::from(
-            "
-use self::client::{ApiClient, ApiError};
-use clap::App;
-use failure::Error;
-use futures::{Future, Stream};
-use futures_preview::compat::Future01CompatExt;
-use openssl::pkcs12::Pkcs12;
-use openssl::pkey::PKey;
-use openssl::x509::X509;
-
-use std::fs::File;
-use std::io::Read;
-use std::path::Path;
-use std::time::Duration;
-
-#[derive(Debug, Fail)]
-#[allow(dead_code)]
-enum ClientError {
-    #[fail(display = \"I/O error: {}\", _0)]
-    Io(std::io::Error),
-    #[fail(display = \"OpenSSL error: {}\", _0)]
-    OpenSsl(openssl::error::ErrorStack),
-    #[fail(display = \"Client error: {}\", _0)]
-    Reqwest(reqwest::Error),
-    #[fail(display = \"URL error: {}\", _0)]
-    Url(reqwest::UrlError),
-    #[fail(display = \"{}\", _0)]
-    Api(self::client::ApiError),
-    #[fail(display = \"Payload error: {}\", _0)]
-    Json(serde_json::Error),
-    #[fail(display = \"\")]
-    Empty,
-}
-
-fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
-    let mut data = vec![];
-    let mut fd = File::open(path.as_ref()).map_err(ClientError::Io)?;
-    fd.read_to_end(&mut data).map_err(ClientError::Io)?;
-    Ok(data)
-}
-
-struct WrappedClient {
-    verbose: bool,
-    inner: reqwest::r#async::Client,
-    url: reqwest::Url,
-}
-
-impl ApiClient for WrappedClient {
-    fn make_request(&self, req: reqwest::r#async::Request)
-                   -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>
-    {
-        if self.verbose {
-            println!(\"{} {}\", req.method(), req.url());
-        }
-
-        self.inner.make_request(req)
-    }
-
-    fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
-        let mut u = self.url.clone();
-        let mut path = u.path().trim_matches('/').to_owned();
-        if !path.is_empty() {
-            path = String::from(\"/\") + &path;
-        }
-
-        path.push_str(rel_path);
-        u.set_path(&path);
-        self.inner.request(method, u)
-    }
-}
-
-fn parse_args_and_fetch()
-    -> Result<(WrappedClient, Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>), Error>
-{
-    let yml = load_yaml!(\"app.yaml\");
-    let app = App::from_yaml(yml);
-    let matches = app.get_matches();
-    let (sub_cmd, sub_matches) = matches.subcommand();
-
-    let mut client = reqwest::r#async::Client::builder();
-
-    if let Some(p) = matches.value_of(\"ca-cert\") {
-        let ca_cert = X509::from_pem(&read_file(p)?)
-            .map_err(ClientError::OpenSsl)?;
-        let ca_der = ca_cert.to_der().map_err(ClientError::OpenSsl)?;
-        client = client.add_root_certificate(
-            reqwest::Certificate::from_der(&ca_der)
-                .map_err(ClientError::Reqwest)?
-        );
-    }
-
-    // FIXME: Is this the only way?
-    if let (Some(p1), Some(p2)) = (matches.value_of(\"client-key\"), matches.value_of(\"client-cert\")) {
-        let cert = X509::from_pem(&read_file(p2)?).map_err(ClientError::OpenSsl)?;
-        let key = PKey::private_key_from_pem(&read_file(p1)?)
-            .map_err(ClientError::OpenSsl)?;
-        let builder = Pkcs12::builder();
-        let pkcs12 = builder.build(\"foobar\", \"my-client\", &key, &cert)
-            .map_err(ClientError::OpenSsl)?;
-        let identity = reqwest::Identity::from_pkcs12_der(
-            &pkcs12.to_der().map_err(ClientError::OpenSsl)?,
-            \"foobar\"
-        ).map_err(ClientError::Reqwest)?;
-        client = client.identity(identity);
-    }
-
-    if let Some(timeout) = matches.value_of(\"timeout\") {
-        client = client.timeout(Duration::new(timeout.parse::<u64>().expect(\"could not parse timeout value\"), 0))
-    }
-
-    let is_verbose = matches.is_present(\"verbose\");
-    let url = matches.value_of(\"url\").expect(\"required arg URL?\");
-    let client = WrappedClient {
-        inner: client.build().map_err(ClientError::Reqwest)?,
-        url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
-        verbose: is_verbose,
-    };
-
-    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?;
-    Ok((client, f))
-}
-
-async fn run_app() -> Result<(), Error> {
-    let (client, f) = parse_args_and_fetch()?;
-    let response = match f.map_err(ClientError::Api).compat().await {
-        Ok(r) => r,
-        Err(ClientError::Api(ApiError::Failure(_, _, r))) => r.into_inner(),
-        Err(e) => return Err(e.into()),
-    };
-
-    let status = response.status();
-    if client.verbose {
-        println!(\"{}\", status);
-    }
-
-    let bytes = response
-        .into_body()
-        .concat2()
-        .map_err(ClientError::Reqwest)
-        .compat()
-        .await?;
-
-    let _ = std::io::copy(&mut &*bytes, &mut std::io::stdout());
-    if !status.is_success() {
-        Err(ClientError::Empty)?
-    }
-
-    Ok(())
-}
-
-#[runtime::main(runtime_tokio::Tokio)]
-async fn main() {
-    env_logger::init();
-    if let Err(e) = run_app().await {
-        println!(\"{}\", e);
-    }
-}
-",
-        );
-
-        self.append_contents(&content, &root)
+        let contents = template::render(TEMPLATE::CLI_MAIN, &EmptyContext {})?;
+        self.append_contents(&contents, &root)
     }
 
     /// Returns if this session is for generating CLI.
@@ -786,6 +509,8 @@ impl PartialEq for ChildModule {
     }
 }
 
+/* Templating contexts */
+
 #[cfg(feature = "cli")]
 #[derive(serde::Serialize)]
 struct ManifestContext<'a> {
@@ -794,3 +519,18 @@ struct ManifestContext<'a> {
     authors: &'a str,
     is_cli: bool,
 }
+
+#[derive(serde::Serialize)]
+struct ClientModContext<'a> {
+    base_url: &'a str,
+    deserializer: &'a str,
+}
+
+#[derive(serde::Serialize)]
+struct ClapYamlContext<'a> {
+    name: &'a str,
+    version: &'a str,
+}
+
+#[derive(serde::Serialize)]
+struct EmptyContext {}

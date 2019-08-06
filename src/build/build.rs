@@ -13,16 +13,21 @@ fn load_file(p: PathBuf) -> String {
 fn main() {
     let out_dir = env::var("OUT_DIR").unwrap();
     let root = PathBuf::from(env::var("CARGO_MANIFEST_DIR").unwrap());
-    let files = &[("CARGO_MANIFEST", "src/build/manifest.hbs")];
+    let files = &[
+        ("CARGO_MANIFEST", "src/build/manifest.hbs"),
+        ("CLIENT_MOD", "src/build/client_mod.hbs"),
+        ("CLAP_YAML", "src/build/clap_yaml.hbs"),
+        ("CLI_MAIN", "src/build/cli_main.hbs"),
+    ];
 
     let mut contents = String::from(
         "
-#[cfg(feature = \"cli\")]
+#[cfg(feature = \"codegen\")]
 mod template {
     use tinytemplate::TinyTemplate;
 
     #[derive(Debug, Copy, Clone)]
-    #[allow(non_camel_case_types)]
+    #[allow(dead_code, non_camel_case_types)]
     pub enum TEMPLATE {",
     );
 
