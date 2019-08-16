@@ -3,7 +3,7 @@ pub mod web;
 pub use self::web::{Resource, Route, Scope};
 pub use paperclip_macros::{api_v2_operation, api_v2_schema};
 
-use self::web::{Data, ServiceConfig};
+use self::web::{Data, RouteWrapper, ServiceConfig};
 use actix_service::NewService;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{web::HttpResponse, Error};
@@ -116,8 +116,11 @@ where
     }
 
     /// Wrapper for [`actix_web::App::route`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.route).
-    pub fn route(self, path: &str, route: Route) -> Self {
-        self.service(Resource::new(path).route(route))
+    pub fn route(mut self, path: &str, route: Route) -> Self {
+        let mut w = RouteWrapper::from(path, route);
+        self.update_from_mountable(&mut w);
+        self.inner = self.inner.route(path, w.inner);
+        self
     }
 
     /// Wrapper for [`actix_web::App::service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.service).
@@ -125,12 +128,7 @@ where
     where
         F: Mountable + HttpServiceFactory + 'static,
     {
-        {
-            let mut api = self.spec.write();
-            api.definitions.extend(factory.definitions().into_iter());
-            factory.update_operations(&mut api.paths);
-        }
-
+        self.update_from_mountable(&mut factory);
         self.inner = self.inner.service(factory);
         self
     }
@@ -248,6 +246,15 @@ where
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
         self.inner
+    }
+
+    /// Updates the underlying spec with definitions and operations from the given factory.
+    fn update_from_mountable<F>(&mut self, factory: &mut F)
+        where F: Mountable
+    {
+        let mut api = self.spec.write();
+        api.definitions.extend(factory.definitions().into_iter());
+        factory.update_operations(&mut api.paths);
     }
 }
 

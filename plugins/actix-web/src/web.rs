@@ -125,20 +125,10 @@ where
 
     /// Wrapper for [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
     pub fn route(mut self, route: Route) -> Self {
-        if let Some(mut op) = route.operation {
-            op.set_parameter_names_from_path_template(&self.path);
-
-            if let Some(meth) = route.method {
-                self.operations.insert(meth, op);
-            } else {
-                for method in METHODS {
-                    self.operations.insert(method.into(), op.clone());
-                }
-            }
-        }
-
-        self.definitions.extend(route.definitions.into_iter());
-        self.inner = self.inner.route(route.inner);
+        let w = RouteWrapper::from(&self.path, route);
+        self.operations.extend(w.operations.into_iter());
+        self.definitions.extend(w.definitions.into_iter());
+        self.inner = self.inner.route(w.inner);
         self
     }
 
@@ -375,8 +365,11 @@ where
     }
 
     /// Wrapper for [`actix_web::Scope::route`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.route).
-    pub fn route(self, path: &str, route: Route) -> Self {
-        self.service(resource(path).route(route))
+    pub fn route(mut self, path: &str, route: Route) -> Self {
+        let mut w = RouteWrapper::from(path, route);
+        self.update_from_mountable(&mut w);
+        self.inner = self.inner.route(path, w.inner);
+        self
     }
 
     /// Proxy for [`actix_web::web::Scope::default_service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.default_service).
@@ -620,6 +613,62 @@ pub fn head() -> Route {
     method(Method::HEAD)
 }
 
+/// Workaround for issue #17. In actix-web, a method in a route is a guard for that route.
+/// Whenever we call `App::route`, `Scope::route` or `ServiceConfig::route`, actix-web
+/// creates a new resource with a route (by calling `Resource::new(path).route(route)`),
+/// but then it also internally moves the guards to the new entity (manually). This forces
+/// us to call the `.route` method on that entity rather than creating a resource with a
+/// route. This wrapper is `Mountable` and can be used by `App`, `Scope`, etc. when calling
+/// the `.route()` method.
+pub(crate) struct RouteWrapper<S> {
+    path: S,
+    pub(crate) operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
+    pub(crate) definitions: BTreeMap<String, DefaultSchemaRaw>,
+    pub(crate) inner: actix_web::Route,
+}
+
+impl<S> RouteWrapper<S>
+    where S: AsRef<str>
+{
+    pub(crate) fn from(path: S, route: Route) -> Self {
+        let mut operations = BTreeMap::new();
+        if let Some(mut op) = route.operation {
+            op.set_parameter_names_from_path_template(path.as_ref());
+
+            if let Some(meth) = route.method {
+                operations.insert(meth, op);
+            } else {
+                for method in METHODS {
+                    operations.insert(method.into(), op.clone());
+                }
+            }
+        }
+
+        RouteWrapper {
+            path,
+            operations,
+            definitions: route.definitions,
+            inner: route.inner,
+        }
+    }
+}
+
+impl<S> Mountable for RouteWrapper<S>
+    where S: AsRef<str>
+{
+    fn path(&self) -> &str {
+        self.path.as_ref()
+    }
+
+    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+        mem::replace(&mut self.operations, BTreeMap::new())
+    }
+
+    fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
+        mem::replace(&mut self.definitions, BTreeMap::new())
+    }
+}
+
 /* Service config */
 
 /// Wrapper for [`actix_web::web::ServiceConfig`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html).
@@ -661,7 +710,11 @@ where
 {
     /// Wrapper for [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
     pub fn route(&mut self, path: &str, route: Route) -> &mut Self {
-        self.service(Resource::new(path).route(route))
+        let mut w = RouteWrapper::from(path, route);
+        self.definitions.extend(w.definitions().into_iter());
+        w.update_operations(&mut self.path_map);
+        self.scope = self.scope.take().map(|s| s.route(path, w.inner));
+        self
     }
 
     /// Wrapper for [`actix_web::web::ServiceConfig::service`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.service).

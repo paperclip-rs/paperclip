@@ -622,6 +622,101 @@ fn test_impl_traits() {
     );
 }
 
+#[test] // issue #71
+fn test_multiple_method_routes() {
+    #[api_v2_operation]
+    fn test_get() -> String {
+        "get".into()
+    }
+
+    #[api_v2_operation]
+    fn test_post() -> String {
+        "post".into()
+    }
+
+    fn test_app<F, T, B>(f: F)
+    where
+        F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
+        B: MessageBody + 'static,
+        T: NewService<
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse<B>,
+                Error = Error,
+                InitError = (),
+            > + 'static,
+    {
+        run_and_check_app(f, |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/foo", addr))
+                .send()
+                .expect("request failed?");
+            assert_eq!(resp.status().as_u16(), 200);
+            assert_eq!(resp.text().unwrap(), "get");
+
+            let mut resp = CLIENT
+                .post(&format!("http://{}/foo", addr))
+                .send()
+                .expect("request failed?");
+            assert_eq!(resp.status().as_u16(), 200);
+            assert_eq!(resp.text().unwrap(), "post");
+
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "definitions": {},
+                  "paths": {
+                    "/foo": {
+                      "get": {
+                        "responses": {},
+                      },
+                      "post": {
+                        "responses": {},
+                      },
+                    }
+                  },
+                  "swagger": "2.0",
+                }),
+            );
+        });
+    }
+
+    test_app(|| {
+        App::new()
+            .wrap_api()
+            .with_json_spec_at("/api/spec")
+            .route("/foo", web::get().to(test_get))
+            .route("/foo", web::post().to(test_post))
+            .build()
+    });
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.route("/foo", web::get().to(test_get))
+            .route("/foo", web::post().to(test_post));
+    }
+
+    test_app(|| {
+        App::new()
+            .wrap_api()
+            .with_json_spec_at("/api/spec")
+            .service(web::scope("").configure(config))
+            .build()
+    });
+
+    test_app(|| {
+        App::new()
+            .wrap_api()
+            .with_json_spec_at("/api/spec")
+            .configure(config)
+            .build()
+    });
+}
+
 #[test]
 fn test_custom_extractor_empty_schema() {
     #[api_v2_schema(empty)]
