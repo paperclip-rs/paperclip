@@ -142,6 +142,22 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     impl<T: Apiv2Schema> OperationModifier for $ty {
         fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
             let def = T::raw_schema();
+            // If there aren't any properties and if it's a path parameter,
+            // then add a parameter whose name will be overridden later.
+            if def.properties.is_empty() && ParameterIn::$container == ParameterIn::Path {
+                op.parameters.push(Parameter {
+                    name: String::new(),
+                    description: None,
+                    in_: ParameterIn::Path,
+                    required: true,
+                    schema: None,
+                    data_type: def.data_type,
+                    format: def.format,
+                    items: None,
+                    enum_: def.enum_,
+                });
+            }
+
             for (k, v) in def.properties {
                 op.parameters.push(Parameter {
                     description: None,

@@ -213,6 +213,11 @@ fn test_params() {
     }
 
     #[api_v2_operation]
+    fn get_resource_2(_p: web::Path<String>) -> String {
+        unimplemented!();
+    }
+
+    #[api_v2_operation]
     fn get_known_badge_1(_p: web::Path<KnownResourceBadge>, _q: web::Query<BadgeParams>) -> String {
         unimplemented!();
     }
@@ -252,6 +257,9 @@ fn test_params() {
                             web::resource("/v2/{resource}/v/{name}")
                                 .route(web::get().to(get_known_badge_2))
                                 .route(web::post().to(post_badge_2)),
+                        )
+                        .service(
+                            web::resource("/v2/{resource}").route(web::get().to(get_resource_2)),
                         ),
                 )
                 .build()
@@ -326,6 +334,17 @@ fn test_params() {
                       "put": {
                         "responses": {}
                       }
+                    },
+                    "/api/v2/{resource}": {
+                      "get": {
+                        "responses": {}
+                      },
+                      "parameters": [{
+                        "in": "path",
+                        "name": "resource",
+                        "required": true,
+                        "type": "string"
+                      }]
                     },
                     "/api/v2/{resource}/v/{name}": {
                       "get": {
