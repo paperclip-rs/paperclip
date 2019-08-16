@@ -379,10 +379,9 @@ where
         }
 
         if !template_params.is_empty() {
-            Err(PaperClipError::MissingParametersInPath(
-                path.into(),
-                template_params,
-            ))?;
+            return Err(
+                PaperClipError::MissingParametersInPath(path.into(), template_params).into(),
+            );
         }
 
         Ok(())

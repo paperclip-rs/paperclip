@@ -9,7 +9,7 @@ clean:
 	rm -rf tests/test_pet
 
 prepare:
-	rustup override set nightly-2019-06-09
+	rustup override set nightly-2019-08-15
 	rustup component add rustfmt
 	rustup component add clippy
 

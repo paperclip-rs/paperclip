@@ -175,7 +175,7 @@ where
     fn resolve_definition_reference(&self, name: &str) -> Result<SchemaRepr<S>, ValidationError> {
         if !name.starts_with(DEF_REF_PREFIX) {
             // FIXME: Bad
-            return Err(ValidationError::InvalidRefURI(name.into()))?;
+            return Err(ValidationError::InvalidRefURI(name.into()));
         }
 
         let name = &name[DEF_REF_PREFIX.len()..];

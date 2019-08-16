@@ -250,7 +250,8 @@ where
 
     /// Updates the underlying spec with definitions and operations from the given factory.
     fn update_from_mountable<F>(&mut self, factory: &mut F)
-        where F: Mountable
+    where
+        F: Mountable,
     {
         let mut api = self.spec.write();
         api.definitions.extend(factory.definitions().into_iter());

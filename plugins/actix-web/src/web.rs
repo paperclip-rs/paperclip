@@ -628,7 +628,8 @@ pub(crate) struct RouteWrapper<S> {
 }
 
 impl<S> RouteWrapper<S>
-    where S: AsRef<str>
+where
+    S: AsRef<str>,
 {
     pub(crate) fn from(path: S, route: Route) -> Self {
         let mut operations = BTreeMap::new();
@@ -654,7 +655,8 @@ impl<S> RouteWrapper<S>
 }
 
 impl<S> Mountable for RouteWrapper<S>
-    where S: AsRef<str>
+where
+    S: AsRef<str>,
 {
     fn path(&self) -> &str {
         self.path.as_ref()

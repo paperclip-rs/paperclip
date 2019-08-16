@@ -99,8 +99,7 @@ pub use paperclip_core::v2::schema::{self, Schema};
 pub fn from_reader<R, S>(mut reader: R) -> Result<Api<S>, PaperClipError>
 where
     R: Read + Seek,
-    for<'de> S: Deserialize<'de>,
-    S: Schema,
+    for<'de> S: Deserialize<'de> + Schema,
 {
     let mut buf = [0; 1];
     reader.read_exact(&mut buf)?;

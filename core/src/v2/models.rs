@@ -199,16 +199,16 @@ impl<S> Parameter<S> {
     pub fn check(&self, path: &str) -> Result<(), ValidationError> {
         if self.in_ == ParameterIn::Body {
             if self.schema.is_none() {
-                Err(ValidationError::MissingSchemaForBodyParameter(
+                return Err(ValidationError::MissingSchemaForBodyParameter(
                     self.name.clone(),
                     path.into(),
-                ))?
+                ));
             }
         } else if self.data_type.is_none() {
-            Err(ValidationError::MissingParameterType(
+            return Err(ValidationError::MissingParameterType(
                 self.name.clone(),
                 path.into(),
-            ))?
+            ));
         }
 
         Ok(())
@@ -266,14 +266,14 @@ impl<S> Operation<S> {
         Api::<()>::path_parameters_map(path, |p| {
             let mut param = params
                 .next()
-                .unwrap_or_else(|| panic!("missing parameter {} in path {}", p, path));
+                .unwrap_or_else(|| panic!("missing parameter {:?} in path {:?}", p, path));
             param.name = p.into();
             ":".into()
         });
 
         if params.peek().is_some() {
             panic!(
-                "{} parameter(s) haven't been addressed by path {}",
+                "{} parameter(s) haven't been addressed by path {:?}",
                 params.count(),
                 path
             );
