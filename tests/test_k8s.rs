@@ -918,6 +918,7 @@ serde = \"1.0\"
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
 futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
+humantime = \"1.2\"
 openssl = { version = \"0.10\", features = [\"vendored\"] }
 serde_json = \"1.0\"
 runtime = { git = \"https://github.com/rustasync/runtime\" }
@@ -957,6 +958,8 @@ use std::time::Duration;
 #[derive(Debug, Fail)]
 #[allow(dead_code)]
 enum ClientError {
+    #[fail(display = \"Duration parse error: {}\", _0)]
+    Duration(humantime::DurationError),
     #[fail(display = \"I/O error: {}\", _0)]
     Io(std::io::Error),
     #[fail(display = \"OpenSSL error: {}\", _0)]
@@ -1046,7 +1049,8 @@ fn parse_args_and_fetch()
     }
 
     if let Some(timeout) = matches.value_of(\"timeout\") {
-        client = client.timeout(Duration::new(timeout.parse::<u64>().expect(\"could not parse timeout value\"), 0))
+        let d = timeout.parse::<humantime::Duration>()?;
+        client = client.timeout(d.into());
     }
 
     let is_verbose = matches.is_present(\"verbose\");
