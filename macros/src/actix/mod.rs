@@ -191,6 +191,7 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
 
                 address_type_for_fn_call(&field.ty)
             }
+            Type::Reference(_) => address_type_for_fn_call(&field.ty),
             _ => {
                 field
                     .ty
@@ -253,8 +254,13 @@ fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) {
 
 /// An associated function of a generic type, say, a vector cannot be called
 /// like `Vec::foo` as it doesn't have a default type. We should instead call
-/// `Vec::<T>::foo`. This function takes care of that special treatment.
-fn address_type_for_fn_call(old_ty: &Type) -> Type {
+/// `Vec::<T>::foo`. Something similar applies to `str`. This function takes
+/// care of that special treatment.
+fn address_type_for_fn_call(old_ty: &Type) -> proc_macro2::TokenStream {
+    if let Type::Reference(_) = old_ty {
+        return quote!(<(#old_ty)>);
+    }
+
     let mut ty = old_ty.clone();
     if let Type::Path(ref mut p) = &mut ty {
         p.path.segments.pairs_mut().for_each(|mut pair| {
@@ -269,5 +275,5 @@ fn address_type_for_fn_call(old_ty: &Type) -> Type {
         });
     }
 
-    ty
+    quote!(#ty)
 }
