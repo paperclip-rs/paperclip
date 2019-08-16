@@ -36,7 +36,7 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     };
 
     let mut wrapper = None;
-    match &mut item_ast.decl.output {
+    match &mut item_ast.sig.output {
         ReturnType::Default => item_ast
             .span()
             .unwrap()
@@ -86,7 +86,11 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
 
     let attrs = crate::parse_input_attrs(attrs);
     let needs_empty_schema = attrs.0.iter().any(|meta| match meta {
-        NestedMeta::Meta(Meta::Word(ref n)) if n == "empty" => true,
+        NestedMeta::Meta(Meta::Path(ref n)) => n
+            .segments
+            .last()
+            .map(|p| p.ident == "empty")
+            .unwrap_or(false),
         _ => false,
     });
 
@@ -179,7 +183,6 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
                     .path
                     .segments
                     .last()
-                    .map(|p| p.into_value())
                     .expect("expected type for struct field");
 
                 if p.path.segments.len() == 1 && &ty.ident == "Option" {
