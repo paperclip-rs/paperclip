@@ -567,6 +567,11 @@ fn test_impl_traits() {
         _data: web::Data<String>,
         _q: web::Query<Params>,
     ) -> impl Future<Item = web::Json<Vec<Pet>>, Error = ()> {
+        if true {
+            // test for return in wrapper blocks (#75)
+            return futures::future::err(());
+        }
+
         futures::future::err(())
     }
 
