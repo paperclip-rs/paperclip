@@ -63,7 +63,9 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
         item_ast.block = Box::new(
             syn::parse2(quote!(
                 {
-                    let f = #block;
+                    let f = (|| {
+                        #block
+                    })();
                     #w(f)
                 }
             ))
