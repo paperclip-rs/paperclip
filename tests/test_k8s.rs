@@ -921,8 +921,8 @@ futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], packa
 humantime = \"1.2\"
 openssl = { version = \"0.10\", features = [\"vendored\"] }
 serde_json = \"1.0\"
-runtime = { git = \"https://github.com/rustasync/runtime\" }
-runtime-tokio = { git = \"https://github.com/rustasync/runtime\" }
+runtime = \"0.3.0-alpha.7\"
+runtime-tokio = \"0.3.0-alpha.6\"
 ",
         Some(101),
     );
@@ -953,7 +953,6 @@ use openssl::x509::X509;
 use std::fs::File;
 use std::io::Read;
 use std::path::Path;
-use std::time::Duration;
 
 #[derive(Debug, Fail)]
 #[allow(dead_code)]

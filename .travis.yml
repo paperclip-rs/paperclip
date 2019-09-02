@@ -1,5 +1,5 @@
 language: rust
-rust: nightly-2019-08-15
+rust: nightly-2019-08-23
 cache: cargo
 node_js: "12"
 install: "npm install -g gitbook-cli"
