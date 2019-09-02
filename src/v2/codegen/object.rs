@@ -462,6 +462,41 @@ pub(super) struct StructField<'a> {
     pub param_loc: Option<ParameterIn>,
 }
 
+/// The property we're dealing with.
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub(super) enum Property {
+    RequiredField,
+    OptionalField,
+    RequiredParam,
+    OptionalParam,
+}
+
+impl Property {
+    /// Whether this property is required.
+    pub(super) fn is_required(self) -> bool {
+        match self {
+            Property::RequiredField | Property::RequiredParam => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this property is a parameter.
+    pub(super) fn is_parameter(self) -> bool {
+        match self {
+            Property::RequiredParam | Property::OptionalParam => true,
+            _ => false,
+        }
+    }
+
+    /// Checks whether this property is a field.
+    pub(super) fn is_field(self) -> bool {
+        match self {
+            Property::RequiredField | Property::OptionalField => true,
+            _ => false,
+        }
+    }
+}
+
 /// See `ApiObjectBuilder::write_generics_if_necessary`
 enum TypeParameters<'a> {
     Generic,
@@ -958,37 +993,84 @@ where
 
         f.write_str("\n    }")?;
 
-        // Check for whether the `modify` method needs to be added (i.e. body and other params).
-        let mut query = String::new();
+        // Collect header parameters
+        let mut headers = String::new();
         self.0
             .struct_fields_iter()
-            .filter(|f| f.param_loc.is_some())
+            .filter(|f| f.param_loc == Some(ParameterIn::Header))
             .try_for_each(|field| {
-                if let Some(ParameterIn::Query) = field.param_loc {
-                    if !query.is_empty() {
-                        query.push_str(",");
-                    }
+                let is_required = field.prop.is_required();
+                let name = field.name.to_snek_case();
+                let mut param_ref = String::from("self.");
+                if needs_container {
+                    param_ref.push_str("inner.");
+                }
 
-                    write!(query, "\n            (\"{}\", self.", &field.name)?;
-                    if needs_container {
-                        query.push_str("inner.");
-                    }
+                param_ref.push_str("param_");
+                param_ref.push_str(&name);
+                param_ref.push_str(".as_ref().map(std::string::ToString::to_string)");
+                if is_required {
+                    write!(param_ref, ".expect(\"missing parameter {}?\")", name)?;
+                }
 
-                    let name = field.name.to_snek_case();
-                    write!(
-                        query,
-                        "param_{name}.as_ref().map(std::string::ToString::to_string))",
-                        name = name
-                    )?;
+                if !is_required {
+                    write!(headers, "\n        if let Some(v) = {} {{", param_ref)?;
+                }
+
+                headers.push_str("\n        ");
+                if !is_required {
+                    headers.push_str("    ");
+                }
+
+                write!(
+                    headers,
+                    "req = req.header({:?}, {});",
+                    &field.name,
+                    if is_required { &param_ref } else { "v" }
+                )?;
+
+                if !is_required {
+                    headers.push_str("\n        }");
                 }
 
                 Ok(())
             })?;
 
-        if self.0.body_required || !query.is_empty() {
-            f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {")?;
-            f.write_str("\n        req")?;
+        // Collect URL query parameters
+        let mut query = String::new();
+        self.0
+            .struct_fields_iter()
+            .filter(|f| f.param_loc == Some(ParameterIn::Query))
+            .try_for_each(|field| {
+                if !query.is_empty() {
+                    query.push_str(",");
+                }
 
+                write!(query, "\n            (\"{}\", self.", &field.name)?;
+                if needs_container {
+                    query.push_str("inner.");
+                }
+
+                let name = field.name.to_snek_case();
+                write!(
+                    query,
+                    "param_{name}.as_ref().map(std::string::ToString::to_string))",
+                    name = name
+                )?;
+
+                Ok(())
+            })?;
+
+        // Check for whether the `modify` method needs to be added (i.e. body and other params).
+        if self.0.body_required || !query.is_empty() || !headers.is_empty() {
+            f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {")?;
+            if !headers.is_empty() {
+                f.write_str("\n        let mut req = req;")?;
+                f.write_str(&headers)?;
+                f.write_str("\n")?;
+            }
+
+            f.write_str("\n        req")?;
             if self.0.body_required {
                 f.write_str("\n        .json(&self.")?;
                 if needs_container {
@@ -1025,6 +1107,9 @@ where
             field.prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name);
 
         ApiObject::write_docs(field.desc, f, 1)?;
+        if field.desc.is_none() {
+            f.write_str("\n")?;
+        }
 
         // Inline property methods.
         f.write_str("    #[inline]\n    pub fn ")?;
@@ -1102,41 +1187,6 @@ where
         }
 
         f.write_str("\n    }\n")
-    }
-}
-
-/// The property we're dealing with.
-#[derive(Debug, Clone, Copy, Eq, PartialEq)]
-pub(super) enum Property {
-    RequiredField,
-    OptionalField,
-    RequiredParam,
-    OptionalParam,
-}
-
-impl Property {
-    /// Whether this property is required.
-    pub(super) fn is_required(self) -> bool {
-        match self {
-            Property::RequiredField | Property::RequiredParam => true,
-            _ => false,
-        }
-    }
-
-    /// Checks whether this property is a parameter.
-    pub(super) fn is_parameter(self) -> bool {
-        match self {
-            Property::RequiredParam | Property::OptionalParam => true,
-            _ => false,
-        }
-    }
-
-    /// Checks whether this property is a field.
-    pub(super) fn is_field(self) -> bool {
-        match self {
-            Property::RequiredField | Property::OptionalField => true,
-            _ => false,
-        }
     }
 }
 

@@ -72,6 +72,13 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/Pet'
+      - in: header
+        name: X-Auth
+        required: true
+        type: string
+      - in: header
+        name: X-Pet-ID
+        type: integer
       responses:
         "200":
           schema:

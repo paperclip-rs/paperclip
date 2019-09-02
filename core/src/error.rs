@@ -23,9 +23,15 @@ pub enum ValidationError {
         _0, _1
     )]
     MissingSchemaForBodyParameter(String, String),
+    /// Some headers have special meaning in OpenAPI. The user cannot have these headers
+    /// in their API spec.
+    #[fail(
+        display = "Path {:?} has header parameter {:?} which is not allowed",
+        _1, _0
+    )]
+    InvalidHeader(String, String),
     #[cfg(feature = "v2")]
-    /// Only arrays and primitive types are allowed in parameters. If "file" is specified,
-    /// then it must be `formData` parameter.
+    /// Only arrays and primitive types are allowed in parameters.
     #[fail(
         display = "Parameter {:?} in path {:?} has specified {:?} type, but it's invalid for {:?} parameters",
         _0, _1, _2, _3

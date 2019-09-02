@@ -20,6 +20,10 @@ lazy_static! {
     static ref PATH_TEMPLATE_REGEX: Regex = Regex::new(r"\{(.*?)\}").expect("path template regex");
 }
 
+// Headers that have special meaning in OpenAPI. These cannot be used in header parameter.
+// Ensure that they're all lowercase for case insensitive check.
+const SPECIAL_HEADERS: &[&str] = &["content-type", "accept", "authorization"];
+
 /// OpenAPI version.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 pub enum Version {
@@ -211,6 +215,7 @@ where
     /// path it's associated with.
     pub fn check(&self, path: &str) -> Result<(), ValidationError> {
         if self.in_ == ParameterIn::Body {
+            // Body parameter must specify a schema.
             if self.schema.is_none() {
                 return Err(ValidationError::MissingSchemaForBodyParameter(
                     self.name.clone(),
@@ -219,8 +224,18 @@ where
             }
 
             return Ok(());
+        } else if self.in_ == ParameterIn::Header {
+            // Some headers aren't allowed.
+            let lower = self.name.to_lowercase();
+            if SPECIAL_HEADERS.iter().any(|&h| lower == h) {
+                return Err(ValidationError::InvalidHeader(
+                    self.name.clone(),
+                    path.into(),
+                ));
+            }
         }
 
+        // Non-body parameters must be primitives or an array - they can't have objects.
         let mut is_invalid = false;
         match self.data_type {
             Some(dt) if dt.is_primitive() => (),
@@ -248,7 +263,9 @@ where
                     }
                 }
             }
+            // If "file" is specified, then it must be `formData` parameter.
             Some(DataType::File) => {
+                // FIXME: Check against `consumes` and `produces` fields.
                 if self.in_ != ParameterIn::FormData {
                     is_invalid = true;
                 }

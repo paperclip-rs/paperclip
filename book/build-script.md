@@ -23,8 +23,8 @@ reqwest = "0.9"
 serde = "1.0"
 # Other crates I'm using for this example.
 futures-preview = { version = "0.3.0-alpha.16", features = ["compat"], package = "futures-preview" }
-runtime = { git = "https://github.com/rustasync/runtime" }
-runtime-tokio = { git = "https://github.com/rustasync/runtime" }
+runtime = "0.3.0-alpha.7"
+runtime-tokio = "0.3.0-alpha.6"
 
 [build-dependencies]
 paperclip = "0"
@@ -63,8 +63,6 @@ fn main() {
 - Now, you can modify `src/main.rs` to make use of the generated code:
 
 ```rust
-#![feature(async_await)]
-
 #[macro_use] extern crate failure;
 #[macro_use] extern crate serde;
 

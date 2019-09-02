@@ -934,12 +934,6 @@ fn test_cli_main() {
 
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
-        "#![feature(async_await)]",
-        Some(0),
-    );
-
-    assert_file_contains_content_at(
-        &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
         "
 use self::client::{ApiClient, ApiError};
 use clap::App;
@@ -1100,7 +1094,7 @@ async fn main() {
     }
 }
 ",
-        Some(3949),
+        Some(3925),
     );
 }
 

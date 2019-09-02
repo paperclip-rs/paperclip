@@ -130,6 +130,55 @@ fn test_overridden_path() {
 }
 
 #[test]
+fn test_header_parameters() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/pet.rs"),
+        "
+impl<XAuth, Id, Name> PetPostBuilder<XAuth, Id, Name> {
+    #[inline]
+    pub fn x_auth(mut self, value: impl Into<String>) -> PetPostBuilder<crate::generics::XAuthExists, Id, Name> {
+        self.inner.param_x_auth = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    #[inline]
+    pub fn x_pet_id(mut self, value: impl Into<i64>) -> Self {
+        self.inner.param_x_pet_id = Some(value.into());
+        self
+    }
+",
+        Some(3938)
+    );
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/pet.rs"),
+        "
+impl crate::client::Sendable for PetPostBuilder<crate::generics::XAuthExists, crate::generics::IdExists, crate::generics::NameExists> {
+    type Output = crate::pet::Pet;
+
+    const METHOD: reqwest::Method = reqwest::Method::POST;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/pets\".into()
+    }
+
+    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
+        let mut req = req;
+        req = req.header(\"X-Auth\", self.inner.param_x_auth.as_ref().map(std::string::ToString::to_string).expect(\"missing parameter x_auth?\"));
+        if let Some(v) = self.inner.param_x_pet_id.as_ref().map(std::string::ToString::to_string) {
+            req = req.header(\"X-Pet-ID\", v);
+        }
+
+        req
+        .json(&self.inner.body)
+    }
+}
+",
+        Some(5411),
+    );
+}
+
+#[test]
 fn test_array_response() {
     // If an operation returns an array of objects, then we bind that
     // operation to that object and do `Sendable<Output<Vec<Object>>>`.
@@ -151,7 +200,7 @@ impl crate::client::Sendable for PetGetBuilder {
     }
 }
 ",
-        Some(2851),
+        Some(2978),
     );
 }
 

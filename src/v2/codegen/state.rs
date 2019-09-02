@@ -101,10 +101,6 @@ impl EmitterState {
 
             if rel_parent.parent().is_none() && self.is_crate() {
                 mod_path = self.root_module_path();
-                if is_app {
-                    contents.push_str("#![feature(async_await)]");
-                }
-
                 contents.push_str(
                     "
 #[macro_use]
