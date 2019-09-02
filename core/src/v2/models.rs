@@ -40,6 +40,16 @@ pub enum DataType {
     File,
 }
 
+impl DataType {
+    /// Checks if this is a primitive type.
+    pub fn is_primitive(self) -> bool {
+        match self {
+            DataType::Integer | DataType::Number | DataType::String | DataType::Boolean => true,
+            _ => false,
+        }
+    }
+}
+
 /// Supported data type formats.
 #[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
@@ -193,7 +203,10 @@ pub struct Parameter<S> {
     pub enum_: BTreeSet<String>,
 }
 
-impl<S> Parameter<S> {
+impl<S> Parameter<SchemaRepr<S>>
+where
+    S: Schema,
+{
     /// Checks the validity of this parameter using the relative URL
     /// path it's associated with.
     pub fn check(&self, path: &str) -> Result<(), ValidationError> {
@@ -204,10 +217,51 @@ impl<S> Parameter<S> {
                     path.into(),
                 ));
             }
-        } else if self.data_type.is_none() {
-            return Err(ValidationError::MissingParameterType(
+
+            return Ok(());
+        }
+
+        let mut is_invalid = false;
+        match self.data_type {
+            Some(dt) if dt.is_primitive() => (),
+            Some(DataType::Array) => {
+                let mut inner = self.items.as_ref().cloned();
+                loop {
+                    let dt = inner.as_ref().and_then(|s| s.read().data_type());
+                    match dt {
+                        Some(ty) if ty.is_primitive() => break,
+                        Some(DataType::Array) => {
+                            inner = inner.as_ref().and_then(|s| s.read().items().cloned());
+                        }
+                        None => {
+                            return Err(ValidationError::InvalidParameterType(
+                                self.name.clone(),
+                                path.into(),
+                                dt,
+                                self.in_,
+                            ));
+                        }
+                        _ => {
+                            is_invalid = true;
+                            break;
+                        }
+                    }
+                }
+            }
+            Some(DataType::File) => {
+                if self.in_ != ParameterIn::FormData {
+                    is_invalid = true;
+                }
+            }
+            _ => is_invalid = true,
+        }
+
+        if is_invalid {
+            return Err(ValidationError::InvalidParameterType(
                 self.name.clone(),
                 path.into(),
+                self.data_type,
+                self.in_,
             ));
         }
 

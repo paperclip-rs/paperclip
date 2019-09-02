@@ -1,3 +1,5 @@
+#[cfg(feature = "v2")]
+use crate::v2::models::{DataType, ParameterIn};
 use failure::Fail;
 
 /// Errors related to spec validation.
@@ -21,7 +23,12 @@ pub enum ValidationError {
         _0, _1
     )]
     MissingSchemaForBodyParameter(String, String),
-    /// If a parameter doesn't specify a body, then it must have a type.
-    #[fail(display = "Parameter {:?} in path {:?} must have a type", _0, _1)]
-    MissingParameterType(String, String),
+    #[cfg(feature = "v2")]
+    /// Only arrays and primitive types are allowed in parameters. If "file" is specified,
+    /// then it must be `formData` parameter.
+    #[fail(
+        display = "Parameter {:?} in path {:?} has specified {:?} type, but it's invalid for {:?} parameters",
+        _0, _1, _2, _3
+    )]
+    InvalidParameterType(String, String, Option<DataType>, ParameterIn),
 }
