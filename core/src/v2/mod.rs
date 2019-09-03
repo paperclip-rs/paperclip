@@ -3,6 +3,7 @@
 
 #[cfg(feature = "actix")]
 mod actix;
+mod extensions;
 pub mod models;
 mod resolver;
 pub mod schema;
@@ -33,6 +34,12 @@ impl<S: Schema> Api<S> {
             paths: resolver.paths,
             base_path: self.base_path,
             host: self.host,
+            schemes: self.schemes,
+            consumes: self.consumes,
+            produces: self.produces,
+            encoders: self.encoders,
+            decoders: self.decoders,
+            support_crates: self.support_crates,
         })
     }
 }

@@ -1,5 +1,6 @@
 //! Models used by OpenAPI v2.
 
+use super::extensions::{Coders, MediaRange};
 use super::schema::Schema;
 use crate::error::ValidationError;
 use crate::im::ArcRwLock;
@@ -85,6 +86,41 @@ pub struct GenericApi<S> {
     pub host: Option<String>,
     #[serde(rename = "basePath", skip_serializing_if = "Option::is_none")]
     pub base_path: Option<String>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub consumes: BTreeSet<MediaRange>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub produces: BTreeSet<MediaRange>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub schemes: BTreeSet<OperationProtocol>,
+    #[serde(
+        default,
+        rename = "x-encoders",
+        skip_serializing_if = "<Coders as Deref>::Target::is_empty"
+    )]
+    pub encoders: Coders,
+    #[serde(
+        default,
+        rename = "x-decoders",
+        skip_serializing_if = "<Coders as Deref>::Target::is_empty"
+    )]
+    pub decoders: Coders,
+    /// Additional crates that need to be added to the manifest.
+    ///
+    /// The key is the LHS of a dependency, which is the crate name.
+    /// The value is the RHS of a crate's requirements as it would appear
+    /// in the manifest. Note that the caller must add proper quoting
+    /// whenever required.
+    ///
+    /// For example, in a JSON spec, the following are all valid:
+    /// - `{"my_crate": "0.7"}`
+    /// - `{"my_crate": "{ git = \"git://foo.bar/repo\" }"}`
+    /// - `{"my_crate": "{ version = \"0.9\", features = [\"booya\"] }"}`
+    #[serde(
+        default,
+        rename = "x-dependencies",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
+    pub support_crates: BTreeMap<String, String>,
 }
 
 impl<S> GenericApi<S> {
@@ -307,13 +343,12 @@ pub struct Operation<S> {
     pub operation_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    // FIXME: Switch to `mime::MediaType` (which adds serde support) once 0.4 is released.
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub consumes: Vec<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub produces: Vec<String>,
-    #[serde(default, skip_serializing_if = "Vec::is_empty")]
-    pub schemes: Vec<OperationProtocol>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub consumes: BTreeSet<MediaRange>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub produces: BTreeSet<MediaRange>,
+    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    pub schemes: BTreeSet<OperationProtocol>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
@@ -352,6 +387,16 @@ impl<S> Operation<S> {
     }
 }
 
+/// The protocol used for an operation.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub enum OperationProtocol {
+    Http,
+    Https,
+    Ws,
+    Wss,
+}
+
 /// HTTP response.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject
@@ -376,6 +421,8 @@ pub enum HttpMethod {
     Patch,
 }
 
+/* Common trait impls */
+
 #[cfg(feature = "actix")]
 impl From<&Method> for HttpMethod {
     fn from(method: &Method) -> HttpMethod {
@@ -389,16 +436,6 @@ impl From<&Method> for HttpMethod {
             _ => HttpMethod::Get,
         }
     }
-}
-
-/// The protocol used for an operation.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
-#[serde(rename_all = "lowercase")]
-pub enum OperationProtocol {
-    Http,
-    Https,
-    Ws,
-    Wss,
 }
 
 impl<S> SchemaRepr<S>
