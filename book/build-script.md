@@ -110,7 +110,7 @@ error[E0599]: no method named `send` found for type
 in the current scope
 ```
 
-Note that there's the struct `PetGetBuilder1` has been marked with `MissingPetId`. And, `send` is implemented only when the builder has `PetIdExists` marker.
+Note that the struct `PetGetBuilder1` has been marked with `MissingPetId`. And, `send` is implemented only when the builder has `PetIdExists` marker.
 
 Hence the fix would be to set the required parameter using the relevant method call (which transforms the builder struct).
 

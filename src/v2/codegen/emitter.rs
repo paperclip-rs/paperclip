@@ -4,7 +4,8 @@ use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
     models::{
-        self, Api, DataType, DataTypeFormat, Operation, OperationMap, ParameterIn, SchemaRepr,
+        self, Api, DataType, DataTypeFormat, HttpMethod, Operation, OperationMap, ParameterIn,
+        SchemaRepr,
     },
     Schema,
 };
@@ -16,7 +17,27 @@ use std::collections::HashSet;
 use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
-use std::path::PathBuf;
+use std::path::{Path, PathBuf};
+
+/// Some "thing" emitted by the emitter.
+pub enum EmittedUnit {
+    /// Object represented as a Rust struct.
+    Object(ApiObject),
+    /// Some Rust type.
+    Known(String),
+    /// Nothing to do.
+    None,
+}
+
+impl EmittedUnit {
+    #[inline]
+    fn known_type(self) -> String {
+        match self {
+            EmittedUnit::Known(s) => s,
+            _ => panic!("Emitted unit is not a known type"),
+        }
+    }
+}
 
 /// `Emitter` represents the interface for generating the relevant
 /// modules, API object definitions and the associated calls.
@@ -66,7 +87,14 @@ pub trait Emitter: Sized {
         state.write_definitions()?;
 
         for (path, map) in &api.paths {
-            gen.collect_requirements_for_path(path, map)?;
+            RequirementCollector {
+                path,
+                emitter: self,
+                api,
+                map,
+                template_params: HashSet::new(),
+            }
+            .collect()?;
         }
 
         state.add_builders()?;
@@ -216,237 +244,6 @@ where
         Ok(())
     }
 
-    /// Checks whether this path is unique (regardless of its templating)
-    /// and returns the list of parameters that exist in the template.
-    ///
-    /// For example, `/api/{foo}` and `/api/{bar}` are the same, and we
-    /// should reject it.
-    fn validate_path_and_get_params(&self, path: &str) -> Result<HashSet<String>, Error> {
-        let mut params = HashSet::new();
-        let path_fmt = Api::<()>::path_parameters_map(path, |p| {
-            params.insert(p.into());
-            ":".into()
-        });
-
-        let state = self.state();
-        let mut paths = state.rel_paths.borrow_mut();
-        let value_absent = paths.insert(path_fmt.clone().into());
-        if value_absent {
-            Ok(params)
-        } else {
-            Err(PaperClipError::RelativePathNotUnique(path.into()).into())
-        }
-    }
-
-    /// Given a path and an operation map, collect the stuff required
-    /// for generating builders later.
-    // FIXME: Cleanup before this infection spreads!
-    fn collect_requirements_for_path(
-        &self,
-        path: &str,
-        map: &OperationMap<SchemaRepr<E::Definition>>,
-    ) -> Result<(), Error> {
-        let mut template_params = self.validate_path_and_get_params(path)?;
-        debug!("Collecting builder requirement for {:?}", path);
-        let state = self.state();
-
-        // Collect all the parameters local to some API call.
-        let (unused_params, _) =
-            self.collect_parameters(path, &map.parameters, &mut template_params)?;
-        // FIXME: What if a body is "required" globally (for all operations)?
-        // This means, operations can override the body with some other schema
-        // and we may need to map it to the appropriate builders.
-
-        // Now collect the parameters local to an API call operation (method).
-        for (&meth, op) in &map.methods {
-            let mut op_addressed = false;
-            let mut unused_local_params = vec![];
-
-            let (mut params, schema_path) =
-                self.collect_parameters(path, &op.parameters, &mut template_params)?;
-            // If we have unused params which don't exist in the method-specific
-            // params (which take higher precedence), then we can copy those inside.
-            for global_param in &unused_params {
-                if params
-                    .iter()
-                    .find(|p| p.name == global_param.name)
-                    .is_none()
-                {
-                    params.push(global_param.clone());
-                }
-            }
-
-            // If there's a matching object, add the params to its operation.
-            if let Some(pat) = schema_path.as_ref() {
-                op_addressed = true;
-                let mut def_mods = state.def_mods.borrow_mut();
-                let obj = def_mods.get_mut(pat).expect("bleh?");
-                let ops = obj
-                    .paths
-                    .entry(path.into())
-                    .or_insert_with(Default::default);
-                ops.req.insert(
-                    meth,
-                    OpRequirement {
-                        listable: false,
-                        id: op.operation_id.clone(),
-                        description: op.description.clone(),
-                        params,
-                        body_required: true,
-                        response_ty_path: if let Some(s) = self.get_2xx_response_schema(&op) {
-                            let schema = &*s.read();
-                            Some(self.build_def(schema, false)?.known_type())
-                        } else {
-                            None
-                        },
-                    },
-                );
-            } else {
-                unused_local_params = params;
-            }
-
-            if op_addressed {
-                continue;
-            }
-
-            // We haven't attached this operation to any object.
-            // Let's try from the response maybe...
-            if let Some(s) = self.get_2xx_response_schema(&op) {
-                let mut def_mods = state.def_mods.borrow_mut();
-                let schema = &*s.read();
-
-                let mut listable = false;
-                let s = match schema.data_type() {
-                    // We can deal with object responses.
-                    Some(DataType::Object) => s.clone(),
-                    // We can also deal with array of objects by mapping
-                    // the operation to that object.
-                    Some(DataType::Array)
-                        if schema.items().unwrap().read().data_type() == Some(DataType::Object) =>
-                    {
-                        listable = true;
-                        (&**schema.items().unwrap()).clone()
-                    }
-                    // FIXME: Handle other types where we can't map an
-                    // operation to a known schema.
-                    _ => continue,
-                };
-
-                let schema = &*s.read();
-                let pat = self.def_mod_path(schema).ok();
-                let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
-                    Some(o) => o,
-                    None => {
-                        warn!(
-                            "Skipping unknown response schema for path {:?}: {:?}",
-                            path, schema
-                        );
-                        continue;
-                    }
-                };
-
-                let ops = obj
-                    .paths
-                    .entry(path.into())
-                    .or_insert_with(Default::default);
-                ops.req.insert(
-                    meth,
-                    OpRequirement {
-                        id: op.operation_id.clone(),
-                        description: op.description.clone(),
-                        params: unused_local_params,
-                        body_required: false,
-                        listable,
-                        response_ty_path: None,
-                    },
-                );
-            }
-        }
-
-        // FIXME: If none of the parameters (local to operation or global) specify
-        // a body then we should use something (say, `operationID`) to generate
-        // a builder and forward `unused_params` to it?
-        if map.methods.is_empty() {
-            warn!(
-                "Missing operations for path: {:?}{}",
-                path,
-                if unused_params.is_empty() {
-                    ""
-                } else {
-                    ", but 'parameters' field is specified."
-                }
-            );
-        }
-
-        if !template_params.is_empty() {
-            return Err(
-                PaperClipError::MissingParametersInPath(path.into(), template_params).into(),
-            );
-        }
-
-        Ok(())
-    }
-
-    /// Returns the first 2xx response schema in this operation.
-    ///
-    /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
-    fn get_2xx_response_schema<'o>(
-        &self,
-        op: &'o Operation<SchemaRepr<E::Definition>>,
-    ) -> Option<&'o ArcRwLock<E::Definition>> {
-        op.responses
-            .iter()
-            .filter(|(c, _)| c.starts_with('2')) // 2xx response
-            .filter_map(|(_, r)| r.schema.as_ref())
-            .next()
-            .map(|r| &**r)
-    }
-
-    /// Given a bunch of resolved parameters, validate and collect a simplified version of them.
-    fn collect_parameters(
-        &self,
-        path: &str,
-        obj_params: &[models::Parameter<SchemaRepr<E::Definition>>],
-        template_params: &mut HashSet<String>,
-    ) -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
-        let def_mods = self.state().def_mods.borrow();
-        let mut schema_path = None;
-        let mut params = vec![];
-        for p in obj_params {
-            p.check(path)?; // validate the parameter
-
-            if let Some(def) = p.schema.as_ref() {
-                // If a schema exists, then get its path for later use.
-                let pat = self.def_mod_path(&*def.read())?;
-                def_mods.get(&pat).ok_or_else(|| {
-                    PaperClipError::UnsupportedParameterDefinition(p.name.clone(), path.into())
-                })?;
-                schema_path = Some(pat);
-                continue;
-            }
-
-            // If this is a parameter that must exist in path, then remove it
-            // from the expected list of parameters.
-            if p.in_ == ParameterIn::Path {
-                template_params.remove(&p.name);
-            }
-
-            // Enforce that the parameter is a known type and collect it.
-            let ty = matching_unit_type(p.format.as_ref(), p.data_type)
-                .ok_or_else(|| PaperClipError::UnknownParameterType(p.name.clone(), path.into()))?;
-            params.push(Parameter {
-                name: p.name.clone(),
-                description: p.description.clone(),
-                ty_path: ty.into(),
-                presence: p.in_,
-                // NOTE: parameter is required if it's in path
-                required: p.required || p.in_ == ParameterIn::Path,
-            });
-        }
-
-        Ok((params, schema_path))
-    }
-
     /// Assumes that the given definition is an array and returns the corresponding
     /// vector type for it.
     fn emit_array(&self, def: &E::Definition, define: bool) -> Result<EmittedUnit, Error> {
@@ -564,23 +361,263 @@ where
     }
 }
 
-/// Some "thing" emitted by the emitter.
-pub enum EmittedUnit {
-    /// Object represented as a Rust struct.
-    Object(ApiObject),
-    /// Some Rust type.
-    Known(String),
-    /// Nothing to do.
-    None,
+/// Abstraction which takes care of adding requirements for operations.
+struct RequirementCollector<'a, E: Emitter> {
+    path: &'a str,
+    emitter: &'a E,
+    api: &'a Api<E::Definition>,
+    map: &'a OperationMap<SchemaRepr<E::Definition>>,
+    template_params: HashSet<String>,
 }
 
-impl EmittedUnit {
-    #[inline]
-    fn known_type(self) -> String {
-        match self {
-            EmittedUnit::Known(s) => s,
-            _ => panic!("Emitted unit is not a known type"),
+impl<'a, E> RequirementCollector<'a, E>
+where
+    E: Emitter,
+    E::Definition: Debug,
+{
+    /// Given a path and an operation map, collect the stuff required
+    /// for generating builders later.
+    fn collect(mut self) -> Result<(), Error> {
+        self.validate_path_and_add_params()?;
+        debug!("Collecting builder requirement for {:?}", self.path);
+
+        // Collect all the parameters local to some API call.
+        let (unused_params, _) = self.collect_parameters(&self.map.parameters)?;
+        // FIXME: What if a body is "required" globally (for all operations)?
+        // This means, operations can override the body with some other schema
+        // and we may need to map it to the appropriate builders.
+
+        for (&meth, op) in &self.map.methods {
+            self.collect_from_operation(meth, op, &unused_params)?;
         }
+
+        // FIXME: If none of the parameters (local to operation or global) specify
+        // a body then we should use something (say, `operationID`) to generate
+        // a builder and forward `unused_params` to it?
+        if self.map.methods.is_empty() {
+            warn!(
+                "Missing operations for path: {:?}{}",
+                self.path,
+                if unused_params.is_empty() {
+                    ""
+                } else {
+                    ", but 'parameters' field is specified."
+                }
+            );
+        }
+
+        if !self.template_params.is_empty() {
+            return Err(PaperClipError::MissingParametersInPath(
+                self.path.into(),
+                self.template_params,
+            )
+            .into());
+        }
+
+        Ok(())
+    }
+
+    /// Checks whether this path is unique (regardless of its templating)
+    /// and returns the list of parameters that exist in the template.
+    ///
+    /// For example, `/api/{foo}` and `/api/{bar}` are the same, and we
+    /// should reject it.
+    fn validate_path_and_add_params(&mut self) -> Result<(), PaperClipError> {
+        let path_fmt = Api::<()>::path_parameters_map(self.path, |p| {
+            self.template_params.insert(p.into());
+            ":".into()
+        });
+
+        let state = self.emitter.state();
+        let mut paths = state.rel_paths.borrow_mut();
+        let value_absent = paths.insert(path_fmt.clone().into());
+        if value_absent {
+            Ok(())
+        } else {
+            Err(PaperClipError::RelativePathNotUnique(self.path.into()))
+        }
+    }
+
+    /// Collect the parameters local to an API call operation (method).
+    fn collect_from_operation(
+        &mut self,
+        meth: HttpMethod,
+        op: &Operation<SchemaRepr<E::Definition>>,
+        unused_params: &[Parameter],
+    ) -> Result<(), Error> {
+        let (mut params, schema_path) = self.collect_parameters(&op.parameters)?;
+        // If we have unused params which don't exist in the method-specific
+        // params (which take higher precedence), then we can copy those inside.
+        for global_param in unused_params {
+            if params
+                .iter()
+                .find(|p| p.name == global_param.name)
+                .is_none()
+            {
+                params.push(global_param.clone());
+            }
+        }
+
+        // If there's a matching object, add the params to its operation.
+        if let Some(pat) = schema_path.as_ref() {
+            self.bind_schema_to_operation(pat, meth, op, params)?;
+        } else {
+            self.bind_operation_blindly(meth, op, params);
+        }
+
+        Ok(())
+    }
+
+    /// Given a bunch of resolved parameters, validate and collect a simplified version of them.
+    fn collect_parameters(
+        &mut self,
+        obj_params: &[models::Parameter<SchemaRepr<E::Definition>>],
+    ) -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
+        let def_mods = self.emitter.state().def_mods.borrow();
+        let mut schema_path = None;
+        let mut params = vec![];
+        for p in obj_params {
+            p.check(self.path)?; // validate the parameter
+
+            if let Some(def) = p.schema.as_ref() {
+                // If a schema exists, then get its path for later use.
+                let pat = self.emitter.def_mod_path(&*def.read())?;
+                def_mods.get(&pat).ok_or_else(|| {
+                    PaperClipError::UnsupportedParameterDefinition(p.name.clone(), self.path.into())
+                })?;
+                schema_path = Some(pat);
+                continue;
+            }
+
+            // If this is a parameter that must exist in path, then remove it
+            // from the expected list of parameters.
+            if p.in_ == ParameterIn::Path {
+                self.template_params.remove(&p.name);
+            }
+
+            // Enforce that the parameter is a known type and collect it.
+            let ty = matching_unit_type(p.format.as_ref(), p.data_type).ok_or_else(|| {
+                PaperClipError::UnknownParameterType(p.name.clone(), self.path.into())
+            })?;
+            params.push(Parameter {
+                name: p.name.clone(),
+                description: p.description.clone(),
+                ty_path: ty.into(),
+                presence: p.in_,
+                // NOTE: parameter is required if it's in path
+                required: p.required || p.in_ == ParameterIn::Path,
+            });
+        }
+
+        Ok((params, schema_path))
+    }
+
+    /// Given a schema path, fetch the object and bind the given operation to it.
+    fn bind_schema_to_operation(
+        &self,
+        schema_path: &Path,
+        meth: HttpMethod,
+        op: &Operation<SchemaRepr<E::Definition>>,
+        params: Vec<Parameter>,
+    ) -> Result<(), Error> {
+        let state = self.emitter.state();
+        let mut def_mods = state.def_mods.borrow_mut();
+        let obj = def_mods.get_mut(schema_path).expect("bleh?");
+        let ops = obj
+            .paths
+            .entry(self.path.into())
+            .or_insert_with(Default::default);
+        ops.req.insert(
+            meth,
+            OpRequirement {
+                listable: false,
+                id: op.operation_id.clone(),
+                description: op.description.clone(),
+                params,
+                body_required: true,
+                response_ty_path: if let Some(s) = Self::get_2xx_response_schema(&op) {
+                    let schema = &*s.read();
+                    Some(self.emitter.build_def(schema, false)?.known_type())
+                } else {
+                    None
+                },
+            },
+        );
+
+        Ok(())
+    }
+
+    /// We couldn't attach this operation to any object. Now, we're
+    /// just attempting out of desperation.
+    fn bind_operation_blindly(
+        &self,
+        meth: HttpMethod,
+        op: &Operation<SchemaRepr<E::Definition>>,
+        params: Vec<Parameter>,
+    ) {
+        // Let's try from the response maybe...
+        let s = match Self::get_2xx_response_schema(&op) {
+            Some(s) => s,
+            None => return,
+        };
+
+        let schema = &*s.read();
+        let state = self.emitter.state();
+        let mut def_mods = state.def_mods.borrow_mut();
+        let listable = schema.items().and_then(|s| s.read().data_type()) == Some(DataType::Object);
+        let s = match schema.data_type() {
+            // We can deal with object responses.
+            Some(DataType::Object) => s.clone(),
+            // We can also deal with array of objects by mapping
+            // the operation to that object.
+            _ if listable => (&**schema.items().unwrap()).clone(),
+            // FIXME: Handle other types where we can't map an
+            // operation to a known schema.
+            _ => return,
+        };
+
+        let schema = &*s.read();
+        let pat = self.emitter.def_mod_path(schema).ok();
+        let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
+            Some(o) => o,
+            None => {
+                warn!(
+                    "Skipping unknown response schema for path {:?}: {:?}",
+                    self.path, schema
+                );
+                return;
+            }
+        };
+
+        let ops = obj
+            .paths
+            .entry(self.path.into())
+            .or_insert_with(Default::default);
+        ops.req.insert(
+            meth,
+            OpRequirement {
+                id: op.operation_id.clone(),
+                description: op.description.clone(),
+                params,
+                body_required: false,
+                listable,
+                response_ty_path: None,
+            },
+        );
+    }
+
+    /// Returns the first 2xx response schema in this operation.
+    ///
+    /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
+    fn get_2xx_response_schema<'o>(
+        op: &'o Operation<SchemaRepr<E::Definition>>,
+    ) -> Option<&'o ArcRwLock<E::Definition>> {
+        op.responses
+            .iter()
+            .filter(|(c, _)| c.starts_with('2')) // 2xx response
+            .filter_map(|(_, r)| r.schema.as_ref())
+            .next()
+            .map(|r| &**r)
     }
 }
 
