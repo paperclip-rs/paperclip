@@ -4,7 +4,7 @@
 //! API objects, their builders, impls, etc.
 
 use super::RUST_KEYWORDS;
-use crate::v2::models::{HttpMethod, ParameterIn};
+use crate::v2::models::{Coder, HttpMethod, ParameterIn};
 use heck::{CamelCase, KebabCase, SnekCase};
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -12,6 +12,7 @@ use regex::{Captures, Regex};
 use std::collections::{BTreeMap, HashSet};
 use std::fmt::{self, Display, Write};
 use std::iter;
+use std::sync::Arc;
 
 lazy_static! {
     /// Regex for appropriate escaping in docs.
@@ -60,6 +61,10 @@ pub struct OpRequirement {
     pub listable: bool,
     /// Type path for this operation's response.
     pub response_ty_path: Option<String>,
+    /// Preferred encoder for the client.
+    pub encoder: Arc<Coder>,
+    /// List of decoders in preferred order.
+    pub decoders: Vec<Arc<Coder>>,
 }
 
 /// Represents some parameter somewhere (header, path, query, etc.).

@@ -1,6 +1,8 @@
 //! Models used by OpenAPI v2.
 
-use super::extensions::{Coders, MediaRange};
+pub use super::extensions::{Coder, MediaRange, JSON_CODER, YAML_CODER};
+
+use super::extensions::Coders;
 use super::schema::Schema;
 use crate::error::ValidationError;
 use crate::im::ArcRwLock;
@@ -15,6 +17,7 @@ use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{self, Display};
 use std::ops::{Deref, DerefMut};
+use std::sync::Arc;
 
 lazy_static! {
     /// Regex that can be used for fetching templated path parameters.
@@ -94,16 +97,10 @@ pub struct GenericApi<S> {
     pub schemes: BTreeSet<OperationProtocol>,
     #[serde(
         default,
-        rename = "x-encoders",
+        rename = "x-coders",
         skip_serializing_if = "<Coders as Deref>::Target::is_empty"
     )]
-    pub encoders: Coders,
-    #[serde(
-        default,
-        rename = "x-decoders",
-        skip_serializing_if = "<Coders as Deref>::Target::is_empty"
-    )]
-    pub decoders: Coders,
+    pub coders: Coders,
     /// Additional crates that need to be added to the manifest.
     ///
     /// The key is the LHS of a dependency, which is the crate name.
@@ -121,6 +118,26 @@ pub struct GenericApi<S> {
         skip_serializing_if = "BTreeMap::is_empty"
     )]
     pub support_crates: BTreeMap<String, String>,
+    /// This field is set manually, because we don't know the format in which
+    /// the spec was provided.
+    #[serde(skip)]
+    pub spec_format: SpecFormat,
+}
+
+#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+pub enum SpecFormat {
+    Json,
+    Yaml,
+}
+
+impl SpecFormat {
+    /// The en/decoder used for this format.
+    pub fn coder(self) -> Arc<Coder> {
+        match self {
+            SpecFormat::Json => JSON_CODER.clone(),
+            SpecFormat::Yaml => YAML_CODER.clone(),
+        }
+    }
 }
 
 impl<S> GenericApi<S> {
@@ -343,10 +360,10 @@ pub struct Operation<S> {
     pub operation_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
-    pub consumes: BTreeSet<MediaRange>,
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
-    pub produces: BTreeSet<MediaRange>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub consumes: Option<BTreeSet<MediaRange>>,
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub produces: Option<BTreeSet<MediaRange>>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub schemes: BTreeSet<OperationProtocol>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
@@ -421,7 +438,23 @@ pub enum HttpMethod {
     Patch,
 }
 
+impl HttpMethod {
+    /// Whether this method allows body in requests.
+    pub fn allows_body(self) -> bool {
+        match self {
+            HttpMethod::Post | HttpMethod::Put | HttpMethod::Patch => true,
+            _ => false,
+        }
+    }
+}
+
 /* Common trait impls */
+
+impl Default for SpecFormat {
+    fn default() -> Self {
+        SpecFormat::Json
+    }
+}
 
 #[cfg(feature = "actix")]
 impl From<&Method> for HttpMethod {

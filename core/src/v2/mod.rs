@@ -37,9 +37,9 @@ impl<S: Schema> Api<S> {
             schemes: self.schemes,
             consumes: self.consumes,
             produces: self.produces,
-            encoders: self.encoders,
-            decoders: self.decoders,
+            coders: self.coders,
             support_crates: self.support_crates,
+            spec_format: self.spec_format,
         })
     }
 }

@@ -4,13 +4,14 @@ use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
     models::{
-        self, Api, DataType, DataTypeFormat, HttpMethod, Operation, OperationMap, ParameterIn,
-        SchemaRepr,
+        self, Api, Coder, DataType, DataTypeFormat, HttpMethod, Operation, OperationMap,
+        ParameterIn, SchemaRepr,
     },
     Schema,
 };
 use failure::Error;
 use heck::{CamelCase, SnekCase};
+use itertools::Itertools;
 use url::Host;
 
 use std::collections::HashSet;
@@ -18,6 +19,7 @@ use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
+use std::sync::Arc;
 
 /// Some "thing" emitted by the emitter.
 pub enum EmittedUnit {
@@ -527,6 +529,8 @@ where
             .paths
             .entry(self.path.into())
             .or_insert_with(Default::default);
+
+        let (encoder, decoders) = self.get_coders(op);
         ops.req.insert(
             meth,
             OpRequirement {
@@ -541,6 +545,8 @@ where
                 } else {
                     None
                 },
+                encoder,
+                decoders,
             },
         );
 
@@ -593,6 +599,8 @@ where
             .paths
             .entry(self.path.into())
             .or_insert_with(Default::default);
+
+        let (encoder, decoders) = self.get_coders(op);
         ops.req.insert(
             meth,
             OpRequirement {
@@ -602,6 +610,8 @@ where
                 body_required: false,
                 listable,
                 response_ty_path: None,
+                encoder,
+                decoders,
             },
         );
     }
@@ -618,6 +628,49 @@ where
             .filter_map(|(_, r)| r.schema.as_ref())
             .next()
             .map(|r| &**r)
+    }
+
+    /// Returns the coders for the given operation. The former is the preferred encoder,
+    /// and the latter is the list of decoders. It's a list because even though we prefer
+    /// to use one encoder, we decode based on the `Content-Type` header returned by the
+    /// server, so we must be prepared to face anything. Also, there's always an en/decoder
+    /// because even if we don't have any matching coder for some media type, we have
+    /// JSON/YAML (format used for described the spec) to fallback to.
+    fn get_coders(
+        &self,
+        op: &Operation<SchemaRepr<E::Definition>>,
+    ) -> (Arc<Coder>, Vec<Arc<Coder>>) {
+        let consumes = match op.consumes.as_ref() {
+            Some(s) => s,
+            None => &self.api.consumes,
+        };
+
+        let mut encoders = consumes
+            .iter()
+            .filter_map(|r| self.api.coders.matching_coder(r))
+            .sorted_by(|a, b| b.prefer.cmp(&a.prefer)); // sort based on preference.
+
+        let produces = match op.produces.as_ref() {
+            Some(s) => s,
+            None => &self.api.produces,
+        };
+
+        let mut decoders = produces
+            .iter()
+            .filter_map(|r| self.api.coders.matching_coder(r))
+            .sorted_by(|a, b| b.prefer.cmp(&a.prefer))
+            .collect::<Vec<_>>();
+
+        if decoders.is_empty() {
+            decoders.push(self.api.spec_format.coder());
+        }
+
+        (
+            encoders
+                .next()
+                .unwrap_or_else(|| self.api.spec_format.coder()),
+            decoders,
+        )
     }
 }
 

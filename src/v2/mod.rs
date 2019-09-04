@@ -84,6 +84,7 @@
 pub mod codegen;
 
 use crate::error::PaperClipError;
+use paperclip_core::v2::models::SpecFormat;
 use serde::Deserialize;
 
 use std::io::{Read, Seek, SeekFrom};
@@ -91,7 +92,7 @@ use std::io::{Read, Seek, SeekFrom};
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
 pub use paperclip_core::im;
-pub use paperclip_core::v2::models::{self, Api, DefaultSchema};
+pub use paperclip_core::v2::models::{self, Api, DefaultSchema, JSON_CODER, YAML_CODER};
 pub use paperclip_core::v2::schema::{self, Schema};
 
 /// Deserialize the schema from the given reader. Currently, this only supports
@@ -105,10 +106,19 @@ where
     reader.read_exact(&mut buf)?;
     reader.seek(SeekFrom::Start(0))?;
 
-    if buf[0] == b'{' {
-        // FIXME: Support whitespaces
-        return Ok(serde_json::from_reader(reader)?);
-    }
+    // FIXME: Support whitespaces
+    let (mut api, fmt) = if buf[0] == b'{' {
+        (
+            serde_json::from_reader::<_, Api<S>>(reader)?,
+            SpecFormat::Json,
+        )
+    } else {
+        (
+            serde_yaml::from_reader::<_, Api<S>>(reader)?,
+            SpecFormat::Yaml,
+        )
+    };
 
-    Ok(serde_yaml::from_reader(reader)?)
+    api.spec_format = fmt;
+    Ok(api)
 }

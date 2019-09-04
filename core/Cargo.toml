@@ -19,7 +19,7 @@ log = "0.4"
 paperclip-macros = { path = "../macros", version = "0.2.0" }
 parking_lot = "0.9"
 regex = "1.1"
-serde = { version = "1.0", features = ["derive"] }
+serde = { version = "1.0", features = ["derive", "rc"] }
 mime = { git = "https://github.com/hyperium/mime", features = ["serde1"] }
 
 [features]
