@@ -61,7 +61,8 @@ pub struct OpRequirement {
     pub listable: bool,
     /// Type path for this operation's response.
     pub response_ty_path: Option<String>,
-    /// Preferred encoder for the client.
+    /// Preferred encoder for the client. This is ignored for methods that
+    /// don't accept a body.
     pub encoder: Arc<Coder>,
     /// List of decoders in preferred order.
     pub decoders: Vec<Arc<Coder>>,
@@ -121,24 +122,15 @@ impl ApiObject {
         }
     }
 
-    /// Returns a struct representing the impl for this object.
-    pub fn impl_repr(&self) -> ApiObjectImpl<'_> {
-        ApiObjectImpl {
-            inner: self,
-            builders: vec![],
-        }
-    }
-
-    /// Returns the builders for this object.
+    /// Returns a struct representing the impl for this object. This also
+    /// holds the builders generated for this object.
     ///
     /// Each builder is bound to an operation in a path. If the object is not
-    /// bound to any operation, then the builder only keeps track of the fields.
+    /// bound to any operation, then the builder only keeps track of the fields
+    /// for building the actual object.
     // FIXME: Make operations generic across builders. This will reduce the
     // number of structs generated.
-    pub fn builders<'a>(
-        &'a self,
-        helper_module_prefix: &'a str,
-    ) -> Box<dyn Iterator<Item = ApiObjectBuilder<'a>> + 'a> {
+    pub fn impl_repr<'a>(&'a self, helper_module_prefix: &'a str) -> ApiObjectImpl<'a> {
         // Always emit a builder for API objects (regardless of operations).
         let main_builder = ApiObjectBuilder {
             helper_module_prefix,
@@ -178,7 +170,10 @@ impl ApiObject {
                     })
             });
 
-        Box::new(iter::once(main_builder).chain(path_iter)) as Box<_>
+        ApiObjectImpl {
+            inner: self,
+            builders: iter::once(main_builder).chain(path_iter).collect(),
+        }
     }
 
     /// Writes the given string (if any) as Rust documentation into

@@ -92,7 +92,7 @@ use std::io::{Read, Seek, SeekFrom};
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
 pub use paperclip_core::im;
-pub use paperclip_core::v2::models::{self, Api, DefaultSchema, JSON_CODER, YAML_CODER};
+pub use paperclip_core::v2::models::{self, Api, DefaultSchema, YAML_CODER};
 pub use paperclip_core::v2::schema::{self, Schema};
 
 /// Deserialize the schema from the given reader. Currently, this only supports

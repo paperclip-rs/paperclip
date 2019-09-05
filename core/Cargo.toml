@@ -24,5 +24,6 @@ mime = { git = "https://github.com/hyperium/mime", features = ["serde1"] }
 
 [features]
 actix = ["default", "actix-http", "actix-web", "futures"]
-default = ["v2"]
+default = ["v2", "codegen"]
 v2 = ["paperclip-macros/v2"]
+codegen = []

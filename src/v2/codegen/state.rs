@@ -1,6 +1,7 @@
 use super::template::{self, TEMPLATE};
 use super::{object::ApiObject, CrateMeta};
 use crate::error::PaperClipError;
+use crate::v2::models::{Coder, SpecFormat};
 use failure::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
@@ -28,14 +29,20 @@ pub struct EmitterState {
     pub ns_sep: &'static str,
     /// Module prefix for using in generated code.
     pub mod_prefix: &'static str,
+
+    /* MARK: Private fields. */
     /// Base URL for the API.
     pub(super) base_url: RefCell<Url>,
+    /// Fallback encoding when we don't have a choice (obtained from `Api.spec_format`).
+    default_encoding: RefCell<SpecFormat>,
+    /// Additional error variants for the API client (obtained from `Coders::errors`).
+    errors: Rc<RefCell<Vec<CodingError>>>,
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `"cli"` feature.
     #[cfg(feature = "cli")]
     crate_meta: Option<Rc<RefCell<CrateMeta>>>,
 
-    // MARK: Internal fields that should be reset for each session.
+    /* MARK: Internal fields that should be reset for each session. */
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: RefCell<HashMap<PathBuf, HashSet<ChildModule>>>,
     /// Holds generated struct definitions for leaf modules.
@@ -86,6 +93,21 @@ impl EmitterState {
         *self.unit_types.borrow_mut() = Default::default();
         *self.cli_yaml.borrow_mut() = Default::default();
         *self.cli_match_arms.borrow_mut() = Default::default();
+    }
+
+    /// Sets the media type information for encoder/decoders.
+    pub(crate) fn set_media_info<'a, I>(&self, spec_format: SpecFormat, errors: I)
+    where
+        I: Iterator<Item = (&'a str, &'a str)>,
+    {
+        *self.default_encoding.borrow_mut() = spec_format;
+        *self.errors.borrow_mut() = errors
+            .map(|(m, p)| CodingError {
+                media_type: m.into(),
+                variant: m.replace('*', "wildcard").to_camel_case(),
+                ty_path: p.into(),
+            })
+            .collect();
     }
 
     /// Once the emitter has generated the struct definitions,
@@ -174,8 +196,8 @@ pub mod {name} {{
 
         for (mod_path, object) in &*def_mods {
             let mut builder_content = String::new();
-            let mut repr = object.impl_repr();
-            for builder in object.builders(&module_prefix) {
+            let repr = object.impl_repr(&module_prefix);
+            for builder in &repr.builders {
                 builder
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
@@ -191,8 +213,6 @@ pub mod {name} {{
                 if is_cli {
                     inner_repr.write_arg_parsing(&mut builder_content)?;
                 }
-
-                repr.builders.push(builder);
             }
 
             if is_cli {
@@ -246,11 +266,11 @@ pub mod generics {
     /// Once the builders have been added, we can add API client dependencies.
     pub(crate) fn add_client_deps(&self) -> Result<(), Error> {
         let module = self.root_module_path();
-        let deser = "resp.json::<Self::Output>().map_err(ApiError::Reqwest)";
         let contents = template::render(
             TEMPLATE::CLIENT_MOD,
             &ClientModContext {
-                deserializer: deser,
+                coder: &*self.default_encoding.borrow().coder(),
+                errors: &*self.errors.borrow(),
                 base_url: self.base_url.borrow().as_str(),
             },
         )?;
@@ -469,6 +489,8 @@ impl Clone for EmitterState {
             #[cfg(feature = "cli")]
             crate_meta: self.crate_meta.clone(),
             base_url: self.base_url.clone(),
+            default_encoding: self.default_encoding.clone(),
+            errors: self.errors.clone(),
             ..Default::default()
         }
     }
@@ -489,6 +511,8 @@ impl Default for EmitterState {
             unit_types: RefCell::new(HashSet::new()),
             cli_yaml: RefCell::new(String::new()),
             cli_match_arms: RefCell::new(String::new()),
+            errors: Rc::new(RefCell::new(vec![])),
+            default_encoding: RefCell::new(SpecFormat::Json),
         }
     }
 }
@@ -519,7 +543,15 @@ struct ManifestContext<'a> {
 #[derive(serde::Serialize)]
 struct ClientModContext<'a> {
     base_url: &'a str,
-    deserializer: &'a str,
+    errors: &'a [CodingError],
+    coder: &'a Coder,
+}
+
+#[derive(Debug, serde::Serialize)]
+struct CodingError {
+    media_type: String,
+    variant: String,
+    ty_path: String,
 }
 
 #[derive(serde::Serialize)]

@@ -5,7 +5,7 @@ use crate::v2::{
     im::ArcRwLock,
     models::{
         self, Api, Coder, DataType, DataTypeFormat, HttpMethod, Operation, OperationMap,
-        ParameterIn, SchemaRepr,
+        ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
     },
     Schema,
 };
@@ -56,6 +56,19 @@ pub trait Emitter: Sized {
         let state = self.state();
         state.reset_internal_fields();
 
+        // Add default coders.
+        let mut coders = api.coders.clone();
+        if !coders.contains_key(&JSON_MIME) {
+            coders.insert(JSON_MIME.clone(), JSON_CODER.clone());
+        }
+
+        if !coders.contains_key(&YAML_MIME) {
+            coders.insert(YAML_MIME.clone(), YAML_CODER.clone());
+        }
+
+        state.set_media_info(api.spec_format, coders.errors());
+
+        // Set host and base path.
         if let Some(h) = api.host.as_ref() {
             let mut parts = h.split(':');
             let mut u = state.base_url.borrow_mut();

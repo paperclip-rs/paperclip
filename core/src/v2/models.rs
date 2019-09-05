@@ -1,6 +1,6 @@
 //! Models used by OpenAPI v2.
 
-pub use super::extensions::{Coder, MediaRange, JSON_CODER, YAML_CODER};
+pub use super::extensions::{Coder, MediaRange, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME};
 
 use super::extensions::Coders;
 use super::schema::Schema;

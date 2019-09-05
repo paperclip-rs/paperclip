@@ -331,7 +331,10 @@ pub mod io {
 
 pub mod client {
     use futures::{Future, future};
+    use futures::stream::Stream;
     use parking_lot::Mutex;
+    use reqwest::r#async::Decoder;
+    use serde::de::DeserializeOwned;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
@@ -340,6 +343,10 @@ pub mod client {
         Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
         #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
         Reqwest(reqwest::Error),
+        #[fail(display = \"Error en/decoding \\\"application/json\\\" data: {}\", _0)]
+        ApplicationJson(serde_json::Error),
+        #[fail(display = \"Error en/decoding \\\"application/yaml\\\" data: {}\", _0)]
+        ApplicationYaml(serde_yaml::Error),
     }
 
     /// Represents an API client.
@@ -371,7 +378,7 @@ pub mod client {
     /// A trait for indicating that the implementor can send an API call.
     pub trait Sendable {
         /// The output object from this API request.
-        type Output: serde::de::DeserializeOwned + Send + 'static;
+        type Output: DeserializeOwned + Send + 'static;
 
         /// HTTP method used by this call.
         const METHOD: reqwest::Method;
@@ -390,7 +397,10 @@ pub mod client {
         /// Sends the request and returns a future for the response object.
         fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> {
             Box::new(self.send_raw(client).and_then(|mut resp| {
-                resp.json::<Self::Output>().map_err(ApiError::Reqwest)
+                let body = std::mem::replace(resp.body_mut(), Decoder::empty());
+                body.concat2()
+                    .map_err(ApiError::from)
+                    .and_then(|v| serde_json::from_slice(&v).map_err(ApiError::from))
             })) as Box<_>
         }
 
@@ -410,6 +420,24 @@ pub mod client {
                     futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
                 }
             })) as Box<_>
+        }
+    }
+
+    impl From<reqwest::Error> for ApiError {
+        fn from(e: reqwest::Error) -> Self {
+            ApiError::Reqwest(e)
+        }
+    }
+
+    impl From<serde_json::Error> for ApiError {
+        fn from(e: serde_json::Error) -> Self {
+            ApiError::ApplicationJson(e)
+        }
+    }
+
+    impl From<serde_yaml::Error> for ApiError {
+        fn from(e: serde_yaml::Error) -> Self {
+            ApiError::ApplicationYaml(e)
         }
     }
 }
@@ -914,13 +942,14 @@ futures = \"0.1\"
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
+serde_json = \"1.0\"
+serde_yaml = \"0.8\"
 
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
 futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
 humantime = \"1.2\"
 openssl = { version = \"0.10\", features = [\"vendored\"] }
-serde_json = \"1.0\"
 runtime = \"0.3.0-alpha.7\"
 runtime-tokio = \"0.3.0-alpha.6\"
 ",
@@ -1094,7 +1123,7 @@ async fn main() {
     }
 }
 ",
-        Some(3925),
+        Some(4889),
     );
 }
 

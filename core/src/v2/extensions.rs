@@ -3,10 +3,13 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
-use std::ops::Deref;
+use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 lazy_static! {
+    /// Media range for JSON.
+    pub static ref JSON_MIME: MediaRange =
+        MediaRange(mime::MediaRange::parse("application/json").expect("parsing mime"));
     /// Default coder for JSON.
     pub static ref JSON_CODER: Arc<Coder> = Arc::new(Coder {
         encoder_path: "serde_json::to_vec".into(),
@@ -14,6 +17,9 @@ lazy_static! {
         error_path: "serde_json::Error".into(),
         prefer: true,
     });
+    /// Media range for YAML.
+    pub static ref YAML_MIME: MediaRange =
+        MediaRange(mime::MediaRange::parse("application/yaml").expect("parsing mime"));
     /// Default coder for YAML.
     pub static ref YAML_CODER: Arc<Coder> = Arc::new(Coder {
         encoder_path: "serde_yaml::to_vec".into(),
@@ -25,7 +31,7 @@ lazy_static! {
 
 /// Wrapper for `mime::MediaRange` to support `BTree{Set, Map}`.
 #[derive(Debug, Clone)]
-pub struct MediaRange(mime::MediaRange);
+pub struct MediaRange(pub mime::MediaRange);
 
 impl MediaRange {
     /// Implementation from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L155
@@ -43,8 +49,9 @@ impl MediaRange {
 /// `x-encoder` and `x-decoder` global extension
 /// for custom encoders and decoders.
 #[derive(Debug, Default, Clone)]
-pub struct Coders(pub BTreeMap<MediaRange, Arc<Coder>>);
+pub struct Coders(BTreeMap<MediaRange, Arc<Coder>>);
 
+#[cfg(feature = "codegen")]
 impl Coders {
     /// Returns the matching coder for the given media range (if any).
     ///
@@ -79,6 +86,13 @@ impl Coders {
             })
             .map(Clone::clone)
     }
+
+    /// Returns an iterator of error paths mapped to media types.
+    pub fn errors(&self) -> impl Iterator<Item = (&'_ str, &'_ str)> {
+        self.0
+            .iter()
+            .map(|(r, c)| (r.0.as_ref(), c.error_path.as_str()))
+    }
 }
 
 /// Represents the en/decoder for some MIME media range.
@@ -91,8 +105,8 @@ pub struct Coder {
     /// Path to the error type.
     pub error_path: String,
     /// Whether this media type should be preferred when multiple
-    /// types are available. Note that this only works for "sending"
-    /// requests (i.e., `consumes` field).
+    /// types are available. When multiple types are preferred,
+    /// it's unspecified as to which is chosen.
     pub prefer: bool,
 }
 
@@ -141,6 +155,12 @@ impl Deref for Coders {
 
     fn deref(&self) -> &Self::Target {
         &self.0
+    }
+}
+
+impl DerefMut for Coders {
+    fn deref_mut(&mut self) -> &mut <Self as Deref>::Target {
+        &mut self.0
     }
 }
 

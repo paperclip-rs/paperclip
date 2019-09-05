@@ -1,7 +1,10 @@
 
 pub mod client \{
     use futures::\{Future, future};
+    use futures::stream::Stream;
     use parking_lot::Mutex;
+    use reqwest::r#async::Decoder;
+    use serde::de::DeserializeOwned;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
@@ -10,6 +13,10 @@ pub mod client \{
         Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
         #[fail(display = "An error has occurred while performing the API request: \{}", _0)]
         Reqwest(reqwest::Error),
+        {{- for error in errors}}
+        #[fail(display = "Error en/decoding \"{error.media_type | unescaped}\" data: \{}", _0)]
+        {error.variant | unescaped}({error.ty_path | unescaped}),
+        {{- endfor }}
     }
 
     /// Represents an API client.
@@ -41,7 +48,7 @@ pub mod client \{
     /// A trait for indicating that the implementor can send an API call.
     pub trait Sendable \{
         /// The output object from this API request.
-        type Output: serde::de::DeserializeOwned + Send + 'static;
+        type Output: DeserializeOwned + Send + 'static;
 
         /// HTTP method used by this call.
         const METHOD: reqwest::Method;
@@ -60,7 +67,10 @@ pub mod client \{
         /// Sends the request and returns a future for the response object.
         fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> \{
             Box::new(self.send_raw(client).and_then(|mut resp| \{
-                {deserializer | unescaped}
+                let body = std::mem::replace(resp.body_mut(), Decoder::empty());
+                body.concat2()
+                    .map_err(ApiError::from)
+                    .and_then(|v| {coder.decoder_path | unescaped}(&v).map_err(ApiError::from))
             })) as Box<_>
         }
 
@@ -82,4 +92,18 @@ pub mod client \{
             })) as Box<_>
         }
     }
+
+    impl From<reqwest::Error> for ApiError \{
+        fn from(e: reqwest::Error) -> Self \{
+            ApiError::Reqwest(e)
+        }
+    }
+    {{- for error in errors}}
+
+    impl From<{error.ty_path | unescaped}> for ApiError \{
+        fn from(e: {error.ty_path | unescaped}) -> Self \{
+            ApiError::{error.variant | unescaped}(e)
+        }
+    }
+    {{- endfor }}
 }

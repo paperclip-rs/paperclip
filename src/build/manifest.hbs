@@ -17,13 +17,14 @@ futures = "0.1"
 parking_lot = "0.8"
 reqwest = "0.9"
 serde = "1.0"
+serde_json = "1.0"
+serde_yaml = "0.8"
 {{ if is_cli }}
 clap = \{ version = "2.33", features = ["yaml"] }
 env_logger = "0.6"
 futures-preview = \{ version = "0.3.0-alpha.16", features = ["compat"], package = "futures-preview" }
 humantime = "1.2"
 openssl = \{ version = "0.10", features = ["vendored"] }
-serde_json = "1.0"
 runtime = "0.3.0-alpha.7"
 runtime-tokio = "0.3.0-alpha.6"
 {{ endif }}

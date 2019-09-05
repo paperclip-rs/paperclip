@@ -125,7 +125,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(1228)
+        Some(1583)
     );
 }
 
