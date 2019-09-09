@@ -168,6 +168,15 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
                     Some(&self.required)
                 }
             }
+
+            #[inline]
+            fn enum_variants(&self) -> Option<&[serde_json::Value]> {
+                if self.enum_.is_empty() {
+                    return None
+                } else {
+                    Some(&self.enum_)
+                }
+            }
         }
     });
 
@@ -284,8 +293,8 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     add_self(&mut gen);
 
     gen.extend(quote!(
-        #[serde(default, rename = "enum", skip_serializing_if = "BTreeSet::is_empty")]
-        pub enum_: std::collections::BTreeSet<String>,
+        #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
+        pub enum_: Vec<serde_json::Value>,
     ));
 
     gen.extend(quote!(

@@ -44,6 +44,15 @@ pub trait Schema: Sized {
     /// Returns the required properties (if any) for this object.
     fn required_properties(&self) -> Option<&BTreeSet<String>>;
 
+    /// Enum variants in this schema (if any). It's `serde_json::Value`
+    /// because:
+    ///
+    /// - Enum variants are allowed to have any type of value.
+    /// - `serde_json::Value` works for both JSON and YAML.
+    fn enum_variants(&self) -> Option<&[serde_json::Value]>;
+
+    /* MARK: Resolver-specific methods. */
+
     /// Set whether this definition is cyclic. This is done by the resolver.
     fn set_cyclic(&mut self, cyclic: bool);
 

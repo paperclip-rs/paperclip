@@ -82,7 +82,7 @@ fn test_simple_app() {
                     "Pet": {
                       "properties": {
                         "class": {
-                          "enum": ["Cat", "Dog", "EverythingElse"],
+                          "enum": ["Dog", "Cat", "EverythingElse"],
                           "type": "string"
                         },
                         "id": {
@@ -498,7 +498,7 @@ fn test_list_in_out() {
                     "Pet": {
                       "properties": {
                         "class": {
-                          "enum": ["Cat", "Dog", "EverythingElse"],
+                          "enum": ["Dog", "Cat", "EverythingElse"],
                           "type": "string"
                         },
                         "id": {
@@ -597,7 +597,7 @@ fn test_impl_traits() {
                     "Pet": {
                       "properties": {
                         "class": {
-                          "enum": ["Cat", "Dog", "EverythingElse"],
+                          "enum": ["Dog", "Cat", "EverythingElse"],
                           "type": "string"
                         },
                         "id": {

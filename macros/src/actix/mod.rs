@@ -249,7 +249,7 @@ fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) {
         }
 
         props_gen.extend(quote!(
-            schema.enum_.insert(#name.into());
+            schema.enum_.push(serde_json::json!(#name));
         ));
     }
 }

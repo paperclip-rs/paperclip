@@ -239,7 +239,7 @@ impl<S> OperationMap<S> {
 /// Request parameter.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
 pub struct Parameter<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -256,8 +256,8 @@ pub struct Parameter<S> {
     pub format: Option<DataTypeFormat>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub items: Option<S>,
-    #[serde(default, rename = "enum", skip_serializing_if = "BTreeSet::is_empty")]
-    pub enum_: BTreeSet<String>,
+    #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
+    pub enum_: Vec<serde_json::Value>,
 }
 
 impl<S> Parameter<SchemaRepr<S>>
