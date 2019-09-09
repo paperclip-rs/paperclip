@@ -72,6 +72,10 @@ pub mod category {
     include!(\"./category.rs\");
 }
 
+pub mod order {
+    include!(\"./order.rs\");
+}
+
 pub mod pet {
     include!(\"./pet.rs\");
 }
@@ -125,7 +129,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(1583)
+        Some(1630),
     );
 }
 
@@ -147,7 +151,7 @@ impl<XAuth, Id, Name> PetPostBuilder<XAuth, Id, Name> {
         self
     }
 ",
-        Some(3938)
+        Some(3938),
     );
 
     assert_file_contains_content_at(
@@ -221,5 +225,162 @@ fn test_operation_with_payload_no_arguments() {
             required: true
 ",
         None,
+    );
+}
+
+#[test]
+fn test_anonymous_object_definitions() {
+    let _ = &*CLI_CODEGEN;
+    // An object "can" define objects in its schema without referencing
+    // them from known definitions. In that case, we autogenerate stuff.
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/order.rs"),
+        "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct Order {
+    pub address: Option<OrderAddress>,
+    pub id: Option<i64>,
+    pub list: Option<Vec<OrderList>>,
+}
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct OrderAddress {
+    pub code: Option<String>,
+    pub line1: Option<String>,
+    pub line2: Option<String>,
+    pub name: Option<String>,
+}
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct OrderList {
+    #[serde(rename = \"petId\")]
+    pub pet_id: Option<i64>,
+    pub quantity: Option<i64>,
+}
+
+impl Order {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> OrderBuilder {
+        OrderBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl Into<Order> for OrderBuilder {
+    fn into(self) -> Order {
+        self.body
+    }
+}
+
+/// Builder for [`Order`](./struct.Order.html) object.
+#[derive(Debug, Clone)]
+pub struct OrderBuilder {
+    body: self::Order,
+}
+
+impl OrderBuilder {
+    #[inline]
+    pub fn address(mut self, value: impl Into<OrderAddress>) -> Self {
+        self.body.address = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn id(mut self, value: impl Into<i64>) -> Self {
+        self.body.id = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn list(mut self, value: impl Iterator<Item = impl Into<OrderList>>) -> Self {
+        self.body.list = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self
+    }
+}
+
+impl OrderAddress {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> OrderAddressBuilder {
+        OrderAddressBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl Into<OrderAddress> for OrderAddressBuilder {
+    fn into(self) -> OrderAddress {
+        self.body
+    }
+}
+
+/// Builder for [`OrderAddress`](./struct.OrderAddress.html) object.
+#[derive(Debug, Clone)]
+pub struct OrderAddressBuilder {
+    body: self::OrderAddress,
+}
+
+impl OrderAddressBuilder {
+    #[inline]
+    pub fn code(mut self, value: impl Into<String>) -> Self {
+        self.body.code = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn line1(mut self, value: impl Into<String>) -> Self {
+        self.body.line1 = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn line2(mut self, value: impl Into<String>) -> Self {
+        self.body.line2 = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> Self {
+        self.body.name = Some(value.into());
+        self
+    }
+}
+
+impl OrderList {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> OrderListBuilder {
+        OrderListBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl Into<OrderList> for OrderListBuilder {
+    fn into(self) -> OrderList {
+        self.body
+    }
+}
+
+/// Builder for [`OrderList`](./struct.OrderList.html) object.
+#[derive(Debug, Clone)]
+pub struct OrderListBuilder {
+    body: self::OrderList,
+}
+
+impl OrderListBuilder {
+    #[inline]
+    pub fn pet_id(mut self, value: impl Into<i64>) -> Self {
+        self.body.pet_id = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn quantity(mut self, value: impl Into<i64>) -> Self {
+        self.body.quantity = Some(value.into());
+        self
+    }
+}
+",
+        Some(0),
     );
 }

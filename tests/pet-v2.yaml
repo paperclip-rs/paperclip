@@ -9,6 +9,31 @@ definitions:
       id:
         type: integer
     type: object
+  Order:
+    type: object
+    properties:
+      id:
+        type: integer
+      list:
+        type: array
+        items:
+          type: object
+          properties:
+            petId:
+              type: integer
+            quantity:
+              type: integer
+      address:
+        type: object
+        properties:
+          name:
+            type: string
+          line1:
+            type: string
+          line2:
+            type: string
+          code:
+            type: string
   Pet:
     description: A pet is a person's best friend
     required:

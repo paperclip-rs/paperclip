@@ -23,20 +23,65 @@ use std::sync::Arc;
 
 /// Some "thing" emitted by the emitter.
 pub enum EmittedUnit {
-    /// Object represented as a Rust struct.
-    Object(ApiObject),
     /// Some Rust type.
     Known(String),
+    /// Object represented as a Rust struct.
+    Objects(Vec<ApiObject>),
+    /// We've identified the Rust type, but then we also have a
+    /// bunch of generated Rust structs. This happens in the
+    /// presence of anonymously defined objects.
+    KnownButAnonymous(String, Vec<ApiObject>),
     /// Nothing to do.
     None,
 }
 
 impl EmittedUnit {
     #[inline]
-    fn known_type(self) -> String {
+    fn known_type(&self) -> String {
         match self {
-            EmittedUnit::Known(s) => s,
+            EmittedUnit::Known(ref s) => s.clone(),
+            EmittedUnit::KnownButAnonymous(ref s, _) => s.clone(),
             _ => panic!("Emitted unit is not a known type"),
+        }
+    }
+
+    #[inline]
+    fn map_known(self, ty: impl Into<String>) -> Self {
+        match self {
+            EmittedUnit::Known(_) => EmittedUnit::Known(ty.into()),
+            EmittedUnit::KnownButAnonymous(_, o) => EmittedUnit::KnownButAnonymous(ty.into(), o),
+            _ => panic!("Cannot map unknown emitted units"),
+        }
+    }
+}
+
+/// Context for building definitions.
+#[derive(Debug, Clone, Default)]
+pub struct DefinitionContext<'a> {
+    /// Whether we're planning to define the Rust type or whether we're
+    /// reusing an existing type.
+    pub define: bool,
+    /// Names of parents. In JSON schema, object types are allowed to
+    /// define a new object in their schema without '$ref'erencing them
+    /// from elsewhere. This means, we'll have an anonymous object. So,
+    /// we make use of parents (object names or property names) to
+    /// autogenerate struct names at will.
+    pub parents: Vec<&'a str>,
+}
+
+impl<'a> DefinitionContext<'a> {
+    /// Specify whether the object needs to be defined.
+    pub fn define(mut self, define: bool) -> Self {
+        self.define = define;
+        self
+    }
+
+    /// Creates a new context by appending the immediate parent's name.
+    pub fn add_parent(mut self, parent: &'a str) -> Self {
+        self.parents.push(parent);
+        DefinitionContext {
+            define: self.define,
+            parents: self.parents,
         }
     }
 }
@@ -147,6 +192,24 @@ pub trait Emitter: Sized {
             .expect("last item always exists for split?"))
     }
 
+    /// Returns the [CamelCase](https://docs.rs/heck/*/heck/trait.CamelCase.html)
+    /// name for some definition based on its parent names. This is called whenever
+    /// a definition doesn't have a name (i.e., through `$ref`) and we have to generate it.
+    fn def_anon_name(&self, def: &Self::Definition, parents: &[&str]) -> Option<String> {
+        let mut name = String::new();
+        parents.iter().for_each(|s| {
+            name.push_str(s);
+            name.push_str("_");
+        });
+
+        if name.is_empty() {
+            trace!("Unable to get name for anonymous schema: {:?}", def);
+            None
+        } else {
+            Some(name.to_camel_case())
+        }
+    }
+
     /// Returns the module path (from working directory) for the given definition.
     ///
     /// **NOTE:** This doesn't (shouldn't) set any extension to the leaf component.
@@ -158,14 +221,17 @@ pub trait Emitter: Sized {
         Ok(path)
     }
 
-    /// Builds a given definition. Also takes a `bool` to specify whether we're
-    /// planning to define a Rust type or whether we're reusing an existing type.
+    /// Builds a given definition using the given context.
     ///
     /// **NOTE:** We resolve type aliases to known types.
-    fn build_def(&self, def: &Self::Definition, define: bool) -> Result<EmittedUnit, Error> {
+    fn build_def<'a>(
+        &self,
+        def: &Self::Definition,
+        ctx: DefinitionContext<'a>,
+    ) -> Result<EmittedUnit, Error> {
         if let Some(ty) = matching_unit_type(def.format(), def.data_type()) {
             trace!("Matches unit type: {}", ty);
-            if define {
+            if ctx.define {
                 return Ok(EmittedUnit::None);
             }
 
@@ -173,11 +239,11 @@ pub trait Emitter: Sized {
         }
 
         match def.data_type() {
-            Some(DataType::Array) => CodegenEmitter(self).emit_array(def, define),
-            Some(DataType::Object) => CodegenEmitter(self).emit_object(def, define),
+            Some(DataType::Array) => CodegenEmitter(self).emit_array(def, ctx),
+            Some(DataType::Object) => CodegenEmitter(self).emit_object(def, ctx),
             Some(_) => unreachable!("bleh?"), // we've already handled everything else
             None => {
-                if define {
+                if ctx.define {
                     Ok(EmittedUnit::None)
                 } else {
                     Ok(EmittedUnit::Known("String".into()))
@@ -211,8 +277,8 @@ where
     fn generate_def_from_root(&self, def: &E::Definition) -> Result<(), Error> {
         let state = self.state();
         // Generate the object.
-        let mut object = match self.build_def(def, true)? {
-            EmittedUnit::Object(o) => o,
+        let mut objects = match self.build_def(def, DefinitionContext::default().define(true))? {
+            EmittedUnit::Objects(o) => o,
             // We don't care about type aliases because we resolve them anyway.
             _ => return Ok(()),
         };
@@ -249,20 +315,26 @@ where
             }
         }
 
-        // Set the path for future reference
-        object.path = rel_path.to_string_lossy().into_owned().replace('/', "::");
+        // Set the relative path to objects for future reference.
+        for obj in &mut objects {
+            obj.path = rel_path.to_string_lossy().into_owned().replace('/', "::");
+        }
 
         // Add generated object to state.
         let mut def_mods = state.def_mods.borrow_mut();
-        def_mods.insert(mod_path, object);
+        def_mods.insert(mod_path, objects);
 
         Ok(())
     }
 
     /// Assumes that the given definition is an array and returns the corresponding
     /// vector type for it.
-    fn emit_array(&self, def: &E::Definition, define: bool) -> Result<EmittedUnit, Error> {
-        if define {
+    fn emit_array<'c>(
+        &self,
+        def: &E::Definition,
+        ctx: DefinitionContext<'c>,
+    ) -> Result<EmittedUnit, Error> {
+        if ctx.define {
             return Ok(EmittedUnit::None);
         }
 
@@ -271,19 +343,36 @@ where
             .ok_or_else(|| PaperClipError::MissingArrayItem(self.def_name(def).ok()))?;
 
         let schema = it.read();
-        let ty = self.build_def(&schema, false)?.known_type();
-        Ok(EmittedUnit::Known(String::from("Vec<") + &ty + ">"))
+        let obj = self.build_def(&schema, ctx.define(false))?;
+        let ty = String::from("Vec<") + &obj.known_type() + ">";
+        Ok(obj.map_known(ty))
     }
 
     /// Assumes that the given definition is an object and returns the corresponding
     /// Rust struct / map.
-    fn emit_object(&self, def: &E::Definition, define: bool) -> Result<EmittedUnit, Error> {
-        match self.try_emit_map(def, define)? {
+    fn emit_object<'c>(
+        &self,
+        def: &E::Definition,
+        ctx: DefinitionContext<'c>,
+    ) -> Result<EmittedUnit, Error> {
+        match self.try_emit_map(def, &ctx)? {
             EmittedUnit::None => (),
             x => return Ok(x),
         }
 
-        if !define {
+        if !ctx.define {
+            // If this is an anonymous object, then address it directly.
+            if def.name().is_none() {
+                let objects = match self.build_def(def, ctx.clone().define(true))? {
+                    EmittedUnit::Objects(o) => o,
+                    _ => unreachable!(),
+                };
+
+                if let Some(name) = self.def_anon_name(def, &ctx.parents) {
+                    return Ok(EmittedUnit::KnownButAnonymous(name, objects));
+                }
+            }
+
             // Use absolute paths to save some pain.
             let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));
             let mut iter = self.def_ns_name(def)?.peekable();
@@ -301,18 +390,24 @@ where
             return Ok(EmittedUnit::Known(ty_path));
         }
 
-        self.emit_struct(def)
+        self.emit_struct(def, ctx)
     }
 
     /// Checks if the given definition is a simple map and returns the corresponding `BTreeMap`.
-    fn try_emit_map(&self, def: &E::Definition, define: bool) -> Result<EmittedUnit, Error> {
-        if define {
+    fn try_emit_map(
+        &self,
+        def: &E::Definition,
+        ctx: &DefinitionContext<'_>,
+    ) -> Result<EmittedUnit, Error> {
+        if ctx.define {
             return Ok(EmittedUnit::None);
         }
 
         if let Some(s) = def.additional_properties() {
             let schema = s.read();
-            let ty = self.build_def(&schema, false)?.known_type();
+            let ty = self
+                .build_def(&schema, ctx.clone().define(false))?
+                .known_type();
             let map = format!("std::collections::BTreeMap<String, {}>", ty);
             Ok(EmittedUnit::Known(map))
         } else {
@@ -322,16 +417,36 @@ where
 
     /// Helper for `emit_object` - This returns the Rust struct definition for the
     /// given schema definition.
-    fn emit_struct(&self, def: &E::Definition) -> Result<EmittedUnit, Error> {
-        let mut obj = ApiObject::with_name(self.def_name(def)?);
+    fn emit_struct(
+        &self,
+        def: &E::Definition,
+        ctx: DefinitionContext<'_>,
+    ) -> Result<EmittedUnit, Error> {
+        let name = self.def_name(def).or_else(|e| {
+            // anonymous object
+            self.def_anon_name(def, &ctx.parents).ok_or_else(|| e)
+        })?;
+        let mut obj = ApiObject::with_name(&name);
         obj.description = def.description().map(String::from);
+
+        // If we don't have any parents and there's a name for this object,
+        // then it's the root object - add the name to parents before checking
+        // its properties.
+        let mut ctx = ctx.clone();
+        if ctx.parents.is_empty() && def.name().is_some() {
+            ctx = ctx.add_parent(&name);
+        }
+
+        // Anonymous objects that we've collected along the way.
+        let mut objects = vec![];
 
         if let Some(props) = def.properties() {
             props
                 .iter()
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
                     let schema = prop.read();
-                    let ty = self.build_def(&schema, false)?;
+                    let ctx = ctx.clone().define(false).add_parent(name);
+                    let ty = self.build_def(&schema, ctx)?;
 
                     obj.fields.push(ObjectField {
                         name: name.clone(),
@@ -345,11 +460,16 @@ where
                         children_req: self.children_requirements(&schema),
                     });
 
+                    if let EmittedUnit::KnownButAnonymous(_, mut o) = ty {
+                        objects.append(&mut o);
+                    }
+
                     Ok(())
                 })?
         }
 
-        Ok(EmittedUnit::Object(obj))
+        objects.insert(0, obj);
+        Ok(EmittedUnit::Objects(objects))
     }
 
     /// Returns the requirements of the "deepest" child type in the given definition.
@@ -538,7 +658,7 @@ where
         let state = self.emitter.state();
         let mut def_mods = state.def_mods.borrow_mut();
         let obj = def_mods.get_mut(schema_path).expect("bleh?");
-        let ops = obj
+        let ops = obj[0] // first object is always the globally defined object.
             .paths
             .entry(self.path.into())
             .or_insert_with(Default::default);
@@ -554,7 +674,11 @@ where
                 body_required: true,
                 response_ty_path: if let Some(s) = Self::get_2xx_response_schema(&op) {
                     let schema = &*s.read();
-                    Some(self.emitter.build_def(schema, false)?.known_type())
+                    Some(
+                        self.emitter
+                            .build_def(schema, DefinitionContext::default())?
+                            .known_type(),
+                    )
                 } else {
                     None
                 },
@@ -608,7 +732,7 @@ where
             }
         };
 
-        let ops = obj
+        let ops = obj[0] // first object is always the globally defined object.
             .paths
             .entry(self.path.into())
             .or_insert_with(Default::default);

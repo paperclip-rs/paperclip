@@ -46,7 +46,7 @@ pub struct EmitterState {
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: RefCell<HashMap<PathBuf, HashSet<ChildModule>>>,
     /// Holds generated struct definitions for leaf modules.
-    pub(super) def_mods: RefCell<HashMap<PathBuf, ApiObject>>,
+    pub(super) def_mods: RefCell<HashMap<PathBuf, Vec<ApiObject>>>,
     /// Relative paths
     pub(super) rel_paths: RefCell<HashSet<String>>,
     /// Unit types used by builders.
@@ -175,9 +175,16 @@ pub mod {name} {{
     pub(crate) fn write_definitions(&self) -> Result<(), Error> {
         let def_mods = self.def_mods.borrow();
         info!("Writing definitions.");
-        for (mod_path, object) in &*def_mods {
+        for (i, (mod_path, object)) in def_mods
+            .iter()
+            .flat_map(move |(p, l)| l.iter().map(move |o| (p, o)).enumerate())
+        {
             let contents = object.to_string();
-            self.write_contents(&contents, mod_path)?;
+            if i == 0 {
+                self.write_contents(&contents, mod_path)?;
+            } else {
+                self.append_contents(&contents, mod_path)?;
+            }
         }
 
         Ok(())
@@ -194,7 +201,10 @@ pub mod {name} {{
         let mut match_arms = self.cli_match_arms.borrow_mut();
         let is_cli = self.is_cli()?;
 
-        for (mod_path, object) in &*def_mods {
+        for (mod_path, object) in def_mods
+            .iter()
+            .flat_map(move |(p, l)| l.iter().map(move |o| (p, o)))
+        {
             let mut builder_content = String::new();
             let repr = object.impl_repr(&module_prefix);
             for builder in &repr.builders {

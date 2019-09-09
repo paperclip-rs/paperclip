@@ -835,7 +835,6 @@ where
 
     let (server, addr) = rx.recv().unwrap();
     let ret = check(addr);
-    server.stop(false);
     ret
 }
 
