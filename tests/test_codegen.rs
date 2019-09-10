@@ -116,6 +116,7 @@ path = \"lib.rs\"
 failure = \"0.1\"
 futures = \"0.1\"
 lazy_static = \"1.4\"
+log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
 parking_lot = \"0.8\"
 reqwest = \"0.9\"

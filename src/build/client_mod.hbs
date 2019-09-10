@@ -64,6 +64,12 @@ pub mod client \{
             req
         }
 
+        /// Possible media ranges for this operation.
+        #[inline]
+        fn accepted_media_ranges(&self) -> &'static [mime::MediaRange] \{
+            &*media_types::M_{default_range_index}
+        }
+
         /// Sends the request and returns a future for the response object.
         fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> \{
             Box::new(self.send_raw(client).and_then(|mut resp| \{
@@ -83,7 +89,18 @@ pub mod client \{
                 Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
             };
 
+            let ranges = self.accepted_media_ranges();
             Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| \{
+                if let Some(ty) = resp.headers()
+                    .get(reqwest::header::CONTENT_TYPE)
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|v| v.parse::<mime::MediaType>().ok())
+                \{
+                    if !ranges.iter().any(|r| r.matches(&ty)) \{
+                        log::warn!("Response has media type \{} which doesn't match any of the accepted media ranges.", ty);
+                    }
+                }
+
                 if resp.status().is_success() \{
                     futures::future::ok(resp)
                 } else \{
@@ -100,7 +117,7 @@ pub mod client \{
             {{- for list in media_combinations }}
             pub static ref M_{ @index }: Vec<mime::MediaRange> = vec![
                 {{- for range in list }}
-                mime::MediaRange::parse("{range}").expect("cannot parse \"{range}\" as media range"),
+                mime::MediaRange::parse("{range | unescaped}").expect("cannot parse \"{range | unescaped}\" as media range"),
                 {{- endfor }}
             ];
             {{- endfor }}

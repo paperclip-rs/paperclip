@@ -111,7 +111,7 @@ pub trait Emitter: Sized {
             coders.insert(YAML_MIME.clone(), YAML_CODER.clone());
         }
 
-        state.set_media_info(api.spec_format, coders.errors());
+        state.set_media_info(api.spec_format, &coders);
 
         // Set host and base path.
         if let Some(h) = api.host.as_ref() {
@@ -531,7 +531,7 @@ where
         for (&meth, op) in &self.map.methods {
             self.collect_from_operation(meth, op, &unused_params)?;
             if let Some(ranges) = op.produces.as_ref() {
-                state.add_response_ranges(ranges.iter().map(|r| r.0.as_ref()));
+                state.add_response_ranges(ranges.iter());
             }
         }
 

@@ -1,8 +1,9 @@
 //! Models used by OpenAPI v2.
 
-pub use super::extensions::{Coder, MediaRange, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME};
+pub use super::extensions::{
+    Coder, Coders, MediaRange, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
+};
 
-use super::extensions::Coders;
 use super::schema::Schema;
 use crate::error::ValidationError;
 use crate::im::ArcRwLock;

@@ -394,6 +394,12 @@ pub mod client {
             req
         }
 
+        /// Possible media ranges for this operation.
+        #[inline]
+        fn accepted_media_ranges(&self) -> &'static [mime::MediaRange] {
+            &*media_types::M_1
+        }
+
         /// Sends the request and returns a future for the response object.
         fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> {
             Box::new(self.send_raw(client).and_then(|mut resp| {
@@ -413,7 +419,18 @@ pub mod client {
                 Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
             };
 
+            let ranges = self.accepted_media_ranges();
             Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {
+                if let Some(ty) = resp.headers()
+                    .get(reqwest::header::CONTENT_TYPE)
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|v| v.parse::<mime::MediaType>().ok())
+                {
+                    if !ranges.iter().any(|r| r.matches(&ty)) {
+                        log::warn!(\"Response has media type {} which doesn't match any of the accepted media ranges.\", ty);
+                    }
+                }
+
                 if resp.status().is_success() {
                     futures::future::ok(resp)
                 } else {
@@ -971,6 +988,7 @@ path = \"main.rs\"
 failure = \"0.1\"
 futures = \"0.1\"
 lazy_static = \"1.4\"
+log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
@@ -1156,7 +1174,7 @@ async fn main() {
     }
 }
 ",
-        Some(7225),
+        Some(7939),
     );
 }
 

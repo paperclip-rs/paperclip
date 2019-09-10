@@ -1,7 +1,7 @@
 use super::template::{self, TEMPLATE};
 use super::{object::ApiObject, CrateMeta};
 use crate::error::PaperClipError;
-use crate::v2::models::{Coder, SpecFormat};
+use crate::v2::models::{Coder, Coders, MediaRange, SpecFormat};
 use failure::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
@@ -100,14 +100,12 @@ impl EmitterState {
     }
 
     /// Sets the media type information for encoder/decoders.
-    pub(crate) fn set_media_info<'a, I>(&self, spec_format: SpecFormat, errors: I)
-    where
-        I: Iterator<Item = (&'a str, &'a str)>,
-    {
+    pub(crate) fn set_media_info(&self, spec_format: SpecFormat, coders: &Coders) {
         *self.default_encoding.borrow_mut() = spec_format;
-        self.add_response_ranges(iter::once(spec_format.mime().0.as_ref()));
+        self.add_response_ranges(iter::once(spec_format.mime()));
 
-        *self.errors.borrow_mut() = errors
+        *self.errors.borrow_mut() = coders
+            .errors()
             .map(|(m, p)| CodingError {
                 media_type: m.into(),
                 variant: m.replace('*', "wildcard").to_camel_case(),
@@ -116,14 +114,15 @@ impl EmitterState {
             .collect();
     }
 
-    /// Adds the accepted media ranges for some response.
+    /// Adds the accepted media ranges for some response. This is called
+    /// for each path operation.
     pub(crate) fn add_response_ranges<'a, I>(&self, iter: I)
     where
-        I: Iterator<Item = &'a str>,
+        I: Iterator<Item = &'a MediaRange>,
     {
         self.media_combinations
             .borrow_mut()
-            .insert(iter.map(|s| s.to_owned()).collect());
+            .insert(iter.map(|s| s.0.as_ref().to_owned()).collect());
     }
 
     /// Once the emitter has generated the struct definitions,
@@ -296,6 +295,14 @@ pub mod generics {
             TEMPLATE::CLIENT_MOD,
             &ClientModContext {
                 coder: &*self.default_encoding.borrow().coder(),
+                default_range_index: self
+                    .media_combinations
+                    .borrow()
+                    .iter()
+                    .position(|r| {
+                        r.len() == 1 && r.contains(self.default_encoding.borrow().mime().0.as_ref())
+                    })
+                    .expect("expected default media range to exist"),
                 media_combinations: &*self.media_combinations.borrow(),
                 errors: &*self.errors.borrow(),
                 base_url: self.base_url.borrow().as_str(),
@@ -571,6 +578,7 @@ struct ManifestContext<'a> {
 #[derive(serde::Serialize)]
 struct ClientModContext<'a> {
     base_url: &'a str,
+    default_range_index: usize,
     media_combinations: &'a BTreeSet<BTreeSet<String>>,
     errors: &'a [CodingError],
     coder: &'a Coder,

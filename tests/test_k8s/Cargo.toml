@@ -12,6 +12,7 @@ failure = "0.1.5"
 failure_derive = "0.1.5"
 futures = "0.1.27"
 lazy_static = "1.4.0"
+log = "0.4.8"
 mime = { git = "https://github.com/hyperium/mime" }
 parking_lot = "0.8.0"
 reqwest = "0.9.18"
