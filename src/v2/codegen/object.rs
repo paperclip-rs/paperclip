@@ -955,6 +955,7 @@ where
             // If we've acquired a response type, then write that.
             f.write_str(resp)?;
         } else {
+            // FIXME: This should be "any"
             f.write_str(self.0.object)?;
         }
 

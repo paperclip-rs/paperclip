@@ -237,7 +237,7 @@ fn test_operation_with_payload_no_arguments() {
 }
 
 #[test]
-fn test_anonymous_object_definitions() {
+fn test_anonymous_object_definition_in_schema() {
     let _ = &*CLI_CODEGEN;
     // An object "can" define objects in its schema without referencing
     // them from known definitions. In that case, we autogenerate stuff.
@@ -385,6 +385,323 @@ impl OrderListBuilder {
     #[inline]
     pub fn quantity(mut self, value: impl Into<i64>) -> Self {
         self.body.quantity = Some(value.into());
+        self
+    }
+}
+",
+        Some(0),
+    );
+}
+
+#[test]
+fn test_anonymous_object_definition_in_body() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/post_shipments_body.rs"),
+        "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct PostShipmentsBody {
+    pub address: Option<PostShipmentsBodyAddress>,
+    #[serde(rename = \"orderId\")]
+    pub order_id: Option<String>,
+}
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct PostShipmentsBodyAddress {
+    pub code: Option<String>,
+    pub line1: Option<String>,
+    pub line2: Option<String>,
+    pub name: Option<String>,
+}
+
+impl PostShipmentsBody {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> PostShipmentsBodyBuilder {
+        PostShipmentsBodyBuilder {
+            body: Default::default(),
+        }
+    }
+
+    /// Create shipment for order
+    #[inline]
+    pub fn post() -> PostShipmentsBodyPostBuilder {
+        PostShipmentsBodyPostBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl Into<PostShipmentsBody> for PostShipmentsBodyBuilder {
+    fn into(self) -> PostShipmentsBody {
+        self.body
+    }
+}
+
+impl Into<PostShipmentsBody> for PostShipmentsBodyPostBuilder {
+    fn into(self) -> PostShipmentsBody {
+        self.body
+    }
+}
+
+/// Builder for [`PostShipmentsBody`](./struct.PostShipmentsBody.html) object.
+#[derive(Debug, Clone)]
+pub struct PostShipmentsBodyBuilder {
+    body: self::PostShipmentsBody,
+}
+
+impl PostShipmentsBodyBuilder {
+    #[inline]
+    pub fn address(mut self, value: impl Into<PostShipmentsBodyAddress>) -> Self {
+        self.body.address = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn order_id(mut self, value: impl Into<String>) -> Self {
+        self.body.order_id = Some(value.into());
+        self
+    }
+}
+
+/// Builder created by [`PostShipmentsBody::post`](./struct.PostShipmentsBody.html#method.post) method for a `POST` operation associated with `PostShipmentsBody`.
+#[derive(Debug, Clone)]
+pub struct PostShipmentsBodyPostBuilder {
+    body: self::PostShipmentsBody,
+}
+
+impl PostShipmentsBodyPostBuilder {
+    #[inline]
+    pub fn address(mut self, value: impl Into<PostShipmentsBodyAddress>) -> Self {
+        self.body.address = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn order_id(mut self, value: impl Into<String>) -> Self {
+        self.body.order_id = Some(value.into());
+        self
+    }
+}
+
+impl crate::client::Sendable for PostShipmentsBodyPostBuilder {
+    type Output = PostShipmentsBody;
+
+    const METHOD: reqwest::Method = reqwest::Method::POST;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/shipments\".into()
+    }
+
+    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
+        req
+        .json(&self.body)
+    }
+}
+
+impl PostShipmentsBodyAddress {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> PostShipmentsBodyAddressBuilder {
+        PostShipmentsBodyAddressBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl Into<PostShipmentsBodyAddress> for PostShipmentsBodyAddressBuilder {
+    fn into(self) -> PostShipmentsBodyAddress {
+        self.body
+    }
+}
+
+/// Builder for [`PostShipmentsBodyAddress`](./struct.PostShipmentsBodyAddress.html) object.
+#[derive(Debug, Clone)]
+pub struct PostShipmentsBodyAddressBuilder {
+    body: self::PostShipmentsBodyAddress,
+}
+
+impl PostShipmentsBodyAddressBuilder {
+    #[inline]
+    pub fn code(mut self, value: impl Into<String>) -> Self {
+        self.body.code = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn line1(mut self, value: impl Into<String>) -> Self {
+        self.body.line1 = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn line2(mut self, value: impl Into<String>) -> Self {
+        self.body.line2 = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> Self {
+        self.body.name = Some(value.into());
+        self
+    }
+}
+",
+        Some(0),
+    );
+}
+
+#[test]
+fn test_anonymous_object_definition_in_response() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/get_shipments_id_response.rs"),
+        "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct GetShipmentsIdResponse {
+    pub address: Option<GetShipmentsIdResponseAddress>,
+    #[serde(rename = \"createdOn\")]
+    pub created_on: Option<String>,
+    #[serde(rename = \"orderId\")]
+    pub order_id: Option<String>,
+    #[serde(rename = \"shippedOn\")]
+    pub shipped_on: Option<String>,
+}
+#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+pub struct GetShipmentsIdResponseAddress {
+    pub code: Option<String>,
+    pub line1: Option<String>,
+    pub line2: Option<String>,
+    pub name: Option<String>,
+}
+
+impl GetShipmentsIdResponse {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> GetShipmentsIdResponseBuilder {
+        GetShipmentsIdResponseBuilder {
+            body: Default::default(),
+        }
+    }
+
+    /// Fetch shipment by ID
+    #[inline]
+    pub fn get() -> GetShipmentsIdResponseGetBuilder<crate::generics::MissingId> {
+        GetShipmentsIdResponseGetBuilder {
+            inner: Default::default(),
+            _param_id: core::marker::PhantomData,
+        }
+    }
+}
+
+impl Into<GetShipmentsIdResponse> for GetShipmentsIdResponseBuilder {
+    fn into(self) -> GetShipmentsIdResponse {
+        self.body
+    }
+}
+
+/// Builder for [`GetShipmentsIdResponse`](./struct.GetShipmentsIdResponse.html) object.
+#[derive(Debug, Clone)]
+pub struct GetShipmentsIdResponseBuilder {
+    body: self::GetShipmentsIdResponse,
+}
+
+impl GetShipmentsIdResponseBuilder {
+    #[inline]
+    pub fn address(mut self, value: impl Into<GetShipmentsIdResponseAddress>) -> Self {
+        self.body.address = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn created_on(mut self, value: impl Into<String>) -> Self {
+        self.body.created_on = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn order_id(mut self, value: impl Into<String>) -> Self {
+        self.body.order_id = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn shipped_on(mut self, value: impl Into<String>) -> Self {
+        self.body.shipped_on = Some(value.into());
+        self
+    }
+}
+
+/// Builder created by [`GetShipmentsIdResponse::get`](./struct.GetShipmentsIdResponse.html#method.get) method for a `GET` operation associated with `GetShipmentsIdResponse`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct GetShipmentsIdResponseGetBuilder<Id> {
+    inner: GetShipmentsIdResponseGetBuilderContainer,
+    _param_id: core::marker::PhantomData<Id>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct GetShipmentsIdResponseGetBuilderContainer {
+    param_id: Option<String>,
+}
+
+impl<Id> GetShipmentsIdResponseGetBuilder<Id> {
+    #[inline]
+    pub fn id(mut self, value: impl Into<String>) -> GetShipmentsIdResponseGetBuilder<crate::generics::IdExists> {
+        self.inner.param_id = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl crate::client::Sendable for GetShipmentsIdResponseGetBuilder<crate::generics::IdExists> {
+    type Output = GetShipmentsIdResponse;
+
+    const METHOD: reqwest::Method = reqwest::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!(\"/shipments/{id}\", id=self.inner.param_id.as_ref().expect(\"missing parameter id?\")).into()
+    }
+}
+
+impl GetShipmentsIdResponseAddress {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> GetShipmentsIdResponseAddressBuilder {
+        GetShipmentsIdResponseAddressBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl Into<GetShipmentsIdResponseAddress> for GetShipmentsIdResponseAddressBuilder {
+    fn into(self) -> GetShipmentsIdResponseAddress {
+        self.body
+    }
+}
+
+/// Builder for [`GetShipmentsIdResponseAddress`](./struct.GetShipmentsIdResponseAddress.html) object.
+#[derive(Debug, Clone)]
+pub struct GetShipmentsIdResponseAddressBuilder {
+    body: self::GetShipmentsIdResponseAddress,
+}
+
+impl GetShipmentsIdResponseAddressBuilder {
+    #[inline]
+    pub fn code(mut self, value: impl Into<String>) -> Self {
+        self.body.code = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn line1(mut self, value: impl Into<String>) -> Self {
+        self.body.line1 = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn line2(mut self, value: impl Into<String>) -> Self {
+        self.body.line2 = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> Self {
+        self.body.name = Some(value.into());
         self
     }
 }
