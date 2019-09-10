@@ -46,8 +46,7 @@ impl MediaRange {
     }
 }
 
-/// `x-encoder` and `x-decoder` global extension
-/// for custom encoders and decoders.
+/// `x-coder` global extension for custom encoders and decoders.
 #[derive(Debug, Default, Clone)]
 pub struct Coders(BTreeMap<MediaRange, Arc<Coder>>);
 

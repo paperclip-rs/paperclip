@@ -423,6 +423,37 @@ pub mod client {
         }
     }
 
+    pub mod media_types {
+        use lazy_static::lazy_static;
+
+        lazy_static! {
+            pub static ref M_0: Vec<mime::MediaRange> = vec![
+                mime::MediaRange::parse(\"*/*\").expect(\"cannot parse \\\"*/*\\\" as media range\"),
+            ];
+            pub static ref M_1: Vec<mime::MediaRange> = vec![
+                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
+            ];
+            pub static ref M_2: Vec<mime::MediaRange> = vec![
+                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
+                mime::MediaRange::parse(\"application/json;stream=watch\").expect(\"cannot parse \\\"application/json;stream=watch\\\" as media range\"),
+                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf\\\" as media range\"),
+                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf;stream=watch\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf;stream=watch\\\" as media range\"),
+                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\"),
+            ];
+            pub static ref M_3: Vec<mime::MediaRange> = vec![
+                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
+                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf\\\" as media range\"),
+                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\"),
+            ];
+            pub static ref M_4: Vec<mime::MediaRange> = vec![
+                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
+                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf\\\" as media range\"),
+                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\"),
+                mime::MediaRange::parse(\"text/plain\").expect(\"cannot parse \\\"text/plain\\\" as media range\"),
+            ];
+        }
+    }
+
     impl From<reqwest::Error> for ApiError {
         fn from(e: reqwest::Error) -> Self {
             ApiError::Reqwest(e)
@@ -939,6 +970,8 @@ path = \"main.rs\"
 [dependencies]
 failure = \"0.1\"
 futures = \"0.1\"
+lazy_static = \"1.4\"
+mime = { git = \"https://github.com/hyperium/mime\" }
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
@@ -1123,7 +1156,7 @@ async fn main() {
     }
 }
 ",
-        Some(4889),
+        Some(7225),
     );
 }
 

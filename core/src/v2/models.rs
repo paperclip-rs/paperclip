@@ -138,6 +138,14 @@ impl SpecFormat {
             SpecFormat::Yaml => YAML_CODER.clone(),
         }
     }
+
+    /// The mime for this format.
+    pub fn mime(self) -> &'static MediaRange {
+        match self {
+            SpecFormat::Json => &*JSON_MIME,
+            SpecFormat::Yaml => &*YAML_MIME,
+        }
+    }
 }
 
 impl<S> GenericApi<S> {

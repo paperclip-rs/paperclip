@@ -13,7 +13,7 @@ pub mod client \{
         Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
         #[fail(display = "An error has occurred while performing the API request: \{}", _0)]
         Reqwest(reqwest::Error),
-        {{- for error in errors}}
+        {{- for error in errors }}
         #[fail(display = "Error en/decoding \"{error.media_type | unescaped}\" data: \{}", _0)]
         {error.variant | unescaped}({error.ty_path | unescaped}),
         {{- endfor }}
@@ -93,12 +93,26 @@ pub mod client \{
         }
     }
 
+    pub mod media_types \{
+        use lazy_static::lazy_static;
+
+        lazy_static! \{
+            {{- for list in media_combinations }}
+            pub static ref M_{ @index }: Vec<mime::MediaRange> = vec![
+                {{- for range in list }}
+                mime::MediaRange::parse("{range}").expect("cannot parse \"{range}\" as media range"),
+                {{- endfor }}
+            ];
+            {{- endfor }}
+        }
+    }
+
     impl From<reqwest::Error> for ApiError \{
         fn from(e: reqwest::Error) -> Self \{
             ApiError::Reqwest(e)
         }
     }
-    {{- for error in errors}}
+    {{- for error in errors }}
 
     impl From<{error.ty_path | unescaped}> for ApiError \{
         fn from(e: {error.ty_path | unescaped}) -> Self \{

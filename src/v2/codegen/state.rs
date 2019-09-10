@@ -10,13 +10,14 @@ use itertools::Itertools;
 use url::Url;
 
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Write as _;
 #[cfg(feature = "cli")]
 use std::fs;
 use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
+use std::iter;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -49,6 +50,8 @@ pub struct EmitterState {
     pub(super) def_mods: RefCell<HashMap<PathBuf, Vec<ApiObject>>>,
     /// Relative paths
     pub(super) rel_paths: RefCell<HashSet<String>>,
+    /// Combinations of media ranges we've encountered in operation responses.
+    media_combinations: RefCell<BTreeSet<BTreeSet<String>>>,
     /// Unit types used by builders.
     unit_types: RefCell<HashSet<String>>,
     /// Generated CLI YAML for clap.
@@ -93,6 +96,7 @@ impl EmitterState {
         *self.unit_types.borrow_mut() = Default::default();
         *self.cli_yaml.borrow_mut() = Default::default();
         *self.cli_match_arms.borrow_mut() = Default::default();
+        *self.media_combinations.borrow_mut() = Default::default();
     }
 
     /// Sets the media type information for encoder/decoders.
@@ -101,6 +105,8 @@ impl EmitterState {
         I: Iterator<Item = (&'a str, &'a str)>,
     {
         *self.default_encoding.borrow_mut() = spec_format;
+        self.add_response_ranges(iter::once(spec_format.mime().0.as_ref()));
+
         *self.errors.borrow_mut() = errors
             .map(|(m, p)| CodingError {
                 media_type: m.into(),
@@ -108,6 +114,16 @@ impl EmitterState {
                 ty_path: p.into(),
             })
             .collect();
+    }
+
+    /// Adds the accepted media ranges for some response.
+    pub(crate) fn add_response_ranges<'a, I>(&self, iter: I)
+    where
+        I: Iterator<Item = &'a str>,
+    {
+        self.media_combinations
+            .borrow_mut()
+            .insert(iter.map(|s| s.to_owned()).collect());
     }
 
     /// Once the emitter has generated the struct definitions,
@@ -280,6 +296,7 @@ pub mod generics {
             TEMPLATE::CLIENT_MOD,
             &ClientModContext {
                 coder: &*self.default_encoding.borrow().coder(),
+                media_combinations: &*self.media_combinations.borrow(),
                 errors: &*self.errors.borrow(),
                 base_url: self.base_url.borrow().as_str(),
             },
@@ -521,6 +538,7 @@ impl Default for EmitterState {
             unit_types: RefCell::new(HashSet::new()),
             cli_yaml: RefCell::new(String::new()),
             cli_match_arms: RefCell::new(String::new()),
+            media_combinations: RefCell::new(BTreeSet::new()),
             errors: Rc::new(RefCell::new(vec![])),
             default_encoding: RefCell::new(SpecFormat::Json),
         }
@@ -553,6 +571,7 @@ struct ManifestContext<'a> {
 #[derive(serde::Serialize)]
 struct ClientModContext<'a> {
     base_url: &'a str,
+    media_combinations: &'a BTreeSet<BTreeSet<String>>,
     errors: &'a [CodingError],
     coder: &'a Coder,
 }

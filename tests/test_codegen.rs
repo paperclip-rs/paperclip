@@ -115,6 +115,8 @@ path = \"lib.rs\"
 [dependencies]
 failure = \"0.1\"
 futures = \"0.1\"
+lazy_static = \"1.4\"
+mime = { git = \"https://github.com/hyperium/mime\" }
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"

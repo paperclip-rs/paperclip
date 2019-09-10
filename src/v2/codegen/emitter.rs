@@ -518,6 +518,7 @@ where
     /// Given a path and an operation map, collect the stuff required
     /// for generating builders later.
     fn collect(mut self) -> Result<(), Error> {
+        let state = self.emitter.state();
         self.validate_path_and_add_params()?;
         debug!("Collecting builder requirement for {:?}", self.path);
 
@@ -529,6 +530,9 @@ where
 
         for (&meth, op) in &self.map.methods {
             self.collect_from_operation(meth, op, &unused_params)?;
+            if let Some(ranges) = op.produces.as_ref() {
+                state.add_response_ranges(ranges.iter().map(|r| r.0.as_ref()));
+            }
         }
 
         // FIXME: If none of the parameters (local to operation or global) specify

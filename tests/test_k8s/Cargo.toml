@@ -11,6 +11,8 @@ path = "lib.rs"
 failure = "0.1.5"
 failure_derive = "0.1.5"
 futures = "0.1.27"
+lazy_static = "1.4.0"
+mime = { git = "https://github.com/hyperium/mime" }
 parking_lot = "0.8.0"
 reqwest = "0.9.18"
 serde = "1.0.91"
