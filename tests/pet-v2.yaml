@@ -108,3 +108,59 @@ paths:
         "200":
           schema:
             $ref: '#/definitions/Pet'
+  /shipments:
+    post:
+      description: Create shipment for order
+      operationID: createShipment
+      parameters:
+      - in: body
+        name: body
+        required: true
+        schema:
+          type: object
+          properties:
+            orderId:
+              type: string
+            address:
+              type: object
+              properties:
+                name:
+                  type: string
+                line1:
+                  type: string
+                line2:
+                  type: string
+                code:
+                  type: string
+      responses: {}
+  /shipments/{id}:
+    get:
+      description: Fetch shipment by ID
+      operationId: getShipment
+      parameters:
+      - in: path
+        name: id
+        type: string
+        required: true
+      responses:
+        "200":
+          schema:
+            type: object
+            properties:
+              orderId:
+                type: string
+              shippedOn:
+                type: string
+              createdOn:
+                type: string
+              address:
+                type: object
+                properties:
+                  name:
+                    type: string
+                  line1:
+                    type: string
+                  line2:
+                    type: string
+                  code:
+                    type: string

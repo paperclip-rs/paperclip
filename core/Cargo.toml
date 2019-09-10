@@ -14,6 +14,7 @@ actix-web = { version = "1.0.4", optional = true }
 actix-http = { version = "0.2.6", optional = true }
 failure = "0.1"
 futures = { version = "0.1", optional = true }
+heck = { version = "0.3", optional = true }
 lazy_static = "1.3"
 log = "0.4"
 paperclip-macros = { path = "../macros", version = "0.2.0" }
@@ -27,4 +28,4 @@ mime = { git = "https://github.com/hyperium/mime", features = ["serde1"] }
 actix = ["default", "actix-http", "actix-web", "futures"]
 default = ["v2", "codegen"]
 v2 = ["paperclip-macros/v2"]
-codegen = []
+codegen = ["heck"]

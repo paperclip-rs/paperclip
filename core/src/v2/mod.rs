@@ -5,6 +5,7 @@
 mod actix;
 mod extensions;
 pub mod models;
+#[cfg(feature = "codegen")]
 mod resolver;
 pub mod schema;
 
@@ -15,10 +16,13 @@ pub use self::models::{Api, DefaultSchema};
 pub use self::schema::Schema;
 pub use paperclip_macros::*;
 
+#[cfg(feature = "codegen")]
 use self::resolver::Resolver;
+#[cfg(feature = "codegen")]
 use crate::error::ValidationError;
 
-impl<S: Schema> Api<S> {
+#[cfg(feature = "codegen")]
+impl<S: Schema + Default> Api<S> {
     /// Consumes this API schema, resolves the references and returns
     /// the resolved schema.
     ///

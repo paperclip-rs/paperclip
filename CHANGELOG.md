@@ -7,7 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## [Unreleased]
 ### Added
 - Actix plugin: Callers of `#[api_v2_schema]` can specify `empty` to implement empty schema for any type and ignore the warning.
-- Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
+- Actix plugin: Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 - Client timeout in CLI.
 - Support for header parameters in operations.
 - Validation for non-body parameters.
@@ -18,8 +18,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.
 - Actix plugin: `web::Path<T>` also supports simple types (strings, integers, etc.).
-- `#[api_v2_schema]` derivatives can now use references.
-- Breakage of `#[api_v2_operation]` when returning `impl Handler`.
+- Actix plugin: `#[api_v2_schema]` derivatives can now use references.
+- Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
+- Switched enum type to array of `any` rather than strings.
+- Resolution of anonymous schema definitions in objects, operation parameters and responses.
 
 ## [0.3.0] - 2019-07-30
 ### Added

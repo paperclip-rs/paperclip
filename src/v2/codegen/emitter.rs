@@ -176,7 +176,7 @@ pub trait Emitter: Sized {
         def.name()
             .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
             .ok_or_else(|| {
-                trace!("Invalid name for definition: {:?}", def);
+                trace!("Missing name for definition: {:?}", def);
                 PaperClipError::InvalidDefinitionName.into()
             })
             .map(|i| Box::new(i) as Box<_>)
@@ -241,6 +241,11 @@ pub trait Emitter: Sized {
         match def.data_type() {
             Some(DataType::Array) => CodegenEmitter(self).emit_array(def, ctx),
             Some(DataType::Object) => CodegenEmitter(self).emit_object(def, ctx),
+            Some(DataType::File) => {
+                // FIXME: Support files.
+                warn!("Data type 'file' is unsupported at this point.");
+                Ok(EmittedUnit::Known("String".into()))
+            }
             Some(_) => unreachable!("bleh?"), // we've already handled everything else
             None => {
                 if ctx.define {
@@ -617,10 +622,15 @@ where
             if let Some(def) = p.schema.as_ref() {
                 // If a schema exists, then get its path for later use.
                 let pat = self.emitter.def_mod_path(&*def.read())?;
-                def_mods.get(&pat).ok_or_else(|| {
-                    PaperClipError::UnsupportedParameterDefinition(p.name.clone(), self.path.into())
-                })?;
-                schema_path = Some(pat);
+                if def_mods.get(&pat).is_some() {
+                    schema_path = Some(pat);
+                    continue;
+                }
+
+                warn!(
+                    "Unregistered schema for parameter {:?} in path {:?}: {:?}",
+                    p.name, self.path, def
+                );
                 continue;
             }
 
@@ -631,9 +641,17 @@ where
             }
 
             // Enforce that the parameter is a known type and collect it.
-            let ty = matching_unit_type(p.format.as_ref(), p.data_type).ok_or_else(|| {
-                PaperClipError::UnknownParameterType(p.name.clone(), self.path.into())
-            })?;
+            let ty = match matching_unit_type(p.format.as_ref(), p.data_type) {
+                Some(t) => t,
+                None => {
+                    warn!(
+                        "Skipping parameter {:?} with unknown type {:?} in path {:?}",
+                        p.name, p.data_type, self.path
+                    );
+                    continue;
+                }
+            };
+
             params.push(Parameter {
                 name: p.name.clone(),
                 description: p.description.clone(),

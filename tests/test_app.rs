@@ -833,7 +833,7 @@ where
         unreachable!("No ports???");
     });
 
-    let (server, addr) = rx.recv().unwrap();
+    let (_server, addr) = rx.recv().unwrap();
     let ret = check(addr);
     ret
 }

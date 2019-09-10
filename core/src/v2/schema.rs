@@ -53,6 +53,9 @@ pub trait Schema: Sized {
 
     /* MARK: Resolver-specific methods. */
 
+    /// Set the reference to this schema.
+    fn set_reference(&mut self, ref_: String);
+
     /// Set whether this definition is cyclic. This is done by the resolver.
     fn set_cyclic(&mut self, cyclic: bool);
 

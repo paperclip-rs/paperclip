@@ -113,6 +113,11 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
+            fn set_reference(&mut self, ref_: String) {
+                self.reference = Some(ref_);
+            }
+
+            #[inline]
             fn data_type(&self) -> Option<paperclip::v2::models::DataType> {
                 self.data_type
             }

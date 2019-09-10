@@ -49,19 +49,6 @@ pub enum PaperClipError {
     /// A valid path cannot be obtained for the given definition.
     #[fail(display = "Invalid path for definition: {:?}", _0)]
     InvalidDefinitionPath(PathBuf),
-    /// If a parameter uses a schema, then we expect it to exist in
-    /// the map of definitions (for now).
-    #[fail(
-        display = "Parameter {:?} in path {:?} defines a new schema, which is unsupported at this point.",
-        _0, _1
-    )]
-    UnsupportedParameterDefinition(String, String),
-    /// The type of this parameter is not known.
-    #[fail(
-        display = "Parameter {:?} in path {:?} doesn't have a known type",
-        _0, _1
-    )]
-    UnknownParameterType(String, String),
     /// I/O errors.
     #[fail(display = "I/O error: {}", _0)]
     Io(std::io::Error),

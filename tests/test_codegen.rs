@@ -72,12 +72,20 @@ pub mod category {
     include!(\"./category.rs\");
 }
 
+pub mod get_shipments_id_response {
+    include!(\"./get_shipments_id_response.rs\");
+}
+
 pub mod order {
     include!(\"./order.rs\");
 }
 
 pub mod pet {
     include!(\"./pet.rs\");
+}
+
+pub mod post_shipments_body {
+    include!(\"./post_shipments_body.rs\");
 }
 
 pub mod tag {
@@ -129,7 +137,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(1630),
+        Some(1792),
     );
 }
 

@@ -71,7 +71,7 @@ struct K8sSchema {
 #[test]
 fn test_definition_ref_cycles() {
     assert_eq!(SCHEMA.swagger, Version::V2);
-    assert_eq!(SCHEMA.definitions.len(), 614);
+    assert_eq!(SCHEMA.definitions.len(), 663);
 
     let json_props_def = &SCHEMA.definitions
         ["io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1beta1.JSONSchemaProps"];

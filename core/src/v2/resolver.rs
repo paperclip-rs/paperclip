@@ -1,8 +1,9 @@
 use super::{
-    models::{OperationMap, Parameter, SchemaRepr},
+    models::{HttpMethod, OperationMap, Parameter, SchemaRepr},
     Schema,
 };
 use crate::error::ValidationError;
+use heck::CamelCase;
 
 use std::cell::{Cell, RefCell};
 use std::collections::{BTreeMap, HashSet};
@@ -45,12 +46,23 @@ impl<S> From<(ResolvableDefinitions<S>, ResolvableOperations<S>)> for Resolver<S
 
 impl<S> Resolver<S>
 where
-    S: Schema,
+    S: Schema + Default,
 {
     /// Visit definitions and resolve them!
     pub fn resolve(&mut self) -> Result<(), ValidationError> {
+        // Resolve path operations first. We may encounter anonymous
+        // definitions along the way, which we'll insert into `self.defs`
+        // and we'll have to resolve them anyway.
+        let mut paths = mem::replace(&mut self.paths, BTreeMap::new());
+        paths.iter_mut().try_for_each(|(path, map)| {
+            trace!("Checking path: {}", path);
+
+            self.resolve_operations(path, map)
+        })?;
+        self.paths = paths;
+
         // FIXME: We don't support definitions that refer another definition
-        // directly from the root. Should we?
+        // directly from the root (i.e., alias). Should we?
         for (name, schema) in &self.defs {
             trace!("Entering: {}", name);
             {
@@ -66,14 +78,6 @@ where
                 self.cyclic_defs.insert(name.clone());
             }
         }
-
-        let mut paths = mem::replace(&mut self.paths, BTreeMap::new());
-        paths.iter_mut().try_for_each(|(path, map)| {
-            trace!("Checking path: {}", path);
-
-            self.resolve_operations(map)
-        })?;
-        self.paths = paths;
 
         // We're doing this separately because we may have mutably borrowed
         // definitions if they're cyclic and borrowing them again will result
@@ -142,32 +146,64 @@ where
 
     /// Resolve a given operation.
     fn resolve_operations(
-        &self,
+        &mut self,
+        path: &str,
         map: &mut OperationMap<SchemaRepr<S>>,
     ) -> Result<(), ValidationError> {
-        for op in map.methods.values_mut() {
-            self.resolve_parameters(&mut op.parameters)?;
+        for (&method, op) in &mut map.methods {
+            self.resolve_parameters(Some(method), path, &mut op.parameters)?;
             for response in op.responses.values_mut() {
-                if let Some(schema) = response.schema.as_mut() {
-                    self.resolve_definitions(schema)?;
-                }
+                self.resolve_operation_schema(
+                    &mut response.schema,
+                    Some(method),
+                    path,
+                    "Response",
+                )?;
             }
         }
 
-        self.resolve_parameters(&mut map.parameters)
+        self.resolve_parameters(None, path, &mut map.parameters)
     }
 
     /// Resolve the given bunch of parameters.
     fn resolve_parameters(
-        &self,
+        &mut self,
+        method: Option<HttpMethod>,
+        path: &str,
         params: &mut Vec<Parameter<SchemaRepr<S>>>,
     ) -> Result<(), ValidationError> {
         for param in params.iter_mut() {
-            if let Some(schema) = param.schema.as_mut() {
-                self.resolve_definitions(schema)?;
-            }
+            self.resolve_operation_schema(&mut param.schema, method, path, "Body")?;
         }
 
+        Ok(())
+    }
+
+    /// Resolves request/response schema in operation.
+    fn resolve_operation_schema(
+        &mut self,
+        s: &mut Option<SchemaRepr<S>>,
+        method: Option<HttpMethod>,
+        path: &str,
+        suffix: &str,
+    ) -> Result<(), ValidationError> {
+        let schema = match s.as_mut() {
+            Some(s) => s,
+            _ => return Ok(()),
+        };
+
+        if schema.read().reference().is_none() {
+            // We've encountered an anonymous schema definition in some
+            // parameter/response. Give it a name and add it to global definitions.
+            let prefix = method.map(|s| s.to_string()).unwrap_or_default();
+            let def_name = (prefix + path + suffix).to_camel_case();
+            let mut ref_schema = S::default();
+            ref_schema.set_reference(format!("{}{}", DEF_REF_PREFIX, def_name));
+            let old_schema = mem::replace(schema, ref_schema.into());
+            self.defs.insert(def_name, old_schema);
+        }
+
+        self.resolve_definitions(schema)?;
         Ok(())
     }
 
