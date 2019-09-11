@@ -177,15 +177,20 @@ impl crate::client::Sendable for PetPostBuilder<crate::generics::XAuthExists, cr
         \"/pets\".into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
+    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::client::ApiError> {
         let mut req = req;
         req = req.header(\"X-Auth\", self.inner.param_x_auth.as_ref().map(std::string::ToString::to_string).expect(\"missing parameter x_auth?\"));
         if let Some(v) = self.inner.param_x_pet_id.as_ref().map(std::string::ToString::to_string) {
             req = req.header(\"X-Pet-ID\", v);
         }
 
-        req
-        .json(&self.inner.body)
+        Ok(req
+        .header(reqwest::header::CONTENT_TYPE, \"application/yaml\")
+        .body({
+            let mut vec = vec![];
+            serde_yaml::to_writer(&mut vec, &self.inner.body)?;
+            vec
+        }))
     }
 }
 ",
@@ -493,9 +498,14 @@ impl crate::client::Sendable for PostShipmentsBodyPostBuilder {
         \"/shipments\".into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
-        req
-        .json(&self.body)
+    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::client::ApiError> {
+        Ok(req
+        .header(reqwest::header::CONTENT_TYPE, \"application/yaml\")
+        .body({
+            let mut vec = vec![];
+            serde_yaml::to_writer(&mut vec, &self.body)?;
+            vec
+        }))
     }
 }
 

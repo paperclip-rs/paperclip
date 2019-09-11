@@ -61,11 +61,10 @@ pub struct OpRequirement {
     pub listable: bool,
     /// Type path for this operation's response.
     pub response_ty_path: Option<String>,
-    /// Preferred encoder for the client. This is ignored for methods that
-    /// don't accept a body.
-    pub encoder: Arc<Coder>,
-    /// List of decoders in preferred order.
-    pub decoders: Vec<Arc<Coder>>,
+    /// Preferred encoding and encoder for the client. This is ignored for
+    /// methods that don't accept a body. If there's no coder, then JSON
+    /// encoding is assumed.
+    pub encoding: Option<(String, Arc<Coder>)>,
 }
 
 /// Represents some parameter somewhere (header, path, query, etc.).
@@ -137,6 +136,7 @@ impl ApiObject {
             object: &self.name,
             body_required: true,
             fields: &self.fields,
+            encoding: None,
             ..Default::default()
         };
 
@@ -163,6 +163,7 @@ impl ApiObject {
                         op_id: req.id.as_ref().map(String::as_str),
                         method: Some(method),
                         body_required: req.body_required,
+                        encoding: req.encoding.as_ref(),
                         fields: &self.fields,
                         global_params: &path_ops.params,
                         local_params: &req.params,
@@ -433,6 +434,7 @@ pub struct ApiObjectBuilder<'a> {
     helper_module_prefix: &'a str,
     op_id: Option<&'a str>,
     method: Option<HttpMethod>,
+    encoding: Option<&'a (String, Arc<Coder>)>,
     description: Option<&'a str>,
     object: &'a str,
     body_required: bool,
@@ -930,6 +932,7 @@ where
     }
 
     /// Writes the `Sendable` trait impl for this builder (if needed).
+    // FIXME: Cleanup
     fn write_sendable_impl_if_needed<F>(&self, f: &mut F) -> fmt::Result
     where
         F: Write,
@@ -1064,21 +1067,42 @@ where
 
         // Check for whether the `modify` method needs to be added (i.e. body and other params).
         if self.0.body_required || !query.is_empty() || !headers.is_empty() {
-            f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {")?;
+            f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ")?;
+            f.write_str(&self.0.helper_module_prefix)?;
+            f.write_str("client::ApiError> {")?;
             if !headers.is_empty() {
                 f.write_str("\n        let mut req = req;")?;
                 f.write_str(&headers)?;
                 f.write_str("\n")?;
             }
 
-            f.write_str("\n        req")?;
+            f.write_str("\n        Ok(req")?;
             if self.0.body_required {
-                f.write_str("\n        .json(&self.")?;
+                f.write_str("\n        ")?;
+                if let Some((range, coder)) = self.0.encoding {
+                    write!(f, ".header(reqwest::header::CONTENT_TYPE, {:?})", range)?;
+
+                    f.write_str(
+                        "\n        .body({
+            let mut vec = vec![];
+            ",
+                    )?;
+                    f.write_str(&coder.encoder_path)?;
+                    f.write_str("(&mut vec, ")?;
+                } else {
+                    f.write_str(".json(")?;
+                }
+
+                f.write_str("&self.")?;
                 if needs_container {
                     f.write_str("inner.")?;
                 }
 
                 f.write_str("body)")?;
+
+                if self.0.encoding.is_some() {
+                    f.write_str("?;\n            vec\n        })")?;
+                }
             }
 
             if !query.is_empty() {
@@ -1087,7 +1111,7 @@ where
                 f.write_str("\n        ])")?;
             }
 
-            f.write_str("\n    }")?;
+            f.write_str(")\n    }")?;
         }
 
         f.write_str("\n}\n")

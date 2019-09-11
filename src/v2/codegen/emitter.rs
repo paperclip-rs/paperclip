@@ -681,7 +681,6 @@ where
             .entry(self.path.into())
             .or_insert_with(Default::default);
 
-        let (encoder, decoders) = self.get_coders(op);
         ops.req.insert(
             meth,
             OpRequirement {
@@ -700,8 +699,7 @@ where
                 } else {
                     None
                 },
-                encoder,
-                decoders,
+                encoding: self.get_encoder(op),
             },
         );
 
@@ -755,7 +753,6 @@ where
             .entry(self.path.into())
             .or_insert_with(Default::default);
 
-        let (encoder, decoders) = self.get_coders(op);
         ops.req.insert(
             meth,
             OpRequirement {
@@ -765,8 +762,7 @@ where
                 body_required: false,
                 listable,
                 response_ty_path: None,
-                encoder,
-                decoders,
+                encoding: self.get_encoder(op),
             },
         );
     }
@@ -785,16 +781,12 @@ where
             .map(|r| &**r)
     }
 
-    /// Returns the coders for the given operation. The former is the preferred encoder,
-    /// and the latter is the list of decoders. It's a list because even though we prefer
-    /// to use one encoder, we decode based on the `Content-Type` header returned by the
-    /// server, so we must be prepared to face anything. Also, there's always an en/decoder
-    /// because even if we don't have any matching coder for some media type, we have
-    /// JSON/YAML (format used for described the spec) to fallback to.
-    fn get_coders(
+    /// Returns the encoder for the given operation (if any, if required).
+    /// Returns `None` if it's JSON (since we already support it).
+    fn get_encoder(
         &self,
         op: &Operation<SchemaRepr<E::Definition>>,
-    ) -> (Arc<Coder>, Vec<Arc<Coder>>) {
+    ) -> Option<(String, Arc<Coder>)> {
         let consumes = match op.consumes.as_ref() {
             Some(s) => s,
             None => &self.api.consumes,
@@ -802,30 +794,17 @@ where
 
         let mut encoders = consumes
             .iter()
-            .filter_map(|r| self.api.coders.matching_coder(r))
-            .sorted_by(|a, b| b.prefer.cmp(&a.prefer)); // sort based on preference.
+            .filter_map(|r| self.api.coders.matching_coder(r).map(|c| (r, c)))
+            .sorted_by(|(_, a), (_, b)| b.prefer.cmp(&a.prefer)); // sort based on preference.
 
-        let produces = match op.produces.as_ref() {
-            Some(s) => s,
-            None => &self.api.produces,
-        };
-
-        let mut decoders = produces
-            .iter()
-            .filter_map(|r| self.api.coders.matching_coder(r))
-            .sorted_by(|a, b| b.prefer.cmp(&a.prefer))
-            .collect::<Vec<_>>();
-
-        if decoders.is_empty() {
-            decoders.push(self.api.spec_format.coder());
+        let (range, coder) = encoders
+            .next()
+            .unwrap_or_else(|| (self.api.spec_format.mime(), self.api.spec_format.coder()));
+        if range == &*JSON_MIME {
+            return None;
         }
 
-        (
-            encoders
-                .next()
-                .unwrap_or_else(|| self.api.spec_format.coder()),
-            decoders,
-        )
+        Some((range.0.as_ref().into(), coder))
     }
 }
 

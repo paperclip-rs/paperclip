@@ -56,8 +56,14 @@
 //! let api: Api<K8sSchema> = v2::from_reader(&mut fd).unwrap();
 //! ```
 //!
-//! Next stop is to resolve this raw schema i.e., walk through the nodes,
-//! find `$ref` fields and assign references to the corresponding definitions.
+//! Now, if `codegen` feature is enabled (it is by default), we can use the
+//! emitter to emit the API into some path. But first, we need to resolve the
+//! raw schema. During resolution, we:
+//!
+//! - walk through the nodes, find `$ref` fields and assign references to
+//! the actual definitions.
+//! - identify anonymous definitions in body parameters and response schemas
+//! and add them to the known map of definitions.
 //!
 //! ```rust,no_run
 //! # use paperclip::v2::{self, Api, DefaultSchema};
@@ -65,9 +71,6 @@
 //!
 //! let resolved = api.resolve().unwrap();
 //! ```
-//!
-//! Now, if `codegen` feature is enabled (it is by default), we can use the
-//! emitter to emit the API into some path.
 //!
 //! ```rust,no_run
 //! # use paperclip::v2::{self, Api, DefaultSchema};
@@ -92,7 +95,7 @@ use std::io::{Read, Seek, SeekFrom};
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
 pub use paperclip_core::im;
-pub use paperclip_core::v2::models::{self, Api, DefaultSchema, YAML_CODER};
+pub use paperclip_core::v2::models::{self, Api, DefaultSchema};
 pub use paperclip_core::v2::schema::{self, Schema};
 
 /// Deserialize the schema from the given reader. Currently, this only supports

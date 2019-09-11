@@ -392,8 +392,8 @@ pub mod client {
 
         /// Modifier for this object. Builders override this method if they
         /// wish to add query parameters, set body, etc.
-        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
-            req
+        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ApiError> {
+            Ok(req)
         }
 
         /// Sends the request and returns a future for the response object.
@@ -411,12 +411,12 @@ pub mod client {
                 {
                     if media_types::M_0.matches(&ty) {
                         return Box::new(body_concat(&mut resp).and_then(|v| {
-                            serde_json::from_slice(&v).map_err(ApiError::from)
+                            serde_json::from_reader(v.as_ref()).map_err(ApiError::from)
                         })) as Box<_>
                     }
                     else if media_types::M_1.matches(&ty) {
                         return Box::new(body_concat(&mut resp).and_then(|v| {
-                            serde_yaml::from_slice(&v).map_err(ApiError::from)
+                            serde_yaml::from_reader(v.as_ref()).map_err(ApiError::from)
                         })) as Box<_>
                     }
                 }
@@ -432,9 +432,9 @@ pub mod client {
         fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Response, Error=ApiError> + Send> {
             let rel_path = self.rel_path();
             let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
-            let req = match builder.build() {
+            let req = match builder.and_then(|b| b.build().map_err(ApiError::Reqwest)) {
                 Ok(r) => r,
-                Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
+                Err(e) => return Box::new(future::err(e)),
             };
 
             Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {
@@ -805,8 +805,8 @@ impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::co
         format!(\"/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/roles/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\"), namespace=self.inner.param_namespace.as_ref().expect(\"missing parameter namespace?\")).into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder {
-        req
+    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::codegen::client::ApiError> {
+        Ok(req
         .json(&self.inner.body)
         .query(&[
             (\"dryRun\", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
@@ -814,11 +814,11 @@ impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::co
             (\"orphanDependents\", self.inner.param_orphan_dependents.as_ref().map(std::string::ToString::to_string)),
             (\"propagationPolicy\", self.inner.param_propagation_policy.as_ref().map(std::string::ToString::to_string)),
             (\"pretty\", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
-        ])
+        ]))
     }
 }
 ",
-        Some(440139),
+        Some(442853),
     );
 }
 
@@ -1161,7 +1161,7 @@ async fn main() {
     }
 }
 ",
-        Some(6531),
+        Some(6595),
     );
 }
 

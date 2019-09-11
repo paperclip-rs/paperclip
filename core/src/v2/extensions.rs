@@ -12,8 +12,8 @@ lazy_static! {
         MediaRange(mime::MediaRange::parse("application/json").expect("parsing mime"));
     /// Default coder for JSON.
     pub static ref JSON_CODER: Arc<Coder> = Arc::new(Coder {
-        encoder_path: "serde_json::to_vec".into(),
-        decoder_path: "serde_json::from_slice".into(),
+        encoder_path: "serde_json::to_writer".into(),
+        decoder_path: "serde_json::from_reader".into(),
         error_path: "serde_json::Error".into(),
         prefer: false,
     });
@@ -22,8 +22,8 @@ lazy_static! {
         MediaRange(mime::MediaRange::parse("application/yaml").expect("parsing mime"));
     /// Default coder for YAML.
     pub static ref YAML_CODER: Arc<Coder> = Arc::new(Coder {
-        encoder_path: "serde_yaml::to_vec".into(),
-        decoder_path: "serde_yaml::from_slice".into(),
+        encoder_path: "serde_yaml::to_writer".into(),
+        decoder_path: "serde_yaml::from_reader".into(),
         error_path: "serde_yaml::Error".into(),
         prefer: false,
     });

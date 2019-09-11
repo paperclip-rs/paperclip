@@ -62,8 +62,8 @@ pub mod client \{
 
         /// Modifier for this object. Builders override this method if they
         /// wish to add query parameters, set body, etc.
-        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> reqwest::r#async::RequestBuilder \{
-            req
+        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ApiError> \{
+            Ok(req)
         }
 
         /// Sends the request and returns a future for the response object.
@@ -82,7 +82,7 @@ pub mod client \{
                     {{- for coder in media_coders }}
                     {{ if not @first }}else {{ endif }}if media_types::M_{ @index }.matches(&ty) \{
                         return Box::new(body_concat(&mut resp).and_then(|v| \{
-                            {coder.decoder | unescaped}(&v).map_err(ApiError::from)
+                            {coder.decoder | unescaped}(v.as_ref()).map_err(ApiError::from)
                         })) as Box<_>
                     }
                     {{- endfor }}
@@ -99,9 +99,9 @@ pub mod client \{
         fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Response, Error=ApiError> + Send> \{
             let rel_path = self.rel_path();
             let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
-            let req = match builder.build() \{
+            let req = match builder.and_then(|b| b.build().map_err(ApiError::Reqwest)) \{
                 Ok(r) => r,
-                Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
+                Err(e) => return Box::new(future::err(e)),
             };
 
             Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| \{
