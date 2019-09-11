@@ -140,7 +140,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(1792),
+        Some(1895),
     );
 }
 

@@ -333,14 +333,16 @@ pub mod client {
     use futures::{Future, future};
     use futures::stream::Stream;
     use parking_lot::Mutex;
-    use reqwest::r#async::Decoder;
+    use reqwest::r#async::{Decoder, Response};
     use serde::de::DeserializeOwned;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
     pub enum ApiError {
         #[fail(display = \"API request failed for path: {} (code: {})\", _0, _1)]
-        Failure(String, reqwest::StatusCode, Mutex<reqwest::r#async::Response>),
+        Failure(String, reqwest::StatusCode, Mutex<Response>),
+        #[fail(display = \"Unsupported media type in response: {}\", _0)]
+        UnsupportedMediaType(String, Mutex<Response>),
         #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
         Reqwest(reqwest::Error),
         #[fail(display = \"Error en/decoding \\\"application/json\\\" data: {}\", _0)]
@@ -357,7 +359,7 @@ pub mod client {
         /// Performs the HTTP request using the given `Request` object
         /// and returns a `Response` future.
         fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>;
+                       -> Box<dyn Future<Item=Response, Error=reqwest::Error> + Send>;
     }
 
     impl ApiClient for reqwest::r#async::Client {
@@ -370,7 +372,7 @@ pub mod client {
 
         #[inline]
         fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send> {
+                       -> Box<dyn Future<Item=Response, Error=reqwest::Error> + Send> {
             Box::new(self.execute(req)) as Box<_>
         }
     }
@@ -394,24 +396,40 @@ pub mod client {
             req
         }
 
-        /// Possible media ranges for this operation.
-        #[inline]
-        fn accepted_media_ranges(&self) -> &'static [mime::MediaRange] {
-            &*media_types::M_1
-        }
-
         /// Sends the request and returns a future for the response object.
         fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> {
-            Box::new(self.send_raw(client).and_then(|mut resp| {
-                let body = std::mem::replace(resp.body_mut(), Decoder::empty());
-                body.concat2()
-                    .map_err(ApiError::from)
-                    .and_then(|v| serde_json::from_slice(&v).map_err(ApiError::from))
+            Box::new(self.send_raw(client).and_then(|mut resp| -> Box<dyn Future<Item=_, Error=ApiError> + Send> {
+                let value = resp.headers().get(reqwest::header::CONTENT_TYPE);
+                let body_concat = |resp: &mut Response| {
+                    let body = std::mem::replace(resp.body_mut(), Decoder::empty());
+                    body.concat2().map_err(ApiError::from)
+                };
+
+                if let Some(ty) = value.as_ref()
+                    .and_then(|v| v.to_str().ok())
+                    .and_then(|v| v.parse::<mime::MediaType>().ok())
+                {
+                    if media_types::M_0.matches(&ty) {
+                        return Box::new(body_concat(&mut resp).and_then(|v| {
+                            serde_json::from_slice(&v).map_err(ApiError::from)
+                        })) as Box<_>
+                    }
+                    else if media_types::M_1.matches(&ty) {
+                        return Box::new(body_concat(&mut resp).and_then(|v| {
+                            serde_yaml::from_slice(&v).map_err(ApiError::from)
+                        })) as Box<_>
+                    }
+                }
+
+                let ty = value
+                    .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
+                    .unwrap_or_default();
+                Box::new(futures::future::err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))) as Box<_>
             })) as Box<_>
         }
 
         /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=reqwest::r#async::Response, Error=ApiError> + Send> {
+        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Response, Error=ApiError> + Send> {
             let rel_path = self.rel_path();
             let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
             let req = match builder.build() {
@@ -419,18 +437,7 @@ pub mod client {
                 Err(e) => return Box::new(future::err(ApiError::Reqwest(e))),
             };
 
-            let ranges = self.accepted_media_ranges();
             Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {
-                if let Some(ty) = resp.headers()
-                    .get(reqwest::header::CONTENT_TYPE)
-                    .and_then(|v| v.to_str().ok())
-                    .and_then(|v| v.parse::<mime::MediaType>().ok())
-                {
-                    if !ranges.iter().any(|r| r.matches(&ty)) {
-                        log::warn!(\"Response has media type {} which doesn't match any of the accepted media ranges.\", ty);
-                    }
-                }
-
                 if resp.status().is_success() {
                     futures::future::ok(resp)
                 } else {
@@ -444,30 +451,10 @@ pub mod client {
         use lazy_static::lazy_static;
 
         lazy_static! {
-            pub static ref M_0: Vec<mime::MediaRange> = vec![
-                mime::MediaRange::parse(\"*/*\").expect(\"cannot parse \\\"*/*\\\" as media range\"),
-            ];
-            pub static ref M_1: Vec<mime::MediaRange> = vec![
-                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
-            ];
-            pub static ref M_2: Vec<mime::MediaRange> = vec![
-                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
-                mime::MediaRange::parse(\"application/json;stream=watch\").expect(\"cannot parse \\\"application/json;stream=watch\\\" as media range\"),
-                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf\\\" as media range\"),
-                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf;stream=watch\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf;stream=watch\\\" as media range\"),
-                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\"),
-            ];
-            pub static ref M_3: Vec<mime::MediaRange> = vec![
-                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
-                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf\\\" as media range\"),
-                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\"),
-            ];
-            pub static ref M_4: Vec<mime::MediaRange> = vec![
-                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\"),
-                mime::MediaRange::parse(\"application/vnd.kubernetes.protobuf\").expect(\"cannot parse \\\"application/vnd.kubernetes.protobuf\\\" as media range\"),
-                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\"),
-                mime::MediaRange::parse(\"text/plain\").expect(\"cannot parse \\\"text/plain\\\" as media range\"),
-            ];
+            pub static ref M_0: mime::MediaRange =
+                mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\");
+            pub static ref M_1: mime::MediaRange =
+                mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\");
         }
     }
 
@@ -1174,7 +1161,7 @@ async fn main() {
     }
 }
 ",
-        Some(7939),
+        Some(6531),
     );
 }
 

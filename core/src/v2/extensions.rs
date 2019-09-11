@@ -15,7 +15,7 @@ lazy_static! {
         encoder_path: "serde_json::to_vec".into(),
         decoder_path: "serde_json::from_slice".into(),
         error_path: "serde_json::Error".into(),
-        prefer: true,
+        prefer: false,
     });
     /// Media range for YAML.
     pub static ref YAML_MIME: MediaRange =
@@ -85,13 +85,6 @@ impl Coders {
             })
             .map(Clone::clone)
     }
-
-    /// Returns an iterator of error paths mapped to media types.
-    pub fn errors(&self) -> impl Iterator<Item = (&'_ str, &'_ str)> {
-        self.0
-            .iter()
-            .map(|(r, c)| (r.0.as_ref(), c.error_path.as_str()))
-    }
 }
 
 /// Represents the en/decoder for some MIME media range.
@@ -106,6 +99,7 @@ pub struct Coder {
     /// Whether this media type should be preferred when multiple
     /// types are available. When multiple types are preferred,
     /// it's unspecified as to which is chosen.
+    #[serde(default)]
     pub prefer: bool,
 }
 

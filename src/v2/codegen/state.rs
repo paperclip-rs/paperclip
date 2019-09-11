@@ -1,7 +1,7 @@
 use super::template::{self, TEMPLATE};
 use super::{object::ApiObject, CrateMeta};
 use crate::error::PaperClipError;
-use crate::v2::models::{Coder, Coders, MediaRange, SpecFormat};
+use crate::v2::models::{Coders, SpecFormat};
 use failure::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
@@ -10,14 +10,13 @@ use itertools::Itertools;
 use url::Url;
 
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{HashMap, HashSet};
 use std::fmt::Write as _;
 #[cfg(feature = "cli")]
 use std::fs;
 use std::fs::OpenOptions;
 use std::hash::{Hash, Hasher};
 use std::io::Write;
-use std::iter;
 use std::path::{Path, PathBuf};
 use std::rc::Rc;
 
@@ -36,8 +35,6 @@ pub struct EmitterState {
     pub(super) base_url: RefCell<Url>,
     /// Fallback encoding when we don't have a choice (obtained from `Api.spec_format`).
     default_encoding: RefCell<SpecFormat>,
-    /// Additional error variants for the API client (obtained from `Coders::errors`).
-    errors: Rc<RefCell<Vec<CodingError>>>,
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `"cli"` feature.
     #[cfg(feature = "cli")]
@@ -50,8 +47,8 @@ pub struct EmitterState {
     pub(super) def_mods: RefCell<HashMap<PathBuf, Vec<ApiObject>>>,
     /// Relative paths
     pub(super) rel_paths: RefCell<HashSet<String>>,
-    /// Combinations of media ranges we've encountered in operation responses.
-    media_combinations: RefCell<BTreeSet<BTreeSet<String>>>,
+    /// Media ranges and the corresponding decoders we've registered.
+    media_coders: RefCell<Vec<MediaCoder>>,
     /// Unit types used by builders.
     unit_types: RefCell<HashSet<String>>,
     /// Generated CLI YAML for clap.
@@ -96,33 +93,23 @@ impl EmitterState {
         *self.unit_types.borrow_mut() = Default::default();
         *self.cli_yaml.borrow_mut() = Default::default();
         *self.cli_match_arms.borrow_mut() = Default::default();
-        *self.media_combinations.borrow_mut() = Default::default();
+        *self.media_coders.borrow_mut() = Default::default();
     }
 
     /// Sets the media type information for encoder/decoders.
     pub(crate) fn set_media_info(&self, spec_format: SpecFormat, coders: &Coders) {
         *self.default_encoding.borrow_mut() = spec_format;
-        self.add_response_ranges(iter::once(spec_format.mime()));
 
-        *self.errors.borrow_mut() = coders
-            .errors()
-            .map(|(m, p)| CodingError {
-                media_type: m.into(),
-                variant: m.replace('*', "wildcard").to_camel_case(),
-                ty_path: p.into(),
+        *self.media_coders.borrow_mut() = coders
+            .iter()
+            .map(|(r, c)| (r.0.as_ref(), c))
+            .map(|(r, c)| MediaCoder {
+                range: r.into(),
+                error_variant: r.replace('*', "wildcard").to_camel_case(),
+                error_ty_path: c.error_path.clone(),
+                decoder: c.decoder_path.clone(),
             })
             .collect();
-    }
-
-    /// Adds the accepted media ranges for some response. This is called
-    /// for each path operation.
-    pub(crate) fn add_response_ranges<'a, I>(&self, iter: I)
-    where
-        I: Iterator<Item = &'a MediaRange>,
-    {
-        self.media_combinations
-            .borrow_mut()
-            .insert(iter.map(|s| s.0.as_ref().to_owned()).collect());
     }
 
     /// Once the emitter has generated the struct definitions,
@@ -294,17 +281,7 @@ pub mod generics {
         let contents = template::render(
             TEMPLATE::CLIENT_MOD,
             &ClientModContext {
-                coder: &*self.default_encoding.borrow().coder(),
-                default_range_index: self
-                    .media_combinations
-                    .borrow()
-                    .iter()
-                    .position(|r| {
-                        r.len() == 1 && r.contains(self.default_encoding.borrow().mime().0.as_ref())
-                    })
-                    .expect("expected default media range to exist"),
-                media_combinations: &*self.media_combinations.borrow(),
-                errors: &*self.errors.borrow(),
+                media_coders: &*self.media_coders.borrow(),
                 base_url: self.base_url.borrow().as_str(),
             },
         )?;
@@ -524,7 +501,6 @@ impl Clone for EmitterState {
             crate_meta: self.crate_meta.clone(),
             base_url: self.base_url.clone(),
             default_encoding: self.default_encoding.clone(),
-            errors: self.errors.clone(),
             ..Default::default()
         }
     }
@@ -545,8 +521,7 @@ impl Default for EmitterState {
             unit_types: RefCell::new(HashSet::new()),
             cli_yaml: RefCell::new(String::new()),
             cli_match_arms: RefCell::new(String::new()),
-            media_combinations: RefCell::new(BTreeSet::new()),
-            errors: Rc::new(RefCell::new(vec![])),
+            media_coders: RefCell::new(vec![]),
             default_encoding: RefCell::new(SpecFormat::Json),
         }
     }
@@ -578,17 +553,15 @@ struct ManifestContext<'a> {
 #[derive(serde::Serialize)]
 struct ClientModContext<'a> {
     base_url: &'a str,
-    default_range_index: usize,
-    media_combinations: &'a BTreeSet<BTreeSet<String>>,
-    errors: &'a [CodingError],
-    coder: &'a Coder,
+    media_coders: &'a [MediaCoder],
 }
 
 #[derive(Debug, serde::Serialize)]
-struct CodingError {
-    media_type: String,
-    variant: String,
-    ty_path: String,
+struct MediaCoder {
+    range: String,
+    decoder: String,
+    error_variant: String,
+    error_ty_path: String,
 }
 
 #[derive(serde::Serialize)]

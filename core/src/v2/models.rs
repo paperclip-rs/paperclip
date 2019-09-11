@@ -98,7 +98,7 @@ pub struct GenericApi<S> {
     pub schemes: BTreeSet<OperationProtocol>,
     #[serde(
         default,
-        rename = "x-coders",
+        rename = "x-rust-coders",
         skip_serializing_if = "<Coders as Deref>::Target::is_empty"
     )]
     pub coders: Coders,
@@ -115,7 +115,7 @@ pub struct GenericApi<S> {
     /// - `{"my_crate": "{ version = \"0.9\", features = [\"booya\"] }"}`
     #[serde(
         default,
-        rename = "x-dependencies",
+        rename = "x-rust-dependencies",
         skip_serializing_if = "BTreeMap::is_empty"
     )]
     pub support_crates: BTreeMap<String, String>,
