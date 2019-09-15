@@ -658,16 +658,37 @@ where
                 let default_fmt = CollectionFormat::default();
                 it_fmts.insert(0, p.collection_format.unwrap_or(default_fmt));
                 it_fmts.pop(); // pop the final format, as it's unnecessary.
+                let is_url_encoded = p.in_ == ParameterIn::Query || p.in_ == ParameterIn::FormData;
+                if it_fmts.contains(&CollectionFormat::Multi) {
+                    let needs_override = if is_url_encoded {
+                        let mut fmt_idx_iter = it_fmts
+                            .iter()
+                            .enumerate()
+                            .filter(|&(_, &fmt)| fmt == CollectionFormat::Multi);
+                        fmt_idx_iter.next().expect("expected collection format?");
+                        // We support URL encoding multiple values only when it's specified in root.
+                        fmt_idx_iter.next().is_some()
+                    } else {
+                        true
+                    };
 
-                if p.in_ != ParameterIn::Query
-                    && p.in_ != ParameterIn::FormData
-                    && it_fmts.contains(&CollectionFormat::Multi)
-                {
-                    info!("Parameter {:?} is in {:?}, which doesn't allow multiple instances. Replacing with default ({:?}).",
-                            p.name, p.in_, default_fmt);
-                    for f in &mut it_fmts {
-                        if *f == CollectionFormat::Multi {
-                            *f = default_fmt;
+                    if needs_override {
+                        if is_url_encoded {
+                            info!("Parameter {:?} in {:?} doesn't allow multiple instances in nested arrays. \
+                                   Replacing with default ({:?}).", p.name, p.in_, default_fmt);
+                        } else {
+                            info!("Parameter {:?} is in {:?}, which doesn't allow array values as multiple \
+                                   instances. Replacing with default ({:?}).", p.name, p.in_, default_fmt);
+                        }
+
+                        for (i, f) in it_fmts.iter_mut().enumerate() {
+                            if *f == CollectionFormat::Multi {
+                                if i == 0 && is_url_encoded {
+                                    continue;
+                                }
+
+                                *f = default_fmt;
+                            }
                         }
                     }
                 }

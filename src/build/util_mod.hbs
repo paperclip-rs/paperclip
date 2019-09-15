@@ -2,6 +2,7 @@
 use std::fmt::\{self, Display, Write};
 
 use std::marker::PhantomData;
+use std::ops::Deref;
 use std::str::FromStr;
 
 pub trait Delimiting \{
@@ -45,6 +46,14 @@ pub struct Delimited<T, D>(Vec<T>, PhantomData<D>);
 impl<T, D> From<Vec<T>> for Delimited<T, D> \{
     fn from(v: Vec<T>) -> Self \{
         Delimited(v, PhantomData)
+    }
+}
+
+impl<T, D> Deref for Delimited<T, D> \{
+    type Target = Vec<T>;
+
+    fn deref(&self) -> &Self::Target \{
+        &self.0
     }
 }
 

@@ -219,6 +219,16 @@ paths:
               collectionFormat: ssv
               items:
                 type: number
+      - in: query
+        name: foo
+        type: array
+        required: false
+        collectionFormat: multi
+        items:
+          type: array
+          collectionFormat: multi # defaults to CSV, because we can't encode nested values.
+          items:
+            type: string
       responses:
         "200":
           schema:

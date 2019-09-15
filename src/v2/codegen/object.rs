@@ -1080,6 +1080,7 @@ where
 
         // Collect URL query parameters
         let mut query = String::new();
+        let mut multi_value_query = vec![];
         self.0
             .struct_fields_iter()
             .filter(|f| f.param_loc == Some(ParameterIn::Query))
@@ -1088,12 +1089,26 @@ where
                     query.push_str(",");
                 }
 
-                write!(query, "\n            (\"{}\", self.", &field.name)?;
+                let name = field.name.to_snek_case();
+                if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
+                    multi_value_query.push(format!(
+                        "
+            &self.{}param_{}.as_ref().map(|v| {{
+                v.iter().map(|v| ({:?}, v.to_string())).collect::<Vec<_>>()
+            }}).unwrap_or_default()",
+                        if needs_container { "inner." } else { "" },
+                        name,
+                        &field.name,
+                    ));
+
+                    return Ok(());
+                }
+
+                write!(query, "\n            ({:?}, self.", &field.name)?;
                 if needs_container {
                     query.push_str("inner.");
                 }
 
-                let name = field.name.to_snek_case();
                 write!(
                     query,
                     "param_{name}.as_ref().map(std::string::ToString::to_string))",
@@ -1104,7 +1119,11 @@ where
             })?;
 
         // Check for whether the `modify` method needs to be added (i.e. body and other params).
-        if self.0.body_required || !query.is_empty() || !headers.is_empty() {
+        if self.0.body_required
+            || !query.is_empty()
+            || !multi_value_query.is_empty()
+            || !headers.is_empty()
+        {
             f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ")?;
             f.write_str(&self.0.helper_module_prefix)?;
             f.write_str("client::ApiError> {")?;
@@ -1147,6 +1166,12 @@ where
                 f.write_str("\n        .query(&[")?;
                 f.write_str(&query)?;
                 f.write_str("\n        ])")?;
+            }
+
+            for q in multi_value_query {
+                f.write_str("\n        .query({")?;
+                f.write_str(&q)?;
+                f.write_str("\n        })")?;
             }
 
             f.write_str(")\n    }")?;
