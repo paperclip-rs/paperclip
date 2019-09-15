@@ -88,6 +88,10 @@ pub mod post_shipments_body {
     include!(\"./post_shipments_body.rs\");
 }
 
+pub mod status {
+    include!(\"./status.rs\");
+}
+
 pub mod tag {
     include!(\"./tag.rs\");
 }
@@ -140,7 +144,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(1895),
+        Some(1944),
     );
 }
 
@@ -162,7 +166,7 @@ impl<XAuth, Id, Name> PetPostBuilder<XAuth, Id, Name> {
         self
     }
 ",
-        Some(3938),
+        Some(3952),
     );
 
     assert_file_contains_content_at(
@@ -194,7 +198,7 @@ impl crate::client::Sendable for PetPostBuilder<crate::generics::XAuthExists, cr
     }
 }
 ",
-        Some(5411),
+        Some(5439),
     );
 }
 
@@ -220,7 +224,7 @@ impl crate::client::Sendable for PetGetBuilder {
     }
 }
 ",
-        Some(2978),
+        Some(2992),
     );
 }
 
@@ -308,7 +312,7 @@ impl OrderBuilder {
 
     #[inline]
     pub fn list(mut self, value: impl Iterator<Item = impl Into<OrderList>>) -> Self {
-        self.body.list = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.list = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 }
@@ -403,6 +407,7 @@ impl OrderListBuilder {
 
 #[test]
 fn test_anonymous_object_definition_in_body() {
+    let _ = &*CLI_CODEGEN;
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/post_shipments_body.rs"),
         "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
@@ -720,5 +725,100 @@ impl GetShipmentsIdResponseAddressBuilder {
 }
 ",
         Some(0),
+    );
+}
+
+#[test]
+fn test_simple_array_parameter_in_path() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/status.rs"),
+        "/// Builder created by [`Status::delete`](./struct.Status.html#method.delete) method for a `DELETE` operation associated with `Status`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct StatusDeleteBuilder<PetId> {
+    inner: StatusDeleteBuilderContainer,
+    _param_pet_id: core::marker::PhantomData<PetId>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct StatusDeleteBuilderContainer {
+    param_pet_id: Option<crate::util::Delimited<i64, crate::util::Csv>>,
+}
+
+impl<PetId> StatusDeleteBuilder<PetId> {
+    #[inline]
+    pub fn pet_id(mut self, value: impl Iterator<Item = impl Into<i64>>) -> StatusDeleteBuilder<crate::generics::PetIdExists> {
+        self.inner.param_pet_id = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
+impl crate::client::Sendable for StatusDeleteBuilder<crate::generics::PetIdExists> {
+    type Output = Status;
+
+    const METHOD: reqwest::Method = reqwest::Method::DELETE;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!(\"/pets/{petId}\", petId=self.inner.param_pet_id.as_ref().expect(\"missing parameter pet_id?\")).into()
+    }
+}
+",
+        Some(1189),
+    );
+}
+
+#[test]
+fn test_nested_arrays() {
+    let _ = &*CLI_CODEGEN;
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/status.rs"),
+        "/// Builder created by [`Status::post_1`](./struct.Status.html#method.post_1) method for a `POST` operation associated with `Status`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct StatusPostBuilder1<Values> {
+    inner: StatusPostBuilder1Container,
+    _param_values: core::marker::PhantomData<Values>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct StatusPostBuilder1Container {
+    param_values: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>>,
+    param_x_foobar: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Pipes>>,
+}
+
+impl<Values> StatusPostBuilder1<Values> {
+    #[inline]
+    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> StatusPostBuilder1<crate::generics::ValuesExists> {
+        self.inner.param_values = Some(value.map(|value| value.map(|value| value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    #[inline]
+    pub fn x_foobar(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<f64>>>>>) -> Self {
+        self.inner.param_x_foobar = Some(value.map(|value| value.map(|value| value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
+        self
+    }
+}
+
+impl crate::client::Sendable for StatusPostBuilder1<crate::generics::ValuesExists> {
+    type Output = Status;
+
+    const METHOD: reqwest::Method = reqwest::Method::POST;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!(\"/test/parameter/{values}\", values=self.inner.param_values.as_ref().expect(\"missing parameter values?\")).into()
+    }
+
+    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::client::ApiError> {
+        let mut req = req;
+        if let Some(v) = self.inner.param_x_foobar.as_ref().map(std::string::ToString::to_string) {
+            req = req.header(\"X-foobar\", v);
+        }
+
+        Ok(req)
+    }
+}
+",
+        Some(2349),
     );
 }

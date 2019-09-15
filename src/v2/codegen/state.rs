@@ -253,6 +253,10 @@ pub mod {name} {{
 pub mod generics {
     include!(\"./generics.rs\");
 }
+
+pub mod util {
+    include!(\"./util.rs\");
+}
 ",
         );
         self.append_contents(&content, &module)?;
@@ -271,6 +275,11 @@ pub mod generics {
 
         content.push_str("\n");
         self.write_contents(&content, &module)?;
+
+        module.set_file_name("util.rs");
+        let contents = template::render(TEMPLATE::UTIL_MOD, &EmptyContext {})?;
+        self.write_contents(&contents, &module)?;
+
         self.add_cli_deps_if_needed()?;
         self.create_manifest()
     }

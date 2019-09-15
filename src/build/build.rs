@@ -18,6 +18,7 @@ fn main() {
         ("CLIENT_MOD", "src/build/client_mod.hbs"),
         ("CLAP_YAML", "src/build/clap_yaml.hbs"),
         ("CLI_MAIN", "src/build/cli_main.hbs"),
+        ("UTIL_MOD", "src/build/util_mod.hbs"),
     ];
 
     let mut contents = String::from(

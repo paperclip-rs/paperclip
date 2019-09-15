@@ -646,35 +646,35 @@ impl<Verbs> PolicyRuleBuilder<Verbs> {
     /// APIGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed.
     #[inline]
     pub fn api_groups(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.body.api_groups = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.api_groups = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 
     /// NonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path Since non-resource URLs are not namespaced, this field is only applicable for ClusterRoles referenced from a ClusterRoleBinding. Rules can either apply to API resources (such as \"pods\" or \"secrets\") or non-resource URL paths (such as \"/api\"),  but not both.
     #[inline]
     pub fn non_resource_ur_ls(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.body.non_resource_ur_ls = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.non_resource_ur_ls = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 
     /// ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
     #[inline]
     pub fn resource_names(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.body.resource_names = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.resource_names = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 
     /// Resources is a list of resources this rule applies to.  ResourceAll represents all resources.
     #[inline]
     pub fn resources(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.body.resources = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.resources = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 
     /// Verbs is a list of Verbs that apply to ALL the ResourceKinds and AttributeRestrictions contained in this rule.  VerbAll represents all kinds.
     #[inline]
     pub fn verbs(mut self, value: impl Iterator<Item = impl Into<String>>) -> PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
-        self.body.verbs = value.map(|value| value.into()).collect::<Vec<_>>();
+        self.body.verbs = value.map(|value| value.into()).collect::<Vec<_>>().into();
         unsafe { std::mem::transmute(self) }
     }
 }
@@ -818,7 +818,7 @@ impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::co
     }
 }
 ",
-        Some(442853),
+        Some(442860),
     );
 }
 
@@ -868,7 +868,7 @@ impl<Groups> ApiGroupListBuilder<Groups> {
     /// groups is a list of APIGroup.
     #[inline]
     pub fn groups(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::api_group::ApiGroupBuilder<crate::codegen::generics::NameExists, crate::codegen::generics::VersionsExists>>) -> ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
-        self.body.groups = value.map(|value| value.into()).collect::<Vec<_>>();
+        self.body.groups = value.map(|value| value.into()).collect::<Vec<_>>().into();
         unsafe { std::mem::transmute(self) }
     }
 
@@ -915,14 +915,14 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     /// Extra information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn extra(mut self, value: impl Iterator<Item = (String, impl Iterator<Item = impl Into<String>>)>) -> Self {
-        self.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>())).collect::<std::collections::BTreeMap<_, _>>());
+        self.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>().into())).collect::<std::collections::BTreeMap<_, _>>().into());
         self
     }
 
     /// Group information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn groups(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.body.groups = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.groups = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 
@@ -944,7 +944,7 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     ///      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
     #[inline]
     pub fn usages(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
-        self.body.usages = Some(value.map(|value| value.into()).collect::<Vec<_>>());
+        self.body.usages = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
 
@@ -1161,7 +1161,7 @@ async fn main() {
     }
 }
 ",
-        Some(6595),
+        Some(6640),
     );
 }
 

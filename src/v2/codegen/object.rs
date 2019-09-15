@@ -4,7 +4,7 @@
 //! API objects, their builders, impls, etc.
 
 use super::RUST_KEYWORDS;
-use crate::v2::models::{Coder, HttpMethod, ParameterIn};
+use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
 use heck::{CamelCase, KebabCase, SnekCase};
 use lazy_static::lazy_static;
 use regex::{Captures, Regex};
@@ -80,6 +80,8 @@ pub struct Parameter {
     pub required: bool,
     /// Where the parameter lives.
     pub presence: ParameterIn,
+    /// If the parameter is an array of values, then the format for collecting them.
+    pub delimiting: Vec<CollectionFormat>,
 }
 
 /// Represents a struct field.
@@ -95,7 +97,7 @@ pub struct ObjectField {
     pub is_required: bool,
     /// Whether this field should be boxed.
     pub boxed: bool,
-    /// Requirements of the "deepest" child type in the given definition.
+    /// Required fields of the "deepest" child type in the given definition.
     ///
     /// Now, what do I mean by "deepest"? For example, if we had `Vec<Vec<Vec<T>>>`
     /// or `Vec<BTreeMap<String, Vec<BTreeMap<String, T>>>>`, then "deepest" child
@@ -105,7 +107,7 @@ pub struct ObjectField {
     /// and `ApiObjectBuilderImpl::write_value_map` functions.
     ///
     /// Yours sincerely.
-    pub children_req: Vec<String>,
+    pub child_req_fields: Vec<String>,
 }
 
 impl ApiObject {
@@ -457,9 +459,11 @@ pub(super) struct StructField<'a> {
     pub desc: Option<&'a str>,
     /// Whether this field had a collision (i.e., between parameter and object field)
     pub overridden: bool,
-    /// Children fields needed for this field. If they exist, then we
+    /// Required fields of child needed for this field. If they exist, then we
     /// switch to requiring a builder.
-    pub strict_children: &'a [String],
+    pub strict_child_fields: &'a [String],
+    /// Delimiting for array values (if it is a parameter).
+    pub delimiting: &'a [CollectionFormat],
     /// Location of the parameter (if it is a parameter).
     pub param_loc: Option<ParameterIn>,
 }
@@ -558,9 +562,10 @@ impl<'a> ApiObjectBuilder<'a> {
                 Property::OptionalField
             },
             desc: field.description.as_ref().map(String::as_str),
-            strict_children: &*field.children_req,
+            strict_child_fields: &*field.child_req_fields,
             param_loc: None,
             overridden: false,
+            delimiting: &[],
         });
 
         let param_iter = self
@@ -584,9 +589,10 @@ impl<'a> ApiObjectBuilder<'a> {
                             Property::OptionalParam
                         },
                         desc: param.description.as_ref().map(String::as_str),
-                        strict_children: &[] as &[_],
+                        strict_child_fields: &[] as &[_],
                         param_loc: Some(param.presence),
                         overridden: false,
+                        delimiting: &param.delimiting,
                     }))
                 }
             })
@@ -740,6 +746,7 @@ impl<'a> ApiObjectBuilder<'a> {
         prop: Property,
         name: &str,
         ty: &str,
+        delims: &[CollectionFormat],
         f: &mut F,
     ) -> fmt::Result
     where
@@ -749,7 +756,37 @@ impl<'a> ApiObjectBuilder<'a> {
             f.write_str("\n    param_")?;
             f.write_str(&name)?;
             f.write_str(": Option<")?;
-            f.write_str(&ty)?;
+            if ty.contains("Vec") {
+                // In parameters, we're limited to basic types and arrays,
+                // so we can assume that whatever `<>` we encounter, they're
+                // all for `Vec`.
+                let delim_ty = String::from(self.helper_module_prefix) + "util::Delimited";
+                let mut ty = ty.replace("Vec", &delim_ty);
+                let mut new_ty = String::new();
+                // From the reverse, because we replace from inside out.
+                let mut delim_idx = delims.len();
+                while let Some(idx) = ty.find('>') {
+                    delim_idx -= 1;
+                    new_ty.push_str(&ty[..idx]);
+                    new_ty.push_str(", ");
+                    write!(
+                        &mut new_ty,
+                        "{}util::{:?}",
+                        self.helper_module_prefix, delims[delim_idx]
+                    )?;
+                    new_ty.push('>');
+                    if idx == ty.len() - 1 {
+                        break;
+                    }
+
+                    ty = ty[idx + 1..].into();
+                }
+
+                f.write_str(&new_ty)?;
+            } else {
+                f.write_str(ty)?;
+            }
+
             f.write_str(">,")?;
         }
 
@@ -868,7 +905,7 @@ where
     where
         F: Write,
     {
-        let simple_type = !ty.contains("::");
+        let simple_type = !ty.contains("::") || ty.ends_with("Delimited");
 
         if let Some(i) = ty.find('<') {
             if ty[..i].ends_with("Vec") {
@@ -925,10 +962,11 @@ where
                 f.write_str(")).collect::<std::collections::BTreeMap<_, _>>()")?;
             }
         } else {
-            f.write_str("value.into()")?;
+            f.write_str("value")?;
         }
 
-        Ok(())
+        // Always write `into` to ease conversions.
+        f.write_str(".into()")
     }
 
     /// Writes the `Sendable` trait impl for this builder (if needed).
@@ -1144,7 +1182,7 @@ where
 
         f.write_str(&field_name)?;
         f.write_str("(mut self, value: ")?;
-        self.write_builder_ty(&field.ty, &field.strict_children, f)?;
+        self.write_builder_ty(&field.ty, &field.strict_child_fields, f)?;
 
         f.write_str(") -> ")?;
         if prop_is_required {
@@ -1298,9 +1336,15 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         self.struct_fields_iter().try_for_each(|field| {
             let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
             if needs_container {
-                self.write_parameter_if_required(field.prop, &sk, field.ty, &mut container)?;
+                self.write_parameter_if_required(
+                    field.prop,
+                    &sk,
+                    field.ty,
+                    &field.delimiting,
+                    &mut container,
+                )?;
             } else {
-                self.write_parameter_if_required(field.prop, &sk, field.ty, f)?;
+                self.write_parameter_if_required(field.prop, &sk, field.ty, &field.delimiting, f)?;
             }
 
             if field.prop.is_required() {

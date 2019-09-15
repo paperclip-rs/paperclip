@@ -118,6 +118,7 @@ where
             format: None,
             items: None,
             enum_: Default::default(),
+            collection_format: None,
         });
     }
 
@@ -155,6 +156,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     format: def.format,
                     items: None,
                     enum_: def.enum_,
+                    collection_format: None,
                 });
             }
 
@@ -169,6 +171,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     format: v.format,
                     items: None,
                     enum_: v.enum_,
+                    collection_format: None,
                 });
             }
         }
@@ -209,6 +212,7 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
                     format: def.format,
                     items: None,
                     enum_: def.enum_,
+                    collection_format: None,
                 });
             )+
         }

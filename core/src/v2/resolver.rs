@@ -19,6 +19,7 @@ type ResolvableOperations<S> = BTreeMap<String, OperationMap<SchemaRepr<S>>>;
 /// API schema resolver. This visits each definition and resolves
 /// `$ref` field (if any) by finding the associated definition and
 /// replacing the field with a reference to the actual definition.
+// FIXME: Move all validation to resolver.
 pub(crate) struct Resolver<S> {
     /// Current definition being resolved.
     cur_def: RefCell<Option<String>>,

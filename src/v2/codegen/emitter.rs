@@ -4,8 +4,8 @@ use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
     models::{
-        self, Api, Coder, DataType, DataTypeFormat, HttpMethod, Operation, OperationMap,
-        ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
+        self, Api, Coder, CollectionFormat, DataType, DataTypeFormat, HttpMethod, Items, Operation,
+        OperationMap, ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
     },
     Schema,
 };
@@ -462,7 +462,7 @@ where
                             .map(|s| s.contains(name))
                             .unwrap_or(false),
                         boxed: schema.is_cyclic(),
-                        children_req: self.children_requirements(&schema),
+                        child_req_fields: self.children_requirements(&schema),
                     });
 
                     if let EmittedUnit::KnownButAnonymous(_, mut o) = ty {
@@ -640,25 +640,47 @@ where
                 self.template_params.remove(&p.name);
             }
 
-            // Enforce that the parameter is a known type and collect it.
-            let ty = match matching_unit_type(p.format.as_ref(), p.data_type) {
-                Some(t) => t,
-                None => {
-                    warn!(
-                        "Skipping parameter {:?} with unknown type {:?} in path {:?}",
-                        p.name, p.data_type, self.path
-                    );
-                    continue;
+            // Enforce that the parameter is an allowed type and collect it.
+            let (ty, mut it_fmts) =
+                match resolve_parameter_type(p.data_type, p.format.as_ref(), p.items.as_ref()) {
+                    Some(t) => t,
+                    None => {
+                        warn!(
+                            "Skipping parameter {:?} with unknown type {:?} in path {:?}",
+                            p.name, p.data_type, self.path
+                        );
+                        continue;
+                    }
+                };
+
+            // If it's an array, then validate collection formats and default if needed.
+            if p.data_type == Some(DataType::Array) {
+                let default_fmt = CollectionFormat::default();
+                it_fmts.insert(0, p.collection_format.unwrap_or(default_fmt));
+                it_fmts.pop(); // pop the final format, as it's unnecessary.
+
+                if p.in_ != ParameterIn::Query
+                    && p.in_ != ParameterIn::FormData
+                    && it_fmts.contains(&CollectionFormat::Multi)
+                {
+                    info!("Parameter {:?} is in {:?}, which doesn't allow multiple instances. Replacing with default ({:?}).",
+                            p.name, p.in_, default_fmt);
+                    for f in &mut it_fmts {
+                        if *f == CollectionFormat::Multi {
+                            *f = default_fmt;
+                        }
+                    }
                 }
-            };
+            }
 
             params.push(Parameter {
                 name: p.name.clone(),
                 description: p.description.clone(),
-                ty_path: ty.into(),
+                ty_path: ty,
                 presence: p.in_,
                 // NOTE: parameter is required if it's in path
                 required: p.required || p.in_ == ParameterIn::Path,
+                delimiting: it_fmts,
             });
         }
 
@@ -806,6 +828,35 @@ where
 
         Some((range.0.as_ref().into(), coder))
     }
+}
+
+/// Ensures that a parameter type is either a simple type or an array
+/// and returns the resolved Rust type.
+fn resolve_parameter_type(
+    dt: Option<DataType>,
+    dt_fmt: Option<&DataTypeFormat>,
+    items: Option<&Items>,
+) -> Option<(String, Vec<CollectionFormat>)> {
+    match matching_unit_type(dt_fmt, dt) {
+        Some(t) => return Some((t.into(), vec![])),
+        None if dt == Some(DataType::Array) => {
+            if let Some(i) = items {
+                if let Some((ty, mut fmts)) = resolve_parameter_type(
+                    i.data_type,
+                    i.format.as_ref(),
+                    i.items.as_ref().map(Deref::deref),
+                ) {
+                    fmts.insert(0, i.collection_format.unwrap_or_default());
+                    // We collect it as `Vec` for now - we'll replace it with our
+                    // `Delimited` wrapper when we actually write the code.
+                    return Some((String::from("Vec<") + ty.as_str() + ">", fmts));
+                }
+            }
+        }
+        None => (),
+    }
+
+    None
 }
 
 /// Checks if the given type/format matches a known Rust type and returns it.

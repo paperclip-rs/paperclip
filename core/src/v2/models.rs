@@ -84,6 +84,7 @@ pub type Api<S> = GenericApi<SchemaRepr<S>>;
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct GenericApi<S> {
     pub swagger: Version,
+    #[serde(default = "BTreeMap::new")]
     pub definitions: BTreeMap<String, S>,
     pub paths: BTreeMap<String, OperationMap<S>>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -249,6 +250,7 @@ impl<S> OperationMap<S> {
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
 #[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
 pub struct Parameter<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
@@ -264,7 +266,27 @@ pub struct Parameter<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub format: Option<DataTypeFormat>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub items: Option<S>,
+    pub items: Option<Items>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collection_format: Option<CollectionFormat>,
+    #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
+    pub enum_: Vec<serde_json::Value>,
+}
+
+/// Items object.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject
+#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = "camelCase")]
+pub struct Items {
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub data_type: Option<DataType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub format: Option<DataTypeFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Option<Box<Items>>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collection_format: Option<CollectionFormat>,
     #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
     pub enum_: Vec<serde_json::Value>,
 }
@@ -302,13 +324,15 @@ where
         match self.data_type {
             Some(dt) if dt.is_primitive() => (),
             Some(DataType::Array) => {
-                let mut inner = self.items.as_ref().cloned();
+                let mut inner = self.items.as_ref();
                 loop {
-                    let dt = inner.as_ref().and_then(|s| s.read().data_type());
+                    let dt = inner.as_ref().and_then(|s| s.data_type);
                     match dt {
                         Some(ty) if ty.is_primitive() => break,
                         Some(DataType::Array) => {
-                            inner = inner.as_ref().and_then(|s| s.read().items().cloned());
+                            inner = inner
+                                .as_ref()
+                                .and_then(|s| s.items.as_ref().map(Deref::deref));
                         }
                         None => {
                             return Err(ValidationError::InvalidParameterType(
@@ -357,6 +381,17 @@ pub enum ParameterIn {
     Path,
     FormData,
     Body,
+}
+
+/// Possible formats for array values in parameter.
+#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = "lowercase")]
+pub enum CollectionFormat {
+    Csv,
+    Ssv,
+    Tsv,
+    Pipes,
+    Multi,
 }
 
 /// An operation.
@@ -541,5 +576,11 @@ impl Display for HttpMethod {
 impl Default for Version {
     fn default() -> Self {
         Version::V2
+    }
+}
+
+impl Default for CollectionFormat {
+    fn default() -> Self {
+        CollectionFormat::Csv
     }
 }

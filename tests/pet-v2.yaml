@@ -2,6 +2,11 @@ swagger: "2.0"
 host: pets.com:8888
 basePath: /api
 definitions:
+  Status:
+    type: object
+    properties:
+      status:
+        type: string
   Tag:
     properties:
       name:
@@ -78,6 +83,21 @@ paths:
         "200":
           schema:
             $ref: '#/definitions/Pet'
+    delete:
+      description: Delete multiple pets
+      operationID: deletePetBatch
+      responses:
+        "200":
+          schema:
+            $ref: '#/definitions/Status'
+      parameters:
+      - name: petId
+        in: path
+        required: true
+        type: array
+        # CSV default
+        items:
+          type: integer
   /pets:
     get:
       description: Fetch list of pets
@@ -164,3 +184,42 @@ paths:
                     type: string
                   code:
                     type: string
+  /test/parameter/{values}:
+    post:
+      parameters:
+      - in: path
+        name: values
+        type: array
+        required: true
+        collectionFormat: tsv
+        items:
+          type: array
+          collectionFormat: ssv
+          items:
+            type: array
+            # Default CSV
+            items:
+              type: array
+              collectionFormat: pipes
+              items:
+                type: string
+      - in: header
+        name: X-foobar
+        type: array
+        required: false
+        collectionFormat: pipes
+        items:
+          type: array
+          collectionFormat: multi # will get replaced to "csv"
+          items:
+            type: array
+            collectionFormat: tsv
+            items:
+              type: array
+              collectionFormat: ssv
+              items:
+                type: number
+      responses:
+        "200":
+          schema:
+            $ref: '#/definitions/Status'

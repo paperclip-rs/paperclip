@@ -13,6 +13,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Validation for non-body parameters.
 - `x-rust-dependencies` field in root for specifying additional crate dependencies.
 - Default en/decoders (JSON/YAML) and support for custom en/decoders through `x-rust-coders` field in root.
+- Methods to `Schema` trait for aiding resolution and codegen.
+- Codegen for array parameters in operations.
 
 ### Changed
 - Switched to templating for (almost) static modules.
