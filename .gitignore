@@ -5,6 +5,7 @@ Cargo.lock
 **/test_k8s/cli/
 **/test_k8s/mod.rs
 **/test_k8s/generics.rs
+**/test_k8s/util.rs
 **/test_pet/
 _book/
 .vscode/
