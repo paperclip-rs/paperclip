@@ -117,6 +117,10 @@ paths:
         required: true
         schema:
           $ref: '#/definitions/Pet'
+      - in: formData # will be ignored because we already have body
+        name: foobar
+        type: string
+        required: true
       - in: header
         name: X-Auth
         required: true
@@ -219,6 +223,16 @@ paths:
               collectionFormat: ssv
               items:
                 type: number
+      - in: formData
+        name: booya
+        type: array
+        required: false
+        collectionFormat: multi
+        items:
+          type: array
+          collectionFormat: multi # defaults to CSV, because we can't encode nested values.
+          items:
+            type: integer
       - in: query
         name: foo
         type: array

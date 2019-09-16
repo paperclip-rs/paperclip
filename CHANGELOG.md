@@ -9,12 +9,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: Callers of `#[api_v2_schema]` can specify `empty` to implement empty schema for any type and ignore the warning.
 - Actix plugin: Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 - Client timeout in CLI.
-- Support for header parameters in operations.
+- Codegen for header parameters in operations.
 - Validation for non-body parameters.
 - `x-rust-dependencies` field in root for specifying additional crate dependencies.
 - Default en/decoders (JSON/YAML) and support for custom en/decoders through `x-rust-coders` field in root.
 - Methods to `Schema` trait for aiding resolution and codegen.
-- Codegen for array parameters in operations.
+- Codegen for nested arrays in operation parameters.
+- Codegen for form data parameters in operations.
 
 ### Changed
 - Switched to templating for (almost) static modules.

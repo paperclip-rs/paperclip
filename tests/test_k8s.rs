@@ -982,6 +982,7 @@ reqwest = \"0.9\"
 serde = \"1.0\"
 serde_json = \"1.0\"
 serde_yaml = \"0.8\"
+url = \"2.1\"
 
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"

@@ -1078,6 +1078,40 @@ where
                 Ok(())
             })?;
 
+        let mut form = String::new();
+        self.0
+            .struct_fields_iter()
+            .filter(|f| f.param_loc == Some(ParameterIn::FormData))
+            .try_for_each(|field| {
+                let name = field.name.to_snek_case();
+                if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
+                    form.push_str(&format!(
+                        "
+            self.{}param_{}.as_ref().map(|v| v.iter().for_each(|v| {{
+                ser.append_pair({:?}, &v.to_string());
+            }}));",
+                        if needs_container { "inner." } else { "" },
+                        name,
+                        &field.name
+                    ));
+
+                    return Ok(());
+                }
+
+                form.push_str("\n            self.");
+                if needs_container {
+                    form.push_str("inner.");
+                }
+
+                write!(
+                    form,
+                    "{}.as_ref().map(|v| ser.append_pair({:?}, &v.to_string()));",
+                    name, &field.name
+                )?;
+
+                Ok(())
+            })?;
+
         // Collect URL query parameters
         let mut query = String::new();
         let mut multi_value_query = vec![];
@@ -1120,6 +1154,7 @@ where
 
         // Check for whether the `modify` method needs to be added (i.e. body and other params).
         if self.0.body_required
+            || !form.is_empty()
             || !query.is_empty()
             || !multi_value_query.is_empty()
             || !headers.is_empty()
@@ -1160,6 +1195,13 @@ where
                 if self.0.encoding.is_some() {
                     f.write_str("?;\n            vec\n        })")?;
                 }
+            }
+
+            if !form.is_empty() {
+                write!(f, "\n        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")")?;
+                f.write_str("\n        .body({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
+                f.write_str(&form)?;
+                f.write_str("\n            ser.finish()\n        })")?;
             }
 
             if !query.is_empty() {

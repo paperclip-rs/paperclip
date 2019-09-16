@@ -787,6 +787,7 @@ pub struct StatusPostBuilder1<Values> {
 struct StatusPostBuilder1Container {
     param_values: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>>,
     param_x_foobar: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Pipes>>,
+    param_booya: Option<crate::util::Delimited<crate::util::Delimited<i64, crate::util::Csv>, crate::util::Multi>>,
     param_foo: Option<crate::util::Delimited<crate::util::Delimited<String, crate::util::Csv>, crate::util::Multi>>,
 }
 
@@ -800,6 +801,12 @@ impl<Values> StatusPostBuilder1<Values> {
     #[inline]
     pub fn x_foobar(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<f64>>>>>) -> Self {
         self.inner.param_x_foobar = Some(value.map(|value| value.map(|value| value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn booya(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Into<i64>>>) -> Self {
+        self.inner.param_booya = Some(value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
         self
     }
 
@@ -826,6 +833,14 @@ impl crate::client::Sendable for StatusPostBuilder1<crate::generics::ValuesExist
         }
 
         Ok(req
+        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")
+        .body({
+            let mut ser = url::form_urlencoded::Serializer::new(String::new());
+            self.inner.param_booya.as_ref().map(|v| v.iter().for_each(|v| {
+                ser.append_pair(\"booya\", &v.to_string());
+            }));
+            ser.finish()
+        })
         .query({
             &self.inner.param_foo.as_ref().map(|v| {
                 v.iter().map(|v| (\"foo\", v.to_string())).collect::<Vec<_>>()

@@ -598,6 +598,22 @@ where
             }
         }
 
+        params = params
+            .into_iter()
+            .filter(|p| {
+                let skip = p.presence == ParameterIn::FormData && schema_path.is_some();
+                if skip {
+                    info!(
+                        "Skipping form data parameter {:?} in path {:?} because \
+                         the operation already has a body.",
+                        p.name, self.path
+                    );
+                }
+
+                !skip
+            })
+            .collect();
+
         // If there's a matching object, add the params to its operation.
         if let Some(pat) = schema_path.as_ref() {
             self.bind_schema_to_operation(pat, meth, op, params)?;
