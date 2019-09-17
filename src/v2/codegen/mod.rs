@@ -3,6 +3,7 @@
 #[cfg(feature = "cli")]
 mod author;
 mod emitter;
+mod impls;
 pub mod object;
 mod state;
 include!(concat!(env!("OUT_DIR"), "/template.rs"));

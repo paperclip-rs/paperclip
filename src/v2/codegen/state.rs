@@ -209,7 +209,7 @@ pub mod {name} {{
         {
             let mut builder_content = String::new();
             let repr = object.impl_repr(&module_prefix);
-            for builder in &repr.builders {
+            for builder in &*repr.builders {
                 builder
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
