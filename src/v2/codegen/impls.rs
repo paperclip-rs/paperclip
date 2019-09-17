@@ -463,259 +463,6 @@ where
         f.write_str(".into()")
     }
 
-    /// Writes the `Sendable` trait impl for this builder (if needed).
-    // FIXME: Cleanup
-    fn write_sendable_impl_if_needed<F>(&self, f: &mut F) -> fmt::Result
-    where
-        F: Write,
-    {
-        let (path, method) = match (self.0.rel_path, self.0.method) {
-            (Some(p), Some(m)) => (p, m),
-            _ => return Ok(()),
-        };
-
-        let needs_container = self.0.needs_container();
-        f.write_str("\nimpl ")?;
-        f.write_str(self.0.helper_module_prefix)?;
-        f.write_str("client::Sendable for ")?;
-        self.0.write_name(f)?;
-        self.0
-            .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
-        f.write_str(" {\n    type Output = ")?;
-        if self.0.is_list_op {
-            f.write_str("Vec<")?;
-        }
-
-        if let Some(resp) = self.0.response {
-            // If we've acquired a response type, then write that.
-            f.write_str(resp)?;
-        } else {
-            // FIXME: This should be "any"
-            f.write_str(self.0.object)?;
-        }
-
-        if self.0.is_list_op {
-            f.write_str(">")?;
-        }
-
-        f.write_str(";\n\n    const METHOD: reqwest::Method = reqwest::Method::")?;
-        f.write_str(&method.to_string().to_uppercase())?;
-        f.write_str(";\n\n    fn rel_path(&self) -> std::borrow::Cow<'static, str> {\n        ")?;
-
-        // Determine if we need a `&'static str` or `String`
-        let mut path_items = String::new();
-        self.0 // path stuff goes directly
-            .struct_fields_iter()
-            .filter(|f| f.param_loc == Some(ParameterIn::Path))
-            .try_for_each(|field| {
-                write!(path_items, ", {}=self.", &field.name)?;
-                let name = field.name.to_snek_case();
-                if needs_container {
-                    path_items.write_str("inner.")?;
-                }
-
-                write!(
-                    path_items,
-                    "param_{name}.as_ref().expect(\"missing parameter {name}?\")",
-                    name = name
-                )
-            })?;
-
-        if path_items.is_empty() {
-            write!(f, "\"{}\".into()", path)?;
-        } else {
-            write!(f, "format!(\"{}\"{}).into()", path, path_items)?;
-        }
-
-        f.write_str("\n    }")?;
-
-        // Collect header parameters
-        let mut headers = String::new();
-        self.0
-            .struct_fields_iter()
-            .filter(|f| f.param_loc == Some(ParameterIn::Header))
-            .try_for_each(|field| {
-                let is_required = field.prop.is_required();
-                let name = field.name.to_snek_case();
-                let mut param_ref = String::from("self.");
-                if needs_container {
-                    param_ref.push_str("inner.");
-                }
-
-                param_ref.push_str("param_");
-                param_ref.push_str(&name);
-                param_ref.push_str(".as_ref().map(std::string::ToString::to_string)");
-                if is_required {
-                    write!(param_ref, ".expect(\"missing parameter {}?\")", name)?;
-                }
-
-                if !is_required {
-                    write!(headers, "\n        if let Some(v) = {} {{", param_ref)?;
-                }
-
-                headers.push_str("\n        ");
-                if !is_required {
-                    headers.push_str("    ");
-                }
-
-                write!(
-                    headers,
-                    "req = req.header({:?}, {});",
-                    &field.name,
-                    if is_required { &param_ref } else { "v" }
-                )?;
-
-                if !is_required {
-                    headers.push_str("\n        }");
-                }
-
-                Ok(())
-            })?;
-
-        let mut form = String::new();
-        self.0
-            .struct_fields_iter()
-            .filter(|f| f.param_loc == Some(ParameterIn::FormData))
-            .try_for_each(|field| {
-                let name = field.name.to_snek_case();
-                if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
-                    form.push_str(&format!(
-                        "
-            self.{}param_{}.as_ref().map(|v| v.iter().for_each(|v| {{
-                ser.append_pair({:?}, &v.to_string());
-            }}));",
-                        if needs_container { "inner." } else { "" },
-                        name,
-                        &field.name
-                    ));
-
-                    return Ok(());
-                }
-
-                form.push_str("\n            self.");
-                if needs_container {
-                    form.push_str("inner.");
-                }
-
-                write!(
-                    form,
-                    "{}.as_ref().map(|v| ser.append_pair({:?}, &v.to_string()));",
-                    name, &field.name
-                )?;
-
-                Ok(())
-            })?;
-
-        // Collect URL query parameters
-        let mut query = String::new();
-        let mut multi_value_query = vec![];
-        self.0
-            .struct_fields_iter()
-            .filter(|f| f.param_loc == Some(ParameterIn::Query))
-            .try_for_each(|field| {
-                if !query.is_empty() {
-                    query.push_str(",");
-                }
-
-                let name = field.name.to_snek_case();
-                if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
-                    multi_value_query.push(format!(
-                        "
-            &self.{}param_{}.as_ref().map(|v| {{
-                v.iter().map(|v| ({:?}, v.to_string())).collect::<Vec<_>>()
-            }}).unwrap_or_default()",
-                        if needs_container { "inner." } else { "" },
-                        name,
-                        &field.name,
-                    ));
-
-                    return Ok(());
-                }
-
-                write!(query, "\n            ({:?}, self.", &field.name)?;
-                if needs_container {
-                    query.push_str("inner.");
-                }
-
-                write!(
-                    query,
-                    "param_{name}.as_ref().map(std::string::ToString::to_string))",
-                    name = name
-                )?;
-
-                Ok(())
-            })?;
-
-        // Check for whether the `modify` method needs to be added (i.e. body and other params).
-        if self.0.body_required
-            || !form.is_empty()
-            || !query.is_empty()
-            || !multi_value_query.is_empty()
-            || !headers.is_empty()
-        {
-            f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ")?;
-            f.write_str(&self.0.helper_module_prefix)?;
-            f.write_str("client::ApiError> {")?;
-            if !headers.is_empty() {
-                f.write_str("\n        let mut req = req;")?;
-                f.write_str(&headers)?;
-                f.write_str("\n")?;
-            }
-
-            f.write_str("\n        Ok(req")?;
-            if self.0.body_required {
-                f.write_str("\n        ")?;
-                if let Some((range, coder)) = self.0.encoding {
-                    write!(f, ".header(reqwest::header::CONTENT_TYPE, {:?})", range)?;
-
-                    f.write_str(
-                        "\n        .body({
-            let mut vec = vec![];
-            ",
-                    )?;
-                    f.write_str(&coder.encoder_path)?;
-                    f.write_str("(&mut vec, ")?;
-                } else {
-                    f.write_str(".json(")?;
-                }
-
-                f.write_str("&self.")?;
-                if needs_container {
-                    f.write_str("inner.")?;
-                }
-
-                f.write_str("body)")?;
-
-                if self.0.encoding.is_some() {
-                    f.write_str("?;\n            vec\n        })")?;
-                }
-            }
-
-            if !form.is_empty() {
-                write!(f, "\n        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")")?;
-                f.write_str("\n        .body({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
-                f.write_str(&form)?;
-                f.write_str("\n            ser.finish()\n        })")?;
-            }
-
-            if !query.is_empty() {
-                f.write_str("\n        .query(&[")?;
-                f.write_str(&query)?;
-                f.write_str("\n        ])")?;
-            }
-
-            for q in multi_value_query {
-                f.write_str("\n        .query({")?;
-                f.write_str(&q)?;
-                f.write_str("\n        })")?;
-            }
-
-            f.write_str(")\n    }")?;
-        }
-
-        f.write_str("\n}\n")
-    }
-
     /// Writes the property-related methods to the given formatter.
     fn write_property_method<F>(&self, field: StructField<'b>, f: &mut F) -> fmt::Result
     where
@@ -814,6 +561,282 @@ where
     }
 }
 
+/// Codegen for `Sendable` trait for operation builders.
+struct SendableCodegen<'a, 'b> {
+    builder: &'a ApiObjectBuilder<'b>,
+    needs_container: bool,
+    path_items: String,
+    headers: String,
+    form: String,
+    query: String,
+    multi_value_query: Vec<String>,
+}
+
+impl<'a, 'b> From<&'a ApiObjectBuilder<'b>> for SendableCodegen<'a, 'b> {
+    fn from(builder: &'a ApiObjectBuilder<'b>) -> Self {
+        SendableCodegen {
+            builder,
+            needs_container: builder.needs_container(),
+            path_items: String::new(),
+            headers: String::new(),
+            form: String::new(),
+            query: String::new(),
+            multi_value_query: vec![],
+        }
+    }
+}
+
+impl<'a, 'b> SendableCodegen<'a, 'b> {
+    /// Determine and write `Sendable` impl (if it's needed for this builder).
+    fn write_impl_if_needed<F>(mut self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        let (path, method) = match (self.builder.rel_path, self.builder.method) {
+            (Some(p), Some(m)) => (p, m),
+            _ => return Ok(()),
+        };
+
+        f.write_str("\nimpl ")?;
+        f.write_str(self.builder.helper_module_prefix)?;
+        f.write_str("client::Sendable for ")?;
+        self.builder.write_name(f)?;
+        self.builder
+            .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+        f.write_str(" {\n    type Output = ")?;
+        if self.builder.is_list_op {
+            f.write_str("Vec<")?;
+        }
+
+        if let Some(resp) = self.builder.response {
+            // If we've acquired a response type, then write that.
+            f.write_str(resp)?;
+        } else {
+            // FIXME: This should be "any"
+            f.write_str(self.builder.object)?;
+        }
+
+        if self.builder.is_list_op {
+            f.write_str(">")?;
+        }
+
+        f.write_str(";\n\n    const METHOD: reqwest::Method = reqwest::Method::")?;
+        f.write_str(&method.to_string().to_uppercase())?;
+        f.write_str(";\n\n    fn rel_path(&self) -> std::borrow::Cow<'static, str> {\n        ")?;
+
+        self.builder
+            .struct_fields_iter()
+            .for_each(|field| match field.param_loc {
+                Some(ParameterIn::Path) => self.handle_path_param(field),
+                Some(ParameterIn::Header) => self.handle_header_param(field),
+                Some(ParameterIn::FormData) => self.handle_form_param(field),
+                Some(ParameterIn::Query) => self.handle_query_param(field),
+                _ => (),
+            });
+
+        // Determine if we need a `&'static str` or `String`
+        if self.path_items.is_empty() {
+            write!(f, "\"{}\".into()", path)?;
+        } else {
+            write!(f, "format!(\"{}\"{}).into()", path, self.path_items)?;
+        }
+
+        f.write_str("\n    }")?;
+
+        // Check whether `modify` method needs to be overridden (i.e. body and other params).
+        if self.builder.body_required
+            || !self.form.is_empty()
+            || !self.query.is_empty()
+            || !self.multi_value_query.is_empty()
+            || !self.headers.is_empty()
+        {
+            self.write_modify_method(f)?;
+        }
+
+        f.write_str("\n}\n")
+    }
+
+    /// Handle field for a path parameter.
+    fn handle_path_param(&mut self, field: StructField) {
+        let _ = write!(self.path_items, ", {}=self.", &field.name);
+        let name = field.name.to_snek_case();
+        if self.needs_container {
+            self.path_items.push_str("inner.");
+        }
+
+        let _ = write!(
+            self.path_items,
+            "param_{name}.as_ref().expect(\"missing parameter {name}?\")",
+            name = name
+        );
+    }
+
+    /// Handle field for a header parameter.
+    fn handle_header_param(&mut self, field: StructField) {
+        let is_required = field.prop.is_required();
+        let name = field.name.to_snek_case();
+        let mut param_ref = String::from("self.");
+        if self.needs_container {
+            param_ref.push_str("inner.");
+        }
+
+        param_ref.push_str("param_");
+        param_ref.push_str(&name);
+        param_ref.push_str(".as_ref().map(std::string::ToString::to_string)");
+        if is_required {
+            let _ = write!(param_ref, ".expect(\"missing parameter {}?\")", name);
+        }
+
+        if !is_required {
+            let _ = write!(self.headers, "\n        if let Some(v) = {} {{", param_ref);
+        }
+
+        self.headers.push_str("\n        ");
+        if !is_required {
+            self.headers.push_str("    ");
+        }
+
+        let _ = write!(
+            self.headers,
+            "req = req.header({:?}, {});",
+            &field.name,
+            if is_required { &param_ref } else { "v" }
+        );
+
+        if !is_required {
+            self.headers.push_str("\n        }");
+        }
+    }
+
+    /// Handle field for a form data parameter.
+    fn handle_form_param(&mut self, field: StructField) {
+        let name = field.name.to_snek_case();
+        if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
+            let _ = write!(
+                self.form,
+                "
+            self.{}param_{}.as_ref().map(|v| v.iter().for_each(|v| {{
+                ser.append_pair({:?}, &v.to_string());
+            }}));",
+                if self.needs_container { "inner." } else { "" },
+                name,
+                &field.name
+            );
+
+            return;
+        }
+
+        self.form.push_str("\n            self.");
+        if self.needs_container {
+            self.form.push_str("inner.");
+        }
+
+        let _ = write!(
+            self.form,
+            "{}.as_ref().map(|v| ser.append_pair({:?}, &v.to_string()));",
+            name, &field.name
+        );
+    }
+
+    /// Handle field for an URL query parameter.
+    fn handle_query_param(&mut self, field: StructField) {
+        if !self.query.is_empty() {
+            self.query.push_str(",");
+        }
+
+        let name = field.name.to_snek_case();
+        if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
+            self.multi_value_query.push(format!(
+                "
+            &self.{}param_{}.as_ref().map(|v| {{
+                v.iter().map(|v| ({:?}, v.to_string())).collect::<Vec<_>>()
+            }}).unwrap_or_default()",
+                if self.needs_container { "inner." } else { "" },
+                name,
+                &field.name,
+            ));
+
+            return;
+        }
+
+        let _ = write!(self.query, "\n            ({:?}, self.", &field.name);
+        if self.needs_container {
+            self.query.push_str("inner.");
+        }
+
+        let _ = write!(
+            self.query,
+            "param_{name}.as_ref().map(std::string::ToString::to_string))",
+            name = name
+        );
+    }
+
+    /// We have determined that we have to override the default `modify` method.
+    fn write_modify_method<F>(self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ")?;
+        f.write_str(&self.builder.helper_module_prefix)?;
+        f.write_str("client::ApiError> {")?;
+        if !self.headers.is_empty() {
+            f.write_str("\n        let mut req = req;")?;
+            f.write_str(&self.headers)?;
+            f.write_str("\n")?;
+        }
+
+        f.write_str("\n        Ok(req")?;
+        if self.builder.body_required {
+            f.write_str("\n        ")?;
+            if let Some((range, coder)) = self.builder.encoding {
+                write!(f, ".header(reqwest::header::CONTENT_TYPE, {:?})", range)?;
+
+                f.write_str(
+                    "\n        .body({
+            let mut vec = vec![];
+            ",
+                )?;
+                f.write_str(&coder.encoder_path)?;
+                f.write_str("(&mut vec, ")?;
+            } else {
+                f.write_str(".json(")?;
+            }
+
+            f.write_str("&self.")?;
+            if self.needs_container {
+                f.write_str("inner.")?;
+            }
+
+            f.write_str("body)")?;
+
+            if self.builder.encoding.is_some() {
+                f.write_str("?;\n            vec\n        })")?;
+            }
+        }
+
+        if !self.form.is_empty() {
+            write!(f, "\n        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")")?;
+            f.write_str("\n        .body({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
+            f.write_str(&self.form)?;
+            f.write_str("\n            ser.finish()\n        })")?;
+        }
+
+        if !self.query.is_empty() {
+            f.write_str("\n        .query(&[")?;
+            f.write_str(&self.query)?;
+            f.write_str("\n        ])")?;
+        }
+
+        for q in self.multi_value_query {
+            f.write_str("\n        .query({")?;
+            f.write_str(&q)?;
+            f.write_str("\n        })")?;
+        }
+
+        f.write_str(")\n    }")
+    }
+}
+
 impl<'a> Display for ApiObjectImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.builders.is_empty() {
@@ -863,6 +886,6 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
             f.write_str("}\n")?;
         }
 
-        self.write_sendable_impl_if_needed(f)
+        SendableCodegen::from(self.0).write_impl_if_needed(f)
     }
 }
