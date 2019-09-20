@@ -1,6 +1,6 @@
 //! Traits used for code and spec generation.
 
-use super::models::{DataType, DataTypeFormat, DefaultSchemaRaw, Operation, SchemaRepr};
+use super::models::{DataType, DataTypeFormat, DefaultSchemaRaw, Either, Operation, SchemaRepr};
 
 use std::collections::{BTreeMap, BTreeSet};
 
@@ -30,10 +30,10 @@ pub trait Schema: Sized {
     fn items_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
 
     /// Value schema for maps (`additional_properties` field).
-    fn additional_properties(&self) -> Option<&SchemaRepr<Self>>;
+    fn additional_properties(&self) -> Option<&Either<bool, SchemaRepr<Self>>>;
 
     /// Mutable access to `additional_properties` field, if it's a map.
-    fn additional_properties_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
+    fn additional_properties_mut(&mut self) -> Option<&mut Either<bool, SchemaRepr<Self>>>;
 
     /// Map of names and schema for properties, if it's an object (`properties` field)
     fn properties(&self) -> Option<&BTreeMap<String, SchemaRepr<Self>>>;
@@ -234,7 +234,7 @@ macro_rules! impl_schema_map {
             fn raw_schema() -> DefaultSchemaRaw {
                 let mut schema = DefaultSchemaRaw::default();
                 schema.data_type = Some(DataType::Object);
-                schema.extra_props = Some(V::schema_with_ref().into());
+                schema.extra_props = Some(Either::Right(V::schema_with_ref().into()));
                 schema
             }
         }

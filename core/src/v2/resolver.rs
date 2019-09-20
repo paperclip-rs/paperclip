@@ -111,7 +111,11 @@ where
                 .try_for_each(|s| self.resolve_definitions(s))?;
         }
 
-        if let Some(props) = schema.additional_properties_mut().take() {
+        if let Some(props) = schema
+            .additional_properties_mut()
+            .take()
+            .and_then(|s| s.right_mut())
+        {
             self.resolve_definitions(props)?;
         }
 

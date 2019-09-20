@@ -4,8 +4,9 @@ use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
     models::{
-        self, Api, Coder, CollectionFormat, DataType, DataTypeFormat, HttpMethod, Items, Operation,
-        OperationMap, ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
+        self, Api, Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
+        Operation, OperationMap, ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME, YAML_CODER,
+        YAML_MIME,
     },
     Schema,
 };
@@ -465,15 +466,16 @@ where
             return Ok(EmittedUnit::None);
         }
 
-        if let Some(s) = def.additional_properties() {
-            let schema = s.read();
-            let ty = self
-                .build_def(&schema, ctx.clone().define(false))?
-                .known_type();
-            let map = format!("std::collections::BTreeMap<String, {}>", ty);
-            Ok(EmittedUnit::Known(map))
-        } else {
-            Ok(EmittedUnit::None)
+        match def.additional_properties() {
+            Some(Either::Right(s)) => {
+                let schema = s.read();
+                let ty = self
+                    .build_def(&schema, ctx.clone().define(false))?
+                    .known_type();
+                let map = format!("std::collections::BTreeMap<String, {}>", ty);
+                Ok(EmittedUnit::Known(map))
+            }
+            _ => Ok(EmittedUnit::None),
         }
     }
 
@@ -540,7 +542,7 @@ where
     fn children_requirements(&self, schema: &E::Definition) -> Vec<String> {
         match schema.data_type() {
             Some(DataType::Object) => {
-                if let Some(s) = schema.additional_properties() {
+                if let Some(Either::Right(s)) = schema.additional_properties() {
                     return self.children_requirements(&s.read());
                 } else if let Some(s) = schema.required_properties() {
                     return s.iter().cloned().collect();
@@ -660,7 +662,7 @@ where
             .filter(|p| {
                 let skip = p.presence == ParameterIn::FormData && schema_path.is_some();
                 if skip {
-                    info!(
+                    warn!(
                         "Skipping form data parameter {:?} in path {:?} because \
                          the operation already has a body.",
                         p.name, self.path

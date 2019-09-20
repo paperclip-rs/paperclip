@@ -162,17 +162,15 @@ impl<'a> ApiObjectImpl<'a> {
             return Ok(());
         }
 
-        for builder in &*self.builders {
+        for builder in &self.builders[1..] {
             let name = match builder.op_id {
                 Some(n) => n.to_kebab_case(),
                 None => {
-                    if builder.method.is_some() || builder.rel_path.is_some() {
-                        // FIXME: Investigate what we should do in the absence of operation ID.
-                        warn!(
-                            "Unable to generate name for operation ({:?} {:?}). Skipping.",
-                            builder.method, builder.rel_path
-                        );
-                    }
+                    // FIXME: Investigate what we should do in the absence of operation ID.
+                    warn!(
+                        "Unable to generate name for operation ({:?} {:?}). Skipping.",
+                        builder.method, builder.rel_path,
+                    );
 
                     continue;
                 }

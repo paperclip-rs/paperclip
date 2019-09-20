@@ -62,7 +62,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             pub fn remove_refs(&mut self) {
                 self.properties.values_mut().for_each(|s| s.remove_refs());
                 self.items.as_mut().map(|s| s.remove_refs());
-                self.extra_props.as_mut().map(|s| s.remove_refs());
+                self.extra_props.as_mut().and_then(|s| s.right_mut()).map(|s| s.remove_refs());
                 self.reference = None;
             }
 
@@ -76,7 +76,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
                 } else {
                     self.properties.values_mut().for_each(|s| s.retain_ref());
                     self.items.as_mut().map(|s| s.retain_ref());
-                    self.extra_props.as_mut().map(|s| s.retain_ref());
+                    self.extra_props.as_mut().and_then(|s| s.right_mut()).map(|s| s.retain_ref());
                 }
             }
         }
@@ -138,12 +138,12 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn additional_properties(&self) -> Option<&paperclip::v2::models::SchemaRepr<Self>> {
+            fn additional_properties(&self) -> Option<&paperclip::v2::models::Either<bool, paperclip::v2::models::SchemaRepr<Self>>> {
                 self.extra_props.as_ref()
             }
 
             #[inline]
-            fn additional_properties_mut(&mut self) -> Option<&mut paperclip::v2::models::SchemaRepr<Self>> {
+            fn additional_properties_mut(&mut self) -> Option<&mut paperclip::v2::models::Either<bool, paperclip::v2::models::SchemaRepr<Self>>> {
                 self.extra_props.as_mut()
             }
 
@@ -258,9 +258,9 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     let mut gen = quote!();
     let add_self = |gen: &mut proc_macro2::TokenStream| {
         if is_ref {
-            gen.extend(quote!(paperclip::v2::models::SchemaRepr<#name>>,));
+            gen.extend(quote!(paperclip::v2::models::SchemaRepr<#name>));
         } else {
-            gen.extend(quote!(Box<#name>>,));
+            gen.extend(quote!(Box<#name>));
         }
     };
 
@@ -290,12 +290,14 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
         pub properties: std::collections::BTreeMap<String,
     ));
     add_self(&mut gen);
+    gen.extend(quote!(>,));
 
     gen.extend(quote!(
         #[serde(skip_serializing_if = "Option::is_none")]
         pub items: Option<
     ));
     add_self(&mut gen);
+    gen.extend(quote!(>,));
 
     gen.extend(quote!(
         #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
@@ -304,9 +306,10 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
 
     gen.extend(quote!(
         #[serde(rename = "additionalProperties", skip_serializing_if = "Option::is_none")]
-        pub extra_props: Option<
+        pub extra_props: Option<paperclip::v2::models::Either<bool,
     ));
     add_self(&mut gen);
+    gen.extend(quote!(>>,));
 
     gen.extend(quote!(
         #[serde(default, skip_serializing_if = "std::collections::BTreeSet::is_empty")]

@@ -1,4 +1,4 @@
-use super::models::{DefaultSchemaRaw, Operation, Parameter, ParameterIn, Response};
+use super::models::{DefaultSchemaRaw, Either, Operation, Parameter, ParameterIn, Response};
 use super::schema::{Apiv2Operation, Apiv2Schema};
 use actix_web::{
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
@@ -24,7 +24,7 @@ pub trait OperationModifier: Apiv2Schema {
             if let Some(s) = schema.items {
                 schema = *s;
                 continue;
-            } else if let Some(s) = schema.extra_props {
+            } else if let Some(Either::Right(s)) = schema.extra_props {
                 schema = *s;
                 continue;
             } else if let Some(n) = schema.name.take() {

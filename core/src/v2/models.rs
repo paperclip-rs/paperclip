@@ -73,6 +73,7 @@ pub enum DataTypeFormat {
     #[serde(rename = "date-time")]
     DateTime,
     Password,
+    Uuid,
     #[serde(other)]
     Other,
 }
@@ -158,6 +159,25 @@ impl<S> GenericApi<S> {
         mut f: impl FnMut(&str) -> Cow<'static, str>,
     ) -> Cow<'_, str> {
         PATH_TEMPLATE_REGEX.replace_all(path, |c: &Captures| f(&c[1]))
+    }
+}
+
+/// `Either` from "either" crate. We can't use that crate because
+/// we don't want the enum to be tagged during de/serialization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Either<L, R> {
+    Left(L),
+    Right(R),
+}
+
+impl<L, R> Either<L, R> {
+    /// Get a mutable reference to the right variant (if it exists).
+    pub fn right_mut(&mut self) -> Option<&mut R> {
+        match self {
+            Either::Left(_) => None,
+            Either::Right(r) => Some(r),
+        }
     }
 }
 
