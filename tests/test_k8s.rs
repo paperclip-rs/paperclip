@@ -329,6 +329,10 @@ pub mod io {
     include!(\"./io/mod.rs\");
 }
 
+pub mod miscellaneous {
+    include!(\"./miscellaneous.rs\");
+}
+
 pub mod client {
     use futures::{Future, future};
     use futures::stream::Stream;
@@ -1162,7 +1166,7 @@ async fn main() {
     }
 }
 ",
-        Some(6640),
+        Some(6703),
     );
 }
 

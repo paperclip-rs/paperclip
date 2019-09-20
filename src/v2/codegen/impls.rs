@@ -67,10 +67,15 @@ impl ApiObject {
 
         ApiObjectImpl {
             inner: self,
-            builders: iter::once(main_builder)
-                .chain(path_iter)
-                .collect::<Vec<_>>()
-                .into(),
+            builders: iter::once(if main_builder.fields.is_empty() {
+                None
+            } else {
+                Some(main_builder)
+            })
+            .filter_map(|b| b)
+            .chain(path_iter)
+            .collect::<Vec<_>>()
+            .into(),
         }
     }
 }

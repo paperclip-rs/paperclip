@@ -311,7 +311,6 @@ fn test_params() {
                         "format": "int32",
                         "in": "query",
                         "name": "res",
-                        "required": false,
                         "type": "integer"
                       }, {
                         "in": "path",
@@ -357,7 +356,6 @@ fn test_params() {
                           "format": "int32",
                           "in": "query",
                           "name": "res",
-                          "required": false,
                           "type": "integer"
                         }],
                         "responses": {}
@@ -530,13 +528,11 @@ fn test_list_in_out() {
                         "format": "int32",
                         "in": "query",
                         "name": "limit",
-                        "required": false,
                         "type": "integer"
                       }, {
                         "enum": ["Asc", "Desc"],
                         "in": "query",
                         "name": "sort",
-                        "required": false,
                         "type": "string"
                       }],
                     }
@@ -634,7 +630,6 @@ fn test_impl_traits() {
                         "format": "int32",
                         "in": "query",
                         "name": "limit",
-                        "required": false,
                         "type": "integer"
                       }]
                     }

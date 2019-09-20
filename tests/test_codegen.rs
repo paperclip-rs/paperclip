@@ -79,6 +79,10 @@ pub mod get_shipments_id_response {
     include!(\"./get_shipments_id_response.rs\");
 }
 
+pub mod miscellaneous {
+    include!(\"./miscellaneous.rs\");
+}
+
 pub mod order {
     include!(\"./order.rs\");
 }
@@ -147,7 +151,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(1944),
+        Some(2007),
     );
 }
 
@@ -766,34 +770,35 @@ impl crate::client::Sendable for StatusDeleteBuilder<crate::generics::PetIdExist
     }
 }
 ",
-        Some(1189),
+        Some(960),
     );
 }
 
 #[test]
 fn test_nested_arrays() {
     let _ = &*CLI_CODEGEN;
+    // It's in miscellaneous because there's no body parameter or response body.
     assert_file_contains_content_at(
-        &(ROOT.clone() + "/tests/test_pet/status.rs"),
-        "/// Builder created by [`Status::post_1`](./struct.Status.html#method.post_1) method for a `POST` operation associated with `Status`.
+        &(ROOT.clone() + "/tests/test_pet/miscellaneous.rs"),
+        "/// Builder created by [`Miscellaneous::post`](./struct.Miscellaneous.html#method.post) method for a `POST` operation associated with `Miscellaneous`.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct StatusPostBuilder1<Values> {
-    inner: StatusPostBuilder1Container,
+pub struct MiscellaneousPostBuilder<Values> {
+    inner: MiscellaneousPostBuilderContainer,
     _param_values: core::marker::PhantomData<Values>,
 }
 
 #[derive(Debug, Default, Clone)]
-struct StatusPostBuilder1Container {
+struct MiscellaneousPostBuilderContainer {
     param_values: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>>,
     param_x_foobar: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Pipes>>,
     param_booya: Option<crate::util::Delimited<crate::util::Delimited<i64, crate::util::Csv>, crate::util::Multi>>,
     param_foo: Option<crate::util::Delimited<crate::util::Delimited<String, crate::util::Csv>, crate::util::Multi>>,
 }
 
-impl<Values> StatusPostBuilder1<Values> {
+impl<Values> MiscellaneousPostBuilder<Values> {
     #[inline]
-    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> StatusPostBuilder1<crate::generics::ValuesExists> {
+    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> MiscellaneousPostBuilder<crate::generics::ValuesExists> {
         self.inner.param_values = Some(value.map(|value| value.map(|value| value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
         unsafe { std::mem::transmute(self) }
     }
@@ -817,8 +822,8 @@ impl<Values> StatusPostBuilder1<Values> {
     }
 }
 
-impl crate::client::Sendable for StatusPostBuilder1<crate::generics::ValuesExists> {
-    type Output = Status;
+impl crate::client::Sendable for MiscellaneousPostBuilder<crate::generics::ValuesExists> {
+    type Output = String;
 
     const METHOD: reqwest::Method = reqwest::Method::POST;
 
@@ -849,6 +854,6 @@ impl crate::client::Sendable for StatusPostBuilder1<crate::generics::ValuesExist
     }
 }
 ",
-        Some(2349),
+        Some(421),
     );
 }

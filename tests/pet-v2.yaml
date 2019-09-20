@@ -246,4 +246,4 @@ paths:
       responses:
         "200":
           schema:
-            $ref: '#/definitions/Status'
+            type: string

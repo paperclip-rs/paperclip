@@ -257,7 +257,7 @@ pub struct Parameter<S> {
     #[serde(rename = "in")]
     pub in_: ParameterIn,
     pub name: String,
-    #[serde(default)]
+    #[serde(default, skip_serializing_if = "is_false")]
     pub required: bool,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub schema: Option<S>,
@@ -269,6 +269,8 @@ pub struct Parameter<S> {
     pub items: Option<Items>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub collection_format: Option<CollectionFormat>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub allow_empty_value: bool,
     #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
     pub enum_: Vec<serde_json::Value>,
 }
@@ -583,4 +585,11 @@ impl Default for CollectionFormat {
     fn default() -> Self {
         CollectionFormat::Csv
     }
+}
+
+/* Serde helpers */
+
+#[allow(clippy::trivially_copy_pass_by_ref)]
+fn is_false(val: &bool) -> bool {
+    !*val
 }

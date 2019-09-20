@@ -22,6 +22,7 @@ use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
 /// Some "thing" emitted by the emitter.
+#[derive(Debug)]
 pub enum EmittedUnit {
     /// Some Rust type.
     Known(String),
@@ -41,7 +42,7 @@ impl EmittedUnit {
         match self {
             EmittedUnit::Known(ref s) => s.clone(),
             EmittedUnit::KnownButAnonymous(ref s, _) => s.clone(),
-            _ => panic!("Emitted unit is not a known type"),
+            _ => panic!("Emitted unit {:?} is not a known type", self),
         }
     }
 
@@ -92,77 +93,10 @@ pub trait Emitter: Sized {
     /// The associated `Schema` implementor.
     type Definition: Schema + Debug;
 
+    /* MARK: Overridable methods */
+
     /// Returns a reference to the underlying state.
     fn state(&self) -> &EmitterState;
-
-    /// Entrypoint for emitter. Given an API spec, generate code
-    /// inside Rust modules in the configured working directory.
-    fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
-        let state = self.state();
-        state.reset_internal_fields();
-
-        // Add default coders.
-        let mut coders = api.coders.clone();
-        if !coders.contains_key(&JSON_MIME) {
-            coders.insert(JSON_MIME.clone(), JSON_CODER.clone());
-        }
-
-        if !coders.contains_key(&YAML_MIME) {
-            coders.insert(YAML_MIME.clone(), YAML_CODER.clone());
-        }
-
-        state.set_media_info(api.spec_format, &coders);
-
-        // Set host and base path.
-        if let Some(h) = api.host.as_ref() {
-            let mut parts = h.split(':');
-            let mut u = state.base_url.borrow_mut();
-            if let Some(host) = parts.next() {
-                Host::parse(host).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
-                u.set_host(Some(&host))
-                    .expect("expected valid host in URL?");
-            }
-
-            if let Some(port) = parts.next() {
-                let p = port.parse::<u16>().map_err(|_| {
-                    PaperClipError::InvalidHost(h.into(), url::ParseError::InvalidPort)
-                })?;
-                u.set_port(Some(p)).expect("expected valid port in URL?");
-            }
-        }
-
-        if let Some(p) = api.base_path.as_ref() {
-            state.base_url.borrow_mut().set_path(p);
-        }
-
-        let gen = CodegenEmitter(self);
-        // Generate file contents by accumulating definitions.
-        for (name, schema) in &api.definitions {
-            debug!("Creating definition {}", name);
-            let schema = schema.read();
-            gen.generate_def_from_root(&schema)?;
-        }
-
-        state.declare_modules()?;
-        state.write_definitions()?;
-
-        for (path, map) in &api.paths {
-            RequirementCollector {
-                path,
-                emitter: self,
-                api,
-                map,
-                template_params: HashSet::new(),
-            }
-            .collect()?;
-        }
-
-        state.add_builders()?;
-        state.add_client_deps()?;
-        state.add_deps()?;
-
-        Ok(())
-    }
 
     /// Returns an iterator of path components for the given definition.
     ///
@@ -212,7 +146,7 @@ pub trait Emitter: Sized {
 
     /// Returns the module path (from working directory) for the given definition.
     ///
-    /// **NOTE:** This doesn't (shouldn't) set any extension to the leaf component.
+    /// **NOTE:** This should set `.rs` extension to the leaf path component.
     fn def_mod_path(&self, def: &Self::Definition) -> Result<PathBuf, Error> {
         let state = self.state();
         let mut path = state.working_dir.clone();
@@ -221,9 +155,124 @@ pub trait Emitter: Sized {
         Ok(path)
     }
 
-    /// Builds a given definition using the given context.
+    /// Called whenever we encounter an operation that can't be added to
+    /// any modules. By default, this returns `miscellaneous.rs` module in root.
     ///
-    /// **NOTE:** We resolve type aliases to known types.
+    /// **NOTE:** This should set `.rs` extension to the leaf path component.
+    fn unknown_op_mod_path(
+        &self,
+        path: &str,
+        method: HttpMethod,
+        op: &Operation<SchemaRepr<Self::Definition>>,
+    ) -> Result<PathBuf, Error> {
+        let _ = (path, method, op);
+        let state = self.state();
+        let mut path = state.working_dir.clone();
+        path.push("miscellaneous");
+        path.set_extension("rs");
+        Ok(path)
+    }
+
+    /// Called whenever we don't have an object for the module path returned by
+    /// `Emitter::unknown_op_mod_path` method. By default, this returns an object
+    /// (named `Miscellaneous`) representing an unit struct.
+    ///
+    /// **NOTE:** Only the name and description fields can be relied upon when
+    /// creating `ApiObject`. Others may be overridden.
+    fn unknown_op_object(
+        &self,
+        path: &str,
+        method: HttpMethod,
+        op: &Operation<SchemaRepr<Self::Definition>>,
+    ) -> Result<ApiObject, Error> {
+        let _ = (path, method, op);
+        Ok(ApiObject {
+            name: "Miscellaneous".into(),
+            description: Some(
+                "Namespace for operations that cannot be added \
+                 to any other modules."
+                    .into(),
+            ),
+            ..Default::default()
+        })
+    }
+
+    /* MARK: Non-overridable methods */
+
+    /// Entrypoint for emitter. Given an API spec, generate code
+    /// inside Rust modules in the configured working directory.
+    ///
+    /// **NOTE:** Not meant to be overridden.
+    fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
+        let state = self.state();
+        state.reset_internal_fields();
+
+        // Add default coders.
+        let mut coders = api.coders.clone();
+        if !coders.contains_key(&JSON_MIME) {
+            coders.insert(JSON_MIME.clone(), JSON_CODER.clone());
+        }
+
+        if !coders.contains_key(&YAML_MIME) {
+            coders.insert(YAML_MIME.clone(), YAML_CODER.clone());
+        }
+
+        state.set_media_info(api.spec_format, &coders);
+
+        // Set host and base path.
+        if let Some(h) = api.host.as_ref() {
+            let mut parts = h.split(':');
+            let mut u = state.base_url.borrow_mut();
+            if let Some(host) = parts.next() {
+                Host::parse(host).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
+                u.set_host(Some(&host))
+                    .expect("expected valid host in URL?");
+            }
+
+            if let Some(port) = parts.next() {
+                let p = port.parse::<u16>().map_err(|_| {
+                    PaperClipError::InvalidHost(h.into(), url::ParseError::InvalidPort)
+                })?;
+                u.set_port(Some(p)).expect("expected valid port in URL?");
+            }
+        }
+
+        if let Some(p) = api.base_path.as_ref() {
+            state.base_url.borrow_mut().set_path(p);
+        }
+
+        let gen = CodegenEmitter(self);
+        // Generate file contents by accumulating definitions.
+        for (name, schema) in &api.definitions {
+            debug!("Creating definition {}", name);
+            let schema = schema.read();
+            gen.generate_from_definition(&schema)?;
+        }
+
+        for (path, map) in &api.paths {
+            RequirementCollector {
+                path,
+                emitter: self,
+                api,
+                map,
+                template_params: HashSet::new(),
+            }
+            .collect()?;
+        }
+
+        state.declare_modules()?;
+        state.write_definitions()?;
+        state.add_builders()?;
+        state.add_client_deps()?;
+        state.add_deps()?;
+
+        Ok(())
+    }
+
+    /// Builds a schema. This resolves type aliases to known types
+    /// and defines/reuses types based on the given context.
+    ///
+    /// **NOTE:** Not meant to be overridden.
     fn build_def<'a>(
         &self,
         def: &Self::Definition,
@@ -275,20 +324,29 @@ where
     E: Emitter,
     E::Definition: Debug,
 {
-    /// Given a schema definition, generate the corresponding Rust definition.
-    ///
-    /// **NOTE:** This doesn't generate any files. It only adds the generated stuff
-    /// to `EmitterState`.
-    fn generate_def_from_root(&self, def: &E::Definition) -> Result<(), Error> {
-        let state = self.state();
+    /// Given a schema definition, generate the corresponding Rust definition and
+    /// add it to `EmitterState`.
+    fn generate_from_definition(&self, def: &E::Definition) -> Result<(), Error> {
         // Generate the object.
-        let mut objects = match self.build_def(def, DefinitionContext::default().define(true))? {
+        let objects = match self.build_def(def, DefinitionContext::default().define(true))? {
             EmittedUnit::Objects(o) => o,
             // We don't care about type aliases because we resolve them anyway.
             _ => return Ok(()),
         };
 
-        let mod_path = self.def_mod_path(def)?;
+        self.add_objects_to_path(objects, self.def_mod_path(def)?)
+    }
+
+    /// Given a bunch of API objects and their module path, add them to the internal state.
+    ///
+    /// **NOTE:** Should we need to add any `ApiObject` to `EmitterState.def_mods`, this
+    /// method must be used instead of manipulating the field directly.
+    fn add_objects_to_path(
+        &self,
+        mut objects: Vec<ApiObject>,
+        mod_path: PathBuf,
+    ) -> Result<(), Error> {
+        let state = self.state();
         // Create parent dirs recursively for the leaf module.
         let dir_path = mod_path
             .parent()
@@ -328,7 +386,6 @@ where
         // Add generated object to state.
         let mut def_mods = state.def_mods.borrow_mut();
         def_mods.insert(mod_path, objects);
-
         Ok(())
     }
 
@@ -618,7 +675,7 @@ where
         if let Some(pat) = schema_path.as_ref() {
             self.bind_schema_to_operation(pat, meth, op, params)?;
         } else {
-            self.bind_operation_blindly(meth, op, params);
+            self.bind_operation_blindly(meth, op, params)?;
         }
 
         Ok(())
@@ -732,6 +789,13 @@ where
         op: &Operation<SchemaRepr<E::Definition>>,
         params: Vec<Parameter>,
     ) -> Result<(), Error> {
+        trace!(
+            "Binding {:?} operation in path {:?} to module {:?}",
+            meth,
+            self.path,
+            schema_path
+        );
+
         let state = self.emitter.state();
         let mut def_mods = state.def_mods.borrow_mut();
         let obj = def_mods.get_mut(schema_path).expect("bleh?");
@@ -772,39 +836,76 @@ where
         meth: HttpMethod,
         op: &Operation<SchemaRepr<E::Definition>>,
         params: Vec<Parameter>,
-    ) {
+    ) -> Result<(), Error> {
         // Let's try from the response maybe...
         let s = match Self::get_2xx_response_schema(&op) {
             Some(s) => s,
-            None => return,
+            None => {
+                warn!(
+                    "Unable to bind {:?} operation in path {:?} to any known schema.",
+                    meth, self.path
+                );
+                return Ok(());
+            }
         };
 
         let schema = &*s.read();
         let state = self.emitter.state();
-        let mut def_mods = state.def_mods.borrow_mut();
         let listable = schema.items().and_then(|s| s.read().data_type()) == Some(DataType::Object);
+        let mut unknown_schema_context = None;
+
         let s = match schema.data_type() {
             // We can deal with object responses.
             Some(DataType::Object) => s.clone(),
             // We can also deal with array of objects by mapping
             // the operation to that object.
             _ if listable => (&**schema.items().unwrap()).clone(),
-            // FIXME: Handle other types where we can't map an
-            // operation to a known schema.
-            _ => return,
+            // But... we can't deal with simple types or nested arrays, so we
+            // let the emitter guess something based on this operation.
+            _ => {
+                let path = self.emitter.unknown_op_mod_path(self.path, meth, op)?;
+                if !state.def_mods.borrow().contains_key(&path) {
+                    // NOTE: Don't add `ApiObject` directly, because we have to
+                    // set appropriate paths.
+                    CodegenEmitter(self.emitter).add_objects_to_path(
+                        vec![self.emitter.unknown_op_object(self.path, meth, op)?],
+                        path.clone(),
+                    )?;
+                }
+
+                unknown_schema_context = Some((
+                    path,
+                    self.emitter
+                        .build_def(schema, DefinitionContext::default())?
+                        .known_type(),
+                ));
+                s.clone()
+            }
         };
 
         let schema = &*s.read();
-        let pat = self.emitter.def_mod_path(schema).ok();
-        let obj = match pat.and_then(|p| def_mods.get_mut(&p)) {
-            Some(o) => o,
-            None => {
-                warn!(
-                    "Skipping unknown response schema for path {:?}: {:?}",
-                    self.path, schema
-                );
-                return;
-            }
+        let mut def_mods = state.def_mods.borrow_mut();
+        let (obj, response_ty_path) = match unknown_schema_context {
+            Some((p, ty)) => (
+                def_mods.get_mut(&p).expect("expected misc API object"),
+                Some(ty),
+            ),
+            // If this is known, then we should be able to get the object.
+            None => match self
+                .emitter
+                .def_mod_path(schema)
+                .ok()
+                .and_then(|p| def_mods.get_mut(&p))
+            {
+                Some(o) => (o, None),
+                None => {
+                    warn!(
+                        "Skipping unknown response schema for path {:?}: {:?}",
+                        self.path, schema
+                    );
+                    return Ok(());
+                }
+            },
         };
 
         let ops = obj[0] // first object is always the globally defined object.
@@ -820,10 +921,12 @@ where
                 params,
                 body_required: false,
                 listable,
-                response_ty_path: None,
+                response_ty_path,
                 encoding: self.get_encoder(op),
             },
         );
+
+        Ok(())
     }
 
     /// Returns the first 2xx response schema in this operation.

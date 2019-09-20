@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Actix plugin: Callers of `#[api_v2_schema]` can specify `empty` to implement empty schema for any type and ignore the warning.
+- Actix plugin: `#[api_v2_schema(empty)]` can be used to implement empty schema for any type and ignore the warning.
 - Actix plugin: Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 - Client timeout in CLI.
 - Codegen for header parameters in operations.
@@ -27,6 +27,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
 - Switched enum type to array of `any` rather than strings.
 - Resolution of anonymous schema definitions in objects, operation parameters and responses.
+- Unmappable operations (i.e., without body parameters and simple response types) are now namespaced in a separate module.
 
 ## [0.3.0] - 2019-07-30
 ### Added

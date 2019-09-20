@@ -5,5 +5,5 @@ mod codegen {
     include!("./mod.rs");
 }
 
-pub use codegen::io::k8s::*;
+pub use codegen::{io::k8s::*, miscellaneous};
 pub use codegen::client::{ApiError, Sendable};
