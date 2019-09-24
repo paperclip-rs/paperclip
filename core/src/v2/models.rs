@@ -179,6 +179,27 @@ impl<L, R> Either<L, R> {
             Either::Right(r) => Some(r),
         }
     }
+
+    /// Get a mutable reference to the left variant (if it exists).
+    pub fn left_mut(&mut self) -> Option<&mut L> {
+        match self {
+            Either::Left(l) => Some(l),
+            Either::Right(_) => None,
+        }
+    }
+}
+
+impl<T> Either<T, Vec<T>> {
+    /// Convenience method for getting either the value in the left
+    /// or one from right, given that the right variant can contain
+    /// more than one values in a vector.
+    pub fn left_or_one_in_right(&self) -> Option<&T> {
+        match self {
+            Either::Left(l) => Some(l),
+            Either::Right(v) if v.len() == 1 => Some(&v[0]),
+            _ => None,
+        }
+    }
 }
 
 use crate as paperclip; // hack for proc macro

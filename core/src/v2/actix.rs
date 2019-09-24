@@ -21,7 +21,7 @@ pub trait OperationModifier: Apiv2Schema {
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         let mut schema = Self::schema_with_ref();
         loop {
-            if let Some(s) = schema.items {
+            if let Some(Either::Left(s)) = schema.items {
                 schema = *s;
                 continue;
             } else if let Some(Either::Right(s)) = schema.extra_props {

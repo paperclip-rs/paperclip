@@ -24,10 +24,10 @@ pub trait Schema: Sized {
     fn format(&self) -> Option<&DataTypeFormat>;
 
     /// Schema for array definitions, if any (`items` field).
-    fn items(&self) -> Option<&SchemaRepr<Self>>;
+    fn items(&self) -> Option<&Either<SchemaRepr<Self>, Vec<SchemaRepr<Self>>>>;
 
     /// Mutable access to the `items` field, if it exists.
-    fn items_mut(&mut self) -> Option<&mut SchemaRepr<Self>>;
+    fn items_mut(&mut self) -> Option<&mut Either<SchemaRepr<Self>, Vec<SchemaRepr<Self>>>>;
 
     /// Value schema for maps (`additional_properties` field).
     fn additional_properties(&self) -> Option<&Either<bool, SchemaRepr<Self>>>;
@@ -221,7 +221,7 @@ macro_rules! impl_schema_array {
             fn raw_schema() -> DefaultSchemaRaw {
                 let mut schema = DefaultSchemaRaw::default();
                 schema.data_type = Some(DataType::Array);
-                schema.items = Some(T::schema_with_ref().into());
+                schema.items = Some(Either::Left(T::schema_with_ref().into()));
                 schema
             }
         }

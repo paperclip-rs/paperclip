@@ -1,5 +1,5 @@
 use super::{
-    models::{HttpMethod, OperationMap, Parameter, SchemaRepr},
+    models::{Either, HttpMethod, OperationMap, Parameter, SchemaRepr},
     Schema,
 };
 use crate::error::ValidationError;
@@ -101,8 +101,13 @@ where
         schema: &SchemaRepr<S>,
     ) -> Result<(), ValidationError> {
         let mut schema = schema.write();
-        if let Some(mut inner) = schema.items_mut().take() {
-            return self.resolve_definitions(&mut inner);
+        if let Some(inner) = schema.items_mut().take() {
+            match inner {
+                Either::Left(inner) => return self.resolve_definitions(inner),
+                Either::Right(v) => {
+                    return v.iter_mut().try_for_each(|s| self.resolve_definitions(s))
+                }
+            }
         }
 
         if let Some(props) = schema.properties_mut().take() {
