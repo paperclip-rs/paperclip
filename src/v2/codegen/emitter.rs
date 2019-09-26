@@ -397,16 +397,34 @@ where
         def: &E::Definition,
         ctx: DefinitionContext<'c>,
     ) -> Result<EmittedUnit, Error> {
-        if ctx.define {
-            return Ok(EmittedUnit::None);
-        }
-
         let it = def
             .items()
             .and_then(|e| e.left_or_one_in_right())
             .ok_or_else(|| PaperClipError::MissingArrayItem(self.def_name(def).ok()))?;
 
+        let mut ctx = ctx.clone();
+        if let Some(n) = def.name() {
+            ctx = ctx.add_parent(n);
+        }
+
         let schema = it.read();
+        if schema.name().is_none() {
+            // If the schema doesn't have a name, then add "item" as a suffix
+            // so that it can be used for name generation later.
+            ctx = ctx.add_parent("item");
+        }
+
+        if ctx.define {
+            if schema.name().is_none() {
+                // If there are nested types requiring definitions, then return them.
+                if let e @ EmittedUnit::Objects(_) = self.build_def(&schema, ctx)? {
+                    return Ok(e);
+                }
+            }
+
+            return Ok(EmittedUnit::None);
+        }
+
         let obj = self.build_def(&schema, ctx.define(false))?;
         let ty = String::from("Vec<") + &obj.known_type() + ">";
         Ok(obj.map_known(ty))
@@ -425,6 +443,9 @@ where
         }
 
         if !ctx.define {
+            // Use absolute paths to save some pain.
+            let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));
+
             // If this is an anonymous object, then address it directly.
             if def.name().is_none() {
                 let objects = match self.build_def(def, ctx.clone().define(true))? {
@@ -432,13 +453,18 @@ where
                     _ => unreachable!(),
                 };
 
+                // If the object has an anonymous name, then it would definitely
+                // be in its own module, which is identified by the initial parent name.
                 if let Some(name) = self.def_anon_name(def, &ctx.parents) {
-                    return Ok(EmittedUnit::KnownButAnonymous(name, objects));
+                    ty_path.push_str("::");
+                    let parent = ctx.parents.get(0).expect("expected first parent name");
+                    ty_path.push_str(&parent.to_snek_case());
+                    ty_path.push_str("::");
+                    ty_path.push_str(&name);
+                    return Ok(EmittedUnit::KnownButAnonymous(ty_path, objects));
                 }
             }
 
-            // Use absolute paths to save some pain.
-            let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));
             let mut iter = self.def_ns_name(def)?.peekable();
             while let Some(mut c) = iter.next() {
                 ty_path.push_str("::");

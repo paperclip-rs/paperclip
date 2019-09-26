@@ -103,6 +103,10 @@ pub mod tag {
     include!(\"./tag.rs\");
 }
 
+pub mod test_nested_array_with_object {
+    include!(\"./test_nested_array_with_object.rs\");
+}
+
 pub mod client {
     use futures::{Future, future};
 ",
@@ -151,7 +155,7 @@ fn test_overridden_path() {
             self.request(method, &u)
         }
 ",
-        Some(2007),
+        Some(2102),
     );
 }
 
@@ -264,9 +268,9 @@ fn test_anonymous_object_definition_in_schema() {
         &(ROOT.clone() + "/tests/test_pet/order.rs"),
         "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct Order {
-    pub address: Option<OrderAddress>,
+    pub address: Option<crate::order::OrderAddress>,
     pub id: Option<i64>,
-    pub list: Option<Vec<OrderList>>,
+    pub list: Option<Vec<crate::order::OrderListItem>>,
 }
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct OrderAddress {
@@ -276,7 +280,7 @@ pub struct OrderAddress {
     pub name: Option<String>,
 }
 #[derive(Debug, Default, Clone, Deserialize, Serialize)]
-pub struct OrderList {
+pub struct OrderListItem {
     #[serde(rename = \"petId\")]
     pub pet_id: Option<i64>,
     pub quantity: Option<i64>,
@@ -306,7 +310,7 @@ pub struct OrderBuilder {
 
 impl OrderBuilder {
     #[inline]
-    pub fn address(mut self, value: impl Into<OrderAddress>) -> Self {
+    pub fn address(mut self, value: crate::order::OrderAddress) -> Self {
         self.body.address = Some(value.into());
         self
     }
@@ -318,7 +322,7 @@ impl OrderBuilder {
     }
 
     #[inline]
-    pub fn list(mut self, value: impl Iterator<Item = impl Into<OrderList>>) -> Self {
+    pub fn list(mut self, value: impl Iterator<Item = crate::order::OrderListItem>) -> Self {
         self.body.list = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
@@ -372,29 +376,29 @@ impl OrderAddressBuilder {
     }
 }
 
-impl OrderList {
+impl OrderListItem {
     /// Create a builder for this object.
     #[inline]
-    pub fn builder() -> OrderListBuilder {
-        OrderListBuilder {
+    pub fn builder() -> OrderListItemBuilder {
+        OrderListItemBuilder {
             body: Default::default(),
         }
     }
 }
 
-impl Into<OrderList> for OrderListBuilder {
-    fn into(self) -> OrderList {
+impl Into<OrderListItem> for OrderListItemBuilder {
+    fn into(self) -> OrderListItem {
         self.body
     }
 }
 
-/// Builder for [`OrderList`](./struct.OrderList.html) object.
+/// Builder for [`OrderListItem`](./struct.OrderListItem.html) object.
 #[derive(Debug, Clone)]
-pub struct OrderListBuilder {
-    body: self::OrderList,
+pub struct OrderListItemBuilder {
+    body: self::OrderListItem,
 }
 
-impl OrderListBuilder {
+impl OrderListItemBuilder {
     #[inline]
     pub fn pet_id(mut self, value: impl Into<i64>) -> Self {
         self.body.pet_id = Some(value.into());
@@ -419,7 +423,7 @@ fn test_anonymous_object_definition_in_body() {
         &(ROOT.clone() + "/tests/test_pet/post_shipments_body.rs"),
         "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct PostShipmentsBody {
-    pub address: Option<PostShipmentsBodyAddress>,
+    pub address: Option<crate::post_shipments_body::PostShipmentsBodyAddress>,
     #[serde(rename = \"orderId\")]
     pub order_id: Option<String>,
 }
@@ -469,7 +473,7 @@ pub struct PostShipmentsBodyBuilder {
 
 impl PostShipmentsBodyBuilder {
     #[inline]
-    pub fn address(mut self, value: impl Into<PostShipmentsBodyAddress>) -> Self {
+    pub fn address(mut self, value: crate::post_shipments_body::PostShipmentsBodyAddress) -> Self {
         self.body.address = Some(value.into());
         self
     }
@@ -489,7 +493,7 @@ pub struct PostShipmentsBodyPostBuilder {
 
 impl PostShipmentsBodyPostBuilder {
     #[inline]
-    pub fn address(mut self, value: impl Into<PostShipmentsBodyAddress>) -> Self {
+    pub fn address(mut self, value: crate::post_shipments_body::PostShipmentsBodyAddress) -> Self {
         self.body.address = Some(value.into());
         self
     }
@@ -579,7 +583,7 @@ fn test_anonymous_object_definition_in_response() {
         &(ROOT.clone() + "/tests/test_pet/get_shipments_id_response.rs"),
         "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
 pub struct GetShipmentsIdResponse {
-    pub address: Option<GetShipmentsIdResponseAddress>,
+    pub address: Option<crate::get_shipments_id_response::GetShipmentsIdResponseAddress>,
     #[serde(rename = \"createdOn\")]
     pub created_on: Option<String>,
     #[serde(rename = \"orderId\")]
@@ -628,7 +632,7 @@ pub struct GetShipmentsIdResponseBuilder {
 
 impl GetShipmentsIdResponseBuilder {
     #[inline]
-    pub fn address(mut self, value: impl Into<GetShipmentsIdResponseAddress>) -> Self {
+    pub fn address(mut self, value: crate::get_shipments_id_response::GetShipmentsIdResponseAddress) -> Self {
         self.body.address = Some(value.into());
         self
     }
@@ -780,25 +784,40 @@ fn test_nested_arrays() {
     // It's in miscellaneous because there's no body parameter or response body.
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/miscellaneous.rs"),
-        "/// Builder created by [`Miscellaneous::post`](./struct.Miscellaneous.html#method.post) method for a `POST` operation associated with `Miscellaneous`.
+        "/// Builder created by [`Miscellaneous::get`](./struct.Miscellaneous.html#method.get) method for a `GET` operation associated with `Miscellaneous`.
+#[derive(Debug, Clone)]
+pub struct MiscellaneousGetBuilder;
+
+
+impl crate::client::Sendable for MiscellaneousGetBuilder {
+    type Output = Vec<Vec<crate::test_nested_array_with_object::TestNestedArrayWithObjectItemItem>>;
+
+    const METHOD: reqwest::Method = reqwest::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/test/array\".into()
+    }
+}
+
+/// Builder created by [`Miscellaneous::post_1`](./struct.Miscellaneous.html#method.post_1) method for a `POST` operation associated with `Miscellaneous`.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct MiscellaneousPostBuilder<Values> {
-    inner: MiscellaneousPostBuilderContainer,
+pub struct MiscellaneousPostBuilder1<Values> {
+    inner: MiscellaneousPostBuilder1Container,
     _param_values: core::marker::PhantomData<Values>,
 }
 
 #[derive(Debug, Default, Clone)]
-struct MiscellaneousPostBuilderContainer {
+struct MiscellaneousPostBuilder1Container {
     param_values: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>>,
     param_x_foobar: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Pipes>>,
     param_booya: Option<crate::util::Delimited<crate::util::Delimited<i64, crate::util::Csv>, crate::util::Multi>>,
     param_foo: Option<crate::util::Delimited<crate::util::Delimited<String, crate::util::Csv>, crate::util::Multi>>,
 }
 
-impl<Values> MiscellaneousPostBuilder<Values> {
+impl<Values> MiscellaneousPostBuilder1<Values> {
     #[inline]
-    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> MiscellaneousPostBuilder<crate::generics::ValuesExists> {
+    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
         self.inner.param_values = Some(value.map(|value| value.map(|value| value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
         unsafe { std::mem::transmute(self) }
     }
@@ -822,7 +841,7 @@ impl<Values> MiscellaneousPostBuilder<Values> {
     }
 }
 
-impl crate::client::Sendable for MiscellaneousPostBuilder<crate::generics::ValuesExists> {
+impl crate::client::Sendable for MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
     type Output = String;
 
     const METHOD: reqwest::Method = reqwest::Method::POST;
@@ -854,6 +873,6 @@ impl crate::client::Sendable for MiscellaneousPostBuilder<crate::generics::Value
     }
 }
 ",
-        Some(421),
+        Some(524),
     );
 }

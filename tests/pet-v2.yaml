@@ -68,6 +68,20 @@ definitions:
         type: integer
         format: int64
     type: object
+  TestNestedArrayWithObject:
+    type: array
+    items:
+      type: array
+      items:
+        type: object
+        properties:
+          foo:
+            type: string
+          bar:
+            type: object
+            properties:
+              baz:
+                type: integer
 paths:
   /pets/{petId}:
     parameters:
@@ -247,3 +261,9 @@ paths:
         "200":
           schema:
             type: string
+  /test/array:
+    get:
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/TestNestedArrayWithObject'
