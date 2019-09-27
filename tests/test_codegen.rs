@@ -610,7 +610,7 @@ impl GetShipmentsIdResponse {
 
     /// Fetch shipment by ID
     #[inline]
-    pub fn get() -> GetShipmentsIdResponseGetBuilder<crate::generics::MissingId> {
+    pub fn get_shipment() -> GetShipmentsIdResponseGetBuilder<crate::generics::MissingId> {
         GetShipmentsIdResponseGetBuilder {
             inner: Default::default(),
             _param_id: core::marker::PhantomData,
@@ -656,7 +656,7 @@ impl GetShipmentsIdResponseBuilder {
     }
 }
 
-/// Builder created by [`GetShipmentsIdResponse::get`](./struct.GetShipmentsIdResponse.html#method.get) method for a `GET` operation associated with `GetShipmentsIdResponse`.
+/// Builder created by [`GetShipmentsIdResponse::get_shipment`](./struct.GetShipmentsIdResponse.html#method.get_shipment) method for a `GET` operation associated with `GetShipmentsIdResponse`.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
 pub struct GetShipmentsIdResponseGetBuilder<Id> {

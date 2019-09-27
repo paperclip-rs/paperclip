@@ -849,7 +849,7 @@ impl ApiGroupList {
 
     /// get available API versions
     #[inline]
-    pub fn get() -> ApiGroupListGetBuilder {
+    pub fn get_api_versions() -> ApiGroupListGetBuilder {
         ApiGroupListGetBuilder
     }
 }
@@ -890,7 +890,7 @@ impl<Groups> ApiGroupListBuilder<Groups> {
     }
 }
 
-/// Builder created by [`ApiGroupList::get`](./struct.ApiGroupList.html#method.get) method for a `GET` operation associated with `ApiGroupList`.
+/// Builder created by [`ApiGroupList::get_api_versions`](./struct.ApiGroupList.html#method.get_api_versions) method for a `GET` operation associated with `ApiGroupList`.
 #[derive(Debug, Clone)]
 pub struct ApiGroupListGetBuilder;
 

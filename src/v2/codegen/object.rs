@@ -265,14 +265,14 @@ impl<'a> ApiObjectBuilder<'a> {
     /// Name of the constructor function which creates this builder.
     pub fn constructor_fn_name(&self) -> Option<String> {
         match (self.op_id, self.method) {
+            // If there's an operation ID, then we go for that ...
+            (Some(id), _) => Some(id.to_snek_case()),
             // If there's a method and we *don't* have any collisions
             // (i.e., two or more paths for same object), then we default
             // to using the method ...
             (_, Some(meth)) if !self.multiple_builders_exist => {
                 Some(meth.to_string().to_snek_case())
             }
-            // If there's an operation ID, then we go for that ...
-            (Some(id), _) => Some(id.to_snek_case()),
             // If there's a method, then we go for numbered functions ...
             (_, Some(meth)) => {
                 let mut name = meth.to_string().to_snek_case();

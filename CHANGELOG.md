@@ -19,15 +19,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 - Switched to templating for (almost) static modules.
+- Operation IDs are preferred for method names if they exist.
 
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.
 - Actix plugin: `web::Path<T>` also supports simple types (strings, integers, etc.).
 - Actix plugin: `#[api_v2_schema]` derivatives can now use references.
 - Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
-- Switched enum type to array of `any` rather than strings.
+- Switched `enum` field to array of `any` rather than strings.
 - Resolution of anonymous schema definitions in objects, operation parameters and responses.
 - Unmappable operations (i.e., without body parameters and simple response types) are now namespaced in a separate module.
+- Array definitions are now allowed in schemas.
+- `items` field accepts schema or an array of schemas.
+- `additionalProperties` takes boolean or a schema.
 
 ## [0.3.0] - 2019-07-30
 ### Added
