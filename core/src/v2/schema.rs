@@ -4,6 +4,9 @@ use super::models::{DataType, DataTypeFormat, DefaultSchemaRaw, Either, Operatio
 
 use std::collections::{BTreeMap, BTreeSet};
 
+#[cfg(feature = "datetime")]
+use chrono;
+
 /// Interface for the [`Schema`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject) object.
 ///
 /// This is only used for resolving the definitions.
@@ -141,6 +144,12 @@ impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
+#[cfg(feature = "datetime")]
+impl_type_simple!(
+    chrono::NaiveDateTime,
+    DataType::String,
+    DataTypeFormat::DateTime
+);
 
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
 /// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
