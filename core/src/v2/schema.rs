@@ -151,6 +151,9 @@ impl_type_simple!(
     DataTypeFormat::DateTime
 );
 
+#[cfg(feature = "uid")]
+impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
+
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
 /// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
 ///

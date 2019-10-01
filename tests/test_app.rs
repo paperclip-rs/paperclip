@@ -38,6 +38,7 @@ struct Pet {
     class: PetClass,
     id: Option<u64>,
     updated: chrono::NaiveDateTime,
+    uid: Option<uuid::Uuid>,
 }
 
 #[test]
@@ -96,6 +97,10 @@ fn test_simple_app() {
                         },
                         "updated": {
                           "format": "date-time",
+                          "type": "string"
+                        },
+                        "uid": {
+                          "format": "uuid",
                           "type": "string"
                         }
                       },
@@ -515,6 +520,10 @@ fn test_list_in_out() {
                         "updated": {
                           "format": "date-time",
                           "type": "string"
+                        },
+                        "uid": {
+                          "format": "uuid",
+                          "type": "string"
                         }
                       },
                       "required":["class", "name", "updated"]
@@ -615,6 +624,10 @@ fn test_impl_traits() {
                         },
                         "updated": {
                           "format": "date-time",
+                          "type": "string"
+                        },
+                        "uid": {
+                          "format": "uuid",
                           "type": "string"
                         }
                       },
