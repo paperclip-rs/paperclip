@@ -120,6 +120,18 @@ where
             items: None,
             enum_: Default::default(),
             collection_format: None,
+            default: None,
+            maximum: None,
+            exclusive_maximum: None,
+            minimum: None,
+            exclusive_minimum: None,
+            max_length: None,
+            min_length: None,
+            pattern: None,
+            max_items: None,
+            min_items: None,
+            unique_items: None,
+            multiple_of: None,
         });
     }
 
@@ -159,6 +171,18 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     items: None,
                     enum_: def.enum_,
                     collection_format: None,
+                    default: None,
+                    maximum: None,
+                    exclusive_maximum: None,
+                    minimum: None,
+                    exclusive_minimum: None,
+                    max_length: None,
+                    min_length: None,
+                    pattern: None,
+                    max_items: None,
+                    min_items: None,
+                    unique_items: None,
+                    multiple_of: None,
                 });
             }
 
@@ -175,6 +199,18 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     items: None,
                     enum_: v.enum_,
                     collection_format: None,
+                    default: None,
+                    maximum: None,
+                    exclusive_maximum: None,
+                    minimum: None,
+                    exclusive_minimum: None,
+                    max_length: None,
+                    min_length: None,
+                    pattern: None,
+                    max_items: None,
+                    min_items: None,
+                    unique_items: None,
+                    multiple_of: None,
                 });
             }
         }
@@ -217,6 +253,18 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
                     items: None,
                     enum_: def.enum_,
                     collection_format: None,
+                    default: None,
+                    maximum: None,
+                    exclusive_maximum: None,
+                    minimum: None,
+                    exclusive_minimum: None,
+                    max_length: None,
+                    min_length: None,
+                    pattern: None,
+                    max_items: None,
+                    min_items: None,
+                    unique_items: None,
+                    multiple_of: None,
                 });
             )+
         }
