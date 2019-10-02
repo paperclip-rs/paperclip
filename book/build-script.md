@@ -123,7 +123,7 @@ let pet = Pet::get_pet_by_id()
 
 ... and the code will compile.
 
-The same applies to using API objects (with required fields). For example, the [`addPet` operation](https://github.com/wafflespeanut/paperclip/blob/master/openapi/tests/pet-v2.yaml#L66-L73) requires `Pet` object to be present in the HTTP body, but then `Pet` object itself requires [`id` and `name` fields](https://github.com/wafflespeanut/paperclip/blob/master/openapi/tests/pet-v2.yaml#L14-L16).
+The same applies to using API objects (with required fields). For example, the [`addPet` operation](https://github.com/wafflespeanut/paperclip/blob/98a2c053c283ebbbef9b17f7e0ac6ddb0e64f77f/tests/pet-v2.yaml#L125-L148) requires `Pet` object to be present in the HTTP body, but then `Pet` object itself requires [`id` and `name` fields](https://github.com/wafflespeanut/paperclip/blob/98a2c053c283ebbbef9b17f7e0ac6ddb0e64f77f/tests/pet-v2.yaml#L44-L46).
 
 So, if we did this:
 
