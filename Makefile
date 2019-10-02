@@ -26,6 +26,7 @@ build:
 	cargo build --features default
 	cargo build --features actix
 	cargo build --features cli
+	cargo build --features uid
 	cargo build --all --all-features
 
 test:

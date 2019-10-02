@@ -47,6 +47,7 @@ actix-service = "0.4.1"
 actix-web = "1.0.4"
 chrono = { version = "0.4", features = ["serde"] }
 futures = "0.1"
+uuid = { version = "0.7.4", features = ["serde"] }
 
 [features]
 actix = ["paperclip-macros/actix", "paperclip-actix"]
@@ -56,6 +57,7 @@ v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 codegen = ["heck", "lazy_static", "regex", "tinytemplate", "paperclip-core/codegen"]
 cli = ["default", "env_logger", "structopt", "git2", "reqwest"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
+uid = ["paperclip-core/uid"]
 
 [workspace]
 members = [
