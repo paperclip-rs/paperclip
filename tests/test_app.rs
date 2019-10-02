@@ -9,6 +9,7 @@ use actix_rt::System;
 use actix_service::NewService;
 use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
+use chrono;
 use futures::Future;
 use paperclip::actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
@@ -36,6 +37,7 @@ struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
+    updated: chrono::NaiveDateTime,
 }
 
 #[test]
@@ -91,9 +93,13 @@ fn test_simple_app() {
                         },
                         "name": {
                           "type": "string"
+                        },
+                        "updated": {
+                          "format": "date-time",
+                          "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["class", "name", "updated"]
                     }
                   },
                   "paths": {
@@ -505,9 +511,13 @@ fn test_list_in_out() {
                         },
                         "name": {
                           "type": "string"
+                        },
+                        "updated": {
+                          "format": "date-time",
+                          "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["class", "name", "updated"]
                     }
                   },
                   "paths": {
@@ -602,9 +612,13 @@ fn test_impl_traits() {
                         },
                         "name": {
                           "type": "string"
+                        },
+                        "updated": {
+                          "format": "date-time",
+                          "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["class", "name", "updated"]
                     }
                   },
                   "paths": {
