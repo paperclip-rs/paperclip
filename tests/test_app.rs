@@ -220,6 +220,13 @@ fn test_params() {
     #[api_v2_schema]
     #[derive(Deserialize)]
     struct BadgeBody {
+        json: Option<serde_json::Value>,
+        yaml: Option<serde_yaml::Value>,
+    }
+
+    #[api_v2_schema]
+    #[derive(Deserialize)]
+    struct BadgeForm {
         data: String,
     }
 
@@ -242,7 +249,7 @@ fn test_params() {
     fn post_badge_1(
         _p: web::Path<KnownResourceBadge>,
         _q: web::Query<BadgeParams>,
-        _f: web::Form<BadgeBody>,
+        _f: web::Form<BadgeForm>,
     ) -> String {
         unimplemented!();
     }
@@ -285,7 +292,13 @@ fn test_params() {
                 &mut resp,
                 json!({
                   "definitions": {
-                    "BadgeBody": {
+                    "BadgeBody":{
+                      "properties":{
+                        "json":{},
+                        "yaml":{}
+                      }
+                    },
+                    "BadgeForm": {
                       "properties": {
                         "data": {
                           "type": "string"
