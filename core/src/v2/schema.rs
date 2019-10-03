@@ -227,6 +227,9 @@ impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
     }
 }
 
+impl Apiv2Schema for serde_json::Value {}
+impl Apiv2Schema for serde_yaml::Value {}
+
 macro_rules! impl_schema_array {
     ($ty:ty) => {
         impl<T: Apiv2Schema> Apiv2Schema for $ty {
