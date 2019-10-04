@@ -30,7 +30,7 @@ runtime-tokio = "0.3.0-alpha.6"
 paperclip = "0"
 ```
 
-- Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/openapi/tests/pet-v2.yaml).
+- Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml).
 
 - Now, add `build.rs` to the project root with the following:
 
