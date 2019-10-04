@@ -6,8 +6,8 @@ use proc_macro::TokenStream;
 use quote::quote;
 use syn::spanned::Spanned;
 use syn::{
-    Data, DataEnum, Fields, FieldsNamed, ItemFn, Meta, NestedMeta, PathArguments, ReturnType,
-    Token, TraitBound, Type,
+    Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, ItemFn, Meta, NestedMeta,
+    PathArguments, ReturnType, Token, TraitBound, Type,
 };
 
 const SCHEMA_MACRO: &str = "api_v2_schema";
@@ -124,12 +124,16 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
         Data::Struct(ref s) => match &s.fields {
             Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),
             Fields::Unnamed(ref f) => {
-                let s = f.span().unwrap();
-                s.warning(
-                    "tuple structs do not have named fields and hence will have empty schema.",
-                )
-                .emit();
-                s.help(&*EMPTY_SCHEMA_HELP).emit();
+                if f.unnamed.len() == 1 {
+                    handle_unnamed_field_struct(f, &mut props_gen)
+                } else {
+                    let s = f.span().unwrap();
+                    s.warning(
+                        "tuple structs do not have named fields and hence will have empty schema.",
+                    )
+                    .emit();
+                    s.help(&*EMPTY_SCHEMA_HELP).emit();
+                }
             }
             Fields::Unit => {
                 let s = s.struct_token.span().unwrap();
@@ -159,14 +163,55 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
                 use paperclip::v2::schema::TypedData;
 
                 let mut schema = DefaultSchemaRaw::default();
-                schema.name = Some(#schema_name.into()); // Add name for later use.
                 #props_gen
+                schema.name = Some(#schema_name.into()); // Add name for later use.
                 schema
             }
         }
     };
 
     gen.into()
+}
+
+fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
+    let mut is_required = true;
+    match field.ty {
+        Type::Path(ref p) => {
+            let ty = p
+                .path
+                .segments
+                .last()
+                .expect("expected type for struct field");
+
+            if p.path.segments.len() == 1 && &ty.ident == "Option" {
+                is_required = false;
+            }
+
+            (Some(address_type_for_fn_call(&field.ty)), is_required)
+        }
+        Type::Reference(_) => (Some(address_type_for_fn_call(&field.ty)), is_required),
+        _ => {
+            field
+                .ty
+                .span()
+                .unwrap()
+                .warning("unsupported field type will be ignored.")
+                .emit();
+            (None, is_required)
+        }
+    }
+}
+
+/// Generates code for a tuple struct with fields.
+fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macro2::TokenStream) {
+    let field = fields.unnamed.iter().nth(0).unwrap();
+    let (ty_ref, _) = get_field_type(&field);
+
+    if let Some(ty_ref) = ty_ref {
+        props_gen.extend(quote!({
+            schema = #ty_ref::raw_schema();
+        }));
+    }
 }
 
 /// Generates code for a struct with fields.
@@ -178,32 +223,7 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
             .expect("missing field name?")
             .to_string();
 
-        let mut is_required = true;
-        let ty_ref = match field.ty {
-            Type::Path(ref p) => {
-                let ty = p
-                    .path
-                    .segments
-                    .last()
-                    .expect("expected type for struct field");
-
-                if p.path.segments.len() == 1 && &ty.ident == "Option" {
-                    is_required = false;
-                }
-
-                address_type_for_fn_call(&field.ty)
-            }
-            Type::Reference(_) => address_type_for_fn_call(&field.ty),
-            _ => {
-                field
-                    .ty
-                    .span()
-                    .unwrap()
-                    .warning("unsupported field type will be ignored.")
-                    .emit();
-                continue;
-            }
-        };
+        let (ty_ref, is_required) = get_field_type(&field);
 
         let mut gen = quote!(
             {
