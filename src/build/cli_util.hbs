@@ -1,0 +1,46 @@
+use clap::ArgMatches;
+use crate::client::\{ApiClient, ApiError, Sendable};
+use serde::\{Serialize, Deserialize};
+
+use std::io::Read;
+
+pub(crate) fn read_from_input<T>(matches: Option<&ArgMatches<'_>>) -> Result<T, crate::ClientError>
+where
+    T: Serialize,
+    for<'de> T: Deserialize<'de>
+\{
+    let path = matches
+        .expect("no args for builder with body?")
+        .value_of("payload").expect("payload?");
+
+    let mut bytes = vec![];
+    if path == "-" \{
+        std::io::stdin().read_to_end(&mut bytes).map_err(crate::ClientError::Io)?;
+    } else \{
+        std::fs::File::open(&path)
+            .and_then(|mut fd| fd.read_to_end(&mut bytes))
+            .map_err(crate::ClientError::Io)?;
+    };
+
+    {{- for coder in media_coders }}
+
+    let err = match {coder.decoder | unescaped}(bytes.as_slice()) \{
+        Ok(t) => return Ok(t),
+        Err(e) => ApiError::{coder.error_variant | unescaped}(e),
+    };
+
+    log::debug!("Error decoding payload as {coder.range | unescaped}: \{:?}", err);
+    {{- endfor }}
+
+    Err(crate::ClientError::Api(err))
+}
+
+pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
+                              sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
+                             -> Result<Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>, crate::ClientError>
+\{
+    match sub_cmd \{
+{match_arms | unescaped}
+        _ => unimplemented!(),
+    }
+}

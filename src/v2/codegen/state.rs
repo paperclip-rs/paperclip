@@ -342,28 +342,15 @@ pub mod util {
             self.append_contents(&*self.cli_yaml.borrow(), &clap_yaml)?;
 
             // CLI module
-            self.write_contents(
-                "
-use clap::ArgMatches;
-use crate::client::{ApiClient, ApiError, Sendable};
-
-pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
-                              sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
-                             -> Result<Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>, crate::ClientError>
-{
-    match sub_cmd {",
-                &cli_mod,
+            let cli_content = template::render(
+                TEMPLATE::CLI_UTIL,
+                &CliUtilContext {
+                    match_arms: &*self.cli_match_arms.borrow(),
+                    media_coders: &*self.media_coders.borrow(),
+                },
             )?;
 
-            let cli_content = &mut *self.cli_match_arms.borrow_mut();
-            cli_content.push_str(
-                "
-        _ => unimplemented!(),
-    }
-}
-",
-            );
-            self.append_contents(&cli_content, &cli_mod)?;
+            self.write_contents(&cli_content, &cli_mod)?;
         }
 
         // `main.rs`
@@ -558,6 +545,12 @@ struct ManifestContext<'a> {
     version: &'a str,
     authors: &'a str,
     is_cli: bool,
+}
+
+#[derive(serde::Serialize)]
+struct CliUtilContext<'a> {
+    match_arms: &'a str,
+    media_coders: &'a [MediaCoder],
 }
 
 #[derive(serde::Serialize)]

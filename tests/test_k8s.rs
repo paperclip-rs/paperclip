@@ -327,7 +327,68 @@ impl<Any: serde::Serialize> crate::codegen::client::Sendable for CustomResourceD
     }
 }
 ",
-        Some(7320),
+        Some(7319),
+    );
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/custom_resource_definition.rs"),
+        "
+/// Builder created by [`CustomResourceDefinition::read_apiextensions_v1beta1_custom_resource_definition`](./struct.CustomResourceDefinition.html#method.read_apiextensions_v1beta1_custom_resource_definition) method for a `GET` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionGetBuilder1<Name> {
+    inner: CustomResourceDefinitionGetBuilder1Container,
+    _param_name: core::marker::PhantomData<Name>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionGetBuilder1Container {
+    param_exact: Option<bool>,
+    param_export: Option<bool>,
+    param_name: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name> CustomResourceDefinitionGetBuilder1<Name> {
+    /// Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'. Deprecated. Planned for removal in 1.18.
+    #[inline]
+    pub fn exact(mut self, value: impl Into<bool>) -> Self {
+        self.inner.param_exact = Some(value.into());
+        self
+    }
+
+    /// Should this value be exported.  Export strips fields that a user can not specify. Deprecated. Planned for removal in 1.18.
+    #[inline]
+    pub fn export(mut self, value: impl Into<bool>) -> Self {
+        self.inner.param_export = Some(value.into());
+        self
+    }
+
+    /// name of the CustomResourceDefinition
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> CustomResourceDefinitionGetBuilder1<crate::codegen::generics::NameExists> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+}
+
+impl crate::codegen::client::Sendable for CustomResourceDefinitionGetBuilder1<crate::codegen::generics::NameExists> {
+    type Output = CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: reqwest::Method = reqwest::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!(\"/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\")).into()
+    }
+",
+        Some(12446),
     );
 }
 
@@ -424,7 +485,7 @@ pub struct JsonSchemaProps<Any> {
     pub x_kubernetes_preserve_unknown_fields: Option<bool>,
 }
 
-impl<Any> JsonSchemaProps<Any> {
+impl<Any: Default> JsonSchemaProps<Any> {
     /// Create a builder for this object.
     #[inline]
     pub fn builder() -> JsonSchemaPropsBuilder<Any> {
@@ -1350,6 +1411,24 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
 }
 
 #[test]
+fn test_any_in_operation_bound_to_unrelated_struct() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/cli/io/k8s/apimachinery/pkg/apis/meta/v1/patch.rs"),
+        "
+impl crate::client::Sendable for PatchPatchBuilder26<crate::generics::NameExists> {
+    type Output = crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: reqwest::Method = reqwest::Method::PATCH;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!(\"/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\")).into()
+    }
+",
+        Some(219651),
+    );
+}
+
+#[test]
 fn test_cli_manifest() {
     let _ = &*CLI_CODEGEN;
 
@@ -1420,8 +1499,6 @@ enum ClientError {
     Url(reqwest::UrlError),
     #[fail(display = \"{}\", _0)]
     Api(self::client::ApiError),
-    #[fail(display = \"Payload error: {}\", _0)]
-    Json(serde_json::Error),
     #[fail(display = \"\")]
     Empty,
 }

@@ -62,6 +62,9 @@ pub struct OpRequirement {
     pub body_required: bool,
     /// Whether this operation returns a list of the associated `ApiObject`.
     pub listable: bool,
+    /// Whether the response contains an `Any`. This is useful when operations
+    /// get bound to some other object.
+    pub response_contains_any: bool,
     /// Type path for this operation's response.
     pub response_ty_path: Option<String>,
     /// Preferred media range and encoder for the client. This is ignored for
@@ -234,6 +237,8 @@ pub(super) struct ApiObjectBuilder<'a> {
     pub is_list_op: bool,
     /// Response for this operation, if any.
     pub response: Option<&'a str>,
+    /// Whether the response contains an `Any`.
+    pub response_contains_any: bool,
     /// Object to which this builder belongs to.
     pub object: &'a str,
     /// Encoding for the operation, if it's not JSON.
@@ -453,6 +458,7 @@ impl<'a> ApiObjectBuilder<'a> {
     pub(super) fn write_generics_if_necessary<F>(
         &self,
         f: &mut F,
+        any_value: Option<&str>,
         params: TypeParameters<'_>,
     ) -> Result<usize, fmt::Error>
     where
@@ -505,7 +511,7 @@ impl<'a> ApiObjectBuilder<'a> {
                 f.write_str("<")?;
             }
 
-            f.write_str(ANY_GENERIC_PARAMETER)?;
+            f.write_str(any_value.unwrap_or(ANY_GENERIC_PARAMETER))?;
             num_generics += 1;
         }
 
@@ -667,7 +673,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 
         f.write_str("#[derive(Debug, Clone)]\npub struct ")?;
         self.write_name(f)?;
-        self.write_generics_if_necessary(f, TypeParameters::Generic)?;
+        self.write_generics_if_necessary(f, None, TypeParameters::Generic)?;
 
         // If structs don't have any fields, then we go for unit structs.
         let has_fields = self.has_atleast_one_field();

@@ -27,8 +27,6 @@ enum ClientError \{
     Url(reqwest::UrlError),
     #[fail(display = "\{}", _0)]
     Api(self::client::ApiError),
-    #[fail(display = "Payload error: \{}", _0)]
-    Json(serde_json::Error),
     #[fail(display = "")]
     Empty,
 }

@@ -854,6 +854,19 @@ where
             .entry(self.path.into())
             .or_insert_with(Default::default);
 
+        let mut response_contains_any = false;
+        let response_ty_path = if let Some(s) = Self::get_2xx_response_schema(&op) {
+            let schema = &*s.read();
+            response_contains_any = schema.contains_any();
+            Some(
+                self.emitter
+                    .build_def(schema, DefinitionContext::default())?
+                    .known_type(),
+            )
+        } else {
+            None
+        };
+
         ops.req.insert(
             meth,
             OpRequirement {
@@ -861,17 +874,9 @@ where
                 id: op.operation_id.clone(),
                 description: op.description.clone(),
                 params,
+                response_contains_any,
                 body_required: true,
-                response_ty_path: if let Some(s) = Self::get_2xx_response_schema(&op) {
-                    let schema = &*s.read();
-                    Some(
-                        self.emitter
-                            .build_def(schema, DefinitionContext::default())?
-                            .known_type(),
-                    )
-                } else {
-                    None
-                },
+                response_ty_path,
                 encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
                 decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),
             },
@@ -907,8 +912,8 @@ where
             .and_then(|e| e.left_or_one_in_right())
             .and_then(|s| s.read().data_type())
             == Some(DataType::Object);
-        let mut unknown_schema_context = None;
 
+        let mut unknown_schema_context = None;
         let s = match schema.data_type() {
             // We can deal with object responses.
             Some(DataType::Object) => s.clone(),
@@ -981,6 +986,7 @@ where
                 params,
                 body_required: false,
                 listable,
+                response_contains_any: schema.contains_any(),
                 response_ty_path,
                 encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
                 decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),

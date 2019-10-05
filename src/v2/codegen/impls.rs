@@ -65,7 +65,8 @@ impl ApiObject {
                         fields: &self.fields,
                         global_params: &path_ops.params,
                         local_params: &req.params,
-                        needs_any,
+                        needs_any: needs_any && req.body_required,
+                        response_contains_any: req.response_contains_any,
                         response: req.response_ty_path.as_ref().map(String::as_str),
                     })
             });
@@ -215,7 +216,7 @@ impl<'a> ApiObjectImpl<'a> {
             f.write_str(&temp)?;
             f.write_str("() -> ")?;
             builder.write_name(f)?;
-            builder.write_generics_if_necessary(f, TypeParameters::ReplaceAll)?;
+            builder.write_generics_if_necessary(f, None, TypeParameters::ReplaceAll)?;
             f.write_str(" {\n        ")?;
             builder.write_name(f)?;
 
@@ -271,25 +272,24 @@ impl<'a> ApiObjectImpl<'a> {
             return Ok(());
         }
 
-        let needs_any = self.inner.fields.iter().any(|f| f.needs_any);
         let needs_container = builder.needs_container();
         f.write_str("\nimpl")?;
-        if needs_any {
+        if builder.needs_any {
             ApiObject::write_any_generic(f)?;
         }
 
         f.write_str(" Into<")?;
         f.write_str(&self.inner.name)?;
-        if needs_any {
+        if builder.needs_any {
             ApiObject::write_any_generic(f)?;
         }
 
         f.write_str("> for ")?;
         builder.write_name(f)?;
-        builder.write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+        builder.write_generics_if_necessary(f, None, TypeParameters::ChangeAll)?;
         f.write_str(" {\n    fn into(self) -> ")?;
         f.write_str(&self.inner.name)?;
-        if needs_any {
+        if builder.needs_any {
             ApiObject::write_any_generic(f)?;
         }
 
@@ -329,8 +329,17 @@ where
         let needs_container = self.0.needs_container();
         f.write_str("\n#[allow(unused_variables)]\nimpl ")?;
         self.0.write_name(f)?;
-        self.0
-            .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+        self.0.write_generics_if_necessary(
+            f,
+            Some(
+                self.0
+                    .encoding
+                    .map(|(_, c)| c.any_value.as_str())
+                    .unwrap_or_else(|| JSON_CODER.any_value.as_str()),
+            ),
+            TypeParameters::ChangeAll,
+        )?;
+
         // NOTE: We're assuming that we've correctly given all the arg requirements to clap.
         f.write_str(
             " {
@@ -343,10 +352,6 @@ where
         if needs_container {
             f.write_str("\n            inner: ")?;
             self.0.write_container_name(f)?;
-            if self.0.needs_any {
-                ApiObject::write_any_generic(f)?;
-            }
-
             f.write_str(" {")?;
         }
 
@@ -354,16 +359,7 @@ where
             write!(
                 f,
                 "
-            body: {{
-                let path = matches.expect(\"no args for builder with body?\").value_of(\"payload\").expect(\"payload?\");
-                let fd: Box<dyn std::io::Read> = if path == \"-\" {{
-                    Box::new(std::io::stdin()) as Box<_>
-                }} else {{
-                    Box::new(std::fs::File::open(&path).map_err(crate::ClientError::Io)?) as Box<_>
-                }};
-
-                serde_json::from_reader(fd).map_err(crate::ClientError::Json)?
-            }},"
+            body: crate::cli::read_from_input(matches)?,"
             )?;
         }
 
@@ -539,7 +535,7 @@ where
         if prop_is_required {
             self.0.write_name(f)?;
             self.0
-                .write_generics_if_necessary(f, TypeParameters::ChangeOne(field.name))?;
+                .write_generics_if_necessary(f, None, TypeParameters::ChangeOne(field.name))?;
         } else {
             f.write_str("Self")?;
         }
@@ -650,7 +646,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         f.write_str("client::Sendable for ")?;
         self.builder.write_name(f)?;
         self.builder
-            .write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
+            .write_generics_if_necessary(f, None, TypeParameters::ChangeAll)?;
         f.write_str(" {\n    type Output = ")?;
         if self.builder.is_list_op {
             f.write_str("Vec<")?;
@@ -664,7 +660,10 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         // If the type has `Any` or if we don't know what we're going to get, then
         // assume we have to write `Any` type.
         let mut accepted_range = None;
-        if self.builder.needs_any || self.builder.response.is_none() {
+        if self.builder.needs_any
+            || self.builder.response.is_none()
+            || self.builder.response_contains_any
+        {
             let (range, coder) = match self.builder.decoding {
                 Some(&(ref r, ref c)) => (r.as_str(), c),
                 None => ((*JSON_MIME).0.as_ref(), &*JSON_CODER),
@@ -912,7 +911,10 @@ impl<'a> Display for ApiObjectImpl<'a> {
 
         f.write_str("impl")?;
         if needs_any {
-            ApiObject::write_any_generic(f)?;
+            f.write_str("<")?;
+            f.write_str(ANY_GENERIC_PARAMETER)?;
+            f.write_str(": Default")?;
+            f.write_str(">")?;
         }
 
         f.write_str(" ")?;
@@ -937,7 +939,7 @@ impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut generics = String::new();
         self.0
-            .write_generics_if_necessary(&mut generics, TypeParameters::Generic)?;
+            .write_generics_if_necessary(&mut generics, None, TypeParameters::Generic)?;
 
         let mut has_fields = false;
         self.0
