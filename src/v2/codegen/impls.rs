@@ -421,24 +421,33 @@ where
     /// then we replace it with `impl Iterator<Item = (String, T)>` and
     /// we do this... recursively.
     // FIXME: Investigate if there's a better way.
-    fn write_builder_ty<F>(&self, ty: &str, req: &[String], f: &mut F) -> fmt::Result
+    fn write_builder_ty<F>(
+        &self,
+        ty: &str,
+        req: &[String],
+        needs_any: bool,
+        f: &mut F,
+    ) -> fmt::Result
     where
         F: Write,
     {
-        let simple_type = !ty.contains("::") || ty.ends_with("Delimited");
-
         if let Some(i) = ty.find('<') {
             if ty[..i].ends_with("Vec") {
                 f.write_str("impl Iterator<Item = ")?;
-                self.write_builder_ty(&ty[i + 1..ty.len() - 1], req, f)?;
+                self.write_builder_ty(&ty[i + 1..ty.len() - 1], req, needs_any, f)?;
                 f.write_str(">")?;
             } else if ty[..i].ends_with("std::collections::BTreeMap") {
                 f.write_str("impl Iterator<Item = (String, ")?;
-                self.write_builder_ty(&ty[i + 9..ty.len() - 1], req, f)?;
+                self.write_builder_ty(&ty[i + 9..ty.len() - 1], req, needs_any, f)?;
                 f.write_str(")>")?;
             }
-        } else if simple_type {
-            return write!(f, "impl Into<{}>", ty);
+        } else if ApiObject::is_simple_type(ty) {
+            write!(f, "impl Into<{}", ty)?;
+            if needs_any && ty != ANY_GENERIC_PARAMETER {
+                ApiObject::write_any_generic(f)?;
+            }
+
+            return f.write_str(">");
         } else {
             f.write_str(ty)?;
             if !req.is_empty() {
@@ -454,13 +463,13 @@ where
                     f.write_str("Exists")
                 })?;
 
-                if self.0.needs_any {
+                if needs_any {
                     f.write_str(", ")?;
                     f.write_str(ANY_GENERIC_PARAMETER)?;
                 }
 
                 f.write_str(">")?;
-            } else if self.0.needs_any {
+            } else if needs_any {
                 ApiObject::write_any_generic(f)?;
             }
         }
@@ -524,7 +533,7 @@ where
 
         f.write_str(&field_name)?;
         f.write_str("(mut self, value: ")?;
-        self.write_builder_ty(&field.ty, &field.strict_child_fields, f)?;
+        self.write_builder_ty(&field.ty, &field.strict_child_fields, field.needs_any, f)?;
 
         f.write_str(") -> ")?;
         if prop_is_required {
@@ -631,7 +640,12 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             _ => return Ok(()),
         };
 
-        f.write_str("\nimpl ")?;
+        f.write_str("\nimpl")?;
+        if self.builder.needs_any {
+            f.write_str("<Any: serde::Serialize>")?;
+        }
+
+        f.write_str(" ")?;
         f.write_str(self.builder.helper_module_prefix)?;
         f.write_str("client::Sendable for ")?;
         self.builder.write_name(f)?;

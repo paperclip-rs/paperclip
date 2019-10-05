@@ -506,7 +506,7 @@ impl PostShipmentsBodyPostBuilder {
 }
 
 impl crate::client::Sendable for PostShipmentsBodyPostBuilder {
-    type Output = PostShipmentsBody;
+    type Output = serde_yaml::Value;
 
     const METHOD: reqwest::Method = reqwest::Method::POST;
 
@@ -521,7 +521,8 @@ impl crate::client::Sendable for PostShipmentsBodyPostBuilder {
             let mut vec = vec![];
             serde_yaml::to_writer(&mut vec, &self.body)?;
             vec
-        }))
+        })
+        .header(reqwest::header::ACCEPT, \"application/yaml\"))
     }
 }
 

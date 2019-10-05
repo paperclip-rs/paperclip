@@ -175,6 +175,41 @@ impl ApiObject {
 
         Ok(())
     }
+
+    /// Returns whether this type is simple (i.e., not an object defined by us).
+    #[inline]
+    pub(super) fn is_simple_type(ty: &str) -> bool {
+        !ty.contains("::") || ty.ends_with("Delimited")
+    }
+
+    /// Assuming that the given type "is" or "has" `Any`, this adds
+    /// the appropriate generic parameter.
+    fn write_field_with_any<F>(ty: &str, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        if let Some(i) = ty.find('<') {
+            if ty[..i].ends_with("Vec") {
+                f.write_str(&ty[..=i])?;
+                Self::write_field_with_any(&ty[i + 1..ty.len() - 1], f)?;
+            } else if ty[..i].ends_with("std::collections::BTreeMap") {
+                f.write_str(&ty[..i + 9])?;
+                Self::write_field_with_any(&ty[i + 9..ty.len() - 1], f)?;
+            } else {
+                unreachable!("no other generics expected.");
+            }
+
+            f.write_str(">")?;
+            return Ok(());
+        }
+
+        f.write_str(ty)?;
+        if !Self::is_simple_type(ty) {
+            Self::write_any_generic(f)?;
+        }
+
+        Ok(())
+    }
 }
 
 /// Represents a builder struct for some API object.
@@ -283,6 +318,9 @@ pub(super) struct StructField<'a> {
     pub delimiting: &'a [CollectionFormat],
     /// Location of the parameter (if it is a parameter).
     pub param_loc: Option<ParameterIn>,
+    /// Whether this field "is" or "has" `Any` type. This is only
+    /// applicable for object fields.
+    pub needs_any: bool,
 }
 
 impl<'a> ApiObjectBuilder<'a> {
@@ -333,6 +371,7 @@ impl<'a> ApiObjectBuilder<'a> {
             strict_child_fields: &*field.child_req_fields,
             param_loc: None,
             overridden: false,
+            needs_any: field.needs_any,
             delimiting: &[],
         });
 
@@ -360,6 +399,7 @@ impl<'a> ApiObjectBuilder<'a> {
                         strict_child_fields: &[] as &[_],
                         param_loc: Some(param.presence),
                         overridden: false,
+                        needs_any: false,
                         delimiting: &param.delimiting,
                     }))
                 }
@@ -749,9 +789,10 @@ impl Display for ApiObject {
                 f.write_str("Box<")?;
             }
 
-            f.write_str(&field.ty_path)?;
             if field.needs_any {
-                ApiObject::write_any_generic(f)?;
+                Self::write_field_with_any(&field.ty_path, f)?;
+            } else {
+                f.write_str(&field.ty_path)?;
             }
 
             if field.boxed {

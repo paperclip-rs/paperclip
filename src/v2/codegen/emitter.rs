@@ -957,7 +957,7 @@ where
                 .ok()
                 .and_then(|p| def_mods.get_mut(&p))
             {
-                Some(o) => (o, None),
+                Some(o) => (o, self.emitter.def_name(schema).ok()),
                 None => {
                     warn!(
                         "Skipping unknown response schema for path {:?}: {:?}",
