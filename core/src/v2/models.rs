@@ -290,7 +290,7 @@ impl<S> OperationMap<S> {
 /// Request parameter.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameter<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -332,8 +332,8 @@ pub struct Parameter<S> {
     pub max_items: Option<u32>,
     #[serde(rename = "minItems", skip_serializing_if = "Option::is_none")]
     pub min_items: Option<u32>,
-    #[serde(rename = "uniqueItems", skip_serializing_if = "Option::is_none")]
-    pub unique_items: Option<bool>,
+    #[serde(default, rename = "uniqueItems", skip_serializing_if = "is_false")]
+    pub unique_items: bool,
     #[serde(rename = "multipleOf", skip_serializing_if = "Option::is_none")]
     pub multiple_of: Option<f32>,
     #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
@@ -343,7 +343,7 @@ pub struct Parameter<S> {
 /// Items object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject
-#[derive(Clone, Debug, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Items {
     #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
@@ -494,6 +494,9 @@ pub struct Operation<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
+    // *NOTE:* `consumes` and `produces` are optional, because
+    // local media ranges can be used to override global media ranges
+    // (including setting it to empty), so we cannot go for an empty set.
     pub consumes: Option<BTreeSet<MediaRange>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub produces: Option<BTreeSet<MediaRange>>,
@@ -671,6 +674,13 @@ impl Default for Version {
 impl Default for CollectionFormat {
     fn default() -> Self {
         CollectionFormat::Csv
+    }
+}
+
+/// **NOTE:** This is just a stub. This is usually set explicitly.
+impl Default for ParameterIn {
+    fn default() -> Self {
+        ParameterIn::Body
     }
 }
 

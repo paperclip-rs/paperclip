@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Methods to `Schema` trait for aiding resolution and codegen.
 - Codegen for nested arrays in operation parameters.
 - Codegen for form data parameters in operations.
+- Actix plugin: Support for `serde_json::Value`, `serde_yaml::Value`, `uuid::Uuid` (through `uid` feature) and `chrono::NaiveDateTime` (through `datetime` feature) in structs.
 
 ### Changed
 - Switched to templating for (almost) static modules.

@@ -1,6 +1,7 @@
+use super::emitter::ANY_GENERIC_PARAMETER;
 use super::object::{ApiObject, ApiObjectBuilder, StructField, TypeParameters};
 use super::RUST_KEYWORDS;
-use crate::v2::models::{CollectionFormat, ParameterIn};
+use crate::v2::models::{CollectionFormat, ParameterIn, JSON_CODER, JSON_MIME};
 use heck::{CamelCase, KebabCase, SnekCase};
 
 use std::fmt::{self, Display, Write};
@@ -24,6 +25,7 @@ impl ApiObject {
     // FIXME: Make operations generic across builders. This will reduce the
     // number of structs generated.
     pub fn impl_repr<'a>(&'a self, helper_module_prefix: &'a str) -> ApiObjectImpl<'a> {
+        let needs_any = self.fields.iter().any(|f| f.needs_any);
         // Always emit a builder for API objects (regardless of operations).
         let main_builder = ApiObjectBuilder {
             helper_module_prefix,
@@ -31,6 +33,7 @@ impl ApiObject {
             body_required: true,
             fields: &self.fields,
             encoding: None,
+            needs_any,
             ..Default::default()
         };
 
@@ -58,9 +61,11 @@ impl ApiObject {
                         method: Some(method),
                         body_required: req.body_required,
                         encoding: req.encoding.as_ref(),
+                        decoding: req.decoding.as_ref(),
                         fields: &self.fields,
                         global_params: &path_ops.params,
                         local_params: &req.params,
+                        needs_any,
                         response: req.response_ty_path.as_ref().map(String::as_str),
                     })
             });
@@ -266,14 +271,28 @@ impl<'a> ApiObjectImpl<'a> {
             return Ok(());
         }
 
+        let needs_any = self.inner.fields.iter().any(|f| f.needs_any);
         let needs_container = builder.needs_container();
-        f.write_str("\nimpl Into<")?;
+        f.write_str("\nimpl")?;
+        if needs_any {
+            ApiObject::write_any_generic(f)?;
+        }
+
+        f.write_str(" Into<")?;
         f.write_str(&self.inner.name)?;
+        if needs_any {
+            ApiObject::write_any_generic(f)?;
+        }
+
         f.write_str("> for ")?;
         builder.write_name(f)?;
         builder.write_generics_if_necessary(f, TypeParameters::ChangeAll)?;
         f.write_str(" {\n    fn into(self) -> ")?;
         f.write_str(&self.inner.name)?;
+        if needs_any {
+            ApiObject::write_any_generic(f)?;
+        }
+
         f.write_str(" {\n        self.")?;
 
         if needs_container {
@@ -324,6 +343,10 @@ where
         if needs_container {
             f.write_str("\n            inner: ")?;
             self.0.write_container_name(f)?;
+            if self.0.needs_any {
+                ApiObject::write_any_generic(f)?;
+            }
+
             f.write_str(" {")?;
         }
 
@@ -430,7 +453,15 @@ where
                     f.write_str(&n.to_camel_case())?;
                     f.write_str("Exists")
                 })?;
+
+                if self.0.needs_any {
+                    f.write_str(", ")?;
+                    f.write_str(ANY_GENERIC_PARAMETER)?;
+                }
+
                 f.write_str(">")?;
+            } else if self.0.needs_any {
+                ApiObject::write_any_generic(f)?;
             }
         }
 
@@ -614,9 +645,23 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         if let Some(resp) = self.builder.response {
             // If we've acquired a response type, then write that.
             f.write_str(resp)?;
-        } else {
-            // FIXME: This should be "any"
-            f.write_str(self.builder.object)?;
+        }
+
+        // If the type has `Any` or if we don't know what we're going to get, then
+        // assume we have to write `Any` type.
+        let mut accepted_range = None;
+        if self.builder.needs_any || self.builder.response.is_none() {
+            let (range, coder) = match self.builder.decoding {
+                Some(&(ref r, ref c)) => (r.as_str(), c),
+                None => ((*JSON_MIME).0.as_ref(), &*JSON_CODER),
+            };
+
+            accepted_range = Some(range);
+            if self.builder.response.is_some() {
+                write!(f, "<{}>", coder.any_value)?;
+            } else {
+                f.write_str(&coder.any_value)?;
+            }
         }
 
         if self.builder.is_list_op {
@@ -653,7 +698,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             || !self.multi_value_query.is_empty()
             || !self.headers.is_empty()
         {
-            self.write_modify_method(f)?;
+            self.write_modify_method(f, accepted_range)?;
         }
 
         f.write_str("\n}\n")
@@ -775,7 +820,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     }
 
     /// We have determined that we have to override the default `modify` method.
-    fn write_modify_method<F>(self, f: &mut F) -> fmt::Result
+    fn write_modify_method<F>(self, f: &mut F, accepted_range: Option<&str>) -> fmt::Result
     where
         F: Write,
     {
@@ -817,6 +862,10 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             }
         }
 
+        if let Some(r) = accepted_range {
+            write!(f, "\n        .header(reqwest::header::ACCEPT, {:?})", r)?;
+        }
+
         if !self.form.is_empty() {
             write!(f, "\n        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")")?;
             f.write_str("\n        .body({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
@@ -842,12 +891,22 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
 impl<'a> Display for ApiObjectImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        let needs_any = self.inner.fields.iter().any(|f| f.needs_any);
         if self.builders.is_empty() {
             return Ok(());
         }
 
-        f.write_str("impl ")?;
+        f.write_str("impl")?;
+        if needs_any {
+            ApiObject::write_any_generic(f)?;
+        }
+
+        f.write_str(" ")?;
         f.write_str(&self.inner.name)?;
+        if needs_any {
+            ApiObject::write_any_generic(f)?;
+        }
+
         f.write_str(" {")?;
         self.write_builder_methods(f)?;
         f.write_str("}\n")?;

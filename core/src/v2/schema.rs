@@ -54,6 +54,31 @@ pub trait Schema: Sized {
     /// - `serde_json::Value` works for both JSON and YAML.
     fn enum_variants(&self) -> Option<&[serde_json::Value]>;
 
+    /// Returns whether this definition "is" or "has" `Any` type.
+    fn contains_any(&self) -> bool {
+        if self.data_type().is_none() {
+            return true;
+        }
+
+        self.properties()
+            .map(|t| t.values().any(|s| s.read().contains_any()))
+            .unwrap_or(false)
+            || self
+                .items()
+                .map(|e| match e {
+                    Either::Left(s) => s.read().contains_any(),
+                    Either::Right(v) => v.iter().any(|s| s.read().contains_any()),
+                })
+                .unwrap_or(false)
+            || self
+                .additional_properties()
+                .map(|e| match e {
+                    Either::Left(extra_props_allowed) => *extra_props_allowed,
+                    Either::Right(s) => s.read().contains_any(),
+                })
+                .unwrap_or(false)
+    }
+
     /* MARK: Resolver-specific methods. */
 
     /// Set the reference to this schema.

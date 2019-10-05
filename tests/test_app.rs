@@ -43,12 +43,6 @@ struct Pet {
 
 #[test]
 fn test_simple_app() {
-    #[api_v2_schema]
-    #[derive(Deserialize, Serialize)]
-    struct SomeResource {
-        name: String,
-    }
-
     #[api_v2_operation]
     fn echo_pet(body: web::Json<Pet>) -> web::Json<Pet> {
         body

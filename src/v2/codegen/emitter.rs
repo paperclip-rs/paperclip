@@ -5,8 +5,8 @@ use crate::v2::{
     im::ArcRwLock,
     models::{
         self, Api, Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
-        Operation, OperationMap, ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME, YAML_CODER,
-        YAML_MIME,
+        MediaRange, Operation, OperationMap, ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME,
+        YAML_CODER, YAML_MIME,
     },
     Schema,
 };
@@ -15,23 +15,26 @@ use heck::{CamelCase, SnekCase};
 use itertools::Itertools;
 use url::Host;
 
-use std::collections::HashSet;
+use std::collections::{BTreeSet, HashSet};
 use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
 
+/// Identifier used for `Any` generic parameters in struct definitions.
+pub(super) const ANY_GENERIC_PARAMETER: &str = "Any";
+
 /// Some "thing" emitted by the emitter.
 #[derive(Debug)]
 pub enum EmittedUnit {
     /// Some Rust type.
     Known(String),
-    /// Object represented as a Rust struct.
+    /// Bunch of emitted Rust objects.
     Objects(Vec<ApiObject>),
     /// We've identified the Rust type, but then we also have a
-    /// bunch of generated Rust structs. This happens in the
-    /// presence of anonymously defined objects.
+    /// bunch of generated Rust objects. This happens in the
+    /// presence of anonymously defined schema.
     KnownButAnonymous(String, Vec<ApiObject>),
     /// Nothing to do.
     None,
@@ -198,7 +201,7 @@ pub trait Emitter: Sized {
         })
     }
 
-    /* MARK: Non-overridable methods */
+    /* MARK: Internal methods. Not meant to be overridden. */
 
     /// Entrypoint for emitter. Given an API spec, generate code
     /// inside Rust modules in the configured working directory.
@@ -301,7 +304,9 @@ pub trait Emitter: Sized {
                 if ctx.define {
                     Ok(EmittedUnit::None)
                 } else {
-                    Ok(EmittedUnit::Known("String".into()))
+                    // We're using `Any` as a known type, because in the context of
+                    // the emitted generic struct, it *is* a known type.
+                    Ok(EmittedUnit::Known(ANY_GENERIC_PARAMETER.into()))
                 }
             }
         }
@@ -325,8 +330,8 @@ where
     E: Emitter,
     E::Definition: Debug,
 {
-    /// Given a schema definition, generate the corresponding Rust definition and
-    /// add it to `EmitterState`.
+    /// Given a schema definition, generate the corresponding Rust definitions and
+    /// add them to `EmitterState`.
     fn generate_from_definition(&self, def: &E::Definition) -> Result<(), Error> {
         // Generate the object.
         let objects = match self.build_def(def, DefinitionContext::default().define(true))? {
@@ -538,15 +543,17 @@ where
                     let schema = prop.read();
                     let ctx = ctx.clone().define(false).add_parent(name);
                     let ty = self.build_def(&schema, ctx)?;
+                    let ty_path = ty.known_type();
 
                     obj.fields.push(ObjectField {
                         name: name.clone(),
                         description: prop.get_description(),
-                        ty_path: ty.known_type(),
+                        ty_path,
                         is_required: def
                             .required_properties()
                             .map(|s| s.contains(name))
                             .unwrap_or(false),
+                        needs_any: schema.contains_any(),
                         boxed: schema.is_cyclic(),
                         child_req_fields: self.children_requirements(&schema),
                     });
@@ -710,6 +717,8 @@ where
         Ok(())
     }
 
+    /// If the parameter is an array, then validate the collection formats and
+    /// default if needed.
     fn validate_collection_format(
         &mut self,
         p: &models::Parameter<SchemaRepr<E::Definition>>,
@@ -718,7 +727,7 @@ where
         if p.data_type != Some(DataType::Array) {
             return;
         }
-        // If it's an array, then validate collection formats and default if needed.
+
         let default_fmt = CollectionFormat::default();
         it_fmts.insert(0, p.collection_format.unwrap_or(default_fmt));
         it_fmts.pop(); // pop the final format, as it's unnecessary.
@@ -863,7 +872,8 @@ where
                 } else {
                     None
                 },
-                encoding: self.get_encoder(op),
+                encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
+                decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),
             },
         );
 
@@ -972,7 +982,8 @@ where
                 body_required: false,
                 listable,
                 response_ty_path,
-                encoding: self.get_encoder(op),
+                encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
+                decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),
             },
         );
 
@@ -993,23 +1004,26 @@ where
             .map(|r| &**r)
     }
 
-    /// Returns the encoder for the given operation (if any, if required).
-    /// Returns `None` if it's JSON (since we already support it).
-    fn get_encoder(
+    /// Returns the coder based on the given local and global media range, and `None`
+    /// if it's JSON (as we already support it).
+    fn get_coder(
         &self,
-        op: &Operation<SchemaRepr<E::Definition>>,
+        local_ref: Option<&BTreeSet<MediaRange>>,
+        global_ref: &BTreeSet<MediaRange>,
     ) -> Option<(String, Arc<Coder>)> {
-        let consumes = match op.consumes.as_ref() {
+        let ranges = match local_ref {
+            // We don't care if this is empty - if it's empty, then we can assume
+            // that it's overridden the global set.
             Some(s) => s,
-            None => &self.api.consumes,
+            None => global_ref,
         };
 
-        let mut encoders = consumes
+        let mut coders = ranges
             .iter()
             .filter_map(|r| self.api.coders.matching_coder(r).map(|c| (r, c)))
             .sorted_by(|(_, a), (_, b)| b.prefer.cmp(&a.prefer)); // sort based on preference.
 
-        let (range, coder) = encoders
+        let (range, coder) = coders
             .next()
             .unwrap_or_else(|| (self.api.spec_format.mime(), self.api.spec_format.coder()));
         if range == &*JSON_MIME {

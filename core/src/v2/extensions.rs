@@ -14,8 +14,10 @@ lazy_static! {
     pub static ref JSON_CODER: Arc<Coder> = Arc::new(Coder {
         encoder_path: "serde_json::to_writer".into(),
         decoder_path: "serde_json::from_reader".into(),
+        any_value: "serde_json::Value".into(),
         error_path: "serde_json::Error".into(),
         prefer: false,
+        builtin: true,
     });
     /// Media range for YAML.
     pub static ref YAML_MIME: MediaRange =
@@ -24,8 +26,10 @@ lazy_static! {
     pub static ref YAML_CODER: Arc<Coder> = Arc::new(Coder {
         encoder_path: "serde_yaml::to_writer".into(),
         decoder_path: "serde_yaml::from_reader".into(),
+        any_value: "serde_yaml::Value".into(),
         error_path: "serde_yaml::Error".into(),
         prefer: false,
+        builtin: true,
     });
 }
 
@@ -96,11 +100,16 @@ pub struct Coder {
     pub decoder_path: String,
     /// Path to the error type.
     pub error_path: String,
+    /// Path to the struct/enum that represents `Any` (such as `serde_json::Value`).
+    pub any_value: String,
     /// Whether this media type should be preferred when multiple
     /// types are available. When multiple types are preferred,
     /// it's unspecified as to which is chosen.
     #[serde(default)]
     pub prefer: bool,
+    /// Whether this en/decoder is built-in.
+    #[serde(skip)]
+    pub builtin: bool,
 }
 
 /* Common trait impls */

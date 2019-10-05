@@ -510,6 +510,7 @@ impl Clone for EmitterState {
             crate_meta: self.crate_meta.clone(),
             base_url: self.base_url.clone(),
             default_encoding: self.default_encoding.clone(),
+            // Get rid of all state-specific fields.
             ..Default::default()
         }
     }

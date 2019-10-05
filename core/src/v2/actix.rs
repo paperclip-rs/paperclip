@@ -114,24 +114,7 @@ where
                 def.retain_ref();
                 def
             }),
-            data_type: None,
-            allow_empty_value: false,
-            format: None,
-            items: None,
-            enum_: Default::default(),
-            collection_format: None,
-            default: None,
-            maximum: None,
-            exclusive_maximum: None,
-            minimum: None,
-            exclusive_minimum: None,
-            max_length: None,
-            min_length: None,
-            pattern: None,
-            max_items: None,
-            min_items: None,
-            unique_items: None,
-            multiple_of: None,
+            ..Default::default()
         });
     }
 
@@ -161,56 +144,24 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
             if def.properties.is_empty() && ParameterIn::$container == ParameterIn::Path {
                 op.parameters.push(Parameter {
                     name: String::new(),
-                    description: None,
                     in_: ParameterIn::Path,
                     required: true,
-                    allow_empty_value: false,
-                    schema: None,
                     data_type: def.data_type,
                     format: def.format,
-                    items: None,
                     enum_: def.enum_,
-                    collection_format: None,
-                    default: None,
-                    maximum: None,
-                    exclusive_maximum: None,
-                    minimum: None,
-                    exclusive_minimum: None,
-                    max_length: None,
-                    min_length: None,
-                    pattern: None,
-                    max_items: None,
-                    min_items: None,
-                    unique_items: None,
-                    multiple_of: None,
+                    ..Default::default()
                 });
             }
 
             for (k, v) in def.properties {
                 op.parameters.push(Parameter {
-                    description: None,
                     in_: ParameterIn::$container,
                     required: def.required.contains(&k),
                     name: k,
-                    allow_empty_value: false,
-                    schema: None,
                     data_type: v.data_type,
                     format: v.format,
-                    items: None,
                     enum_: v.enum_,
-                    collection_format: None,
-                    default: None,
-                    maximum: None,
-                    exclusive_maximum: None,
-                    minimum: None,
-                    exclusive_minimum: None,
-                    max_length: None,
-                    min_length: None,
-                    pattern: None,
-                    max_items: None,
-                    min_items: None,
-                    unique_items: None,
-                    multiple_of: None,
+                    ..Default::default()
                 });
             }
         }
@@ -243,28 +194,12 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
                 let def = $ty::raw_schema();
                 op.parameters.push(Parameter {
                     name: String::new(),
-                    description: None,
                     in_: ParameterIn::Path,
                     required: true,
-                    schema: None,
-                    allow_empty_value: false,
                     data_type: def.data_type,
                     format: def.format,
-                    items: None,
                     enum_: def.enum_,
-                    collection_format: None,
-                    default: None,
-                    maximum: None,
-                    exclusive_maximum: None,
-                    minimum: None,
-                    exclusive_minimum: None,
-                    max_length: None,
-                    min_length: None,
-                    pattern: None,
-                    max_items: None,
-                    min_items: None,
-                    unique_items: None,
-                    multiple_of: None,
+                    ..Default::default()
                 });
             )+
         }

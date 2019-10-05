@@ -5,6 +5,7 @@
 
 pub use super::impls::{ApiObjectBuilderImpl, ApiObjectImpl};
 
+use super::emitter::ANY_GENERIC_PARAMETER;
 use super::RUST_KEYWORDS;
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
 use heck::{CamelCase, SnekCase};
@@ -21,7 +22,7 @@ lazy_static! {
     static ref DOC_REGEX: Regex = Regex::new(r"\[|\]").expect("invalid doc regex?");
 }
 
-/// Represents a (simplified) Rust struct.
+/// Represents a (simplified) Rust struct or enum.
 #[derive(Default, Debug, Clone)]
 pub struct ApiObject {
     /// Name of the struct (camel-cased).
@@ -63,10 +64,14 @@ pub struct OpRequirement {
     pub listable: bool,
     /// Type path for this operation's response.
     pub response_ty_path: Option<String>,
-    /// Preferred encoding and encoder for the client. This is ignored for
+    /// Preferred media range and encoder for the client. This is ignored for
     /// methods that don't accept a body. If there's no coder, then JSON
     /// encoding is assumed.
     pub encoding: Option<(String, Arc<Coder>)>,
+    /// Preferred media range and decoder for the client. This is used only
+    /// when objects make use of `Any` type. If there's no coder, then JSON
+    /// encoding is assumed.
+    pub decoding: Option<(String, Arc<Coder>)>,
 }
 
 /// Represents some parameter somewhere (header, path, query, etc.).
@@ -97,6 +102,8 @@ pub struct ObjectField {
     pub description: Option<String>,
     /// Whether this field is required (i.e., not optional).
     pub is_required: bool,
+    /// Whether this field's type "is" or "has" an `Any` type.
+    pub needs_any: bool,
     /// Whether this field should be boxed.
     pub boxed: bool,
     /// Required fields of the "deepest" child type in the given definition.
@@ -123,6 +130,16 @@ impl ApiObject {
             // NOTE: Even though `path` is empty, it'll be replaced by the emitter.
             ..Default::default()
         }
+    }
+
+    /// Writes `Any` as a generic parameter (including `<>`).
+    pub(super) fn write_any_generic<F>(f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        f.write_str("<")?;
+        f.write_str(ANY_GENERIC_PARAMETER)?;
+        f.write_str(">")
     }
 
     /// Writes the given string (if any) as Rust documentation into
@@ -186,6 +203,11 @@ pub(super) struct ApiObjectBuilder<'a> {
     pub object: &'a str,
     /// Encoding for the operation, if it's not JSON.
     pub encoding: Option<&'a (String, Arc<Coder>)>,
+    /// Decoding for the operation, if it's not JSON.
+    ///
+    /// **NOTE:** We use this to set the `Accept` header for operations
+    /// which return objects that are (or have) `Any` type.
+    pub decoding: Option<&'a (String, Arc<Coder>)>,
     /// Whether there are multiple builders for this object.
     pub multiple_builders_exist: bool,
     /// Fields in this builder.
@@ -194,6 +216,8 @@ pub(super) struct ApiObjectBuilder<'a> {
     pub global_params: &'a [Parameter],
     /// Parameters local to this operation.
     pub local_params: &'a [Parameter],
+    /// Whether this builder is generic over `Any` type.
+    pub needs_any: bool,
 }
 
 /// The property we're dealing with.
@@ -434,6 +458,17 @@ impl<'a> ApiObjectBuilder<'a> {
                 f.write_str(&field.name.to_camel_case())
             })?;
 
+        if self.needs_any {
+            if num_generics > 0 {
+                f.write_str(", ")?;
+            } else {
+                f.write_str("<")?;
+            }
+
+            f.write_str(ANY_GENERIC_PARAMETER)?;
+            num_generics += 1;
+        }
+
         if num_generics > 0 {
             f.write_str(">")?;
         }
@@ -492,6 +527,10 @@ impl<'a> ApiObjectBuilder<'a> {
             // to collide with type parameters (if any).
             f.write_str("\n    body: self::")?;
             f.write_str(&self.object)?;
+            if self.needs_any {
+                ApiObject::write_any_generic(f)?;
+            }
+
             f.write_str(",")?;
         }
 
@@ -601,11 +640,19 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         if needs_container {
             container.push_str("#[derive(Debug, Default, Clone)]\nstruct ");
             self.write_container_name(&mut container)?;
+            if self.needs_any {
+                ApiObject::write_any_generic(&mut container)?;
+            }
+
             container.push_str(" {");
             self.write_body_field_if_required(&mut container)?;
 
             f.write_str("\n    inner: ")?;
             self.write_container_name(f)?;
+            if self.needs_any {
+                ApiObject::write_any_generic(f)?;
+            }
+
             f.write_str(",")?;
         } else {
             self.write_body_field_if_required(f)?;
@@ -666,6 +713,10 @@ impl Display for ApiObject {
         f.write_str("#[derive(Debug, Default, Clone, Deserialize, Serialize)]")?;
         f.write_str("\npub struct ")?;
         f.write_str(&self.name)?;
+        if self.fields.iter().any(|f| f.needs_any) {
+            ApiObject::write_any_generic(f)?;
+        }
+
         f.write_str(" {")?;
 
         self.fields.iter().try_for_each(|field| {
@@ -699,6 +750,9 @@ impl Display for ApiObject {
             }
 
             f.write_str(&field.ty_path)?;
+            if field.needs_any {
+                ApiObject::write_any_generic(f)?;
+            }
 
             if field.boxed {
                 f.write_str(">")?;
