@@ -229,6 +229,88 @@ pub mod job_status {
 }
 
 #[test]
+fn test_transparency_with_parameters() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_k8s/io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/custom_resource_definition.rs"),
+        "
+/// Builder created by [`CustomResourceDefinition::create_apiextensions_v1beta1_custom_resource_definition`](./struct.CustomResourceDefinition.html#method.create_apiextensions_v1beta1_custom_resource_definition) method for a `POST` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionPostBuilder<Spec> {
+    inner: CustomResourceDefinitionPostBuilderContainer,
+    _spec: core::marker::PhantomData<Spec>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionPostBuilderContainer {
+    body: self::CustomResourceDefinition,
+    param_dry_run: Option<String>,
+    param_field_manager: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Spec> CustomResourceDefinitionPostBuilder<Spec> {
+    /// When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+    #[inline]
+    pub fn dry_run(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_dry_run = Some(value.into());
+        self
+    }
+
+    /// fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+    #[inline]
+    pub fn field_manager(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_field_manager = Some(value.into());
+        self
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.api_version = Some(value.into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.kind = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.inner.body.metadata = Some(value.into());
+        self
+    }
+
+    /// Spec describes how the user wants the resources to appear
+    #[inline]
+    pub fn spec(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_spec::CustomResourceDefinitionSpecBuilder<crate::codegen::generics::GroupExists, crate::codegen::generics::NamesExists, crate::codegen::generics::ScopeExists>) -> CustomResourceDefinitionPostBuilder<crate::codegen::generics::SpecExists> {
+        self.inner.body.spec = value.into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// Status indicates the actual state of the CustomResourceDefinition
+    #[inline]
+    pub fn status(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_status::CustomResourceDefinitionStatusBuilder<crate::codegen::generics::AcceptedNamesExists, crate::codegen::generics::ConditionsExists, crate::codegen::generics::StoredVersionsExists>) -> Self {
+        self.inner.body.status = Some(value.into());
+        self
+    }
+}
+",
+        Some(7160),
+    );
+}
+
+#[test]
 fn test_struct_for_complex_object() {
     // We're interested in this definition because:
     // - It uses some Rust keywords.

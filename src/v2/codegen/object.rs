@@ -449,14 +449,28 @@ impl<'a> ApiObjectBuilder<'a> {
 
     /// Returns whether a separate container is needed for the builder struct.
     pub(super) fn needs_container(&self) -> bool {
+        // This is perhaps one of those important blocks, because this
+        // decides whether to mark builder structs as `repr(transparent)`
+        // (for unsafely transmuting). It's UB to transmute `repr(Rust)`
+        // structs, so we put stuff into a container and transmute
+        // whenever a builder:
+        //
+        // - Has at least one operation parameter that's required (or)
+        // - Has a body with at least one field that's required and the
+        // operation has at least one parameter.
+        //
+        // Because, we need `mem::transmute` only when we use phantom fields
+        // and we use phantom fields only when there's a "required" constraint.
+        // And, we don't need a container if there's just a body (i.e., no params),
+        // because we can transmute the builder directly.
+
         self.local_params
             .iter()
             .chain(self.global_params.iter())
             .any(|p| p.required)
             || (self.body_required
                 && self.fields.iter().any(|f| f.is_required)
-                && !self.local_params.is_empty()
-                && !self.global_params.is_empty())
+                && self.local_params.len() + self.global_params.len() > 0)
     }
 
     /// Write this builder's container name into the given formatter.
