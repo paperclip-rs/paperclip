@@ -418,9 +418,14 @@ fn test_params() {
 #[test]
 fn test_map_in_out() {
     #[api_v2_schema]
+    #[derive(Deserialize, Serialize)]
+    struct ImageId(u64);
+
+    #[api_v2_schema]
     #[derive(Serialize)]
     struct Image {
         data: String,
+        id: ImageId,
     }
 
     #[api_v2_operation]
@@ -450,9 +455,13 @@ fn test_map_in_out() {
                       "properties": {
                         "data": {
                           "type": "string"
+                        },
+                        "id":{
+                          "format":"int64",
+                          "type":"integer"
                         }
                       },
-                      "required": ["data"]
+                      "required": ["data", "id"]
                     }
                   },
                   "paths": {
