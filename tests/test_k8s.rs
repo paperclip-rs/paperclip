@@ -1413,10 +1413,10 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
 #[test]
 fn test_any_in_operation_bound_to_unrelated_struct() {
     assert_file_contains_content_at(
-        &(ROOT.clone() + "/tests/test_k8s/cli/io/k8s/apimachinery/pkg/apis/meta/v1/patch.rs"),
+        &(ROOT.clone() + "/tests/test_k8s/io/k8s/apimachinery/pkg/apis/meta/v1/patch.rs"),
         "
-impl crate::client::Sendable for PatchPatchBuilder26<crate::generics::NameExists> {
-    type Output = crate::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
+impl crate::codegen::client::Sendable for PatchPatchBuilder26<crate::codegen::generics::NameExists> {
+    type Output = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
 
     const METHOD: reqwest::Method = reqwest::Method::PATCH;
 
@@ -1424,7 +1424,7 @@ impl crate::client::Sendable for PatchPatchBuilder26<crate::generics::NameExists
         format!(\"/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\")).into()
     }
 ",
-        Some(219651),
+        Some(177761),
     );
 }
 

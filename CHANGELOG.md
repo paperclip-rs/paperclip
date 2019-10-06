@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Codegen for form data parameters in operations.
 - Actix plugin: Support for `serde_json::Value`, `serde_yaml::Value`, `uuid::Uuid` (through `uid` feature) and `chrono::NaiveDateTime` (through `datetime` feature) in structs.
 - Codegen for `Any` type in schema.
+- CLI payload encoding/decoding supports custom types and not limited to JSON.
 
 ### Changed
 - Switched to templating for (almost) static modules.
