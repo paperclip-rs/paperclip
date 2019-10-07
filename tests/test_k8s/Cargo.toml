@@ -8,17 +8,18 @@ edition = "2018"
 path = "lib.rs"
 
 [dependencies]
-failure = "0.1.5"
-failure_derive = "0.1.5"
-futures = "0.1.27"
-lazy_static = "1.4.0"
-log = "0.4.8"
+failure = "0.1"
+failure_derive = "0.1"
+futures = "0.1"
+http = "0.1"
+lazy_static = "1.4"
+log = "0.4"
 mime = { git = "https://github.com/hyperium/mime" }
-parking_lot = "0.8.0"
-reqwest = "0.9.18"
-serde = "1.0.91"
-serde_derive = "1.0.91"
+parking_lot = "0.8"
+reqwest = "0.9"
+serde = "1.0"
+serde_derive = "1.0"
 serde_json = "1.0"
-serde_yaml = "0.8.9"
+serde_yaml = "0.8"
 
 [workspace]

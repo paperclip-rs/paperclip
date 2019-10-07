@@ -636,14 +636,17 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             _ => return Ok(()),
         };
 
-        f.write_str("\nimpl")?;
+        f.write_str("\nimpl<Client: ")?;
+        f.write_str(self.builder.helper_module_prefix)?;
+        f.write_str("client::ApiClient + Sync + 'static")?;
+
         if self.builder.needs_any {
-            f.write_str("<Any: serde::Serialize>")?;
+            f.write_str(", Any: serde::Serialize")?;
         }
 
-        f.write_str(" ")?;
+        f.write_str(">")?;
         f.write_str(self.builder.helper_module_prefix)?;
-        f.write_str("client::Sendable for ")?;
+        f.write_str("client::Sendable<Client> for ")?;
         self.builder.write_name(f)?;
         self.builder
             .write_generics_if_necessary(f, None, TypeParameters::ChangeAll)?;
@@ -681,7 +684,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             f.write_str(">")?;
         }
 
-        f.write_str(";\n\n    const METHOD: reqwest::Method = reqwest::Method::")?;
+        f.write_str(";\n\n    const METHOD: http::Method = http::Method::")?;
         f.write_str(&method.to_string().to_uppercase())?;
         f.write_str(";\n\n    fn rel_path(&self) -> std::borrow::Cow<'static, str> {\n        ")?;
 
@@ -736,7 +739,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     fn handle_header_param(&mut self, field: StructField) {
         let is_required = field.prop.is_required();
         let name = field.name.to_snek_case();
-        let mut param_ref = String::from("self.");
+        let mut param_ref = String::from("&self.");
         if self.needs_container {
             param_ref.push_str("inner.");
         }
@@ -761,7 +764,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             self.headers,
             "req = req.header({:?}, {});",
             &field.name,
-            if is_required { &param_ref } else { "v" }
+            if is_required { &param_ref } else { "&v" }
         );
 
         if !is_required {
@@ -837,9 +840,13 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     where
         F: Write,
     {
-        f.write_str("\n\n    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ")?;
+        f.write_str("\n\n    fn modify(&self, req: Client::Request) -> Result<Client::Request, ")?;
         f.write_str(&self.builder.helper_module_prefix)?;
-        f.write_str("client::ApiError> {")?;
+        f.write_str("client::ApiError<Client::Response>> {")?;
+        f.write_str("\n        use ")?;
+        f.write_str(&self.builder.helper_module_prefix)?;
+        f.write_str("client::Request;")?;
+
         if !self.headers.is_empty() {
             f.write_str("\n        let mut req = req;")?;
             f.write_str(&self.headers)?;
@@ -850,10 +857,14 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         if self.builder.body_required {
             f.write_str("\n        ")?;
             if let Some((range, coder)) = self.builder.encoding {
-                write!(f, ".header(reqwest::header::CONTENT_TYPE, {:?})", range)?;
+                write!(
+                    f,
+                    ".header(http::header::CONTENT_TYPE.as_str(), {:?})",
+                    range
+                )?;
 
                 f.write_str(
-                    "\n        .body({
+                    "\n        .body_bytes({
             let mut vec = vec![];
             ",
                 )?;
@@ -876,14 +887,18 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         }
 
         if let Some(r) = accepted_range {
-            write!(f, "\n        .header(reqwest::header::ACCEPT, {:?})", r)?;
+            write!(
+                f,
+                "\n        .header(http::header::ACCEPT.as_str(), {:?})",
+                r
+            )?;
         }
 
         if !self.form.is_empty() {
-            write!(f, "\n        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")")?;
-            f.write_str("\n        .body({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
+            f.write_str("\n        .body_bytes({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
             f.write_str(&self.form)?;
-            f.write_str("\n            ser.finish()\n        })")?;
+            f.write_str("\n            ser.finish().into_bytes()\n        })")?;
+            write!(f, "\n        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")")?;
         }
 
         if !self.query.is_empty() {

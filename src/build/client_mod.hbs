@@ -1,18 +1,19 @@
 
 pub mod client \{
-    use futures::\{Future, future};
-    use futures::stream::Stream;
+    use failure::Fail;
+    use futures::\{Stream, Future};
+    use futures_preview::compat::Future01CompatExt;
     use parking_lot::Mutex;
-    use reqwest::r#async::\{Decoder, Response};
-    use serde::de::DeserializeOwned;
+
+    use std::fmt::Debug;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
-    pub enum ApiError \{
+    pub enum ApiError<R: Debug + Send + 'static> \{
         #[fail(display = "API request failed for path: \{} (code: \{})", _0, _1)]
-        Failure(String, reqwest::StatusCode, Mutex<Response>),
+        Failure(String, http::status::StatusCode, Mutex<R>),
         #[fail(display = "Unsupported media type in response: \{}", _0)]
-        UnsupportedMediaType(String, Mutex<Response>),
+        UnsupportedMediaType(String, Mutex<R>),
         #[fail(display = "An error has occurred while performing the API request: \{}", _0)]
         Reqwest(reqwest::Error),
         {{- for coder in media_coders }}
@@ -21,39 +22,130 @@ pub mod client \{
         {{- endfor }}
     }
 
+    /// HTTP Request.
+    pub trait Request \{
+        /// Sets the header with the given key and value.
+        fn header(self, name: &'static str, value: &str) -> Self;
+
+        /// Sets body using the given vector of bytes.
+        ///
+        /// **NOTE:** Appropriate `Content-Type` header must be set
+        /// after calling this method.
+        fn body_bytes(self, body: Vec<u8>) -> Self;
+
+        /// Sets JSON body based on the given value.
+        fn json<T: serde::Serialize>(self, value: &T) -> Self;
+
+        /// Sets/adds query parameters based on the given value.
+        ///
+        /// **NOTE:** This method must be called only once. It's unspecified
+        /// as to whether this appends/replaces query parameters.
+        fn query<T: serde::Serialize>(self, params: &T) -> Self;
+    }
+
+    impl Request for reqwest::r#async::RequestBuilder \{
+        fn header(self, name: &'static str, value: &str) -> Self \{
+            reqwest::r#async::RequestBuilder::header(self, name, value)
+        }
+
+        fn body_bytes(self, body: Vec<u8>) -> Self \{
+            self.body(body)
+        }
+
+        fn json<T: serde::Serialize>(self, value: &T) -> Self \{
+            reqwest::r#async::RequestBuilder::json(self, value)
+        }
+
+        fn query<T: serde::Serialize>(self, params: &T) -> Self \{
+            reqwest::r#async::RequestBuilder::query(self, params)
+        }
+    }
+
+    /// HTTP Response.
+    #[async_trait::async_trait]
+    pub trait Response: Debug + Send + Sized \{
+        type Bytes: AsRef<[u8]>;
+
+        /// Gets the value for the given header name, if any.
+        fn header(&self, name: &'static str) -> Option<&str>;
+
+        /// Status code for this response.
+        fn status(&self) -> http::status::StatusCode;
+
+        /// Media type for this response body (if any).
+        fn media_type(&self) -> Option<mime::MediaType>;
+
+        /// Vector of bytes from the response body.
+        async fn body_bytes(self) -> Result<(Self, Self::Bytes), ApiError<Self>>;
+    }
+
+    #[async_trait::async_trait]
+    impl Response for reqwest::r#async::Response \{
+        type Bytes = reqwest::r#async::Chunk;
+
+        fn header(&self, name: &'static str) -> Option<&str> \{
+            self.headers().get(name).and_then(|v| v.to_str().ok())
+        }
+
+        fn status(&self) -> http::status::StatusCode \{
+            reqwest::r#async::Response::status(self)
+        }
+
+        fn media_type(&self) -> Option<mime::MediaType> \{
+            self.header(http::header::CONTENT_TYPE.as_str())
+                .and_then(|v| v.parse().ok())
+        }
+
+        async fn body_bytes(mut self) -> Result<(Self, Self::Bytes), ApiError<Self>> \{
+            let body = std::mem::replace(self.body_mut(), reqwest::r#async::Decoder::empty());
+            let bytes = body.concat2().map_err(ApiError::Reqwest).compat().await?;
+            Ok((self, bytes))
+        }
+    }
+
     /// Represents an API client.
+    #[async_trait::async_trait]
     pub trait ApiClient \{
+        type Request: Request + Send;
+        type Response: Response;
+
         /// Consumes a method and a relative path and produces a request builder for a single API call.
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request;
 
         /// Performs the HTTP request using the given `Request` object
         /// and returns a `Response` future.
-        fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=Response, Error=reqwest::Error> + Send>;
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>>;
     }
 
+    #[async_trait::async_trait]
     impl ApiClient for reqwest::r#async::Client \{
-        #[inline]
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder \{
+        type Request = reqwest::r#async::RequestBuilder;
+        type Response = reqwest::r#async::Response;
+
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request \{
             let mut u = String::from("{base_url | unescaped}");
             u.push_str(rel_path.trim_start_matches('/'));
             self.request(method, &u)
         }
 
-        #[inline]
-        fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=Response, Error=reqwest::Error> + Send> \{
-            Box::new(self.execute(req)) as Box<_>
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> \{
+            let req = req.build().map_err(ApiError::Reqwest)?;
+            let resp = self.execute(req).map_err(ApiError::Reqwest).compat().await?;
+            Ok(resp)
         }
     }
 
     /// A trait for indicating that the implementor can send an API call.
-    pub trait Sendable \{
+    #[async_trait::async_trait]
+    pub trait Sendable<Client>
+    where
+        Client: ApiClient + Sync + 'static,
+    \{
         /// The output object from this API request.
-        type Output: DeserializeOwned + Send + 'static;
+        type Output: serde::de::DeserializeOwned;
 
         /// HTTP method used by this call.
-        const METHOD: reqwest::Method;
+        const METHOD: http::Method;
 
         /// Relative URL for this API call formatted appropriately with parameter values.
         ///
@@ -62,55 +154,41 @@ pub mod client \{
 
         /// Modifier for this object. Builders override this method if they
         /// wish to add query parameters, set body, etc.
-        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ApiError> \{
+        fn modify(&self, req: Client::Request) -> Result<Client::Request, ApiError<Client::Response>> \{
             Ok(req)
         }
 
         /// Sends the request and returns a future for the response object.
-        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> \{
-            Box::new(self.send_raw(client).and_then(|mut resp| -> Box<dyn Future<Item=_, Error=ApiError> + Send> \{
-                let value = resp.headers().get(reqwest::header::CONTENT_TYPE);
-                let body_concat = |resp: &mut Response| \{
-                    let body = std::mem::replace(resp.body_mut(), Decoder::empty());
-                    body.concat2().map_err(ApiError::from)
-                };
-
-                if let Some(ty) = value.as_ref()
-                    .and_then(|v| v.to_str().ok())
-                    .and_then(|v| v.parse::<mime::MediaType>().ok())
-                \{
-                    {{- for coder in media_coders }}
-                    {{ if not @first }}else {{ endif }}if media_types::M_{ @index }.matches(&ty) \{
-                        return Box::new(body_concat(&mut resp).and_then(|v| \{
-                            {coder.decoder | unescaped}(v.as_ref()).map_err(ApiError::from)
-                        })) as Box<_>
-                    }
-                    {{- endfor }}
+        async fn send(&self, client: &Client) -> Result<Self::Output, ApiError<Client::Response>> \{
+            let resp = self.send_raw(client).await?;
+            let media = resp.media_type();
+            if let Some(ty) = media \{
+                if media_types::M_0.matches(&ty) \{
+                    let (_, bytes) = resp.body_bytes().await?;
+                    return serde_json::from_reader(bytes.as_ref()).map_err(ApiError::from)
                 }
+                else if media_types::M_1.matches(&ty) \{
+                    let (_, bytes) = resp.body_bytes().await?;
+                    return serde_yaml::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                }
+            }
 
-                let ty = value
-                    .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
-                    .unwrap_or_default();
-                Box::new(futures::future::err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))) as Box<_>
-            })) as Box<_>
+            let ty = resp.header(http::header::CONTENT_TYPE.as_str())
+                .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
+                .unwrap_or_default();
+            Err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))
         }
 
         /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Response, Error=ApiError> + Send> \{
+        async fn send_raw(&self, client: &Client) -> Result<Client::Response, ApiError<Client::Response>> \{
             let rel_path = self.rel_path();
-            let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
-            let req = match builder.and_then(|b| b.build().map_err(ApiError::Reqwest)) \{
-                Ok(r) => r,
-                Err(e) => return Box::new(future::err(e)),
-            };
-
-            Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| \{
-                if resp.status().is_success() \{
-                    futures::future::ok(resp)
-                } else \{
-                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
-                }
-            })) as Box<_>
+            let req = self.modify(client.request_builder(Self::METHOD, &rel_path))?;
+            let resp = client.make_request(req).await?;
+            if resp.status().is_success() \{
+                Ok(resp)
+            } else \{
+                Err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)))
+            }
         }
     }
 
@@ -124,15 +202,9 @@ pub mod client \{
             {{- endfor }}
         }
     }
-
-    impl From<reqwest::Error> for ApiError \{
-        fn from(e: reqwest::Error) -> Self \{
-            ApiError::Reqwest(e)
-        }
-    }
     {{- for coder in media_coders }}
 
-    impl From<{coder.error_ty_path | unescaped}> for ApiError \{
+    impl<R: Response + 'static> From<{coder.error_ty_path | unescaped}> for ApiError<R> \{
         fn from(e: {coder.error_ty_path | unescaped}) -> Self \{
             ApiError::{coder.error_variant | unescaped}(e)
         }
