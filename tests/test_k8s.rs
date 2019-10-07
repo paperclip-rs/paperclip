@@ -306,19 +306,20 @@ impl<Spec, Any> CustomResourceDefinitionPostBuilder<Spec, Any> {
     }
 }
 
-impl<Any: serde::Serialize> crate::codegen::client::Sendable for CustomResourceDefinitionPostBuilder<crate::codegen::generics::SpecExists, Any> {
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static, Any: serde::Serialize> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionPostBuilder<crate::codegen::generics::SpecExists, Any> {
     type Output = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
 
-    const METHOD: reqwest::Method = reqwest::Method::POST;
+    const METHOD: http::Method = http::Method::POST;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         \"/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions\".into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::codegen::client::ApiError> {
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
         Ok(req
         .json(&self.inner.body)
-        .header(reqwest::header::ACCEPT, \"application/json\")
+        .header(http::header::ACCEPT.as_str(), \"application/json\")
         .query(&[
             (\"dryRun\", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
             (\"fieldManager\", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
@@ -379,16 +380,16 @@ impl<Name> CustomResourceDefinitionGetBuilder1<Name> {
     }
 }
 
-impl crate::codegen::client::Sendable for CustomResourceDefinitionGetBuilder1<crate::codegen::generics::NameExists> {
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionGetBuilder1<crate::codegen::generics::NameExists> {
     type Output = CustomResourceDefinition<serde_json::Value>;
 
-    const METHOD: reqwest::Method = reqwest::Method::GET;
+    const METHOD: http::Method = http::Method::GET;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         format!(\"/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\")).into()
     }
 ",
-        Some(12446),
+        Some(12543),
     );
 }
 
@@ -780,19 +781,20 @@ pub mod miscellaneous {
 }
 
 pub mod client {
-    use futures::{Future, future};
-    use futures::stream::Stream;
+    use failure::Fail;
+    use futures::{Stream, Future};
+    use futures_preview::compat::Future01CompatExt;
     use parking_lot::Mutex;
-    use reqwest::r#async::{Decoder, Response};
-    use serde::de::DeserializeOwned;
+
+    use std::fmt::Debug;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
-    pub enum ApiError {
+    pub enum ApiError<R: Debug + Send + 'static> {
         #[fail(display = \"API request failed for path: {} (code: {})\", _0, _1)]
-        Failure(String, reqwest::StatusCode, Mutex<Response>),
+        Failure(String, http::status::StatusCode, Mutex<R>),
         #[fail(display = \"Unsupported media type in response: {}\", _0)]
-        UnsupportedMediaType(String, Mutex<Response>),
+        UnsupportedMediaType(String, Mutex<R>),
         #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
         Reqwest(reqwest::Error),
         #[fail(display = \"Error en/decoding \\\"application/json\\\" data: {}\", _0)]
@@ -801,39 +803,130 @@ pub mod client {
         ApplicationYaml(serde_yaml::Error),
     }
 
+    /// HTTP Request.
+    pub trait Request {
+        /// Sets the header with the given key and value.
+        fn header(self, name: &'static str, value: &str) -> Self;
+
+        /// Sets body using the given vector of bytes.
+        ///
+        /// **NOTE:** Appropriate `Content-Type` header must be set
+        /// after calling this method.
+        fn body_bytes(self, body: Vec<u8>) -> Self;
+
+        /// Sets JSON body based on the given value.
+        fn json<T: serde::Serialize>(self, value: &T) -> Self;
+
+        /// Sets/adds query parameters based on the given value.
+        ///
+        /// **NOTE:** This method must be called only once. It's unspecified
+        /// as to whether this appends/replaces query parameters.
+        fn query<T: serde::Serialize>(self, params: &T) -> Self;
+    }
+
+    impl Request for reqwest::r#async::RequestBuilder {
+        fn header(self, name: &'static str, value: &str) -> Self {
+            reqwest::r#async::RequestBuilder::header(self, name, value)
+        }
+
+        fn body_bytes(self, body: Vec<u8>) -> Self {
+            self.body(body)
+        }
+
+        fn json<T: serde::Serialize>(self, value: &T) -> Self {
+            reqwest::r#async::RequestBuilder::json(self, value)
+        }
+
+        fn query<T: serde::Serialize>(self, params: &T) -> Self {
+            reqwest::r#async::RequestBuilder::query(self, params)
+        }
+    }
+
+    /// HTTP Response.
+    #[async_trait::async_trait]
+    pub trait Response: Debug + Send + Sized {
+        type Bytes: AsRef<[u8]>;
+
+        /// Gets the value for the given header name, if any.
+        fn header(&self, name: &'static str) -> Option<&str>;
+
+        /// Status code for this response.
+        fn status(&self) -> http::status::StatusCode;
+
+        /// Media type for this response body (if any).
+        fn media_type(&self) -> Option<mime::MediaType>;
+
+        /// Vector of bytes from the response body.
+        async fn body_bytes(self) -> Result<(Self, Self::Bytes), ApiError<Self>>;
+    }
+
+    #[async_trait::async_trait]
+    impl Response for reqwest::r#async::Response {
+        type Bytes = reqwest::r#async::Chunk;
+
+        fn header(&self, name: &'static str) -> Option<&str> {
+            self.headers().get(name).and_then(|v| v.to_str().ok())
+        }
+
+        fn status(&self) -> http::status::StatusCode {
+            reqwest::r#async::Response::status(self)
+        }
+
+        fn media_type(&self) -> Option<mime::MediaType> {
+            self.header(http::header::CONTENT_TYPE.as_str())
+                .and_then(|v| v.parse().ok())
+        }
+
+        async fn body_bytes(mut self) -> Result<(Self, Self::Bytes), ApiError<Self>> {
+            let body = std::mem::replace(self.body_mut(), reqwest::r#async::Decoder::empty());
+            let bytes = body.concat2().map_err(ApiError::Reqwest).compat().await?;
+            Ok((self, bytes))
+        }
+    }
+
     /// Represents an API client.
+    #[async_trait::async_trait]
     pub trait ApiClient {
+        type Request: Request + Send;
+        type Response: Response;
+
         /// Consumes a method and a relative path and produces a request builder for a single API call.
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder;
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request;
 
         /// Performs the HTTP request using the given `Request` object
         /// and returns a `Response` future.
-        fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=Response, Error=reqwest::Error> + Send>;
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>>;
     }
 
+    #[async_trait::async_trait]
     impl ApiClient for reqwest::r#async::Client {
-        #[inline]
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
+        type Request = reqwest::r#async::RequestBuilder;
+        type Response = reqwest::r#async::Response;
+
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
             let mut u = String::from(\"https://example.com/\");
             u.push_str(rel_path.trim_start_matches('/'));
             self.request(method, &u)
         }
 
-        #[inline]
-        fn make_request(&self, req: reqwest::r#async::Request)
-                       -> Box<dyn Future<Item=Response, Error=reqwest::Error> + Send> {
-            Box::new(self.execute(req)) as Box<_>
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
+            let req = req.build().map_err(ApiError::Reqwest)?;
+            let resp = self.execute(req).map_err(ApiError::Reqwest).compat().await?;
+            Ok(resp)
         }
     }
 
     /// A trait for indicating that the implementor can send an API call.
-    pub trait Sendable {
+    #[async_trait::async_trait]
+    pub trait Sendable<Client>
+    where
+        Client: ApiClient + Sync + 'static,
+    {
         /// The output object from this API request.
-        type Output: DeserializeOwned + Send + 'static;
+        type Output: serde::de::DeserializeOwned;
 
         /// HTTP method used by this call.
-        const METHOD: reqwest::Method;
+        const METHOD: http::Method;
 
         /// Relative URL for this API call formatted appropriately with parameter values.
         ///
@@ -842,58 +935,41 @@ pub mod client {
 
         /// Modifier for this object. Builders override this method if they
         /// wish to add query parameters, set body, etc.
-        fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, ApiError> {
+        fn modify(&self, req: Client::Request) -> Result<Client::Request, ApiError<Client::Response>> {
             Ok(req)
         }
 
         /// Sends the request and returns a future for the response object.
-        fn send(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Self::Output, Error=ApiError> + Send> {
-            Box::new(self.send_raw(client).and_then(|mut resp| -> Box<dyn Future<Item=_, Error=ApiError> + Send> {
-                let value = resp.headers().get(reqwest::header::CONTENT_TYPE);
-                let body_concat = |resp: &mut Response| {
-                    let body = std::mem::replace(resp.body_mut(), Decoder::empty());
-                    body.concat2().map_err(ApiError::from)
-                };
-
-                if let Some(ty) = value.as_ref()
-                    .and_then(|v| v.to_str().ok())
-                    .and_then(|v| v.parse::<mime::MediaType>().ok())
-                {
-                    if media_types::M_0.matches(&ty) {
-                        return Box::new(body_concat(&mut resp).and_then(|v| {
-                            serde_json::from_reader(v.as_ref()).map_err(ApiError::from)
-                        })) as Box<_>
-                    }
-                    else if media_types::M_1.matches(&ty) {
-                        return Box::new(body_concat(&mut resp).and_then(|v| {
-                            serde_yaml::from_reader(v.as_ref()).map_err(ApiError::from)
-                        })) as Box<_>
-                    }
+        async fn send(&self, client: &Client) -> Result<Self::Output, ApiError<Client::Response>> {
+            let resp = self.send_raw(client).await?;
+            let media = resp.media_type();
+            if let Some(ty) = media {
+                if media_types::M_0.matches(&ty) {
+                    let (_, bytes) = resp.body_bytes().await?;
+                    return serde_json::from_reader(bytes.as_ref()).map_err(ApiError::from)
                 }
+                else if media_types::M_1.matches(&ty) {
+                    let (_, bytes) = resp.body_bytes().await?;
+                    return serde_yaml::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                }
+            }
 
-                let ty = value
-                    .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
-                    .unwrap_or_default();
-                Box::new(futures::future::err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))) as Box<_>
-            })) as Box<_>
+            let ty = resp.header(http::header::CONTENT_TYPE.as_str())
+                .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
+                .unwrap_or_default();
+            Err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))
         }
 
         /// Convenience method for returning a raw response after sending a request.
-        fn send_raw(&self, client: &dyn ApiClient) -> Box<dyn Future<Item=Response, Error=ApiError> + Send> {
+        async fn send_raw(&self, client: &Client) -> Result<Client::Response, ApiError<Client::Response>> {
             let rel_path = self.rel_path();
-            let builder = self.modify(client.request_builder(Self::METHOD, &rel_path));
-            let req = match builder.and_then(|b| b.build().map_err(ApiError::Reqwest)) {
-                Ok(r) => r,
-                Err(e) => return Box::new(future::err(e)),
-            };
-
-            Box::new(client.make_request(req).map_err(ApiError::Reqwest).and_then(move |resp| {
-                if resp.status().is_success() {
-                    futures::future::ok(resp)
-                } else {
-                    futures::future::err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)).into())
-                }
-            })) as Box<_>
+            let req = self.modify(client.request_builder(Self::METHOD, &rel_path))?;
+            let resp = client.make_request(req).await?;
+            if resp.status().is_success() {
+                Ok(resp)
+            } else {
+                Err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)))
+            }
         }
     }
 
@@ -908,19 +984,13 @@ pub mod client {
         }
     }
 
-    impl From<reqwest::Error> for ApiError {
-        fn from(e: reqwest::Error) -> Self {
-            ApiError::Reqwest(e)
-        }
-    }
-
-    impl From<serde_json::Error> for ApiError {
+    impl<R: Response + 'static> From<serde_json::Error> for ApiError<R> {
         fn from(e: serde_json::Error) -> Self {
             ApiError::ApplicationJson(e)
         }
     }
 
-    impl From<serde_yaml::Error> for ApiError {
+    impl<R: Response + 'static> From<serde_yaml::Error> for ApiError<R> {
         fn from(e: serde_yaml::Error) -> Self {
             ApiError::ApplicationYaml(e)
         }
@@ -929,6 +999,10 @@ pub mod client {
 
 pub mod generics {
     include!(\"./generics.rs\");
+}
+
+pub mod util {
+    include!(\"./util.rs\");
 }
 ",
         Some(0),
@@ -1246,16 +1320,17 @@ impl<Name, Namespace> DeleteOptionsDeleteBuilder59<Name, Namespace> {
     }
 }
 
-impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for DeleteOptionsDeleteBuilder59<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
     type Output = crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::status::Status;
 
-    const METHOD: reqwest::Method = reqwest::Method::DELETE;
+    const METHOD: http::Method = http::Method::DELETE;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         format!(\"/apis/rbac.authorization.k8s.io/v1/namespaces/{namespace}/roles/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\"), namespace=self.inner.param_namespace.as_ref().expect(\"missing parameter namespace?\")).into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::codegen::client::ApiError> {
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
         Ok(req
         .json(&self.inner.body)
         .query(&[
@@ -1268,7 +1343,7 @@ impl crate::codegen::client::Sendable for DeleteOptionsDeleteBuilder59<crate::co
     }
 }
 ",
-        Some(442860),
+        Some(448229),
     );
 }
 
@@ -1335,10 +1410,10 @@ impl<Groups> ApiGroupListBuilder<Groups> {
 pub struct ApiGroupListGetBuilder;
 
 
-impl crate::codegen::client::Sendable for ApiGroupListGetBuilder {
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for ApiGroupListGetBuilder {
     type Output = ApiGroupList;
 
-    const METHOD: reqwest::Method = reqwest::Method::GET;
+    const METHOD: http::Method = http::Method::GET;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         \"/apis/\".into()
@@ -1415,16 +1490,30 @@ fn test_any_in_operation_bound_to_unrelated_struct() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_k8s/io/k8s/apimachinery/pkg/apis/meta/v1/patch.rs"),
         "
-impl crate::codegen::client::Sendable for PatchPatchBuilder26<crate::codegen::generics::NameExists> {
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for PatchPatchBuilder26<crate::codegen::generics::NameExists> {
     type Output = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
 
-    const METHOD: reqwest::Method = reqwest::Method::PATCH;
+    const METHOD: http::Method = http::Method::PATCH;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         format!(\"/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}\", name=self.inner.param_name.as_ref().expect(\"missing parameter name?\")).into()
     }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .json(&self.inner.body)
+        .header(http::header::ACCEPT.as_str(), \"application/json\")
+        .query(&[
+            (\"dryRun\", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
+            (\"fieldManager\", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
+            (\"force\", self.inner.param_force.as_ref().map(std::string::ToString::to_string)),
+            (\"pretty\", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
 ",
-        Some(177761),
+        Some(180127),
     );
 }
 
@@ -1440,8 +1529,11 @@ name = \"test-k8s-cli\"
 path = \"main.rs\"
 
 [dependencies]
+async-trait = \"0.1\"
 failure = \"0.1\"
 futures = \"0.1\"
+futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
+http = \"0.1\"
 lazy_static = \"1.4\"
 log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
@@ -1454,11 +1546,11 @@ url = \"2.1\"
 
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
-futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
 humantime = \"1.2\"
 openssl = { version = \"0.10\", features = [\"vendored\"] }
-runtime = \"0.3.0-alpha.7\"
-runtime-tokio = \"0.3.0-alpha.6\"
+tokio = { version = \"0.2.0-alpha.6\", features = [\"rt-current-thread\"] }
+
+[workspace]
 ",
         Some(101),
     );
@@ -1472,7 +1564,7 @@ fn test_cli_main() {
         &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
         "
 use self::client::{ApiClient, ApiError};
-use clap::App;
+use clap::{App, ArgMatches};
 use failure::Error;
 use futures::{Future, Stream};
 use futures_preview::compat::Future01CompatExt;
@@ -1498,9 +1590,15 @@ enum ClientError {
     #[fail(display = \"URL error: {}\", _0)]
     Url(reqwest::UrlError),
     #[fail(display = \"{}\", _0)]
-    Api(self::client::ApiError),
+    Api(self::client::ApiError<reqwest::r#async::Response>),
     #[fail(display = \"\")]
     Empty,
+}
+
+impl From<ApiError<reqwest::r#async::Response>> for ClientError {
+    fn from(e: ApiError<reqwest::r#async::Response>) -> Self {
+        ClientError::Api(e)
+    }
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
@@ -1510,24 +1608,28 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
     Ok(data)
 }
 
+#[derive(Clone)]
 struct WrappedClient {
     verbose: bool,
     inner: reqwest::r#async::Client,
     url: reqwest::Url,
 }
 
+#[async_trait::async_trait]
 impl ApiClient for WrappedClient {
-    fn make_request(&self, req: reqwest::r#async::Request)
-                   -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>
-    {
+    type Request = reqwest::r#async::RequestBuilder;
+    type Response = reqwest::r#async::Response;
+
+    async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
+        let req = req.build().map_err(ApiError::Reqwest)?;
         if self.verbose {
             println!(\"{} {}\", req.method(), req.url());
         }
 
-        self.inner.make_request(req)
+        Ok(self.inner.execute(req).map_err(ApiError::Reqwest).compat().await?)
     }
 
-    fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
+    fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
         let mut u = self.url.clone();
         let mut path = u.path().trim_matches('/').to_owned();
         if !path.is_empty() {
@@ -1540,14 +1642,7 @@ impl ApiClient for WrappedClient {
     }
 }
 
-fn parse_args_and_fetch()
-    -> Result<(WrappedClient, Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>), Error>
-{
-    let yml = load_yaml!(\"app.yaml\");
-    let app = App::from_yaml(yml);
-    let matches = app.get_matches();
-    let (sub_cmd, sub_matches) = matches.subcommand();
-
+fn make_client<'a>(matches: &'a ArgMatches<'a>) -> Result<WrappedClient, Error> {
     let mut client = reqwest::r#async::Client::builder();
 
     if let Some(p) = matches.value_of(\"ca-cert\") {
@@ -1582,23 +1677,21 @@ fn parse_args_and_fetch()
 
     let is_verbose = matches.is_present(\"verbose\");
     let url = matches.value_of(\"url\").expect(\"required arg URL?\");
-    let client = WrappedClient {
+    Ok(WrappedClient {
         inner: client.build().map_err(ClientError::Reqwest)?,
         url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
         verbose: is_verbose,
-    };
-
-    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?;
-    Ok((client, f))
+    })
 }
 
 async fn run_app() -> Result<(), Error> {
-    let (client, f) = parse_args_and_fetch()?;
-    let response = match f.map_err(ClientError::Api).compat().await {
-        Ok(r) => r,
-        Err(ClientError::Api(ApiError::Failure(_, _, r))) => r.into_inner(),
-        Err(e) => return Err(e.into()),
-    };
+    let yml = load_yaml!(\"app.yaml\");
+    let app = App::from_yaml(yml);
+    let matches = app.get_matches();
+    let (sub_cmd, sub_matches) = matches.subcommand();
+
+    let client = make_client(&matches)?;
+    let response = self::cli::fetch_response(&client, &matches, sub_cmd, sub_matches).await?;
 
     let status = response.status();
     if client.verbose {
@@ -1620,7 +1713,7 @@ async fn run_app() -> Result<(), Error> {
     Ok(())
 }
 
-#[runtime::main(runtime_tokio::Tokio)]
+#[tokio::main]
 async fn main() {
     env_logger::init();
     if let Err(e) = run_app().await {
@@ -1628,7 +1721,7 @@ async fn main() {
     }
 }
 ",
-        Some(6703),
+        Some(8821),
     );
 }
 

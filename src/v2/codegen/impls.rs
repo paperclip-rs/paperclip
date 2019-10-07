@@ -656,7 +656,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             f.write_str(", Any: serde::Serialize")?;
         }
 
-        f.write_str(">")?;
+        f.write_str("> ")?;
         f.write_str(self.builder.helper_module_prefix)?;
         f.write_str("client::Sendable<Client> for ")?;
         self.builder.write_name(f)?;

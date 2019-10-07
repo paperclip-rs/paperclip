@@ -108,7 +108,6 @@ pub mod test_nested_array_with_object {
 }
 
 pub mod client {
-    use futures::{Future, future};
 ",
         Some(0),
     );
@@ -128,14 +127,22 @@ edition = \"2018\"
 path = \"lib.rs\"
 
 [dependencies]
+async-trait = \"0.1\"
 failure = \"0.1\"
 futures = \"0.1\"
+futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
+http = \"0.1\"
 lazy_static = \"1.4\"
 log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
+serde_json = \"1.0\"
+serde_yaml = \"0.8\"
+url = \"2.1\"
+
+[workspace]
 ",
         Some(0),
     );
@@ -147,15 +154,25 @@ fn test_overridden_path() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/lib.rs"),
         "
+    #[async_trait::async_trait]
     impl ApiClient for reqwest::r#async::Client {
-        #[inline]
-        fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder {
+        type Request = reqwest::r#async::RequestBuilder;
+        type Response = reqwest::r#async::Response;
+
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
             let mut u = String::from(\"https://pets.com:8888/api\");
             u.push_str(rel_path.trim_start_matches('/'));
             self.request(method, &u)
         }
+
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
+            let req = req.build().map_err(ApiError::Reqwest)?;
+            let resp = self.execute(req).map_err(ApiError::Reqwest).compat().await?;
+            Ok(resp)
+        }
+    }
 ",
-        Some(2102),
+        Some(5031),
     );
 }
 
@@ -177,31 +194,32 @@ impl<XAuth, Id, Name> PetPostBuilder<XAuth, Id, Name> {
         self
     }
 ",
-        Some(3952),
+        Some(4005),
     );
 
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/pet.rs"),
         "
-impl crate::client::Sendable for PetPostBuilder<crate::generics::XAuthExists, crate::generics::IdExists, crate::generics::NameExists> {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for PetPostBuilder<crate::generics::XAuthExists, crate::generics::IdExists, crate::generics::NameExists> {
     type Output = crate::pet::Pet;
 
-    const METHOD: reqwest::Method = reqwest::Method::POST;
+    const METHOD: http::Method = http::Method::POST;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         \"/pets\".into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::client::ApiError> {
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::client::ApiError<Client::Response>> {
+        use crate::client::Request;
         let mut req = req;
-        req = req.header(\"X-Auth\", self.inner.param_x_auth.as_ref().map(std::string::ToString::to_string).expect(\"missing parameter x_auth?\"));
-        if let Some(v) = self.inner.param_x_pet_id.as_ref().map(std::string::ToString::to_string) {
-            req = req.header(\"X-Pet-ID\", v);
+        req = req.header(\"X-Auth\", &self.inner.param_x_auth.as_ref().map(std::string::ToString::to_string).expect(\"missing parameter x_auth?\"));
+        if let Some(v) = &self.inner.param_x_pet_id.as_ref().map(std::string::ToString::to_string) {
+            req = req.header(\"X-Pet-ID\", &v);
         }
 
         Ok(req
-        .header(reqwest::header::CONTENT_TYPE, \"application/yaml\")
-        .body({
+        .header(http::header::CONTENT_TYPE.as_str(), \"application/yaml\")
+        .body_bytes({
             let mut vec = vec![];
             serde_yaml::to_writer(&mut vec, &self.inner.body)?;
             vec
@@ -209,7 +227,7 @@ impl crate::client::Sendable for PetPostBuilder<crate::generics::XAuthExists, cr
     }
 }
 ",
-        Some(5439),
+        Some(5492),
     );
 }
 
@@ -225,10 +243,10 @@ fn test_array_response() {
 pub struct PetGetBuilder;
 
 
-impl crate::client::Sendable for PetGetBuilder {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for PetGetBuilder {
     type Output = Vec<Pet>;
 
-    const METHOD: reqwest::Method = reqwest::Method::GET;
+    const METHOD: http::Method = http::Method::GET;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         \"/pets\".into()
@@ -505,24 +523,25 @@ impl PostShipmentsBodyPostBuilder {
     }
 }
 
-impl crate::client::Sendable for PostShipmentsBodyPostBuilder {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for PostShipmentsBodyPostBuilder {
     type Output = serde_yaml::Value;
 
-    const METHOD: reqwest::Method = reqwest::Method::POST;
+    const METHOD: http::Method = http::Method::POST;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         \"/shipments\".into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::client::ApiError> {
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::client::ApiError<Client::Response>> {
+        use crate::client::Request;
         Ok(req
-        .header(reqwest::header::CONTENT_TYPE, \"application/yaml\")
-        .body({
+        .header(http::header::CONTENT_TYPE.as_str(), \"application/yaml\")
+        .body_bytes({
             let mut vec = vec![];
             serde_yaml::to_writer(&mut vec, &self.body)?;
             vec
         })
-        .header(reqwest::header::ACCEPT, \"application/yaml\"))
+        .header(http::header::ACCEPT.as_str(), \"application/yaml\"))
     }
 }
 
@@ -678,10 +697,10 @@ impl<Id> GetShipmentsIdResponseGetBuilder<Id> {
     }
 }
 
-impl crate::client::Sendable for GetShipmentsIdResponseGetBuilder<crate::generics::IdExists> {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for GetShipmentsIdResponseGetBuilder<crate::generics::IdExists> {
     type Output = GetShipmentsIdResponse;
 
-    const METHOD: reqwest::Method = reqwest::Method::GET;
+    const METHOD: http::Method = http::Method::GET;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         format!(\"/shipments/{id}\", id=self.inner.param_id.as_ref().expect(\"missing parameter id?\")).into()
@@ -744,7 +763,8 @@ impl GetShipmentsIdResponseAddressBuilder {
 fn test_simple_array_parameter_in_path() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/status.rs"),
-        "/// Builder created by [`Status::delete`](./struct.Status.html#method.delete) method for a `DELETE` operation associated with `Status`.
+        "
+/// Builder created by [`Status::delete`](./struct.Status.html#method.delete) method for a `DELETE` operation associated with `Status`.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
 pub struct StatusDeleteBuilder<PetId> {
@@ -765,35 +785,35 @@ impl<PetId> StatusDeleteBuilder<PetId> {
     }
 }
 
-impl crate::client::Sendable for StatusDeleteBuilder<crate::generics::PetIdExists> {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for StatusDeleteBuilder<crate::generics::PetIdExists> {
     type Output = Status;
 
-    const METHOD: reqwest::Method = reqwest::Method::DELETE;
+    const METHOD: http::Method = http::Method::DELETE;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         format!(\"/pets/{petId}\", petId=self.inner.param_pet_id.as_ref().expect(\"missing parameter pet_id?\")).into()
     }
 }
 ",
-        Some(960),
+        Some(959),
     );
 }
 
 #[test]
 fn test_nested_arrays() {
-    let _ = &*CLI_CODEGEN;
     // It's in miscellaneous because there's no body parameter or response body.
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/miscellaneous.rs"),
-        "/// Builder created by [`Miscellaneous::get`](./struct.Miscellaneous.html#method.get) method for a `GET` operation associated with `Miscellaneous`.
+        "
+/// Builder created by [`Miscellaneous::get`](./struct.Miscellaneous.html#method.get) method for a `GET` operation associated with `Miscellaneous`.
 #[derive(Debug, Clone)]
 pub struct MiscellaneousGetBuilder;
 
 
-impl crate::client::Sendable for MiscellaneousGetBuilder {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for MiscellaneousGetBuilder {
     type Output = Vec<Vec<crate::test_nested_array_with_object::TestNestedArrayWithObjectItemItem>>;
 
-    const METHOD: reqwest::Method = reqwest::Method::GET;
+    const METHOD: http::Method = http::Method::GET;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         \"/test/array\".into()
@@ -842,30 +862,31 @@ impl<Values> MiscellaneousPostBuilder1<Values> {
     }
 }
 
-impl crate::client::Sendable for MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
     type Output = String;
 
-    const METHOD: reqwest::Method = reqwest::Method::POST;
+    const METHOD: http::Method = http::Method::POST;
 
     fn rel_path(&self) -> std::borrow::Cow<'static, str> {
         format!(\"/test/parameter/{values}\", values=self.inner.param_values.as_ref().expect(\"missing parameter values?\")).into()
     }
 
-    fn modify(&self, req: reqwest::r#async::RequestBuilder) -> Result<reqwest::r#async::RequestBuilder, crate::client::ApiError> {
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::client::ApiError<Client::Response>> {
+        use crate::client::Request;
         let mut req = req;
-        if let Some(v) = self.inner.param_x_foobar.as_ref().map(std::string::ToString::to_string) {
-            req = req.header(\"X-foobar\", v);
+        if let Some(v) = &self.inner.param_x_foobar.as_ref().map(std::string::ToString::to_string) {
+            req = req.header(\"X-foobar\", &v);
         }
 
         Ok(req
-        .header(reqwest::header::CONTENT_TYPE, \"application/x-www-form-urlencoded\")
-        .body({
+        .body_bytes({
             let mut ser = url::form_urlencoded::Serializer::new(String::new());
             self.inner.param_booya.as_ref().map(|v| v.iter().for_each(|v| {
                 ser.append_pair(\"booya\", &v.to_string());
             }));
-            ser.finish()
+            ser.finish().into_bytes()
         })
+        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")
         .query({
             &self.inner.param_foo.as_ref().map(|v| {
                 v.iter().map(|v| (\"foo\", v.to_string())).collect::<Vec<_>>()
@@ -874,6 +895,54 @@ impl crate::client::Sendable for MiscellaneousPostBuilder1<crate::generics::Valu
     }
 }
 ",
-        Some(524),
+        Some(523),
+    );
+}
+
+#[test]
+fn test_builder_from_args_with_delimited() {
+    let _ = &*CLI_CODEGEN;
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/cli/miscellaneous.rs"),
+        "
+#[allow(unused_variables)]
+impl MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
+    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>) -> Result<Self, crate::ClientError> {
+        let thing = MiscellaneousPostBuilder1 {
+            inner: MiscellaneousPostBuilder1Container {
+            param_values: matches.and_then(|m| {
+                    m.value_of(\"values\").map(|_| {
+                        value_t!(m, \"values\", crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            param_x_foobar: matches.and_then(|m| {
+                    m.value_of(\"x-foobar\").map(|_| {
+                        value_t!(m, \"x-foobar\", crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Pipes>).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            param_booya: matches.and_then(|m| {
+                    m.value_of(\"booya\").map(|_| {
+                        value_t!(m, \"booya\", crate::util::Delimited<crate::util::Delimited<i64, crate::util::Csv>, crate::util::Multi>).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            param_foo: matches.and_then(|m| {
+                    m.value_of(\"foo\").map(|_| {
+                        value_t!(m, \"foo\", crate::util::Delimited<crate::util::Delimited<String, crate::util::Csv>, crate::util::Multi>).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            },
+            _param_values: core::marker::PhantomData,
+        };
+
+        Ok(thing)
+    }
+}
+",
+        Some(5344),
     );
 }
