@@ -26,21 +26,32 @@ where
 
     let err = match {coder.decoder | unescaped}(bytes.as_slice()) \{
         Ok(t) => return Ok(t),
-        Err(e) => ApiError::{coder.error_variant | unescaped}(e),
+        Err(e) => crate::ClientError::Api(ApiError::{coder.error_variant | unescaped}(e)),
     };
 
     log::debug!("Error decoding payload as {coder.range | unescaped}: \{:?}", err);
     {{- endfor }}
 
-    Err(crate::ClientError::Api(err))
+    Err(err)
 }
 
-pub(super) fn response_future(client: &dyn ApiClient, _matches: &ArgMatches<'_>,
-                              sub_cmd: &str, sub_matches: Option<&ArgMatches<'_>>)
-                             -> Result<Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>, crate::ClientError>
+pub(super) async fn fetch_response<'a, C>(client: &'a C,
+                                          _matches: &ArgMatches<'_>,
+                                          sub_cmd: &str,
+                                          sub_matches: Option<&ArgMatches<'_>>)
+                                          -> Result<C::Response, crate::ClientError>
+where
+    C: ApiClient + Send + Sync + 'static,
+    crate::ClientError: From<ApiError<C::Response>>
 \{
-    match sub_cmd \{
+    let resp = match sub_cmd \{
 {match_arms | unescaped}
         _ => unimplemented!(),
+    };
+
+    match resp \{
+        Ok(r) => Ok(r),
+        Err(ApiError::Failure(_, _, r)) => Ok(r.into_inner()),
+        Err(e) => return Err(e.into()),
     }
 }

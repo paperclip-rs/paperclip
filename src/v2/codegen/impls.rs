@@ -148,12 +148,16 @@ impl<'a> ApiObjectImpl<'a> {
         self.with_cli_cmd_and_builder(|name, builder| {
             f.write_str("\n        \"")?;
             f.write_str(&name)?;
-            f.write_str("\" =>\n            Ok(")?;
+            f.write_str("\" => {\n            let builder = ")?;
             f.write_str(&builder.helper_module_prefix)?;
             f.write_str(&self.inner.path)?;
             f.write_str("::")?;
             builder.write_name(f)?;
-            f.write_str("::from_args(sub_matches)?.send_raw(client)),")
+            f.write_str(
+                "::from_args(sub_matches)?;
+            builder.send_raw(client).await
+        },",
+            )
         })
     }
 
@@ -381,6 +385,14 @@ where
 
             f.write_str("\n            param_")?;
             f.write_str(&sk)?;
+            let mut ty = String::new();
+            ApiObjectBuilder::write_wrapped_ty(
+                self.0.helper_module_prefix,
+                field.ty,
+                field.delimiting,
+                &mut ty,
+            )?;
+
             // We're enforcing requirements in the CLI. We can relax here.
             writeln!(
                 f,
@@ -390,7 +402,7 @@ where
                     }})
                 }}),",
                 arg = kk,
-                ty = field.ty
+                ty = ty
             )
         })?;
 

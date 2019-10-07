@@ -563,6 +563,49 @@ impl<'a> ApiObjectBuilder<'a> {
         f.write_str("Container")
     }
 
+    /// Given the helper module prefix, type and delimiters for that type,
+    /// wraps the type (if needed) and writes the old or new type to the given formatter.
+    pub(super) fn write_wrapped_ty<F>(
+        module_prefix: &str,
+        ty: &str,
+        delims: &[CollectionFormat],
+        f: &mut F,
+    ) -> fmt::Result
+    where
+        F: fmt::Write,
+    {
+        if !ty.contains("Vec") {
+            return f.write_str(ty);
+        }
+
+        // In parameters, we're limited to basic types and arrays,
+        // so we can assume that whatever `<>` we encounter, they're
+        // all for `Vec`.
+        let delim_ty = String::from(module_prefix) + "util::Delimited";
+        let mut ty = ty.replace("Vec", &delim_ty);
+        let mut new_ty = String::new();
+        // From the reverse, because we replace from inside out.
+        let mut delim_idx = delims.len();
+        while let Some(idx) = ty.find('>') {
+            delim_idx -= 1;
+            new_ty.push_str(&ty[..idx]);
+            new_ty.push_str(", ");
+            write!(
+                &mut new_ty,
+                "{}util::{:?}",
+                module_prefix, delims[delim_idx]
+            )?;
+            new_ty.push('>');
+            if idx == ty.len() - 1 {
+                break;
+            }
+
+            ty = ty[idx + 1..].into();
+        }
+
+        f.write_str(&new_ty)
+    }
+
     /// Writes the body field into the formatter if required.
     fn write_body_field_if_required<F>(&self, f: &mut F) -> fmt::Result
     where
@@ -602,36 +645,7 @@ impl<'a> ApiObjectBuilder<'a> {
         f.write_str("\n    param_")?;
         f.write_str(&name)?;
         f.write_str(": Option<")?;
-        if ty.contains("Vec") {
-            // In parameters, we're limited to basic types and arrays,
-            // so we can assume that whatever `<>` we encounter, they're
-            // all for `Vec`.
-            let delim_ty = String::from(self.helper_module_prefix) + "util::Delimited";
-            let mut ty = ty.replace("Vec", &delim_ty);
-            let mut new_ty = String::new();
-            // From the reverse, because we replace from inside out.
-            let mut delim_idx = delims.len();
-            while let Some(idx) = ty.find('>') {
-                delim_idx -= 1;
-                new_ty.push_str(&ty[..idx]);
-                new_ty.push_str(", ");
-                write!(
-                    &mut new_ty,
-                    "{}util::{:?}",
-                    self.helper_module_prefix, delims[delim_idx]
-                )?;
-                new_ty.push('>');
-                if idx == ty.len() - 1 {
-                    break;
-                }
-
-                ty = ty[idx + 1..].into();
-            }
-
-            f.write_str(&new_ty)?;
-        } else {
-            f.write_str(ty)?;
-        }
+        Self::write_wrapped_ty(self.helper_module_prefix, ty, delims, f)?;
 
         f.write_str(">,")
     }

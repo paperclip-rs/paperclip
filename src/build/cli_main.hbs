@@ -1,6 +1,6 @@
 
 use self::client::\{ApiClient, ApiError};
-use clap::App;
+use clap::\{App, ArgMatches};
 use failure::Error;
 use futures::\{Future, Stream};
 use futures_preview::compat::Future01CompatExt;
@@ -26,9 +26,15 @@ enum ClientError \{
     #[fail(display = "URL error: \{}", _0)]
     Url(reqwest::UrlError),
     #[fail(display = "\{}", _0)]
-    Api(self::client::ApiError),
+    Api(self::client::ApiError<reqwest::r#async::Response>),
     #[fail(display = "")]
     Empty,
+}
+
+impl From<ApiError<reqwest::r#async::Response>> for ClientError \{
+    fn from(e: ApiError<reqwest::r#async::Response>) -> Self \{
+        ClientError::Api(e)
+    }
 }
 
 fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> \{
@@ -38,24 +44,28 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> \{
     Ok(data)
 }
 
+#[derive(Clone)]
 struct WrappedClient \{
     verbose: bool,
     inner: reqwest::r#async::Client,
     url: reqwest::Url,
 }
 
+#[async_trait::async_trait]
 impl ApiClient for WrappedClient \{
-    fn make_request(&self, req: reqwest::r#async::Request)
-                   -> Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=reqwest::Error> + Send>
-    \{
+    type Request = reqwest::r#async::RequestBuilder;
+    type Response = reqwest::r#async::Response;
+
+    async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> \{
+        let req = req.build().map_err(ApiError::Reqwest)?;
         if self.verbose \{
             println!("\{} \{}", req.method(), req.url());
         }
 
-        self.inner.make_request(req)
+        Ok(self.inner.execute(req).map_err(ApiError::Reqwest).compat().await?)
     }
 
-    fn request_builder(&self, method: reqwest::Method, rel_path: &str) -> reqwest::r#async::RequestBuilder \{
+    fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request \{
         let mut u = self.url.clone();
         let mut path = u.path().trim_matches('/').to_owned();
         if !path.is_empty() \{
@@ -68,14 +78,7 @@ impl ApiClient for WrappedClient \{
     }
 }
 
-fn parse_args_and_fetch()
-    -> Result<(WrappedClient, Box<dyn futures::Future<Item=reqwest::r#async::Response, Error=ApiError> + Send + 'static>), Error>
-\{
-    let yml = load_yaml!("app.yaml");
-    let app = App::from_yaml(yml);
-    let matches = app.get_matches();
-    let (sub_cmd, sub_matches) = matches.subcommand();
-
+fn make_client<'a>(matches: &'a ArgMatches<'a>) -> Result<WrappedClient, Error> \{
     let mut client = reqwest::r#async::Client::builder();
 
     if let Some(p) = matches.value_of("ca-cert") \{
@@ -110,23 +113,21 @@ fn parse_args_and_fetch()
 
     let is_verbose = matches.is_present("verbose");
     let url = matches.value_of("url").expect("required arg URL?");
-    let client = WrappedClient \{
+    Ok(WrappedClient \{
         inner: client.build().map_err(ClientError::Reqwest)?,
         url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
         verbose: is_verbose,
-    };
-
-    let f = self::cli::response_future(&client, &matches, sub_cmd, sub_matches)?;
-    Ok((client, f))
+    })
 }
 
 async fn run_app() -> Result<(), Error> \{
-    let (client, f) = parse_args_and_fetch()?;
-    let response = match f.map_err(ClientError::Api).compat().await \{
-        Ok(r) => r,
-        Err(ClientError::Api(ApiError::Failure(_, _, r))) => r.into_inner(),
-        Err(e) => return Err(e.into()),
-    };
+    let yml = load_yaml!("app.yaml");
+    let app = App::from_yaml(yml);
+    let matches = app.get_matches();
+    let (sub_cmd, sub_matches) = matches.subcommand();
+
+    let client = make_client(&matches)?;
+    let response = self::cli::fetch_response(&client, &matches, sub_cmd, sub_matches).await?;
 
     let status = response.status();
     if client.verbose \{
@@ -148,7 +149,7 @@ async fn run_app() -> Result<(), Error> \{
     Ok(())
 }
 
-#[runtime::main(runtime_tokio::Tokio)]
+#[tokio::main]
 async fn main() \{
     env_logger::init();
     if let Err(e) = run_app().await \{

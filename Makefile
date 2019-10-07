@@ -34,6 +34,7 @@ test:
 	cargo test --all --all-features
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check
+	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check
 	cd tests/test_k8s && cargo check
 	cd tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo build
 	# Test that the CLI runs successfully.
