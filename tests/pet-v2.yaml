@@ -150,6 +150,7 @@ paths:
     post:
       description: Create shipment for order
       operationID: createShipment
+      deprecated: true
       parameters:
       - in: body
         name: body

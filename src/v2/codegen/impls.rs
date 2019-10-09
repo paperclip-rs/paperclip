@@ -58,6 +58,7 @@ impl ApiObject {
                         description: req.description.as_ref().map(String::as_str),
                         object: &self.name,
                         op_id: req.id.as_ref().map(String::as_str),
+                        deprecated: req.deprecated,
                         method: Some(method),
                         body_required: req.body_required,
                         encoding: req.encoding.as_ref(),
@@ -202,6 +203,10 @@ impl<'a> ApiObjectImpl<'a> {
             let has_fields = builder.has_atleast_one_field();
             if builder.description.is_none() {
                 temp.write_str("\n")?;
+            }
+
+            if builder.deprecated {
+                temp.write_str("    #[deprecated]\n")?;
             }
 
             // All builder constructor functions are inlined.

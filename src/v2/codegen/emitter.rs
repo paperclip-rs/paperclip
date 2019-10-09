@@ -873,6 +873,7 @@ where
                 listable: false,
                 id: op.operation_id.clone(),
                 description: op.description.clone(),
+                deprecated: op.deprecated,
                 params,
                 response_contains_any,
                 body_required: true,
@@ -983,6 +984,7 @@ where
             OpRequirement {
                 id: op.operation_id.clone(),
                 description: op.description.clone(),
+                deprecated: op.deprecated,
                 params,
                 body_required: false,
                 listable,

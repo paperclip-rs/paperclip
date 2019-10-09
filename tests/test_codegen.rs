@@ -463,6 +463,7 @@ impl PostShipmentsBody {
     }
 
     /// Create shipment for order
+    #[deprecated]
     #[inline]
     pub fn post() -> PostShipmentsBodyPostBuilder {
         PostShipmentsBodyPostBuilder {
