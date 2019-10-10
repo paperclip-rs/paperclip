@@ -54,6 +54,13 @@ struct Opt {
     /// Emit CLI target instead.
     #[structopt(long = "cli")]
     cli: bool,
+    /// Name of the crate. If this is not specified, then the name of the
+    /// working directory is assumed to be crate name.
+    #[structopt(long = "name")]
+    pub name: Option<String>,
+    /// Version (defaults to 0.1.0)
+    #[structopt(long = "version")]
+    pub version: Option<String>,
 }
 
 fn parse_args_and_run() -> Result<(), Error> {
@@ -73,6 +80,12 @@ fn parse_args_and_run() -> Result<(), Error> {
     let mut meta = CrateMeta::default();
     if opt.cli {
         meta.is_cli = true;
+    }
+    if opt.name.is_some() {
+        meta.name = opt.name;
+    }
+    if opt.version.is_some() {
+        meta.version = opt.version;
     }
 
     state.set_meta(meta);
