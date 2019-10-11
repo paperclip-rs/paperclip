@@ -226,7 +226,13 @@ impl<T: TypedData> Apiv2Schema for T {
     }
 }
 
-impl<T> Apiv2Schema for Option<T> {}
+impl<T> Apiv2Schema for Option<T> {
+    default const NAME: Option<&'static str> = None;
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
+}
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     const NAME: Option<&'static str> = T::NAME;
@@ -236,7 +242,13 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     }
 }
 
-impl<T, E> Apiv2Schema for Result<T, E> {}
+impl<T, E> Apiv2Schema for Result<T, E> {
+    default const NAME: Option<&'static str> = None;
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
+}
 
 impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
     const NAME: Option<&'static str> = T::NAME;
