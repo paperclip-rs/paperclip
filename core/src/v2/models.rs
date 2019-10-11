@@ -506,6 +506,8 @@ pub struct Operation<S> {
     pub responses: BTreeMap<String, Response<S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
     pub parameters: Vec<Parameter<S>>,
+    #[serde(default, skip_serializing_if = "is_false")]
+    pub deprecated: bool,
 }
 
 impl<S> Operation<S> {

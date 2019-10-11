@@ -56,6 +56,8 @@ pub struct OpRequirement {
     pub id: Option<String>,
     /// Description of this operation (if any), to be used for docs.
     pub description: Option<String>,
+    /// Whether the operation is deprecated or not.
+    pub deprecated: bool,
     /// Parameters required for this operation.
     pub params: Vec<Parameter>,
     /// Whether the object itself is required (in body) for this operation.
@@ -228,6 +230,8 @@ pub(super) struct ApiObjectBuilder<'a> {
     pub helper_module_prefix: &'a str,
     /// Operation ID, if any.
     pub op_id: Option<&'a str>,
+    /// Whether the operation is deprecated or not.
+    pub deprecated: bool,
     /// HTTP method for the operation - all builders (other than object builders)
     /// have this.
     pub method: Option<HttpMethod>,
