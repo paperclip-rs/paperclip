@@ -1,4 +1,9 @@
 swagger: "2.0"
+info:
+  version: 1.0.0
+  title: Petstore
+  license:
+    name: MIT
 host: pets.com:8888
 basePath: /api
 definitions:

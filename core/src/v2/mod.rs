@@ -34,6 +34,7 @@ impl<S: Schema + Default> Api<S> {
         resolver.resolve()?;
         Ok(Api {
             swagger: self.swagger,
+            info: self.info,
             definitions: resolver.defs,
             paths: resolver.paths,
             base_path: self.base_path,

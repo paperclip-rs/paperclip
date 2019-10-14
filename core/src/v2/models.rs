@@ -125,6 +125,7 @@ pub struct GenericApi<S> {
     /// the spec was provided.
     #[serde(skip)]
     pub spec_format: SpecFormat,
+    pub info: Info,
 }
 
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -223,6 +224,45 @@ pub enum SchemaRepr<S> {
         new: ArcRwLock<S>,
         old: ArcRwLock<S>,
     },
+}
+
+/// Info Object
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Info {
+    pub version: String,
+    pub title: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub contact: Option<Contact>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub license: Option<License>,
+}
+
+/// Contact Object
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Contact {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub email: Option<String>,
+}
+
+/// License Object
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct License {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub name: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub url: Option<String>,
 }
 
 /// Path item.

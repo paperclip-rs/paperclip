@@ -12,6 +12,9 @@ fn test_templated_path_missing_parameters() {
         b"
 swagger: \"2.0\"
 definitions: {}
+info:
+  title:  \"Petstore\"
+  version: \"1.0.0\"
 paths:
   /pets/{petId}:
     get:
@@ -40,6 +43,9 @@ fn test_templated_path_uniqueness() {
         b"
 swagger: \"2.0\"
 definitions: {}
+info:
+  title:  \"Petstore\"
+  version: \"1.0.0\"
 paths:
   /store/{id1}/pets/{id2}:
     parameters:

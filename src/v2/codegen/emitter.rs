@@ -1,5 +1,6 @@
 use super::object::{ApiObject, ObjectField, OpRequirement, Parameter, Response};
 use super::state::{ChildModule, EmitterState};
+use super::CrateMeta;
 use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
@@ -13,14 +14,13 @@ use crate::v2::{
 use failure::Error;
 use heck::{CamelCase, SnekCase};
 use itertools::Itertools;
-use url::Host;
-
 use std::collections::{BTreeSet, HashSet};
 use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
 use std::path::{Path, PathBuf};
 use std::sync::Arc;
+use url::Host;
 
 /// Identifier used for `Any` generic parameters in struct definitions.
 pub(super) const ANY_GENERIC_PARAMETER: &str = "Any";
@@ -210,6 +210,15 @@ pub trait Emitter: Sized {
     fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
         let state = self.state();
         state.reset_internal_fields();
+
+        let m = state.get_meta();
+
+        if m.borrow().is_none() {
+            let mut meta = CrateMeta::default();
+            meta.name = Some(api.info.title.clone());
+            meta.version = Some(api.info.version.clone());
+            state.set_meta(meta);
+        }
 
         // Add default coders.
         let mut coders = api.coders.clone();

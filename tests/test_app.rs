@@ -75,6 +75,7 @@ fn test_simple_app() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
                       "properties": {
@@ -285,6 +286,7 @@ fn test_params() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {
                     "BadgeBody":{
                       "properties":{
@@ -444,6 +446,7 @@ fn test_map_in_out() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {
                     "Image": {
                       "properties": {
@@ -519,6 +522,7 @@ fn test_list_in_out() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
                       "properties": {
@@ -624,6 +628,7 @@ fn test_impl_traits() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
                       "properties": {
@@ -731,6 +736,7 @@ fn test_multiple_method_routes() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {},
                   "paths": {
                     "/foo": {
@@ -816,6 +822,7 @@ fn test_custom_extractor_empty_schema() {
             check_json(
                 &mut resp,
                 json!({
+                  "info":{"title":"","version":""},
                   "definitions": {},
                   "paths": {
                     "/": {

@@ -38,7 +38,7 @@ pub struct EmitterState {
     /// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `"cli"` feature.
     #[cfg(feature = "cli")]
-    crate_meta: Option<Rc<RefCell<CrateMeta>>>,
+    crate_meta: Rc<RefCell<Option<CrateMeta>>>,
 
     /* MARK: Internal fields that should be reset for each session. */
     /// Maps parent mod to immediate children. Used for declaring modules.
@@ -325,9 +325,9 @@ pub mod util {
             return Ok(());
         }
 
-        if let Some(m) = self.infer_crate_meta()? {
+        let cm = self.infer_crate_meta()?;
+        if let Some(meta) = cm.borrow().as_ref() {
             // Clap YAML
-            let meta = m.borrow();
             let clap_yaml = root.with_file_name("app.yaml");
             let base_content = template::render(
                 TEMPLATE::CLAP_YAML,
@@ -362,7 +362,9 @@ pub mod util {
     fn is_cli(&self) -> Result<bool, Error> {
         Ok(self
             .infer_crate_meta()?
-            .map(|m| m.borrow().is_cli)
+            .borrow()
+            .as_ref()
+            .map(|m| m.is_cli)
             .unwrap_or(false))
     }
 }
@@ -372,19 +374,23 @@ pub mod util {
 #[cfg(feature = "cli")]
 impl EmitterState {
     /// Sets the crate metadata for this session.
-    pub fn set_meta(&mut self, meta: CrateMeta) {
-        self.crate_meta = Some(Rc::new(RefCell::new(meta)));
+    pub fn set_meta(&self, meta: CrateMeta) {
+        *self.crate_meta.borrow_mut() = Some(meta)
+    }
+
+    pub(super) fn get_meta(&self) -> Rc<RefCell<Option<CrateMeta>>> {
+        self.crate_meta.clone()
     }
 
     /// Checks whether this session is for emitting a crate.
     fn is_crate(&self) -> bool {
-        self.crate_meta.is_some()
+        self.crate_meta.borrow().is_some()
     }
 
     /// Returns the path to the root module.
     fn root_module_path(&self) -> PathBuf {
-        if let Some(m) = self.crate_meta.as_ref() {
-            let meta = m.borrow();
+        let cm = self.crate_meta.borrow();
+        if let Some(meta) = cm.as_ref() {
             if meta.is_cli {
                 self.working_dir.join("main.rs")
             } else {
@@ -401,12 +407,13 @@ impl EmitterState {
         let is_cli = self.is_cli()?;
         man_path.set_file_name("Cargo.toml");
 
-        let m = match self.infer_crate_meta()? {
+        let cm = self.infer_crate_meta()?;
+        let m = cm.borrow();
+        let meta = match m.as_ref() {
             Some(c) => c,
             None => return Ok(()),
         };
 
-        let meta = m.borrow();
         if self.is_crate() {
             let contents = template::render(
                 TEMPLATE::CARGO_MANIFEST,
@@ -425,9 +432,9 @@ impl EmitterState {
     }
 
     /// Validates crate metadata, sets the unset fields and returns a reference.
-    fn infer_crate_meta(&self) -> Result<Option<Rc<RefCell<CrateMeta>>>, Error> {
-        if let Some(m) = self.crate_meta.as_ref() {
-            let mut meta = m.borrow_mut();
+    fn infer_crate_meta(&self) -> Result<Rc<RefCell<Option<CrateMeta>>>, Error> {
+        let mut cm = self.crate_meta.borrow_mut();
+        if let Some(meta) = &mut *cm {
             if meta.name.is_none() {
                 meta.name = Some(
                     fs::canonicalize(&self.working_dir)?
@@ -462,11 +469,16 @@ impl EmitterState {
 #[cfg(not(feature = "cli"))]
 impl EmitterState {
     /// This is a no-op.
-    pub fn set_meta(&mut self, _: CrateMeta) {}
+    pub fn set_meta(&self, _: CrateMeta) {}
+
+    /// This is a no-op
+    pub fn get_meta(&self) -> Rc<RefCell<Option<CrateMeta>>> {
+        Rc::new(RefCell::new(None))
+    }
 
     /// Always returns `Ok(None)`
-    fn infer_crate_meta(&self) -> Result<Option<Rc<RefCell<CrateMeta>>>, Error> {
-        Ok(None)
+    fn infer_crate_meta(&self) -> Result<Rc<RefCell<Option<CrateMeta>>>, Error> {
+        Ok(Rc::new(RefCell::new(None)))
     }
 
     /// Always returns the path to `mod.rs` in root.
@@ -510,7 +522,7 @@ impl Default for EmitterState {
             mod_prefix: "crate::",
             ns_sep: ".",
             #[cfg(feature = "cli")]
-            crate_meta: None,
+            crate_meta: Rc::new(RefCell::new(None)),
             base_url: RefCell::new("https://example.com".parse().expect("invalid URL?")),
             def_mods: RefCell::new(HashMap::new()),
             rel_paths: RefCell::new(HashSet::new()),
