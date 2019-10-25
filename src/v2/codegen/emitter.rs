@@ -1,4 +1,4 @@
-use super::object::{ApiObject, ObjectField, OpRequirement, Parameter};
+use super::object::{ApiObject, ObjectField, OpRequirement, Parameter, Response};
 use super::state::{ChildModule, EmitterState};
 use crate::error::PaperClipError;
 use crate::v2::{
@@ -875,9 +875,11 @@ where
                 description: op.description.clone(),
                 deprecated: op.deprecated,
                 params,
-                response_contains_any,
+                response: Response {
+                    contains_any: response_contains_any,
+                    ty_path: response_ty_path,
+                },
                 body_required: true,
-                response_ty_path,
                 encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
                 decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),
             },
@@ -988,8 +990,10 @@ where
                 params,
                 body_required: false,
                 listable,
-                response_contains_any: schema.contains_any(),
-                response_ty_path,
+                response: Response {
+                    ty_path: response_ty_path,
+                    contains_any: schema.contains_any(),
+                },
                 encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
                 decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),
             },

@@ -10,7 +10,7 @@ use std::collections::BTreeMap;
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.
-pub trait OperationModifier: Apiv2Schema {
+pub trait OperationModifier: Apiv2Schema + Sized {
     /// Update the parameters list in the given operation (if needed).
     fn update_parameter(_op: &mut Operation<DefaultSchemaRaw>) {}
 
@@ -19,26 +19,23 @@ pub trait OperationModifier: Apiv2Schema {
 
     /// Update the definitions map (if needed).
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
-        let mut schema = Self::schema_with_ref();
-        loop {
-            if let Some(Either::Left(s)) = schema.items {
-                schema = *s;
-                continue;
-            } else if let Some(Either::Right(s)) = schema.extra_props {
-                schema = *s;
-                continue;
-            } else if let Some(n) = schema.name.take() {
-                schema.remove_refs();
-                map.insert(n, schema);
-            }
-
-            break;
-        }
+        update_definitions_from_schema_type::<Self>(map);
     }
 }
 
 /// All schema types default to updating the definitions map.
-impl<T> OperationModifier for T where T: Apiv2Schema {}
+impl<T> OperationModifier for T
+where
+    T: Apiv2Schema,
+{
+    default fn update_parameter(_op: &mut Operation<DefaultSchemaRaw>) {}
+
+    default fn update_response(_op: &mut Operation<DefaultSchemaRaw>) {}
+
+    default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
+        update_definitions_from_schema_type::<Self>(map);
+    }
+}
 
 impl<T> OperationModifier for Option<T>
 where
@@ -65,11 +62,11 @@ where
         T::update_parameter(op);
     }
 
-    default fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
         T::update_response(op);
     }
 
-    default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
+    fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         T::update_definitions(map);
     }
 }
@@ -88,7 +85,13 @@ impl_empty!(HttpRequest, HttpResponse, Bytes, Payload);
 
 // Other extractors
 
-impl<T> Apiv2Schema for Json<T> {}
+impl<T> Apiv2Schema for Json<T> {
+    default const NAME: Option<&'static str> = None;
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
+}
 
 /// JSON needs specialization because it updates the global definitions.
 impl<T: Apiv2Schema> Apiv2Schema for Json<T> {
@@ -134,7 +137,13 @@ where
 }
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
-    impl<T> Apiv2Schema for $ty {}
+    impl<T> Apiv2Schema for $ty {
+        default const NAME: Option<&'static str> = None;
+
+        default fn raw_schema() -> DefaultSchemaRaw {
+            Default::default()
+        }
+    }
 
     impl<T: Apiv2Schema> OperationModifier for $ty {
         fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
@@ -350,3 +359,25 @@ impl_fn_operation!(A, B, C, D, E, F, G);
 impl_fn_operation!(A, B, C, D, E, F, G, H);
 impl_fn_operation!(A, B, C, D, E, F, G, H, I);
 impl_fn_operation!(A, B, C, D, E, F, G, H, I, J);
+
+/// Given the schema type, recursively update the map of definitions.
+fn update_definitions_from_schema_type<T>(map: &mut BTreeMap<String, DefaultSchemaRaw>)
+where
+    T: Apiv2Schema,
+{
+    let mut schema = T::schema_with_ref();
+    loop {
+        if let Some(Either::Left(s)) = schema.items {
+            schema = *s;
+            continue;
+        } else if let Some(Either::Right(s)) = schema.extra_props {
+            schema = *s;
+            continue;
+        } else if let Some(n) = schema.name.take() {
+            schema.remove_refs();
+            map.insert(n, schema);
+        }
+
+        break;
+    }
+}

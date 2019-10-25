@@ -1,5 +1,5 @@
 use super::emitter::ANY_GENERIC_PARAMETER;
-use super::object::{ApiObject, ApiObjectBuilder, StructField, TypeParameters};
+use super::object::{ApiObject, ApiObjectBuilder, Response, StructField, TypeParameters};
 use super::RUST_KEYWORDS;
 use crate::v2::models::{CollectionFormat, ParameterIn, JSON_CODER, JSON_MIME};
 use heck::{CamelCase, KebabCase, SnekCase};
@@ -67,8 +67,10 @@ impl ApiObject {
                         global_params: &path_ops.params,
                         local_params: &req.params,
                         needs_any: needs_any && req.body_required,
-                        response_contains_any: req.response_contains_any,
-                        response: req.response_ty_path.as_ref().map(String::as_str),
+                        response: Response {
+                            ty_path: req.response.ty_path.as_ref().map(String::as_str),
+                            contains_any: req.response.contains_any,
+                        },
                     })
             });
 
@@ -672,7 +674,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             f.write_str("Vec<")?;
         }
 
-        if let Some(resp) = self.builder.response {
+        if let Some(resp) = self.builder.response.ty_path.as_ref() {
             // If we've acquired a response type, then write that.
             f.write_str(resp)?;
         }
@@ -681,8 +683,8 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         // assume we have to write `Any` type.
         let mut accepted_range = None;
         if self.builder.needs_any
-            || self.builder.response.is_none()
-            || self.builder.response_contains_any
+            || self.builder.response.ty_path.is_none()
+            || self.builder.response.contains_any
         {
             let (range, coder) = match self.builder.decoding {
                 Some(&(ref r, ref c)) => (r.as_str(), c),
@@ -690,7 +692,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             };
 
             accepted_range = Some(range);
-            if self.builder.response.is_some() {
+            if self.builder.response.ty_path.is_some() {
                 write!(f, "<{}>", coder.any_value)?;
             } else {
                 f.write_str(&coder.any_value)?;

@@ -64,11 +64,8 @@ pub struct OpRequirement {
     pub body_required: bool,
     /// Whether this operation returns a list of the associated `ApiObject`.
     pub listable: bool,
-    /// Whether the response contains an `Any`. This is useful when operations
-    /// get bound to some other object.
-    pub response_contains_any: bool,
-    /// Type path for this operation's response.
-    pub response_ty_path: Option<String>,
+    /// Response information for this operation.
+    pub response: Response<String>,
     /// Preferred media range and encoder for the client. This is ignored for
     /// methods that don't accept a body. If there's no coder, then JSON
     /// encoding is assumed.
@@ -77,6 +74,16 @@ pub struct OpRequirement {
     /// when objects make use of `Any` type. If there's no coder, then JSON
     /// encoding is assumed.
     pub decoding: Option<(String, Arc<Coder>)>,
+}
+
+#[derive(Default, Debug, Clone)]
+pub struct Response<S> {
+    /// Type path for this operation's response (if any). If this is empty,
+    /// then we go for `Any`.
+    pub ty_path: Option<S>,
+    /// Whether the response contains an `Any`. This is useful when operations
+    /// get bound to some other object.
+    pub contains_any: bool,
 }
 
 /// Represents some parameter somewhere (header, path, query, etc.).
@@ -240,9 +247,7 @@ pub(super) struct ApiObjectBuilder<'a> {
     /// Whether this operation returns a list object.
     pub is_list_op: bool,
     /// Response for this operation, if any.
-    pub response: Option<&'a str>,
-    /// Whether the response contains an `Any`.
-    pub response_contains_any: bool,
+    pub response: Response<&'a str>,
     /// Object to which this builder belongs to.
     pub object: &'a str,
     /// Encoding for the operation, if it's not JSON.

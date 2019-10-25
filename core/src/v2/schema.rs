@@ -4,9 +4,6 @@ use super::models::{DataType, DataTypeFormat, DefaultSchemaRaw, Either, Operatio
 
 use std::collections::{BTreeMap, BTreeSet};
 
-#[cfg(feature = "datetime")]
-use chrono;
-
 /// Interface for the [`Schema`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject) object.
 ///
 /// This is only used for resolving the definitions.

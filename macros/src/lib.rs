@@ -76,7 +76,7 @@ impl Parse for MacroAttribute {
 
 #[cfg(feature = "actix")]
 fn parse_input_attrs(ts: TokenStream) -> MacroAttribute {
-    syn::parse(ts.clone())
+    syn::parse(ts)
         .map_err(|e| {
             e.span()
                 .unwrap()

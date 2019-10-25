@@ -19,10 +19,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: Support for `serde_json::Value`, `serde_yaml::Value`, `uuid::Uuid` (through `uid` feature) and `chrono::NaiveDateTime` (through `datetime` feature) in structs.
 - Codegen for `Any` type in schema.
 - CLI payload encoding/decoding supports custom types and not limited to JSON.
+- Codegen for `#[deprecated]` attribute when `deprecated` field is set to `true` in schema.
+- Codegen adds `Request` and `Response` traits for HTTP request and response objects.
 
 ### Changed
 - Switched to templating for (almost) static modules.
 - Operation IDs are preferred for method names if they exist.
+- `ApiClient` uses the newly added `Request` and `Response` and is now async/await.
+- `Sendable` accepts the new `ApiClient` and is now async/await.
 
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.
