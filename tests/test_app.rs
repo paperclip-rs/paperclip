@@ -93,7 +93,10 @@ fn test_simple_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uid": {}
+                        "uid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
                       },
                       "required":["class", "name", "updated"]
                     }
@@ -534,7 +537,10 @@ fn test_list_in_out() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uid": {}
+                        "uid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
                       },
                       "required":["class", "name", "updated"]
                     }
@@ -636,7 +642,10 @@ fn test_impl_traits() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uid": {}
+                        "uid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
                       },
                       "required":["class", "name", "updated"]
                     }
