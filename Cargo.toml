@@ -33,6 +33,7 @@ parking_lot = { version = "0.8" }
 regex = { version = "1.1", optional = true }
 reqwest = { version = "0.9", optional = true }
 # rustfmt-nightly = { version = "1.2.2", optional = true }
+semver = "0.9"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"

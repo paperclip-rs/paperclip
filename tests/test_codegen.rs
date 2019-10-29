@@ -3,7 +3,7 @@ extern crate lazy_static;
 
 use paperclip::v2::{
     self,
-    codegen::{CrateMeta, DefaultEmitter, Emitter, EmitterState},
+    codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
     models::{Api, DefaultSchema},
 };
 
@@ -26,6 +26,7 @@ lazy_static! {
         state.working_dir.push("tests/test_pet");
         let mut meta = CrateMeta::default();
         meta.authors = Some(vec!["Me <me@example.com>".into()]);
+        meta.mode = EmitMode::Crate;
         state.set_meta(meta);
 
         let emitter = DefaultEmitter::from(state);
@@ -38,7 +39,7 @@ lazy_static! {
         state.working_dir.push("tests/test_pet/cli");
         let mut meta = CrateMeta::default();
         meta.authors = Some(vec!["Me <me@example.com>".into()]);
-        meta.is_cli = true;
+        meta.mode = EmitMode::App;
         state.set_meta(meta);
 
         let emitter = DefaultEmitter::from(state);

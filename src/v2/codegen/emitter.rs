@@ -212,11 +212,15 @@ pub trait Emitter: Sized {
         state.reset_internal_fields();
 
         let m = state.get_meta();
-
         if m.borrow().is_none() {
             let mut meta = CrateMeta::default();
             meta.name = Some(api.info.title.clone());
-            meta.version = Some(api.info.version.clone());
+            if semver::Version::parse(&api.info.version).is_ok() {
+                meta.version = Some(api.info.version.clone());
+            } else {
+                warn!("Unable to parse {:?} as semver version.", api.info.version);
+            }
+
             state.set_meta(meta);
         }
 

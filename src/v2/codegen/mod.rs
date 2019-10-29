@@ -61,8 +61,23 @@ pub struct CrateMeta {
     pub version: Option<String>,
     /// List of authors for this crate. Defaults to cargo's defaults.
     pub authors: Option<Vec<String>>,
-    /// Whether we're planning to emit a CLI application.
-    pub is_cli: bool,
+    /// Whether we're planning to emit a lib, app or module.
+    pub mode: EmitMode,
     // Marker to avoid potential breakage when more public fields come in.
     _marker: (),
+}
+
+/// Mode of codegen (module, crate or CLI app).
+#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+pub enum EmitMode {
+    Module,
+    Crate,
+    App,
+}
+
+impl Default for EmitMode {
+    fn default() -> Self {
+        // NOTE: Module by default - CLI will specify other modes if needed.
+        EmitMode::Module
+    }
 }

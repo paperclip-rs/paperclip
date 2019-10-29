@@ -6,7 +6,7 @@ extern crate serde_derive;
 
 use paperclip::v2::{
     self,
-    codegen::{CrateMeta, DefaultEmitter, Emitter, EmitterState},
+    codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
     models::{Api, HttpMethod, Version},
 };
 
@@ -40,10 +40,11 @@ lazy_static! {
         state.working_dir = (&*ROOT).into();
         state.working_dir.push("tests/test_k8s/cli");
         let mut meta = CrateMeta::default();
+        assert_eq!(meta.mode, EmitMode::Module);
         meta.name = Some("test-k8s-cli".into());
         meta.version = Some("0.0.0".into());
         meta.authors = Some(vec!["Me <me@example.com>".into()]);
-        meta.is_cli = true;
+        meta.mode = EmitMode::App;
         state.set_meta(meta);
 
         let emitter = DefaultEmitter::from(state);

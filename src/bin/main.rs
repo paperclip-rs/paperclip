@@ -1,7 +1,7 @@
 use failure::Error;
 use paperclip::v2::{
     self,
-    codegen::{CrateMeta, DefaultEmitter, Emitter, EmitterState},
+    codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
     models::{Api, DefaultSchema},
 };
 use paperclip::PaperClipError;
@@ -79,7 +79,9 @@ fn parse_args_and_run() -> Result<(), Error> {
 
     let mut meta = CrateMeta::default();
     if opt.cli {
-        meta.is_cli = true;
+        meta.mode = EmitMode::App;
+    } else {
+        meta.mode = EmitMode::Crate;
     }
     if opt.name.is_some() {
         meta.name = opt.name;

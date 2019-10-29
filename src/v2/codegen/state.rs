@@ -1,5 +1,5 @@
 use super::template::{self, TEMPLATE};
-use super::{object::ApiObject, CrateMeta};
+use super::{object::ApiObject, CrateMeta, EmitMode};
 use crate::error::PaperClipError;
 use crate::v2::models::{Coders, SpecFormat};
 use failure::Error;
@@ -123,7 +123,7 @@ impl EmitterState {
             let mut mod_path = self.working_dir.join(&rel_parent);
             let mut contents = String::new();
 
-            if rel_parent.parent().is_none() && self.is_crate() {
+            if rel_parent.parent().is_none() && self.needs_root_module() {
                 mod_path = self.root_module_path();
                 contents.push_str(
                     "
@@ -364,7 +364,7 @@ pub mod util {
             .infer_crate_meta()?
             .borrow()
             .as_ref()
-            .map(|m| m.is_cli)
+            .map(|m| m.mode == EmitMode::App)
             .unwrap_or(false))
     }
 }
@@ -382,23 +382,27 @@ impl EmitterState {
         self.crate_meta.clone()
     }
 
-    /// Checks whether this session is for emitting a crate.
-    fn is_crate(&self) -> bool {
-        self.crate_meta.borrow().is_some()
+    /// Checks whether this session is for emitting a crate or CLI.
+    fn needs_root_module(&self) -> bool {
+        self.crate_meta
+            .borrow()
+            .as_ref()
+            .map(|m| m.mode != EmitMode::Module)
+            .unwrap_or(false)
     }
 
     /// Returns the path to the root module.
     fn root_module_path(&self) -> PathBuf {
         let cm = self.crate_meta.borrow();
         if let Some(meta) = cm.as_ref() {
-            if meta.is_cli {
-                self.working_dir.join("main.rs")
-            } else {
-                self.working_dir.join("lib.rs")
+            match meta.mode {
+                EmitMode::Crate => return self.working_dir.join("lib.rs"),
+                EmitMode::App => return self.working_dir.join("main.rs"),
+                EmitMode::Module => (),
             }
-        } else {
-            self.working_dir.join("mod.rs")
         }
+
+        self.working_dir.join("mod.rs")
     }
 
     /// Creates a Cargo.toml manifest in the working directory (if it's a crate).
@@ -414,7 +418,7 @@ impl EmitterState {
             None => return Ok(()),
         };
 
-        if self.is_crate() {
+        if self.needs_root_module() {
             let contents = template::render(
                 TEMPLATE::CARGO_MANIFEST,
                 &ManifestContext {
@@ -487,7 +491,7 @@ impl EmitterState {
     }
 
     /// This always returns `false`.
-    fn is_crate(&self) -> bool {
+    fn needs_root_module(&self) -> bool {
         false
     }
 

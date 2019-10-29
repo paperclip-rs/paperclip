@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI payload encoding/decoding supports custom types and not limited to JSON.
 - Codegen for `#[deprecated]` attribute when `deprecated` field is set to `true` in schema.
 - Codegen adds `Request` and `Response` traits for HTTP request and response objects.
+- CLI uses name and version from `info` field in spec.
 
 ### Changed
 - Switched to templating for (almost) static modules.
