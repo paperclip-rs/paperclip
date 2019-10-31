@@ -1533,7 +1533,7 @@ path = \"main.rs\"
 async-trait = \"0.1\"
 failure = \"0.1\"
 futures = \"0.1\"
-futures-preview = { version = \"0.3.0-alpha.16\", features = [\"compat\"], package = \"futures-preview\" }
+futures-preview = { version = \"0.3.0-alpha.19\", features = [\"compat\"], package = \"futures-preview\" }
 http = \"0.1\"
 lazy_static = \"1.4\"
 log = \"0.4\"
@@ -1543,6 +1543,7 @@ reqwest = \"0.9\"
 serde = \"1.0\"
 serde_json = \"1.0\"
 serde_yaml = \"0.8\"
+tokio-io-old = { version = \"0.1\", package = \"tokio-io\" }
 url = \"2.1\"
 
 clap = { version = \"2.33\", features = [\"yaml\"] }

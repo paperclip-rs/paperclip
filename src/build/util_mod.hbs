@@ -1,14 +1,95 @@
 
-use std::fmt::\{self, Display, Write};
+use futures::\{Async, Stream as OldStream};
+use futures_preview::\{
+    compat::Stream01CompatExt,
+    io::\{AsyncReadExt, AsyncWrite},
+    stream::TryStreamExt,
+};
+use reqwest::r#async::\{Body, Decoder};
+use tokio_io_old::AsyncRead as OldAsyncRead;
 
-use std::marker::PhantomData;
+use std::fmt::\{self, Display, Write};
+use std::io::\{self, BufReader};
+use std::marker::\{PhantomData, Unpin};
 use std::ops::Deref;
 use std::str::FromStr;
 
+/// HTTP body response stream.
+pub struct ResponseStream(Decoder);
+
+impl From<Decoder> for ResponseStream \{
+    fn from(d: Decoder) -> Self \{
+        ResponseStream(d)
+    }
+}
+
+impl ResponseStream \{
+    /// Copy this stream to anything that implements `AsyncWrite`.
+    pub async fn stream_to_writer<W>(self, writer: &mut W) -> io::Result<()>
+        where W: AsyncWrite + Unpin + ?Sized
+    \{
+        self.0.compat()
+            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
+            .into_async_read()
+            .copy_into(writer).await?;
+        Ok(())
+    }
+}
+
+/// Wrapper for converting a buffered `AsyncRead` implementor into a `Stream`.
+///
+/// **NOTE:** Both `AsyncRead` and `Stream` are from 0.1 futures and tokio.
+/// This is blocked on `reqwest` crate at the time of this writing.
+pub struct AsyncReadStream<R>(BufReader<R>);
+
+impl<R> From<BufReader<R>> for AsyncReadStream<R> \{
+    fn from(r: BufReader<R>) -> Self \{
+        AsyncReadStream(r)
+    }
+}
+
+impl<R> OldStream for AsyncReadStream<R>
+    where R: OldAsyncRead
+\{
+    type Item = Vec<u8>;
+    type Error = io::Error;
+
+    fn poll(&mut self) -> Result<Async<Option<Self::Item>>, Self::Error> \{
+        let mut buf = vec![];
+        match self.0.poll_read(&mut buf) \{
+            Ok(Async::NotReady) if buf.is_empty() => Ok(Async::NotReady),
+            Ok(Async::NotReady) => Ok(Async::Ready(Some(buf))),
+            Ok(Async::Ready(n)) => \{
+                if buf.is_empty() && n == 0 \{
+                    Ok(Async::Ready(None))
+                } else \{
+                    Ok(Async::Ready(Some(buf)))
+                }
+            }
+            Err(e) => Err(e),
+        }
+    }
+}
+
+impl<R> Into<Body> for AsyncReadStream<R>
+    where R: OldAsyncRead + Send + 'static
+\{
+    fn into(self) -> Body \{
+        Body::from(Box::new(self) as Box<_>)
+    }
+}
+
+/// Marker trait for delimiting. We represent each type of delimiting
+/// with an unit struct and implement this
 pub trait Delimiting \{
     const DELIMITER: char;
 }
 
+/// Marker trait for whether the delimiting unit struct can be used by
+/// iterators. This is not implemented by `multi` - Multiple instances are
+/// allowed only in form data and query, and we need something for parsing
+/// stuff from CLI. At the same time, we also cannot allow serializing this
+/// container in the same way as others.
 pub trait Allowed \{}
 
 macro_rules! impl_delim \{
@@ -34,12 +115,10 @@ impl Allowed for Tsv \{}
 impl_delim!(Pipes => '|');
 impl Allowed for Pipes \{}
 
-// NOTE: We use ampersand only for convenience. Multiple instances are allowed only
-// in form data and query, and we need something for parsing stuff from CLI. But, we
-// also cannot allow serializing this container in the same way as others.
-// That's why `Multi` doesn't implement `Allowed`.
+// NOTE: We use ampersand only for convenience.
 impl_delim!(Multi => '&');
 
+/// Wrapper over a vector which also holds a marker type for delimiting.
 #[derive(Debug, Clone)]
 pub struct Delimited<T, D>(Vec<T>, PhantomData<D>);
 
