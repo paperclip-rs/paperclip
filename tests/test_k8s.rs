@@ -782,6 +782,7 @@ pub mod miscellaneous {
 }
 
 pub mod client {
+    use crate::codegen::util::ResponseStream;
     use failure::Fail;
     use futures::{Stream, Future};
     use futures_preview::compat::Future01CompatExt;
@@ -847,6 +848,7 @@ pub mod client {
     #[async_trait::async_trait]
     pub trait Response: Debug + Send + Sized {
         type Bytes: AsRef<[u8]>;
+        type Stream;
 
         /// Gets the value for the given header name, if any.
         fn header(&self, name: &'static str) -> Option<&str>;
@@ -857,6 +859,9 @@ pub mod client {
         /// Media type for this response body (if any).
         fn media_type(&self) -> Option<mime::MediaType>;
 
+        /// Response body as a stream.
+        fn stream(&mut self) -> ResponseStream<Self::Stream>;
+
         /// Vector of bytes from the response body.
         async fn body_bytes(self) -> Result<(Self, Self::Bytes), ApiError<Self>>;
     }
@@ -864,6 +869,7 @@ pub mod client {
     #[async_trait::async_trait]
     impl Response for reqwest::r#async::Response {
         type Bytes = reqwest::r#async::Chunk;
+        type Stream = reqwest::r#async::Decoder;
 
         fn header(&self, name: &'static str) -> Option<&str> {
             self.headers().get(name).and_then(|v| v.to_str().ok())
@@ -876,6 +882,11 @@ pub mod client {
         fn media_type(&self) -> Option<mime::MediaType> {
             self.header(http::header::CONTENT_TYPE.as_str())
                 .and_then(|v| v.parse().ok())
+        }
+
+        fn stream(&mut self) -> ResponseStream<Self::Stream> {
+            let body = std::mem::replace(self.body_mut(), reqwest::r#async::Decoder::empty());
+            ResponseStream::from(body)
         }
 
         async fn body_bytes(mut self) -> Result<(Self, Self::Bytes), ApiError<Self>> {
@@ -1723,7 +1734,7 @@ async fn main() {
     }
 }
 ",
-        Some(8821),
+        Some(9238),
     );
 }
 

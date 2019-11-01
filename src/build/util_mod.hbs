@@ -5,9 +5,11 @@ use futures_preview::\{
     io::\{AsyncReadExt, AsyncWrite},
     stream::TryStreamExt,
 };
-use reqwest::r#async::\{Body, Decoder};
+use reqwest::r#async::Body;
+use serde::\{Deserialize, Deserializer};
 use tokio_io_old::AsyncRead as OldAsyncRead;
 
+use std::error::Error;
 use std::fmt::\{self, Display, Write};
 use std::io::\{self, BufReader};
 use std::marker::\{PhantomData, Unpin};
@@ -15,17 +17,30 @@ use std::ops::Deref;
 use std::str::FromStr;
 
 /// HTTP body response stream.
-pub struct ResponseStream(Decoder);
+pub struct ResponseStream<S>(S);
 
-impl From<Decoder> for ResponseStream \{
-    fn from(d: Decoder) -> Self \{
-        ResponseStream(d)
+impl<'de, S> Deserialize<'de> for ResponseStream<S> \{
+    fn deserialize<D>(_: D) -> Result<Self, D::Error>
+    where
+        D: Deserializer<'de>
+    \{
+        unimplemented!("Response stream is not supposed to be deserialized");
     }
 }
 
-impl ResponseStream \{
+impl<S> From<S> for ResponseStream<S> \{
+    fn from(s: S) -> Self \{
+        ResponseStream(s)
+    }
+}
+
+impl<S, I, E> ResponseStream<S>
+    where S: OldStream<Item=I, Error=E>,
+          I: AsRef<[u8]>,
+          E: Into<Box<dyn Error + Send + Sync + 'static>>
+\{
     /// Copy this stream to anything that implements `AsyncWrite`.
-    pub async fn stream_to_writer<W>(self, writer: &mut W) -> io::Result<()>
+    pub async fn to_writer<W>(self, writer: &mut W) -> io::Result<()>
         where W: AsyncWrite + Unpin + ?Sized
     \{
         self.0.compat()

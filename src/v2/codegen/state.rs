@@ -195,7 +195,7 @@ pub mod {name} {{
     /// Once the emitter has collected requirements for paths,
     /// we can use this method to add builder structs and their impls.
     pub(crate) fn add_builders(&self) -> Result<(), Error> {
-        let module_prefix = format!("{}::", self.mod_prefix.trim_matches(':'));
+        let module_prefix = self.normalized_mod_prefix();
         info!("Adding builders to definitions.");
         let mut unit_types = self.unit_types.borrow_mut();
         let def_mods = self.def_mods.borrow();
@@ -290,6 +290,7 @@ pub mod util {
         let contents = template::render(
             TEMPLATE::CLIENT_MOD,
             &ClientModContext {
+                mod_prefix: &self.normalized_mod_prefix(),
                 media_coders: &*self.media_coders.borrow(),
                 base_url: self.base_url.borrow().as_str(),
             },
@@ -366,6 +367,11 @@ pub mod util {
             .as_ref()
             .map(|m| m.mode == EmitMode::App)
             .unwrap_or(false))
+    }
+
+    /// Normalized module prefix used by codegen.
+    fn normalized_mod_prefix(&self) -> String {
+        format!("{}::", self.mod_prefix.trim_matches(':'))
     }
 }
 
@@ -572,6 +578,7 @@ struct CliUtilContext<'a> {
 #[derive(serde::Serialize)]
 struct ClientModContext<'a> {
     base_url: &'a str,
+    mod_prefix: &'a str,
     media_coders: &'a [MediaCoder],
 }
 
