@@ -822,26 +822,32 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
         \"/test/array\".into()
     }
 }
+",
+        Some(626),
+    );
 
-/// Builder created by [`Miscellaneous::post_1`](./struct.Miscellaneous.html#method.post_1) method for a `POST` operation associated with `Miscellaneous`.
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/miscellaneous.rs"),
+        "
+/// Builder created by [`Miscellaneous::post_2`](./struct.Miscellaneous.html#method.post_2) method for a `POST` operation associated with `Miscellaneous`.
 #[repr(transparent)]
 #[derive(Debug, Clone)]
-pub struct MiscellaneousPostBuilder1<Values> {
-    inner: MiscellaneousPostBuilder1Container,
+pub struct MiscellaneousPostBuilder2<Values> {
+    inner: MiscellaneousPostBuilder2Container,
     _param_values: core::marker::PhantomData<Values>,
 }
 
 #[derive(Debug, Default, Clone)]
-struct MiscellaneousPostBuilder1Container {
+struct MiscellaneousPostBuilder2Container {
     param_values: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>>,
     param_x_foobar: Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Pipes>>,
     param_booya: Option<crate::util::Delimited<crate::util::Delimited<i64, crate::util::Csv>, crate::util::Multi>>,
     param_foo: Option<crate::util::Delimited<crate::util::Delimited<String, crate::util::Csv>, crate::util::Multi>>,
 }
 
-impl<Values> MiscellaneousPostBuilder1<Values> {
+impl<Values> MiscellaneousPostBuilder2<Values> {
     #[inline]
-    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
+    pub fn values(mut self, value: impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Iterator<Item = impl Into<String>>>>>) -> MiscellaneousPostBuilder2<crate::generics::ValuesExists> {
         self.inner.param_values = Some(value.map(|value| value.map(|value| value.map(|value| value.map(|value| value.into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into()).collect::<Vec<_>>().into());
         unsafe { std::mem::transmute(self) }
     }
@@ -865,7 +871,7 @@ impl<Values> MiscellaneousPostBuilder1<Values> {
     }
 }
 
-impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for MiscellaneousPostBuilder2<crate::generics::ValuesExists> {
     type Output = String;
 
     const METHOD: http::Method = http::Method::POST;
@@ -898,7 +904,7 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
     }
 }
 ",
-        Some(523),
+        Some(2094),
     );
 }
 
@@ -910,10 +916,10 @@ fn test_builder_from_args_with_delimited() {
         &(ROOT.clone() + "/tests/test_pet/cli/miscellaneous.rs"),
         "
 #[allow(unused_variables)]
-impl MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
+impl MiscellaneousPostBuilder2<crate::generics::ValuesExists> {
     pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>) -> Result<Self, crate::ClientError> {
-        let thing = MiscellaneousPostBuilder1 {
-            inner: MiscellaneousPostBuilder1Container {
+        let thing = MiscellaneousPostBuilder2 {
+            inner: MiscellaneousPostBuilder2Container {
             param_values: matches.and_then(|m| {
                     m.value_of(\"values\").map(|_| {
                         value_t!(m, \"values\", crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<String, crate::util::Pipes>, crate::util::Csv>, crate::util::Ssv>, crate::util::Tsv>).unwrap_or_else(|e| e.exit())
@@ -946,6 +952,38 @@ impl MiscellaneousPostBuilder1<crate::generics::ValuesExists> {
     }
 }
 ",
-        Some(5344),
+        Some(6586),
+    );
+}
+
+#[test]
+fn test_file_response() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/miscellaneous.rs"),
+        "
+/// Builder created by [`Miscellaneous::get_1`](./struct.Miscellaneous.html#method.get_1) method for a `GET` operation associated with `Miscellaneous`.
+#[derive(Debug, Clone)]
+pub struct MiscellaneousGetBuilder1;
+
+
+#[async_trait::async_trait]
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for MiscellaneousGetBuilder1 {
+    type Output = crate::util::ResponseStream<<<Client as crate::client::ApiClient>::Response as crate::client::Response>::Stream>;
+
+    const METHOD: http::Method = http::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/test/file/response\".into()
+    }
+
+    async fn send(&self, client: &Client) -> Result<Self::Output, crate::client::ApiError<Client::Response>> {
+        use crate::client::Response;
+
+        let mut resp = self.send_raw(client).await?;
+        Ok(resp.stream())
+    }
+}
+",
+        Some(1206),
     );
 }

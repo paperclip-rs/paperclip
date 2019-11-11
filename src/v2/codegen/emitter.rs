@@ -24,6 +24,8 @@ use url::Host;
 
 /// Identifier used for `Any` generic parameters in struct definitions.
 pub(super) const ANY_GENERIC_PARAMETER: &str = "Any";
+/// Identifier used for file types in schema. This will be replaced with `ResponseStream`.
+pub(super) const FILE_MARKER: &str = "--FILE--";
 
 /// Some "thing" emitted by the emitter.
 #[derive(Debug)]
@@ -307,11 +309,7 @@ pub trait Emitter: Sized {
         match def.data_type() {
             Some(DataType::Array) => CodegenEmitter(self).emit_array(def, ctx),
             Some(DataType::Object) => CodegenEmitter(self).emit_object(def, ctx),
-            Some(DataType::File) => {
-                // FIXME: Support files.
-                warn!("Data type 'file' is unsupported at this point.");
-                Ok(EmittedUnit::Known("String".into()))
-            }
+            Some(DataType::File) => Ok(EmittedUnit::Known(FILE_MARKER.into())),
             Some(_) => unreachable!("bleh?"), // we've already handled everything else
             None => {
                 if ctx.define {
@@ -326,6 +324,7 @@ pub trait Emitter: Sized {
     }
 }
 
+/// Abstraction for segregating `Emitter` trait methods from internal methods.
 struct CodegenEmitter<'a, E>(&'a E)
 where
     Self: Sized;

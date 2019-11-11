@@ -655,7 +655,12 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             _ => return Ok(()),
         };
 
-        f.write_str("\nimpl<Client: ")?;
+        f.write_str("\n")?;
+        if self.builder.response.is_file() {
+            f.write_str("#[async_trait::async_trait]\n")?;
+        }
+
+        f.write_str("impl<Client: ")?;
         f.write_str(self.builder.helper_module_prefix)?;
         f.write_str("client::ApiClient + Sync + 'static")?;
 
@@ -674,7 +679,10 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             f.write_str("Vec<")?;
         }
 
-        if let Some(resp) = self.builder.response.ty_path.as_ref() {
+        if self.builder.response.is_file() {
+            write!(f, "{prefix}util::ResponseStream<<<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Stream>",
+                   prefix=self.builder.helper_module_prefix)?;
+        } else if let Some(resp) = self.builder.response.ty_path.as_ref() {
             // If we've acquired a response type, then write that.
             f.write_str(resp)?;
         }
@@ -734,6 +742,10 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             || !self.headers.is_empty()
         {
             self.write_modify_method(f, accepted_range)?;
+        }
+
+        if self.builder.response.is_file() {
+            self.write_file_acceptor(f)?;
         }
 
         f.write_str("\n}\n")
@@ -855,7 +867,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     }
 
     /// We have determined that we have to override the default `modify` method.
-    fn write_modify_method<F>(self, f: &mut F, accepted_range: Option<&str>) -> fmt::Result
+    fn write_modify_method<F>(&mut self, f: &mut F, accepted_range: Option<&str>) -> fmt::Result
     where
         F: Write,
     {
@@ -926,13 +938,31 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             f.write_str("\n        ])")?;
         }
 
-        for q in self.multi_value_query {
+        for q in self.multi_value_query.drain(..) {
             f.write_str("\n        .query({")?;
             f.write_str(&q)?;
             f.write_str("\n        })")?;
         }
 
         f.write_str(")\n    }")
+    }
+
+    /// Writes async `send` method for this operation assuming that the response is a file.
+    fn write_file_acceptor<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: Write,
+    {
+        f.write_str("\n\n    async fn send(&self, client: &Client) -> Result<Self::Output, ")?;
+        f.write_str(&self.builder.helper_module_prefix)?;
+        f.write_str("client::ApiError<Client::Response>> {\n        use ")?;
+        f.write_str(&self.builder.helper_module_prefix)?;
+        f.write_str(
+            "client::Response;
+
+        let mut resp = self.send_raw(client).await?;
+        Ok(resp.stream())
+    }",
+        )
     }
 }
 

@@ -5,7 +5,7 @@
 
 pub use super::impls::{ApiObjectBuilderImpl, ApiObjectImpl};
 
-use super::emitter::ANY_GENERIC_PARAMETER;
+use super::emitter::{ANY_GENERIC_PARAMETER, FILE_MARKER};
 use super::RUST_KEYWORDS;
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
 use heck::{CamelCase, SnekCase};
@@ -84,6 +84,19 @@ pub struct Response<S> {
     /// Whether the response contains an `Any`. This is useful when operations
     /// get bound to some other object.
     pub contains_any: bool,
+}
+
+impl<S> Response<S>
+where
+    S: AsRef<str>,
+{
+    /// Returns whether this response is a file.
+    pub fn is_file(&self) -> bool {
+        self.ty_path
+            .as_ref()
+            .map(|s| s.as_ref() == FILE_MARKER)
+            .unwrap_or_default()
+    }
 }
 
 /// Represents some parameter somewhere (header, path, query, etc.).
@@ -360,6 +373,7 @@ impl<'a> ApiObjectBuilder<'a> {
                 Some(name)
             }
             // We don't know what to do ...
+            // FIXME: Use route and method to generate a name.
             _ => None,
         }
     }

@@ -19,6 +19,7 @@ use std::str::FromStr;
 /// HTTP body response stream.
 pub struct ResponseStream<S>(S);
 
+/// **NOTE:** This is just a stub. It panics on deserialization.
 impl<'de, S> Deserialize<'de> for ResponseStream<S> \{
     fn deserialize<D>(_: D) -> Result<Self, D::Error>
     where

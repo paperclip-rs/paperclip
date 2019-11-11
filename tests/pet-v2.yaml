@@ -273,3 +273,9 @@ paths:
         '200':
           schema:
             $ref: '#/definitions/TestNestedArrayWithObject'
+  /test/file/response:
+    get:
+      responses:
+        '200':
+          schema:
+            type: file
