@@ -825,7 +825,11 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             }}",
                 if self.needs_container { "inner." } else { "" },
                 name,
-                if self.is_multipart { "form = form.text" } else { "ser.append_pair" },
+                if self.is_multipart {
+                    "form = form.text"
+                } else {
+                    "ser.append_pair"
+                },
                 &field.name,
                 if self.is_multipart { "" } else { "&" },
             );
@@ -859,7 +863,11 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
                 {}({:?}, {}v.to_string());
             }}",
             name,
-            if self.is_multipart { "form = form.text" } else { "ser.append_pair" },
+            if self.is_multipart {
+                "form = form.text"
+            } else {
+                "ser.append_pair"
+            },
             &field.name,
             if self.is_multipart { "" } else { "&" },
         );
@@ -958,23 +966,33 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         }
 
         if !self.form.is_empty() && self.is_multipart {
-            f.write_str("
+            f.write_str(
+                "
         .multipart_form_data({
             use crate::client::Form;
-            let mut form = <Client::Request as Request>::Form::new();")?;
+            let mut form = <Client::Request as Request>::Form::new();",
+            )?;
             f.write_str(&self.form)?;
-            f.write_str("
+            f.write_str(
+                "
             form
-        })")?;
+        })",
+            )?;
         } else if !self.form.is_empty() {
-            f.write_str("
+            f.write_str(
+                "
         .body_bytes({
-            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
+            let mut ser = url::form_urlencoded::Serializer::new(String::new());",
+            )?;
             f.write_str(&self.form)?;
-            f.write_str("
-            ser.finish().into_bytes()\n        })")?;
-            f.write_str("
-        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")")?;
+            f.write_str(
+                "
+            ser.finish().into_bytes()\n        })",
+            )?;
+            f.write_str(
+                "
+        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")",
+            )?;
         }
 
         if !self.query.is_empty() {

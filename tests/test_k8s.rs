@@ -782,13 +782,15 @@ pub mod miscellaneous {
 }
 
 pub mod client {
-    use crate::codegen::util::ResponseStream;
+    use crate::codegen::util::{AsyncReadStream, ResponseStream};
     use failure::Fail;
     use futures::{Stream, Future};
     use futures_preview::compat::Future01CompatExt;
     use parking_lot::Mutex;
 
+    use std::borrow::Cow;
     use std::fmt::Debug;
+    use std::path::Path;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
@@ -799,14 +801,33 @@ pub mod client {
         UnsupportedMediaType(String, Mutex<R>),
         #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
         Reqwest(reqwest::Error),
+        #[fail(display = \"I/O error: {}\", _0)]
+        Io(std::io::Error),
         #[fail(display = \"Error en/decoding \\\"application/json\\\" data: {}\", _0)]
         ApplicationJson(serde_json::Error),
         #[fail(display = \"Error en/decoding \\\"application/yaml\\\" data: {}\", _0)]
         ApplicationYaml(serde_yaml::Error),
     }
 
+    /// Form object for building multipart request body.
+    pub trait Form: Sized {
+        /// Creates a new builder.
+        fn new() -> Self;
+
+        /// Adds the given key and value as text.
+        fn text<T, U>(self, key: T, value: U) -> Self
+            where T: Into<Cow<'static, str>>,
+                  U: Into<Cow<'static, str>>;
+
+        /// Adds the file from the given path for streaming.
+        fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
+            where K: Into<Cow<'static, str>>;
+    }
+
     /// HTTP Request.
     pub trait Request {
+        type Form: Form;
+
         /// Sets the header with the given key and value.
         fn header(self, name: &'static str, value: &str) -> Self;
 
@@ -819,6 +840,9 @@ pub mod client {
         /// Sets JSON body based on the given value.
         fn json<T: serde::Serialize>(self, value: &T) -> Self;
 
+        /// Sets `multipart/form-data` body using the given form.
+        fn multipart_form_data(self, form: Self::Form) -> Self;
+
         /// Sets/adds query parameters based on the given value.
         ///
         /// **NOTE:** This method must be called only once. It's unspecified
@@ -826,9 +850,36 @@ pub mod client {
         fn query<T: serde::Serialize>(self, params: &T) -> Self;
     }
 
+    impl Form for reqwest::r#async::multipart::Form {
+        fn new() -> Self {
+            reqwest::r#async::multipart::Form::new()
+        }
+
+        fn text<T, U>(self, key: T, value: U) -> Self
+            where T: Into<Cow<'static, str>>,
+                  U: Into<Cow<'static, str>>
+        {
+            reqwest::r#async::multipart::Form::text(self, key, value)
+        }
+
+        fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
+            where K: Into<Cow<'static, str>>
+        {
+            let fd = std::fs::File::open(path)?;
+            let reader = std::io::BufReader::new(tokio_fs_old::File::from_std(fd));
+            Ok(reqwest::r#async::multipart::Form::part(self, key, AsyncReadStream::from(reader).into()))
+        }
+    }
+
     impl Request for reqwest::r#async::RequestBuilder {
+        type Form = reqwest::r#async::multipart::Form;
+
         fn header(self, name: &'static str, value: &str) -> Self {
             reqwest::r#async::RequestBuilder::header(self, name, value)
+        }
+
+        fn multipart_form_data(self, form: Self::Form) -> Self {
+            self.multipart(form)
         }
 
         fn body_bytes(self, body: Vec<u8>) -> Self {
@@ -993,6 +1044,12 @@ pub mod client {
                 mime::MediaRange::parse(\"application/json\").expect(\"cannot parse \\\"application/json\\\" as media range\");
             pub static ref M_1: mime::MediaRange =
                 mime::MediaRange::parse(\"application/yaml\").expect(\"cannot parse \\\"application/yaml\\\" as media range\");
+        }
+    }
+
+    impl<R: Response + 'static> From<std::io::Error> for ApiError<R> {
+        fn from(e: std::io::Error) -> Self {
+            ApiError::Io(e)
         }
     }
 
@@ -1549,12 +1606,14 @@ http = \"0.1\"
 lazy_static = \"1.4\"
 log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
+mime_guess = \"2.0\"
 parking_lot = \"0.8\"
 reqwest = \"0.9\"
 serde = \"1.0\"
 serde_json = \"1.0\"
 serde_yaml = \"0.8\"
 tokio-io-old = { version = \"0.1\", package = \"tokio-io\" }
+tokio-fs-old = { version = \"0.1\", package = \"tokio-fs\" }
 url = \"2.1\"
 
 clap = { version = \"2.33\", features = [\"yaml\"] }
@@ -1734,7 +1793,7 @@ async fn main() {
     }
 }
 ",
-        Some(9238),
+        Some(11157),
     );
 }
 

@@ -230,7 +230,6 @@ paths:
       - in: header
         name: X-foobar
         type: array
-        required: false
         collectionFormat: pipes
         items:
           type: array
@@ -246,7 +245,6 @@ paths:
       - in: formData
         name: booya
         type: array
-        required: false
         collectionFormat: multi
         items:
           type: array
@@ -256,7 +254,6 @@ paths:
       - in: query
         name: foo
         type: array
-        required: false
         collectionFormat: multi
         items:
           type: array
@@ -273,9 +270,34 @@ paths:
         '200':
           schema:
             $ref: '#/definitions/TestNestedArrayWithObject'
-  /test/file/response:
+  /test/file:
     get:
       responses:
         '200':
           schema:
             type: file
+    put:
+      parameters:
+      - name: someDataFile
+        in: formData
+        required: true
+        type: file
+      - name: someOtherFile
+        in: formData
+        type: file
+      - name: foobar
+        in: formData
+        type: string
+        required: true
+      - in: formData
+        name: booya
+        type: array
+        collectionFormat: multi
+        items:
+          type: array
+          items:
+            type: integer
+      responses:
+        '200':
+          schema:
+            $ref: '#/definitions/Status'
