@@ -994,8 +994,10 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
 
 #[test]
 fn test_multipart_with_file() {
+    let _ = &*CLI_CODEGEN;
+
     assert_file_contains_content_at(
-        &(ROOT.clone() + "/tests/test_pet/status.rs"),
+        &(ROOT.clone() + "/tests/test_pet/cli/status.rs"),
         "
 /// Builder created by [`Status::put_1`](./struct.Status.html#method.put_1) method for a `PUT` operation associated with `Status`.
 #[repr(transparent)]
@@ -1073,7 +1075,45 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
         }))
     }
 }
+
+#[allow(unused_variables)]
+impl StatusPutBuilder1<crate::generics::SomeDataFileExists, crate::generics::FoobarExists> {
+    pub(crate) fn from_args(matches: Option<&clap::ArgMatches<'_>>) -> Result<Self, crate::ClientError> {
+        let thing = StatusPutBuilder1 {
+            inner: StatusPutBuilder1Container {
+            param_some_data_file: matches.and_then(|m| {
+                    m.value_of(\"some-data-file\").map(|_| {
+                        value_t!(m, \"some-data-file\", std::path::PathBuf).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            param_some_other_file: matches.and_then(|m| {
+                    m.value_of(\"some-other-file\").map(|_| {
+                        value_t!(m, \"some-other-file\", std::path::PathBuf).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            param_foobar: matches.and_then(|m| {
+                    m.value_of(\"foobar\").map(|_| {
+                        value_t!(m, \"foobar\", String).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            param_booya: matches.and_then(|m| {
+                    m.value_of(\"booya\").map(|_| {
+                        value_t!(m, \"booya\", crate::util::Delimited<crate::util::Delimited<i64, crate::util::Csv>, crate::util::Multi>).unwrap_or_else(|e| e.exit())
+                    })
+                }),
+
+            },
+            _param_some_data_file: core::marker::PhantomData,
+            _param_foobar: core::marker::PhantomData,
+        };
+
+        Ok(thing)
+    }
+}
 ",
-        Some(2498),
+        Some(3154),
     );
 }

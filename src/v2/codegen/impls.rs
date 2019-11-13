@@ -400,6 +400,10 @@ where
                 &mut ty,
             )?;
 
+            if field.needs_file {
+                ty = "std::path::PathBuf".into();
+            }
+
             // We're enforcing requirements in the CLI. We can relax here.
             writeln!(
                 f,
