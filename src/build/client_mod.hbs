@@ -1,12 +1,14 @@
 
 pub mod client \{
-    use {mod_prefix}util::ResponseStream;
+    use {mod_prefix}util::\{AsyncReadStream, ResponseStream};
     use failure::Fail;
     use futures::\{Stream, Future};
     use futures_preview::compat::Future01CompatExt;
     use parking_lot::Mutex;
 
+    use std::borrow::Cow;
     use std::fmt::Debug;
+    use std::path::Path;
 
     /// Common API errors.
     #[derive(Debug, Fail)]
@@ -17,14 +19,33 @@ pub mod client \{
         UnsupportedMediaType(String, Mutex<R>),
         #[fail(display = "An error has occurred while performing the API request: \{}", _0)]
         Reqwest(reqwest::Error),
+        #[fail(display = "I/O error: \{}", _0)]
+        Io(std::io::Error),
         {{- for coder in media_coders }}
         #[fail(display = "Error en/decoding \"{coder.range | unescaped}\" data: \{}", _0)]
         {coder.error_variant | unescaped}({coder.error_ty_path | unescaped}),
         {{- endfor }}
     }
 
+    /// Form object for building multipart request body.
+    pub trait Form: Sized \{
+        /// Creates a new builder.
+        fn new() -> Self;
+
+        /// Adds the given key and value as text.
+        fn text<T, U>(self, key: T, value: U) -> Self
+            where T: Into<Cow<'static, str>>,
+                  U: Into<Cow<'static, str>>;
+
+        /// Adds the file from the given path for streaming.
+        fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
+            where K: Into<Cow<'static, str>>;
+    }
+
     /// HTTP Request.
     pub trait Request \{
+        type Form: Form;
+
         /// Sets the header with the given key and value.
         fn header(self, name: &'static str, value: &str) -> Self;
 
@@ -37,6 +58,9 @@ pub mod client \{
         /// Sets JSON body based on the given value.
         fn json<T: serde::Serialize>(self, value: &T) -> Self;
 
+        /// Sets `multipart/form-data` body using the given form.
+        fn multipart_form_data(self, form: Self::Form) -> Self;
+
         /// Sets/adds query parameters based on the given value.
         ///
         /// **NOTE:** This method must be called only once. It's unspecified
@@ -44,9 +68,36 @@ pub mod client \{
         fn query<T: serde::Serialize>(self, params: &T) -> Self;
     }
 
+    impl Form for reqwest::r#async::multipart::Form \{
+        fn new() -> Self \{
+            reqwest::r#async::multipart::Form::new()
+        }
+
+        fn text<T, U>(self, key: T, value: U) -> Self
+            where T: Into<Cow<'static, str>>,
+                  U: Into<Cow<'static, str>>
+        \{
+            reqwest::r#async::multipart::Form::text(self, key, value)
+        }
+
+        fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
+            where K: Into<Cow<'static, str>>
+        \{
+            let fd = std::fs::File::open(path)?;
+            let reader = std::io::BufReader::new(tokio_fs_old::File::from_std(fd));
+            Ok(reqwest::r#async::multipart::Form::part(self, key, AsyncReadStream::from(reader).into()))
+        }
+    }
+
     impl Request for reqwest::r#async::RequestBuilder \{
+        type Form = reqwest::r#async::multipart::Form;
+
         fn header(self, name: &'static str, value: &str) -> Self \{
             reqwest::r#async::RequestBuilder::header(self, name, value)
+        }
+
+        fn multipart_form_data(self, form: Self::Form) -> Self \{
+            self.multipart(form)
         }
 
         fn body_bytes(self, body: Vec<u8>) -> Self \{
@@ -211,6 +262,12 @@ pub mod client \{
             pub static ref M_{ @index }: mime::MediaRange =
                 mime::MediaRange::parse("{coder.range | unescaped}").expect("cannot parse \"{coder.range | unescaped}\" as media range");
             {{- endfor }}
+        }
+    }
+
+    impl<R: Response + 'static> From<std::io::Error> for ApiError<R> \{
+        fn from(e: std::io::Error) -> Self \{
+            ApiError::Io(e)
         }
     }
     {{- for coder in media_coders }}

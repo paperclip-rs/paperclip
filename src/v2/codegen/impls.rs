@@ -548,7 +548,11 @@ where
 
         f.write_str(&field_name)?;
         f.write_str("(mut self, value: ")?;
-        self.write_builder_ty(&field.ty, &field.strict_child_fields, field.needs_any, f)?;
+        if field.needs_file {
+            f.write_str("impl AsRef<std::path::Path>")?;
+        } else {
+            self.write_builder_ty(&field.ty, &field.strict_child_fields, field.needs_any, f)?;
+        }
 
         f.write_str(") -> ")?;
         if prop_is_required {
@@ -581,9 +585,11 @@ where
             f.write_str("Some(")?;
         }
 
-        // If there's a field in the body with similar name and type,
-        // then override it with this value.
-        if field.overridden && self.0.body_required {
+        if field.needs_file {
+            f.write_str("value.as_ref().into()")?;
+        } else if field.overridden && self.0.body_required {
+            // If there's a field in the body with similar name and type,
+            // then override it with this value.
             f.write_str("{\n            let val = ")?;
             Self::write_value_map(field.ty, f)?;
             f.write_str(";\n            self.")?;
@@ -623,6 +629,7 @@ where
 struct SendableCodegen<'a, 'b> {
     builder: &'a ApiObjectBuilder<'b>,
     needs_container: bool,
+    is_multipart: bool,
     path_items: String,
     headers: String,
     form: String,
@@ -637,6 +644,7 @@ impl<'a, 'b> From<&'a ApiObjectBuilder<'b>> for SendableCodegen<'a, 'b> {
             needs_container: builder.needs_container(),
             path_items: String::new(),
             headers: String::new(),
+            is_multipart: builder.struct_fields_iter().any(|f| f.needs_file),
             form: String::new(),
             query: String::new(),
             multi_value_query: vec![],
@@ -810,26 +818,50 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             let _ = write!(
                 self.form,
                 "
-            self.{}param_{}.as_ref().map(|v| v.iter().for_each(|v| {{
-                ser.append_pair({:?}, &v.to_string());
-            }}));",
+            if let Some(stuff) = self.{}param_{}.as_ref() {{
+                for v in stuff.iter() {{
+                    {}({:?}, {}v.to_string());
+                }}
+            }}",
                 if self.needs_container { "inner." } else { "" },
                 name,
-                &field.name
+                if self.is_multipart { "form = form.text" } else { "ser.append_pair" },
+                &field.name,
+                if self.is_multipart { "" } else { "&" },
             );
 
             return;
         }
 
-        self.form.push_str("\n            self.");
+        if field.needs_file {
+            let _ = write!(
+                self.form,
+                "
+            if let Some(v) = self.{}param_{}.as_ref() {{
+                form = form.file({:?}, v)?;
+            }}",
+                if self.needs_container { "inner." } else { "" },
+                name,
+                &field.name,
+            );
+
+            return;
+        }
+
+        self.form.push_str("\n            if let Some(v) = self.");
         if self.needs_container {
             self.form.push_str("inner.");
         }
 
         let _ = write!(
             self.form,
-            "{}.as_ref().map(|v| ser.append_pair({:?}, &v.to_string()));",
-            name, &field.name
+            "param_{}.as_ref() {{
+                {}({:?}, {}v.to_string());
+            }}",
+            name,
+            if self.is_multipart { "form = form.text" } else { "ser.append_pair" },
+            &field.name,
+            if self.is_multipart { "" } else { "&" },
         );
     }
 
@@ -925,11 +957,24 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             )?;
         }
 
-        if !self.form.is_empty() {
-            f.write_str("\n        .body_bytes({\n            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
+        if !self.form.is_empty() && self.is_multipart {
+            f.write_str("
+        .multipart_form_data({
+            use crate::client::Form;
+            let mut form = <Client::Request as Request>::Form::new();")?;
             f.write_str(&self.form)?;
-            f.write_str("\n            ser.finish().into_bytes()\n        })")?;
-            write!(f, "\n        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")")?;
+            f.write_str("
+            form
+        })")?;
+        } else if !self.form.is_empty() {
+            f.write_str("
+        .body_bytes({
+            let mut ser = url::form_urlencoded::Serializer::new(String::new());")?;
+            f.write_str(&self.form)?;
+            f.write_str("
+            ser.finish().into_bytes()\n        })")?;
+            f.write_str("
+        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")")?;
         }
 
         if !self.query.is_empty() {

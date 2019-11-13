@@ -348,6 +348,8 @@ pub(super) struct StructField<'a> {
     /// Whether this field "is" or "has" `Any` type. This is only
     /// applicable for object fields.
     pub needs_any: bool,
+    /// Whether this field indicates a file upload.
+    pub needs_file: bool,
 }
 
 impl<'a> ApiObjectBuilder<'a> {
@@ -400,6 +402,7 @@ impl<'a> ApiObjectBuilder<'a> {
             param_loc: None,
             overridden: false,
             needs_any: field.needs_any,
+            needs_file: field.ty_path == FILE_MARKER,
             delimiting: &[],
         });
 
@@ -428,6 +431,7 @@ impl<'a> ApiObjectBuilder<'a> {
                         param_loc: Some(param.presence),
                         overridden: false,
                         needs_any: false,
+                        needs_file: param.ty_path == FILE_MARKER,
                         delimiting: &param.delimiting,
                     }))
                 }
@@ -668,7 +672,11 @@ impl<'a> ApiObjectBuilder<'a> {
         f.write_str("\n    param_")?;
         f.write_str(&name)?;
         f.write_str(": Option<")?;
-        Self::write_wrapped_ty(self.helper_module_prefix, ty, delims, f)?;
+        if ty == FILE_MARKER {
+            f.write_str("std::path::PathBuf")?;
+        } else {
+            Self::write_wrapped_ty(self.helper_module_prefix, ty, delims, f)?;
+        }
 
         f.write_str(">,")
     }

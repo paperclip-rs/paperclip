@@ -1067,6 +1067,7 @@ fn resolve_parameter_type(
 ) -> Option<(String, Vec<CollectionFormat>)> {
     match matching_unit_type(dt_fmt, dt) {
         Some(t) => return Some((t.into(), vec![])),
+        None if dt == Some(DataType::File) => return Some((FILE_MARKER.into(), vec![])),
         None if dt == Some(DataType::Array) => {
             if let Some(i) = items {
                 if let Some((ty, mut fmts)) = resolve_parameter_type(

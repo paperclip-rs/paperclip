@@ -5,7 +5,7 @@ use futures_preview::\{
     io::\{AsyncReadExt, AsyncWrite},
     stream::TryStreamExt,
 };
-use reqwest::r#async::Body;
+use reqwest::r#async::multipart::Part;
 use serde::\{Deserialize, Deserializer};
 use tokio_io_old::AsyncRead as OldAsyncRead;
 
@@ -87,11 +87,11 @@ impl<R> OldStream for AsyncReadStream<R>
     }
 }
 
-impl<R> Into<Body> for AsyncReadStream<R>
+impl<R> Into<Part> for AsyncReadStream<R>
     where R: OldAsyncRead + Send + 'static
 \{
-    fn into(self) -> Body \{
-        Body::from(Box::new(self) as Box<_>)
+    fn into(self) -> Part \{
+        Part::stream(self)
     }
 }
 
