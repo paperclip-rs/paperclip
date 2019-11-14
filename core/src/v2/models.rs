@@ -84,7 +84,9 @@ pub type ResolvableApi<S> = Api<ResolvableParameter<S>, Resolvable<S>>;
 /// OpenAPI v2 spec with defaults.
 pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultSchemaRaw>;
 
-/// OpenAPI v2 spec generic over parameter and schema.
+/// OpenAPI v2 (swagger) spec generic over parameter and schema.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Api<P, S> {
     pub swagger: Version,
@@ -101,7 +103,7 @@ pub struct Api<P, S> {
     pub produces: BTreeSet<MediaRange>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub schemes: BTreeSet<OperationProtocol>,
-    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    #[serde(default = "BTreeMap::new", skip_serializing_if = "BTreeMap::is_empty")]
     pub parameters: BTreeMap<String, P>,
     #[serde(
         default,
@@ -177,7 +179,7 @@ use crate as paperclip; // hack for proc macro
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DefaultSchema;
 
-/// Info Object
+/// Info object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -192,7 +194,7 @@ pub struct Info {
     pub license: Option<License>,
 }
 
-/// Contact Object
+/// Contact object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -230,7 +232,7 @@ pub struct PathItem<P, S> {
     #[serde(flatten, default = "BTreeMap::default")]
     pub methods: BTreeMap<HttpMethod, Operation<P, S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
-    pub parameters: Vec<P>,
+    pub parameters: Vec<Either<Reference, P>>,
 }
 
 impl<S> PathItem<Parameter<S>, S> {
@@ -285,7 +287,7 @@ impl<S> PathItem<Parameter<S>, S> {
 }
 
 /// Parameter that can be traversed and resolved for codegen.
-pub type ResolvableParameter<S> = Resolvable<Parameter<Resolvable<S>>>;
+pub type ResolvableParameter<S> = ArcRwLock<Parameter<Resolvable<S>>>;
 
 /// Parameter with the default raw schema.
 pub type DefaultParameterRaw = Parameter<DefaultSchemaRaw>;
@@ -514,7 +516,7 @@ pub struct Operation<P, S> {
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
-    pub parameters: Vec<P>,
+    pub parameters: Vec<Either<Reference, P>>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub deprecated: bool,
 }
@@ -534,7 +536,7 @@ impl<S> Operation<Parameter<S>, S> {
             .filter(|p| p.in_ == ParameterIn::Path)
             .peekable();
         Api::<(), ()>::path_parameters_map(path, |p| {
-            let mut param = params
+            let param = params
                 .next()
                 .unwrap_or_else(|| panic!("missing parameter {:?} in path {:?}", p, path));
             param.name = p.into();
@@ -549,6 +551,15 @@ impl<S> Operation<Parameter<S>, S> {
             );
         }
     }
+}
+
+/// Reference object.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject
+#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+pub struct Reference {
+    #[serde(rename = "$ref")]
+    pub reference: String,
 }
 
 /// The protocol used for an operation.
@@ -607,11 +618,27 @@ pub enum Either<L, R> {
 }
 
 impl<L, R> Either<L, R> {
+    /// Get a readable reference to the right variant (if it exists).
+    pub fn right(&self) -> Option<&R> {
+        match self {
+            Either::Left(_) => None,
+            Either::Right(r) => Some(r),
+        }
+    }
+
     /// Get a mutable reference to the right variant (if it exists).
     pub fn right_mut(&mut self) -> Option<&mut R> {
         match self {
             Either::Left(_) => None,
             Either::Right(r) => Some(r),
+        }
+    }
+
+    /// Get a readable reference to the left variant (if it exists).
+    pub fn left(&self) -> Option<&L> {
+        match self {
+            Either::Left(l) => Some(l),
+            Either::Right(_) => None,
         }
     }
 
@@ -684,6 +711,26 @@ impl From<&Method> for HttpMethod {
             "HEAD" => HttpMethod::Head,
             "PATCH" => HttpMethod::Patch,
             _ => HttpMethod::Get,
+        }
+    }
+}
+
+impl<T> Deref for Either<Reference, T> {
+    type Target = T;
+
+    fn deref(&self) -> &Self::Target {
+        match *self {
+            Either::Left(_) => panic!("unable to deref because reference is not resolved."),
+            Either::Right(ref r) => r,
+        }
+    }
+}
+
+impl<T> DerefMut for Either<Reference, T> {
+    fn deref_mut(&mut self) -> &mut Self::Target {
+        match *self {
+            Either::Left(_) => panic!("unable to deref because reference is not resolved."),
+            Either::Right(ref mut r) => r,
         }
     }
 }

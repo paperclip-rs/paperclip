@@ -24,6 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI uses name and version from `info` field in spec.
 - Codegen for file responses with streaming to `AsyncWrite` implementors.
 - Codegen for `multipart/form-data` parameters with file streaming.
+- Referencing globally defined parameters.
 
 ### Changed
 - Switched to templating for (almost) static modules.
@@ -31,6 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `ApiClient` uses the newly added `Request` and `Response` and is now async/await.
 - `Sendable` accepts the new `ApiClient` and is now async/await.
 - `SchemaRepr` renamed to `Resolvable`.
+- `OperationMap` renamed to `PathItem`.
 - `Api` struct is now generic over parameters in addition to definitions.
 
 ### Fixed

@@ -30,7 +30,7 @@ impl<S: Schema + Default> ResolvableApi<S> {
     /// substitutes the referenced IDs with the pointer to schema objects
     /// and returns the resolved object or an error if it encountered one.
     pub fn resolve(self) -> Result<ResolvableApi<S>, ValidationError> {
-        let mut resolver = Resolver::from((self.definitions, self.paths));
+        let mut resolver = Resolver::from((self.definitions, self.paths, self.parameters));
         resolver.resolve()?;
         Ok(ResolvableApi {
             swagger: self.swagger,
@@ -44,7 +44,7 @@ impl<S: Schema + Default> ResolvableApi<S> {
             produces: self.produces,
             coders: self.coders,
             support_crates: self.support_crates,
-            parameters: self.parameters,
+            parameters: resolver.params,
             spec_format: self.spec_format,
         })
     }

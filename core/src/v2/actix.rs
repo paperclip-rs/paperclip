@@ -109,7 +109,7 @@ where
     T: Apiv2Schema,
 {
     fn update_parameter(op: &mut DefaultOperationRaw) {
-        op.parameters.push(Parameter {
+        op.parameters.push(Either::Right(Parameter {
             description: None,
             in_: ParameterIn::Body,
             name: "body".into(),
@@ -120,7 +120,7 @@ where
                 def
             }),
             ..Default::default()
-        });
+        }));
     }
 
     fn update_response(op: &mut DefaultOperationRaw) {
@@ -153,7 +153,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
             // If there aren't any properties and if it's a path parameter,
             // then add a parameter whose name will be overridden later.
             if def.properties.is_empty() && ParameterIn::$container == ParameterIn::Path {
-                op.parameters.push(Parameter {
+                op.parameters.push(Either::Right(Parameter {
                     name: String::new(),
                     in_: ParameterIn::Path,
                     required: true,
@@ -161,11 +161,11 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     format: def.format,
                     enum_: def.enum_,
                     ..Default::default()
-                });
+                }));
             }
 
             for (k, v) in def.properties {
-                op.parameters.push(Parameter {
+                op.parameters.push(Either::Right(Parameter {
                     in_: ParameterIn::$container,
                     required: def.required.contains(&k),
                     name: k,
@@ -173,7 +173,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     format: v.format,
                     enum_: v.enum_,
                     ..Default::default()
-                });
+                }));
             }
         }
     }
@@ -203,7 +203,7 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
             // the name in this context. We'll get it when we add services.
             $(
                 let def = $ty::raw_schema();
-                op.parameters.push(Parameter {
+                op.parameters.push(Either::Right(Parameter {
                     name: String::new(),
                     in_: ParameterIn::Path,
                     required: true,
@@ -211,7 +211,7 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
                     format: def.format,
                     enum_: def.enum_,
                     ..Default::default()
-                });
+                }));
             )+
         }
     }

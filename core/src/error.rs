@@ -8,15 +8,15 @@ pub enum ValidationError {
     /// Failed to resolve the schema because an invalid URI was provided for
     /// `$ref` field.
     ///
-    /// Currently, we only support `#/definitions/YourType` in `$ref` field.
+    /// Currently, we only support `#/{definitions,parameters}/Name` in `$ref` field.
     #[fail(
-        display = "Invalid $ref URI {:?}. Only relative URIs for definitions are supported right now.",
+        display = "Invalid $ref URI {:?}. Only relative URIs are supported.",
         _0
     )]
     InvalidRefURI(String),
-    /// A definition has been referenced but it's missing.
-    #[fail(display = "Definition missing: {}", _0)]
-    MissingDefinition(String),
+    /// The specified reference is missing in the spec.
+    #[fail(display = "Reference missing in spec: {}", _0)]
+    MissingReference(String),
     /// If a parameter specifies body, then schema must be specified.
     #[fail(
         display = "Parameter {:?} in path {:?} is a body but the schema is missing",

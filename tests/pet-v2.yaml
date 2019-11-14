@@ -87,14 +87,17 @@ definitions:
             properties:
               baz:
                 type: integer
+parameters:
+  petID:
+    name: petId
+    in: path
+    required: true
+    type: integer
+    description: ID of the pet.
 paths:
   /pets/{petId}:
     parameters:
-    - name: petId
-      in: path
-      required: true
-      type: integer
-      description: ID of the pet.
+    - $ref: '#/parameters/petID'
     get:
       description: Find pet by ID
       operationId: getPetById

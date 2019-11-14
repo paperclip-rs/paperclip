@@ -1,5 +1,5 @@
 use super::{
-    models::{Either, HttpMethod, Resolvable, ResolvableParameter, ResolvablePathItem},
+    models::{Either, HttpMethod, Reference, Resolvable, ResolvableParameter, ResolvablePathItem},
     Schema,
 };
 use crate::error::ValidationError;
@@ -12,9 +12,11 @@ use std::mem;
 // FIXME: The resolver is not in its best. It "just" works atm.
 
 const DEF_REF_PREFIX: &str = "#/definitions/";
+const PARAM_REF_PREFIX: &str = "#/parameters/";
 
 type DefinitionsMap<S> = BTreeMap<String, Resolvable<S>>;
 type OperationsMap<S> = BTreeMap<String, ResolvablePathItem<S>>;
+type ParametersMap<S> = BTreeMap<String, ResolvableParameter<S>>;
 
 /// API schema resolver. This visits each definition and resolves
 /// `$ref` field (if any) by finding the associated definition and
@@ -27,20 +29,25 @@ pub(crate) struct Resolver<S> {
     cur_def_cyclic: Cell<bool>,
     /// Set containing cyclic definition names.
     cyclic_defs: HashSet<String>,
-    /// Actual definitions.
+    /// Globally defined object definitions.
     pub defs: DefinitionsMap<S>,
     /// Paths and the corresponding operations.
     pub paths: OperationsMap<S>,
+    /// Globally defined parameters.
+    pub params: ParametersMap<S>,
 }
 
-impl<S> From<(DefinitionsMap<S>, OperationsMap<S>)> for Resolver<S> {
-    fn from((defs, paths): (DefinitionsMap<S>, OperationsMap<S>)) -> Self {
+impl<S> From<(DefinitionsMap<S>, OperationsMap<S>, ParametersMap<S>)> for Resolver<S> {
+    fn from(
+        (defs, paths, params): (DefinitionsMap<S>, OperationsMap<S>, ParametersMap<S>),
+    ) -> Self {
         Resolver {
             cur_def: RefCell::new(None),
             cur_def_cyclic: Cell::new(false),
             cyclic_defs: HashSet::new(),
             defs,
             paths,
+            params,
         }
     }
 }
@@ -132,7 +139,7 @@ where
     fn resolve_definitions(&self, schema: &mut Resolvable<S>) -> Result<(), ValidationError> {
         let ref_def = {
             if let Some(ref_name) = schema.read().reference() {
-                trace!("Resolving {}", ref_name);
+                trace!("Resolving definition {}", ref_name);
                 Some(self.resolve_definition_reference(ref_name)?)
             } else {
                 None
@@ -180,9 +187,20 @@ where
         &mut self,
         method: Option<HttpMethod>,
         path: &str,
-        params: &mut Vec<ResolvableParameter<S>>,
+        params: &mut Vec<Either<Reference, ResolvableParameter<S>>>,
     ) -> Result<(), ValidationError> {
         for p in params.iter_mut() {
+            let ref_param = if let Some(r) = p.left() {
+                trace!("Resolving parameter {}", r.reference);
+                Some(self.resolve_parameter_reference(&r.reference)?)
+            } else {
+                None
+            };
+
+            if let Some(new) = ref_param {
+                *p = Either::Right(new);
+            }
+
             let mut param = p.write();
             self.resolve_operation_schema(&mut param.schema, method, path, "Body")?;
         }
@@ -221,7 +239,6 @@ where
     /// Given a name (from `$ref` field), get a reference to the definition.
     fn resolve_definition_reference(&self, name: &str) -> Result<Resolvable<S>, ValidationError> {
         if !name.starts_with(DEF_REF_PREFIX) {
-            // FIXME: Bad
             return Err(ValidationError::InvalidRefURI(name.into()));
         }
 
@@ -234,7 +251,24 @@ where
         let schema = self
             .defs
             .get(name)
-            .ok_or_else(|| ValidationError::MissingDefinition(name.into()))?;
+            .ok_or_else(|| ValidationError::MissingReference(name.into()))?;
         Ok(schema.clone())
+    }
+
+    /// Given a name (from `$ref` field), get a reference to the parameter.
+    fn resolve_parameter_reference(
+        &self,
+        name: &str,
+    ) -> Result<ResolvableParameter<S>, ValidationError> {
+        if !name.starts_with(PARAM_REF_PREFIX) {
+            return Err(ValidationError::InvalidRefURI(name.into()));
+        }
+
+        let name = &name[PARAM_REF_PREFIX.len()..];
+        let param = self
+            .params
+            .get(name)
+            .ok_or_else(|| ValidationError::MissingReference(name.into()))?;
+        Ok(param.clone())
     }
 }

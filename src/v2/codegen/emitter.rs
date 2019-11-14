@@ -6,7 +6,7 @@ use crate::v2::{
     im::ArcRwLock,
     models::{
         self, Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
-        MediaRange, ParameterIn, Resolvable, ResolvableApi, ResolvableOperation,
+        MediaRange, ParameterIn, Reference, Resolvable, ResolvableApi, ResolvableOperation,
         ResolvableParameter, ResolvablePathItem, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
     },
     Schema,
@@ -785,7 +785,7 @@ where
     /// Given a bunch of resolved parameters, validate and collect a simplified version of them.
     fn collect_parameters(
         &mut self,
-        obj_params: &[ResolvableParameter<E::Definition>],
+        obj_params: &[Either<Reference, ResolvableParameter<E::Definition>>],
     ) -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
         let def_mods = self.emitter.state().def_mods.borrow();
         let mut schema_path = None;
