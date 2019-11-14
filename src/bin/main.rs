@@ -2,7 +2,7 @@ use failure::Error;
 use paperclip::v2::{
     self,
     codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
-    models::{Api, DefaultSchema},
+    models::{DefaultSchema, ResolvableApi},
 };
 use paperclip::PaperClipError;
 use reqwest::Client;
@@ -21,7 +21,7 @@ fn parse_version(s: &str) -> Result<OApiVersion, Error> {
     })
 }
 
-fn parse_spec(s: &str) -> Result<Api<DefaultSchema>, Error> {
+fn parse_spec(s: &str) -> Result<ResolvableApi<DefaultSchema>, Error> {
     if let Ok(u) = Url::parse(s) {
         let mut bytes = vec![];
         let client = Client::new();
@@ -44,7 +44,7 @@ enum OApiVersion {
 struct Opt {
     /// Path to OpenAPI spec in JSON/YAML format (also supports publicly accessible URLs).
     #[structopt(parse(try_from_str = "parse_spec"))]
-    spec: Api<DefaultSchema>,
+    spec: ResolvableApi<DefaultSchema>,
     /// OpenAPI version (e.g., v2).
     #[structopt(long = "api", parse(try_from_str = "parse_version"))]
     api: OApiVersion,

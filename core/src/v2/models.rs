@@ -78,16 +78,19 @@ pub enum DataTypeFormat {
     Other,
 }
 
-/// OpenAPI v2 spec.
-pub type Api<S> = GenericApi<SchemaRepr<S>>;
+/// OpenAPI v2 spec which can be traversed and resolved for codegen.
+pub type ResolvableApi<S> = Api<ResolvableParameter<S>, Resolvable<S>>;
 
-/// OpenAPI v2 spec generic over schema.
+/// OpenAPI v2 spec with defaults.
+pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultSchemaRaw>;
+
+/// OpenAPI v2 spec generic over parameter and schema.
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct GenericApi<S> {
+pub struct Api<P, S> {
     pub swagger: Version,
     #[serde(default = "BTreeMap::new")]
     pub definitions: BTreeMap<String, S>,
-    pub paths: BTreeMap<String, OperationMap<S>>,
+    pub paths: BTreeMap<String, PathItem<P, S>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub host: Option<String>,
     #[serde(rename = "basePath", skip_serializing_if = "Option::is_none")]
@@ -98,6 +101,8 @@ pub struct GenericApi<S> {
     pub produces: BTreeSet<MediaRange>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub schemes: BTreeSet<OperationProtocol>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub parameters: BTreeMap<String, P>,
     #[serde(
         default,
         rename = "x-rust-coders",
@@ -152,7 +157,7 @@ impl SpecFormat {
     }
 }
 
-impl<S> GenericApi<S> {
+impl<P, S> Api<P, S> {
     /// Gets the parameters from the given path template and calls
     /// the given function with the parameter names.
     pub fn path_parameters_map(
@@ -160,46 +165,6 @@ impl<S> GenericApi<S> {
         mut f: impl FnMut(&str) -> Cow<'static, str>,
     ) -> Cow<'_, str> {
         PATH_TEMPLATE_REGEX.replace_all(path, |c: &Captures| f(&c[1]))
-    }
-}
-
-/// `Either` from "either" crate. We can't use that crate because
-/// we don't want the enum to be tagged during de/serialization.
-#[derive(Debug, Clone, Serialize, Deserialize)]
-#[serde(untagged)]
-pub enum Either<L, R> {
-    Left(L),
-    Right(R),
-}
-
-impl<L, R> Either<L, R> {
-    /// Get a mutable reference to the right variant (if it exists).
-    pub fn right_mut(&mut self) -> Option<&mut R> {
-        match self {
-            Either::Left(_) => None,
-            Either::Right(r) => Some(r),
-        }
-    }
-
-    /// Get a mutable reference to the left variant (if it exists).
-    pub fn left_mut(&mut self) -> Option<&mut L> {
-        match self {
-            Either::Left(l) => Some(l),
-            Either::Right(_) => None,
-        }
-    }
-}
-
-impl<T> Either<T, Vec<T>> {
-    /// Convenience method for getting either the value in the left
-    /// or one from right, given that the right variant can contain
-    /// more than one values in a vector.
-    pub fn left_or_one_in_right(&self) -> Option<&T> {
-        match self {
-            Either::Left(l) => Some(l),
-            Either::Right(v) if v.len() == 1 => Some(&v[0]),
-            _ => None,
-        }
     }
 }
 
@@ -211,20 +176,6 @@ use crate as paperclip; // hack for proc macro
 #[api_v2_schema_struct]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DefaultSchema;
-
-/// Wrapper for schema. This uses `Arc<RwLock<S>>` for interior
-/// mutability and differentiates raw schema from resolved schema
-/// (i.e., the one where `$ref` references point to the actual schema).
-#[derive(Debug, Deserialize)]
-#[serde(untagged)]
-pub enum SchemaRepr<S> {
-    Raw(ArcRwLock<S>),
-    #[serde(skip)]
-    Resolved {
-        new: ArcRwLock<S>,
-        old: ArcRwLock<S>,
-    },
-}
 
 /// Info Object
 ///
@@ -254,7 +205,7 @@ pub struct Contact {
     pub email: Option<String>,
 }
 
-/// License Object
+/// License object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
@@ -265,18 +216,24 @@ pub struct License {
     pub url: Option<String>,
 }
 
-/// Path item.
+/// Path item that can be traversed and resolved for codegen.
+pub type ResolvablePathItem<S> = PathItem<ResolvableParameter<S>, Resolvable<S>>;
+
+/// Path item with default parameter and schema.
+pub type DefaultPathItemRaw = PathItem<DefaultParameterRaw, DefaultSchemaRaw>;
+
+/// Path item object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct OperationMap<S> {
+pub struct PathItem<P, S> {
     #[serde(flatten, default = "BTreeMap::default")]
-    pub methods: BTreeMap<HttpMethod, Operation<S>>,
+    pub methods: BTreeMap<HttpMethod, Operation<P, S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
-    pub parameters: Vec<Parameter<S>>,
+    pub parameters: Vec<P>,
 }
 
-impl<S> OperationMap<S> {
+impl<S> PathItem<Parameter<S>, S> {
     /// Normalizes this operation map.
     /// - Collects and removes parameters shared across operations
     /// and adds them to the list global to this map.
@@ -327,7 +284,13 @@ impl<S> OperationMap<S> {
     }
 }
 
-/// Request parameter.
+/// Parameter that can be traversed and resolved for codegen.
+pub type ResolvableParameter<S> = Resolvable<Parameter<Resolvable<S>>>;
+
+/// Parameter with the default raw schema.
+pub type DefaultParameterRaw = Parameter<DefaultSchemaRaw>;
+
+/// Request parameter object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
@@ -420,7 +383,7 @@ pub struct Items {
     pub multiple_of: Option<f32>,
 }
 
-impl<S> Parameter<SchemaRepr<S>>
+impl<S> Parameter<Resolvable<S>>
 where
     S: Schema,
 {
@@ -523,12 +486,18 @@ pub enum CollectionFormat {
     Multi,
 }
 
-/// An operation.
+/// Operation that can be traversed and resolved for codegen.
+pub type ResolvableOperation<S> = Operation<ResolvableParameter<S>, Resolvable<S>>;
+
+/// Operation with default raw parameter and schema.
+pub type DefaultOperationRaw = Operation<DefaultParameterRaw, DefaultSchemaRaw>;
+
+/// Operation object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Operation<S> {
+pub struct Operation<P, S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -545,12 +514,12 @@ pub struct Operation<S> {
     // FIXME: Validate using `http::status::StatusCode::from_u16`
     pub responses: BTreeMap<String, Response<S>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
-    pub parameters: Vec<Parameter<S>>,
+    pub parameters: Vec<P>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub deprecated: bool,
 }
 
-impl<S> Operation<S> {
+impl<S> Operation<Parameter<S>, S> {
     /// Overwrites the names of parameters in this operation using the
     /// given path template.
     ///
@@ -564,7 +533,7 @@ impl<S> Operation<S> {
             .iter_mut()
             .filter(|p| p.in_ == ParameterIn::Path)
             .peekable();
-        Api::<()>::path_parameters_map(path, |p| {
+        Api::<(), ()>::path_parameters_map(path, |p| {
             let mut param = params
                 .next()
                 .unwrap_or_else(|| panic!("missing parameter {:?} in path {:?}", p, path));
@@ -592,7 +561,7 @@ pub enum OperationProtocol {
     Wss,
 }
 
-/// HTTP response.
+/// Response object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject
 #[derive(Clone, Debug, Serialize, Deserialize)]
@@ -626,6 +595,76 @@ impl HttpMethod {
     }
 }
 
+/* Helpers */
+
+/// `Either` from "either" crate. We can't use that crate because
+/// we don't want the enum to be tagged during de/serialization.
+#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+pub enum Either<L, R> {
+    Left(L),
+    Right(R),
+}
+
+impl<L, R> Either<L, R> {
+    /// Get a mutable reference to the right variant (if it exists).
+    pub fn right_mut(&mut self) -> Option<&mut R> {
+        match self {
+            Either::Left(_) => None,
+            Either::Right(r) => Some(r),
+        }
+    }
+
+    /// Get a mutable reference to the left variant (if it exists).
+    pub fn left_mut(&mut self) -> Option<&mut L> {
+        match self {
+            Either::Left(l) => Some(l),
+            Either::Right(_) => None,
+        }
+    }
+}
+
+impl<T> Either<T, Vec<T>> {
+    /// Convenience method for getting either the value in the left
+    /// or one from right, given that the right variant can contain
+    /// more than one values in a vector.
+    pub fn left_or_one_in_right(&self) -> Option<&T> {
+        match self {
+            Either::Left(l) => Some(l),
+            Either::Right(v) if v.len() == 1 => Some(&v[0]),
+            _ => None,
+        }
+    }
+}
+
+/// Wrapper for schema. This uses `Arc<RwLock<S>>` for interior
+/// mutability and differentiates raw schema from resolved schema
+/// (i.e., the one where `$ref` references point to the actual schema).
+#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+pub enum Resolvable<S> {
+    Raw(ArcRwLock<S>),
+    #[serde(skip)]
+    Resolved {
+        new: ArcRwLock<S>,
+        old: ArcRwLock<S>,
+    },
+}
+
+impl<S> Resolvable<S>
+where
+    S: Schema,
+{
+    /// Fetch the description for this schema.
+    pub fn get_description(&self) -> Option<String> {
+        match *self {
+            Resolvable::Raw(ref s) => s.read().description().map(String::from),
+            // We don't want parameters/fields to describe the actual refrenced object.
+            Resolvable::Resolved { ref old, .. } => old.read().description().map(String::from),
+        }
+    }
+}
+
 /* Common trait impls */
 
 impl Default for SpecFormat {
@@ -649,51 +688,43 @@ impl From<&Method> for HttpMethod {
     }
 }
 
-impl<S> SchemaRepr<S>
-where
-    S: Schema,
-{
-    /// Fetch the description for this schema.
-    pub fn get_description(&self) -> Option<String> {
-        match *self {
-            SchemaRepr::Raw(ref s) => s.read().description().map(String::from),
-            // We don't want parameters/fields to describe the actual refrenced object.
-            SchemaRepr::Resolved { ref old, .. } => old.read().description().map(String::from),
-        }
-    }
-}
-
-impl<S> Deref for SchemaRepr<S> {
+impl<S> Deref for Resolvable<S> {
     type Target = ArcRwLock<S>;
 
     fn deref(&self) -> &Self::Target {
         match *self {
-            SchemaRepr::Raw(ref s) => s,
-            SchemaRepr::Resolved { ref new, .. } => new,
+            Resolvable::Raw(ref s) => s,
+            Resolvable::Resolved { ref new, .. } => new,
         }
     }
 }
 
-impl<S> DerefMut for SchemaRepr<S> {
+impl<S> DerefMut for Resolvable<S> {
     fn deref_mut(&mut self) -> &mut Self::Target {
         match *self {
-            SchemaRepr::Raw(ref mut s) => s,
-            SchemaRepr::Resolved { ref mut new, .. } => new,
+            Resolvable::Raw(ref mut s) => s,
+            Resolvable::Resolved { ref mut new, .. } => new,
         }
     }
 }
 
-impl<S> From<S> for SchemaRepr<S> {
-    fn from(t: S) -> Self {
-        SchemaRepr::Raw(t.into())
+impl<S: Default> Default for Resolvable<S> {
+    fn default() -> Self {
+        Resolvable::from(S::default())
     }
 }
 
-impl<S> Clone for SchemaRepr<S> {
+impl<S> From<S> for Resolvable<S> {
+    fn from(t: S) -> Self {
+        Resolvable::Raw(t.into())
+    }
+}
+
+impl<S> Clone for Resolvable<S> {
     fn clone(&self) -> Self {
         match *self {
-            SchemaRepr::Raw(ref s) => SchemaRepr::Raw(s.clone()),
-            SchemaRepr::Resolved { ref new, ref old } => SchemaRepr::Resolved {
+            Resolvable::Raw(ref s) => Resolvable::Raw(s.clone()),
+            Resolvable::Resolved { ref new, ref old } => Resolvable::Resolved {
                 new: new.clone(),
                 old: old.clone(),
             },

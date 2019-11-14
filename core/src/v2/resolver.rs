@@ -1,5 +1,5 @@
 use super::{
-    models::{Either, HttpMethod, OperationMap, Parameter, SchemaRepr},
+    models::{Either, HttpMethod, Resolvable, ResolvableParameter, ResolvablePathItem},
     Schema,
 };
 use crate::error::ValidationError;
@@ -13,8 +13,8 @@ use std::mem;
 
 const DEF_REF_PREFIX: &str = "#/definitions/";
 
-type ResolvableDefinitions<S> = BTreeMap<String, SchemaRepr<S>>;
-type ResolvableOperations<S> = BTreeMap<String, OperationMap<SchemaRepr<S>>>;
+type DefinitionsMap<S> = BTreeMap<String, Resolvable<S>>;
+type OperationsMap<S> = BTreeMap<String, ResolvablePathItem<S>>;
 
 /// API schema resolver. This visits each definition and resolves
 /// `$ref` field (if any) by finding the associated definition and
@@ -28,13 +28,13 @@ pub(crate) struct Resolver<S> {
     /// Set containing cyclic definition names.
     cyclic_defs: HashSet<String>,
     /// Actual definitions.
-    pub defs: ResolvableDefinitions<S>,
+    pub defs: DefinitionsMap<S>,
     /// Paths and the corresponding operations.
-    pub paths: ResolvableOperations<S>,
+    pub paths: OperationsMap<S>,
 }
 
-impl<S> From<(ResolvableDefinitions<S>, ResolvableOperations<S>)> for Resolver<S> {
-    fn from((defs, paths): (ResolvableDefinitions<S>, ResolvableOperations<S>)) -> Self {
+impl<S> From<(DefinitionsMap<S>, OperationsMap<S>)> for Resolver<S> {
+    fn from((defs, paths): (DefinitionsMap<S>, OperationsMap<S>)) -> Self {
         Resolver {
             cur_def: RefCell::new(None),
             cur_def_cyclic: Cell::new(false),
@@ -98,7 +98,7 @@ where
     // directly refer some other definition (basically a type alias). Should we?
     fn resolve_definitions_no_root_ref(
         &self,
-        schema: &SchemaRepr<S>,
+        schema: &Resolvable<S>,
     ) -> Result<(), ValidationError> {
         let mut schema = schema.write();
         if let Some(inner) = schema.items_mut().take() {
@@ -129,7 +129,7 @@ where
 
     /// Resolve the given definition. If it contains a reference, find and assign it,
     /// otherwise traverse further.
-    fn resolve_definitions(&self, schema: &mut SchemaRepr<S>) -> Result<(), ValidationError> {
+    fn resolve_definitions(&self, schema: &mut Resolvable<S>) -> Result<(), ValidationError> {
         let ref_def = {
             if let Some(ref_name) = schema.read().reference() {
                 trace!("Resolving {}", ref_name);
@@ -141,7 +141,7 @@ where
 
         if let Some(new) = ref_def {
             *schema = match schema {
-                SchemaRepr::Raw(old) => SchemaRepr::Resolved {
+                Resolvable::Raw(old) => Resolvable::Resolved {
                     old: old.clone(),
                     new: (&*new).clone(),
                 },
@@ -158,7 +158,7 @@ where
     fn resolve_operations(
         &mut self,
         path: &str,
-        map: &mut OperationMap<SchemaRepr<S>>,
+        map: &mut ResolvablePathItem<S>,
     ) -> Result<(), ValidationError> {
         for (&method, op) in &mut map.methods {
             self.resolve_parameters(Some(method), path, &mut op.parameters)?;
@@ -180,9 +180,10 @@ where
         &mut self,
         method: Option<HttpMethod>,
         path: &str,
-        params: &mut Vec<Parameter<SchemaRepr<S>>>,
+        params: &mut Vec<ResolvableParameter<S>>,
     ) -> Result<(), ValidationError> {
-        for param in params.iter_mut() {
+        for p in params.iter_mut() {
+            let mut param = p.write();
             self.resolve_operation_schema(&mut param.schema, method, path, "Body")?;
         }
 
@@ -192,7 +193,7 @@ where
     /// Resolves request/response schema in operation.
     fn resolve_operation_schema(
         &mut self,
-        s: &mut Option<SchemaRepr<S>>,
+        s: &mut Option<Resolvable<S>>,
         method: Option<HttpMethod>,
         path: &str,
         suffix: &str,
@@ -218,7 +219,7 @@ where
     }
 
     /// Given a name (from `$ref` field), get a reference to the definition.
-    fn resolve_definition_reference(&self, name: &str) -> Result<SchemaRepr<S>, ValidationError> {
+    fn resolve_definition_reference(&self, name: &str) -> Result<Resolvable<S>, ValidationError> {
         if !name.starts_with(DEF_REF_PREFIX) {
             // FIXME: Bad
             return Err(ValidationError::InvalidRefURI(name.into()));

@@ -1,6 +1,6 @@
 //! Interior mutability stuff.
 
-use crate::v2::models::SchemaRepr;
+use crate::v2::models::Resolvable;
 use parking_lot::RwLock;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
@@ -119,7 +119,7 @@ where
     }
 }
 
-impl<T> Serialize for SchemaRepr<T>
+impl<T> Serialize for Resolvable<T>
 where
     T: Serialize,
 {
@@ -128,8 +128,8 @@ where
         S: Serializer,
     {
         match self {
-            SchemaRepr::Raw(s) => s.serialize(serializer),
-            SchemaRepr::Resolved { new, .. } => new.serialize(serializer),
+            Resolvable::Raw(s) => s.serialize(serializer),
+            Resolvable::Resolved { new, .. } => new.serialize(serializer),
         }
     }
 }

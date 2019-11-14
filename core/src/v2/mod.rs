@@ -12,7 +12,7 @@ pub mod schema;
 #[cfg(feature = "actix")]
 pub use self::actix::{FutureWrapper, ResponderWrapper};
 
-pub use self::models::{Api, DefaultSchema};
+pub use self::models::{DefaultSchema, ResolvableApi};
 pub use self::schema::Schema;
 pub use paperclip_macros::*;
 
@@ -22,17 +22,17 @@ use self::resolver::Resolver;
 use crate::error::ValidationError;
 
 #[cfg(feature = "codegen")]
-impl<S: Schema + Default> Api<S> {
+impl<S: Schema + Default> ResolvableApi<S> {
     /// Consumes this API schema, resolves the references and returns
     /// the resolved schema.
     ///
     /// This walks recursively, collects the referenced schema objects,
     /// substitutes the referenced IDs with the pointer to schema objects
     /// and returns the resolved object or an error if it encountered one.
-    pub fn resolve(self) -> Result<Api<S>, ValidationError> {
+    pub fn resolve(self) -> Result<ResolvableApi<S>, ValidationError> {
         let mut resolver = Resolver::from((self.definitions, self.paths));
         resolver.resolve()?;
-        Ok(Api {
+        Ok(ResolvableApi {
             swagger: self.swagger,
             info: self.info,
             definitions: resolver.defs,
@@ -44,6 +44,7 @@ impl<S: Schema + Default> Api<S> {
             produces: self.produces,
             coders: self.coders,
             support_crates: self.support_crates,
+            parameters: self.parameters,
             spec_format: self.spec_format,
         })
     }

@@ -9,7 +9,7 @@ use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceRes
 use actix_web::{web::HttpResponse, Error};
 use futures::IntoFuture;
 use paperclip_core::v2::models::{
-    DefaultSchemaRaw, GenericApi, HttpMethod, Operation, OperationMap,
+    DefaultApiRaw, DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
 };
 use parking_lot::RwLock;
 
@@ -19,7 +19,7 @@ use std::sync::Arc;
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
-    spec: Arc<RwLock<GenericApi<DefaultSchemaRaw>>>,
+    spec: Arc<RwLock<DefaultApiRaw>>,
     inner: actix_web::App<T, B>,
 }
 
@@ -37,7 +37,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
 
     fn wrap_api(self) -> Self::Wrapper {
         App {
-            spec: Arc::new(RwLock::new(GenericApi::default())),
+            spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
             inner: self,
         }
     }
@@ -49,19 +49,19 @@ pub trait Mountable {
     fn path(&self) -> &str;
 
     /// Map of HTTP methods and the associated API operations.
-    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>;
+    fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw>;
 
     /// The definitions recorded by this object.
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw>;
 
     /// Updates the given map of operations with operations tracked by this object.
     ///
-    /// **NOTE:** Overriding implementations must ensure that the `OperationMap`
+    /// **NOTE:** Overriding implementations must ensure that the `PathItem`
     /// is normalized before updating the input map.
-    fn update_operations(&mut self, map: &mut BTreeMap<String, OperationMap<DefaultSchemaRaw>>) {
+    fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         let op_map = map
             .entry(self.path().into())
-            .or_insert_with(OperationMap::default);
+            .or_insert_with(Default::default);
         op_map.methods.extend(self.operations().into_iter());
         op_map.normalize();
     }
@@ -260,7 +260,7 @@ where
 }
 
 #[derive(Clone)]
-struct SpecHandler(Arc<RwLock<GenericApi<DefaultSchemaRaw>>>);
+struct SpecHandler(Arc<RwLock<DefaultApiRaw>>);
 
 impl actix_web::dev::Factory<(), HttpResponse> for SpecHandler {
     fn call(&self, _: ()) -> HttpResponse {

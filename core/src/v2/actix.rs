@@ -1,4 +1,6 @@
-use super::models::{DefaultSchemaRaw, Either, Operation, Parameter, ParameterIn, Response};
+use super::models::{
+    DefaultOperationRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn, Response,
+};
 use super::schema::{Apiv2Operation, Apiv2Schema};
 use actix_web::{
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
@@ -12,10 +14,10 @@ use std::collections::BTreeMap;
 /// and/or update the global map of definitions.
 pub trait OperationModifier: Apiv2Schema + Sized {
     /// Update the parameters list in the given operation (if needed).
-    fn update_parameter(_op: &mut Operation<DefaultSchemaRaw>) {}
+    fn update_parameter(_op: &mut DefaultOperationRaw) {}
 
     /// Update the responses map in the given operation (if needed).
-    fn update_response(_op: &mut Operation<DefaultSchemaRaw>) {}
+    fn update_response(_op: &mut DefaultOperationRaw) {}
 
     /// Update the definitions map (if needed).
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
@@ -28,9 +30,9 @@ impl<T> OperationModifier for T
 where
     T: Apiv2Schema,
 {
-    default fn update_parameter(_op: &mut Operation<DefaultSchemaRaw>) {}
+    default fn update_parameter(_op: &mut DefaultOperationRaw) {}
 
-    default fn update_response(_op: &mut Operation<DefaultSchemaRaw>) {}
+    default fn update_response(_op: &mut DefaultOperationRaw) {}
 
     default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         update_definitions_from_schema_type::<Self>(map);
@@ -41,11 +43,11 @@ impl<T> OperationModifier for Option<T>
 where
     T: OperationModifier,
 {
-    fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_parameter(op: &mut DefaultOperationRaw) {
         T::update_parameter(op);
     }
 
-    fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_response(op: &mut DefaultOperationRaw) {
         T::update_response(op);
     }
 
@@ -58,11 +60,11 @@ impl<T, E> OperationModifier for Result<T, E>
 where
     T: OperationModifier,
 {
-    fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_parameter(op: &mut DefaultOperationRaw) {
         T::update_parameter(op);
     }
 
-    fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_response(op: &mut DefaultOperationRaw) {
         T::update_response(op);
     }
 
@@ -106,7 +108,7 @@ impl<T> OperationModifier for Json<T>
 where
     T: Apiv2Schema,
 {
-    fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_parameter(op: &mut DefaultOperationRaw) {
         op.parameters.push(Parameter {
             description: None,
             in_: ParameterIn::Body,
@@ -121,7 +123,7 @@ where
         });
     }
 
-    fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_response(op: &mut DefaultOperationRaw) {
         op.responses.insert(
             "200".into(),
             Response {
@@ -146,7 +148,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     }
 
     impl<T: Apiv2Schema> OperationModifier for $ty {
-        fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+        fn update_parameter(op: &mut DefaultOperationRaw) {
             let def = T::raw_schema();
             // If there aren't any properties and if it's a path parameter,
             // then add a parameter whose name will be overridden later.
@@ -196,7 +198,7 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
     impl<$($ty,)+> OperationModifier for Path<($($ty,)+)>
         where $($ty: Apiv2Schema,)+
     {
-        fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+        fn update_parameter(op: &mut DefaultOperationRaw) {
             // NOTE: We're setting empty name, because we don't know
             // the name in this context. We'll get it when we add services.
             $(
@@ -270,11 +272,11 @@ where
     I: IntoFuture,
     I::Item: OperationModifier,
 {
-    fn update_parameter(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_parameter(op: &mut DefaultOperationRaw) {
         I::Item::update_parameter(op);
     }
 
-    fn update_response(op: &mut Operation<DefaultSchemaRaw>) {
+    fn update_response(op: &mut DefaultOperationRaw) {
         I::Item::update_response(op);
     }
 
@@ -303,8 +305,8 @@ macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
               $($ty: OperationModifier,)*
               R: OperationModifier,
     {
-        default fn operation() -> Operation<DefaultSchemaRaw> {
-            let mut op = Operation::default();
+        default fn operation() -> DefaultOperationRaw {
+            let mut op = DefaultOperationRaw::default();
             $(
                 $ty::update_parameter(&mut op);
             )*
@@ -328,8 +330,8 @@ macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
               R: OperationModifier + IntoFuture,
               R::Item: OperationModifier,
     {
-        fn operation() -> Operation<DefaultSchemaRaw> {
-            let mut op = Operation::default();
+        fn operation() -> DefaultOperationRaw {
+            let mut op = DefaultOperationRaw::default();
             $(
                 $ty::update_parameter(&mut op);
             )*

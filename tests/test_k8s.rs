@@ -7,7 +7,7 @@ extern crate serde_derive;
 use paperclip::v2::{
     self,
     codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
-    models::{Api, HttpMethod, Version},
+    models::{HttpMethod, ResolvableApi, Version},
 };
 
 use std::fs::File;
@@ -15,10 +15,10 @@ use std::io::Read;
 
 lazy_static! {
     static ref ROOT: String = String::from(env!("CARGO_MANIFEST_DIR"));
-    static ref SCHEMA: Api<K8sSchema> = {
+    static ref SCHEMA: ResolvableApi<K8sSchema> = {
         let fd =
             File::open(ROOT.clone() + "/tests/k8s-v1.16.0-alpha.0-openapi-v2.json").expect("file?");
-        let raw: Api<K8sSchema> = v2::from_reader(fd).expect("deserializing spec");
+        let raw: ResolvableApi<K8sSchema> = v2::from_reader(fd).expect("deserializing spec");
         raw.resolve().expect("resolution")
     };
     static ref CODEGEN: () = {

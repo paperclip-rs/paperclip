@@ -4,7 +4,7 @@ extern crate lazy_static;
 use paperclip::v2::{
     self,
     codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
-    models::{Api, DefaultSchema},
+    models::{DefaultSchema, ResolvableApi},
 };
 
 use std::fs::File;
@@ -12,9 +12,9 @@ use std::io::Read;
 
 lazy_static! {
     static ref ROOT: String = String::from(env!("CARGO_MANIFEST_DIR"));
-    static ref SCHEMA: Api<DefaultSchema> = {
+    static ref SCHEMA: ResolvableApi<DefaultSchema> = {
         let fd = File::open(ROOT.clone() + "/tests/pet-v2.yaml").expect("file?");
-        let raw: Api<DefaultSchema> = v2::from_reader(fd).expect("deserializing spec");
+        let raw: ResolvableApi<DefaultSchema> = v2::from_reader(fd).expect("deserializing spec");
         raw.resolve().expect("resolution")
     };
     static ref CODEGEN: () = {

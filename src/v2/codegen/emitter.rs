@@ -5,9 +5,9 @@ use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
     models::{
-        self, Api, Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
-        MediaRange, Operation, OperationMap, ParameterIn, SchemaRepr, JSON_CODER, JSON_MIME,
-        YAML_CODER, YAML_MIME,
+        self, Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
+        MediaRange, ParameterIn, Resolvable, ResolvableApi, ResolvableOperation,
+        ResolvableParameter, ResolvablePathItem, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
     },
     Schema,
 };
@@ -169,7 +169,7 @@ pub trait Emitter: Sized {
         &self,
         path: &str,
         method: HttpMethod,
-        op: &Operation<SchemaRepr<Self::Definition>>,
+        op: &ResolvableOperation<Self::Definition>,
     ) -> Result<PathBuf, Error> {
         let _ = (path, method, op);
         let state = self.state();
@@ -189,7 +189,7 @@ pub trait Emitter: Sized {
         &self,
         path: &str,
         method: HttpMethod,
-        op: &Operation<SchemaRepr<Self::Definition>>,
+        op: &ResolvableOperation<Self::Definition>,
     ) -> Result<ApiObject, Error> {
         let _ = (path, method, op);
         Ok(ApiObject {
@@ -209,7 +209,7 @@ pub trait Emitter: Sized {
     /// inside Rust modules in the configured working directory.
     ///
     /// **NOTE:** Not meant to be overridden.
-    fn generate(&self, api: &Api<Self::Definition>) -> Result<(), Error> {
+    fn generate(&self, api: &ResolvableApi<Self::Definition>) -> Result<(), Error> {
         let state = self.state();
         state.reset_internal_fields();
 
@@ -610,8 +610,8 @@ where
 struct RequirementCollector<'a, E: Emitter> {
     path: &'a str,
     emitter: &'a E,
-    api: &'a Api<E::Definition>,
-    map: &'a OperationMap<SchemaRepr<E::Definition>>,
+    api: &'a ResolvableApi<E::Definition>,
+    map: &'a ResolvablePathItem<E::Definition>,
     template_params: HashSet<String>,
 }
 
@@ -668,7 +668,7 @@ where
     /// For example, `/api/{foo}` and `/api/{bar}` are the same, and we
     /// should reject it.
     fn validate_path_and_add_params(&mut self) -> Result<(), PaperClipError> {
-        let path_fmt = Api::<()>::path_parameters_map(self.path, |p| {
+        let path_fmt = ResolvableApi::<()>::path_parameters_map(self.path, |p| {
             self.template_params.insert(p.into());
             ":".into()
         });
@@ -687,7 +687,7 @@ where
     fn collect_from_operation(
         &mut self,
         meth: HttpMethod,
-        op: &Operation<SchemaRepr<E::Definition>>,
+        op: &ResolvableOperation<E::Definition>,
         unused_params: &[Parameter],
     ) -> Result<(), Error> {
         let (mut params, schema_path) = self.collect_parameters(&op.parameters)?;
@@ -733,7 +733,7 @@ where
     /// default if needed.
     fn validate_collection_format(
         &mut self,
-        p: &models::Parameter<SchemaRepr<E::Definition>>,
+        p: &models::Parameter<Resolvable<E::Definition>>,
         it_fmts: &mut Vec<CollectionFormat>,
     ) {
         if p.data_type != Some(DataType::Array) {
@@ -785,12 +785,13 @@ where
     /// Given a bunch of resolved parameters, validate and collect a simplified version of them.
     fn collect_parameters(
         &mut self,
-        obj_params: &[models::Parameter<SchemaRepr<E::Definition>>],
+        obj_params: &[ResolvableParameter<E::Definition>],
     ) -> Result<(Vec<Parameter>, Option<PathBuf>), Error> {
         let def_mods = self.emitter.state().def_mods.borrow();
         let mut schema_path = None;
         let mut params = vec![];
-        for p in obj_params {
+        for param in obj_params {
+            let p = param.read();
             p.check(self.path)?; // validate the parameter
 
             if let Some(def) = p.schema.as_ref() {
@@ -848,7 +849,7 @@ where
         &self,
         schema_path: &Path,
         meth: HttpMethod,
-        op: &Operation<SchemaRepr<E::Definition>>,
+        op: &ResolvableOperation<E::Definition>,
         params: Vec<Parameter>,
     ) -> Result<(), Error> {
         trace!(
@@ -905,7 +906,7 @@ where
     fn bind_operation_blindly(
         &self,
         meth: HttpMethod,
-        op: &Operation<SchemaRepr<E::Definition>>,
+        op: &ResolvableOperation<E::Definition>,
         params: Vec<Parameter>,
     ) -> Result<(), Error> {
         // Let's try from the response maybe...
@@ -1018,7 +1019,7 @@ where
     ///
     /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
     fn get_2xx_response_schema<'o>(
-        op: &'o Operation<SchemaRepr<E::Definition>>,
+        op: &'o ResolvableOperation<E::Definition>,
     ) -> Option<&'o ArcRwLock<E::Definition>> {
         op.responses
             .iter()

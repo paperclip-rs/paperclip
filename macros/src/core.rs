@@ -136,27 +136,27 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn items(&self) -> Option<&paperclip::v2::models::Either<paperclip::v2::models::SchemaRepr<Self>, Vec<paperclip::v2::models::SchemaRepr<Self>>>> {
+            fn items(&self) -> Option<&paperclip::v2::models::Either<paperclip::v2::models::Resolvable<Self>, Vec<paperclip::v2::models::Resolvable<Self>>>> {
                 self.items.as_ref()
             }
 
             #[inline]
-            fn items_mut(&mut self) -> Option<&mut paperclip::v2::models::Either<paperclip::v2::models::SchemaRepr<Self>, Vec<paperclip::v2::models::SchemaRepr<Self>>>> {
+            fn items_mut(&mut self) -> Option<&mut paperclip::v2::models::Either<paperclip::v2::models::Resolvable<Self>, Vec<paperclip::v2::models::Resolvable<Self>>>> {
                 self.items.as_mut()
             }
 
             #[inline]
-            fn additional_properties(&self) -> Option<&paperclip::v2::models::Either<bool, paperclip::v2::models::SchemaRepr<Self>>> {
+            fn additional_properties(&self) -> Option<&paperclip::v2::models::Either<bool, paperclip::v2::models::Resolvable<Self>>> {
                 self.extra_props.as_ref()
             }
 
             #[inline]
-            fn additional_properties_mut(&mut self) -> Option<&mut paperclip::v2::models::Either<bool, paperclip::v2::models::SchemaRepr<Self>>> {
+            fn additional_properties_mut(&mut self) -> Option<&mut paperclip::v2::models::Either<bool, paperclip::v2::models::Resolvable<Self>>> {
                 self.extra_props.as_mut()
             }
 
             #[inline]
-            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<Self>>> {
+            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip::v2::models::Resolvable<Self>>> {
                 if self.properties.is_empty() {
                     None
                 } else {
@@ -165,7 +165,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip::v2::models::SchemaRepr<Self>>> {
+            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip::v2::models::Resolvable<Self>>> {
                 if self.properties.is_empty() {
                     None
                 } else {
@@ -266,7 +266,7 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     let mut gen = quote!();
     let add_self = |gen: &mut proc_macro2::TokenStream| {
         if is_ref {
-            gen.extend(quote!(paperclip::v2::models::SchemaRepr<#name>));
+            gen.extend(quote!(paperclip::v2::models::Resolvable<#name>));
         } else {
             gen.extend(quote!(Box<#name>));
         }

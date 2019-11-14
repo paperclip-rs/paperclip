@@ -7,12 +7,12 @@
 //! can use the `DefaultSchema`.
 //!
 //! ```rust,no_run
-//! use paperclip::v2::{self, Api, DefaultSchema, models::Version};
+//! use paperclip::v2::{self, ResolvableApi, DefaultSchema, models::Version};
 //!
 //! use std::fs::File;
 //!
 //! let mut fd = File::open("my_spec.yaml").unwrap(); // yaml or json
-//! let api: Api<DefaultSchema> = v2::from_reader(&mut fd).unwrap();
+//! let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut fd).unwrap();
 //! assert_eq!(api.swagger, Version::V2);
 //! ```
 //!
@@ -29,7 +29,7 @@
 //! #[macro_use] extern crate paperclip;
 //! #[macro_use] extern crate serde_derive; // NOTE: We're using serde for decoding stuff.
 //!
-//! use paperclip::v2::{self, Api};
+//! use paperclip::v2::{self, ResolvableApi};
 //!
 //! use std::fs::File;
 //!
@@ -53,7 +53,7 @@
 //!
 //! // K8sSchema now implements `Schema` trait.
 //! let mut fd = File::open("k8s_spec.yaml").unwrap();
-//! let api: Api<K8sSchema> = v2::from_reader(&mut fd).unwrap();
+//! let api: ResolvableApi<K8sSchema> = v2::from_reader(&mut fd).unwrap();
 //! ```
 //!
 //! Now, if `codegen` feature is enabled (it is by default), we can use the
@@ -66,15 +66,15 @@
 //! and add them to the known map of definitions.
 //!
 //! ```rust,no_run
-//! # use paperclip::v2::{self, Api, DefaultSchema};
-//! # let api: Api<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
+//! # use paperclip::v2::{self, ResolvableApi, DefaultSchema};
+//! # let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //!
 //! let resolved = api.resolve().unwrap();
 //! ```
 //!
 //! ```rust,no_run
-//! # use paperclip::v2::{self, Api, DefaultSchema};
-//! # let api: Api<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
+//! # use paperclip::v2::{self, ResolvableApi, DefaultSchema};
+//! # let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //! use paperclip::v2::{DefaultEmitter, EmitterState, Emitter};
 //!
 //! let mut state = EmitterState::default();
@@ -95,15 +95,15 @@ use std::io::{Read, Seek, SeekFrom};
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
 pub use paperclip_core::im;
-pub use paperclip_core::v2::models::{self, Api, DefaultSchema};
+pub use paperclip_core::v2::models::{self, DefaultSchema, ResolvableApi};
 pub use paperclip_core::v2::schema::{self, Schema};
 
 /// Deserialize the schema from the given reader. Currently, this only supports
 /// JSON and YAML formats.
-pub fn from_reader<R, S>(mut reader: R) -> Result<Api<S>, PaperClipError>
+pub fn from_reader<R, S>(mut reader: R) -> Result<ResolvableApi<S>, PaperClipError>
 where
     R: Read + Seek,
-    for<'de> S: Deserialize<'de> + Schema,
+    for<'de> S: Deserialize<'de> + Schema + Default,
 {
     let mut buf = [0; 1];
     reader.read_exact(&mut buf)?;
@@ -112,12 +112,12 @@ where
     // FIXME: Support whitespaces
     let (mut api, fmt) = if buf[0] == b'{' {
         (
-            serde_json::from_reader::<_, Api<S>>(reader)?,
+            serde_json::from_reader::<_, ResolvableApi<S>>(reader)?,
             SpecFormat::Json,
         )
     } else {
         (
-            serde_yaml::from_reader::<_, Api<S>>(reader)?,
+            serde_yaml::from_reader::<_, ResolvableApi<S>>(reader)?,
             SpecFormat::Yaml,
         )
     };

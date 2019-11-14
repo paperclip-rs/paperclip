@@ -14,7 +14,9 @@ use actix_web::dev::{
 use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
 use futures::future::IntoFuture;
-use paperclip_core::v2::models::{DefaultSchemaRaw, HttpMethod, Operation, OperationMap};
+use paperclip_core::v2::models::{
+    DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
+};
 use paperclip_core::v2::schema::Apiv2Operation;
 
 use std::collections::BTreeMap;
@@ -36,7 +38,7 @@ const METHODS: &[Method] = &[
 /// Wrapper for [`actix_web::Resource`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html)
 pub struct Resource<R = actix_web::Resource> {
     path: String,
-    operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
+    operations: BTreeMap<HttpMethod, DefaultOperationRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
     inner: R,
 }
@@ -88,7 +90,7 @@ impl<T> Mountable for Resource<T> {
         &self.path
     }
 
-    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+    fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
         mem::replace(&mut self.operations, BTreeMap::new())
     }
 
@@ -276,7 +278,7 @@ pub fn resource(path: &str) -> Resource {
 /// Wrapper for [`actix_web::Scope`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html)
 pub struct Scope<S = actix_web::Scope> {
     path: String,
-    path_map: BTreeMap<String, OperationMap<DefaultSchemaRaw>>,
+    path_map: BTreeMap<String, DefaultPathItemRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
     inner: S,
 }
@@ -474,7 +476,7 @@ impl<T> Mountable for Scope<T> {
         unimplemented!("Scope has multiple paths. Use `update_operations` object instead.");
     }
 
-    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+    fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
         unimplemented!("Scope has multiple operation maps. Use `update_operations` object instead.")
     }
 
@@ -482,7 +484,7 @@ impl<T> Mountable for Scope<T> {
         mem::replace(&mut self.definitions, BTreeMap::new())
     }
 
-    fn update_operations(&mut self, map: &mut BTreeMap<String, OperationMap<DefaultSchemaRaw>>) {
+    fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         *map = mem::replace(&mut self.path_map, BTreeMap::new());
     }
 }
@@ -497,7 +499,7 @@ pub fn scope(path: &str) -> Scope {
 /// Wrapper for [`actix_web::Route`](https://docs.rs/actix-web/*/actix_web/struct.Route.html)
 pub struct Route {
     method: Option<HttpMethod>,
-    operation: Option<Operation<DefaultSchemaRaw>>,
+    operation: Option<DefaultOperationRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
     inner: actix_web::Route,
 }
@@ -622,7 +624,7 @@ pub fn head() -> Route {
 /// the `.route()` method.
 pub(crate) struct RouteWrapper<S> {
     path: S,
-    pub(crate) operations: BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>>,
+    pub(crate) operations: BTreeMap<HttpMethod, DefaultOperationRaw>,
     pub(crate) definitions: BTreeMap<String, DefaultSchemaRaw>,
     pub(crate) inner: actix_web::Route,
 }
@@ -662,7 +664,7 @@ where
         self.path.as_ref()
     }
 
-    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+    fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
         mem::replace(&mut self.operations, BTreeMap::new())
     }
 
@@ -675,7 +677,7 @@ where
 
 /// Wrapper for [`actix_web::web::ServiceConfig`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html).
 pub struct ServiceConfig<S = actix_web::Scope> {
-    path_map: BTreeMap<String, OperationMap<DefaultSchemaRaw>>,
+    path_map: BTreeMap<String, DefaultPathItemRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
     scope: Option<S>,
 }
@@ -685,7 +687,7 @@ impl<T> Mountable for ServiceConfig<T> {
         unimplemented!("ServiceConfig has multiple paths. Use `update_operations` object instead.");
     }
 
-    fn operations(&mut self) -> BTreeMap<HttpMethod, Operation<DefaultSchemaRaw>> {
+    fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
         unimplemented!(
             "ServiceConfig has multiple operation maps. Use `update_operations` object instead."
         )
@@ -695,7 +697,7 @@ impl<T> Mountable for ServiceConfig<T> {
         mem::replace(&mut self.definitions, BTreeMap::new())
     }
 
-    fn update_operations(&mut self, map: &mut BTreeMap<String, OperationMap<DefaultSchemaRaw>>) {
+    fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         *map = mem::replace(&mut self.path_map, BTreeMap::new());
     }
 }

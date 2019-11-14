@@ -1,7 +1,7 @@
 use paperclip::v2::{
     self,
     codegen::{DefaultEmitter, Emitter, EmitterState},
-    models::{Api, DefaultSchema},
+    models::{DefaultSchema, ResolvableApi},
 };
 
 use std::io::Cursor;
@@ -25,7 +25,7 @@ paths:
 " as &[_],
     );
 
-    let raw: Api<DefaultSchema> = v2::from_reader(spec).expect("deserializing spec");
+    let raw: ResolvableApi<DefaultSchema> = v2::from_reader(spec).expect("deserializing spec");
     let resolved = raw.resolve().expect("resolution");
 
     let state = EmitterState::default();
@@ -71,7 +71,7 @@ paths:
 " as &[_],
     );
 
-    let raw: Api<DefaultSchema> = v2::from_reader(spec).expect("deserializing spec");
+    let raw: ResolvableApi<DefaultSchema> = v2::from_reader(spec).expect("deserializing spec");
     let resolved = raw.resolve().expect("resolution");
 
     let state = EmitterState::default();
