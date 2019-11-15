@@ -1,5 +1,8 @@
 use super::{
-    models::{Either, HttpMethod, Reference, Resolvable, ResolvableParameter, ResolvablePathItem},
+    models::{
+        Either, HttpMethod, Reference, Resolvable, ResolvableParameter, ResolvablePathItem,
+        ResolvableResponse,
+    },
     Schema,
 };
 use crate::error::ValidationError;
@@ -13,10 +16,12 @@ use std::mem;
 
 const DEF_REF_PREFIX: &str = "#/definitions/";
 const PARAM_REF_PREFIX: &str = "#/parameters/";
+const RESP_REF_PREFIX: &str = "#/responses/";
 
 type DefinitionsMap<S> = BTreeMap<String, Resolvable<S>>;
 type OperationsMap<S> = BTreeMap<String, ResolvablePathItem<S>>;
 type ParametersMap<S> = BTreeMap<String, ResolvableParameter<S>>;
+type ResponsesMap<S> = BTreeMap<String, ResolvableResponse<S>>;
 
 /// API schema resolver. This visits each definition and resolves
 /// `$ref` field (if any) by finding the associated definition and
@@ -35,11 +40,25 @@ pub(crate) struct Resolver<S> {
     pub paths: OperationsMap<S>,
     /// Globally defined parameters.
     pub params: ParametersMap<S>,
+    /// Globally defined responses;
+    pub resp: ResponsesMap<S>,
 }
 
-impl<S> From<(DefinitionsMap<S>, OperationsMap<S>, ParametersMap<S>)> for Resolver<S> {
+impl<S>
+    From<(
+        DefinitionsMap<S>,
+        OperationsMap<S>,
+        ParametersMap<S>,
+        ResponsesMap<S>,
+    )> for Resolver<S>
+{
     fn from(
-        (defs, paths, params): (DefinitionsMap<S>, OperationsMap<S>, ParametersMap<S>),
+        (defs, paths, params, resp): (
+            DefinitionsMap<S>,
+            OperationsMap<S>,
+            ParametersMap<S>,
+            ResponsesMap<S>,
+        ),
     ) -> Self {
         Resolver {
             cur_def: RefCell::new(None),
@@ -48,6 +67,7 @@ impl<S> From<(DefinitionsMap<S>, OperationsMap<S>, ParametersMap<S>)> for Resolv
             defs,
             paths,
             params,
+            resp,
         }
     }
 }
@@ -169,7 +189,19 @@ where
     ) -> Result<(), ValidationError> {
         for (&method, op) in &mut map.methods {
             self.resolve_parameters(Some(method), path, &mut op.parameters)?;
-            for response in op.responses.values_mut() {
+            for resp in op.responses.values_mut() {
+                let ref_resp = if let Some(r) = resp.left() {
+                    trace!("Resolving response {}", r.reference);
+                    Some(self.resolve_response_reference(&r.reference)?)
+                } else {
+                    None
+                };
+
+                if let Some(new) = ref_resp {
+                    *resp = Either::Right(new);
+                }
+
+                let mut response = resp.write();
                 self.resolve_operation_schema(
                     &mut response.schema,
                     Some(method),
@@ -270,5 +302,22 @@ where
             .get(name)
             .ok_or_else(|| ValidationError::MissingReference(name.into()))?;
         Ok(param.clone())
+    }
+
+    /// Given a name (from `$ref` field), get a reference to the response.
+    fn resolve_response_reference(
+        &self,
+        name: &str,
+    ) -> Result<ResolvableResponse<S>, ValidationError> {
+        if !name.starts_with(RESP_REF_PREFIX) {
+            return Err(ValidationError::InvalidRefURI(name.into()));
+        }
+
+        let name = &name[RESP_REF_PREFIX.len()..];
+        let resp = self
+            .resp
+            .get(name)
+            .ok_or_else(|| ValidationError::MissingReference(name.into()))?;
+        Ok(resp.clone())
     }
 }

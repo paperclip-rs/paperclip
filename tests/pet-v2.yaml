@@ -94,6 +94,10 @@ parameters:
     required: true
     type: integer
     description: ID of the pet.
+responses:
+  StatusResponse:
+    schema:
+      $ref: '#/definitions/Status'
 paths:
   /pets/{petId}:
     parameters:
@@ -109,9 +113,8 @@ paths:
       description: Delete multiple pets
       operationID: deletePetBatch
       responses:
-        "200":
-          schema:
-            $ref: '#/definitions/Status'
+        '200':
+          $ref: '#/responses/StatusResponse'
       parameters:
       - name: petId
         in: path
@@ -302,5 +305,4 @@ paths:
             type: integer
       responses:
         '200':
-          schema:
-            $ref: '#/definitions/Status'
+          $ref: '#/responses/StatusResponse'

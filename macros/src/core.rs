@@ -25,10 +25,11 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
 
     let raw_struct_name = &raw_item_ast.ident;
     let mut gen = quote!(
-        /// **NOTE:** This is the raw version i.e., it doesn't have
-        /// smart pointers to reuse definitions throughout the spec.
-        /// Instead, it contains the actual schema with unresolved
-        /// `$ref` fields.
+        /// Raw version of schema.
+        ///
+        /// **NOTE:** This doesn't have smart pointers to reuse definitions
+        /// throughout the spec. Instead, it contains the actual schema with
+        /// unresolvable `$ref` fields.
         ///
         #raw_item_ast
     );

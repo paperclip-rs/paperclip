@@ -79,20 +79,20 @@ pub enum DataTypeFormat {
 }
 
 /// OpenAPI v2 spec which can be traversed and resolved for codegen.
-pub type ResolvableApi<S> = Api<ResolvableParameter<S>, Resolvable<S>>;
+pub type ResolvableApi<S> = Api<ResolvableParameter<S>, ResolvableResponse<S>, Resolvable<S>>;
 
 /// OpenAPI v2 spec with defaults.
-pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultSchemaRaw>;
+pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultResponseRaw, DefaultSchemaRaw>;
 
 /// OpenAPI v2 (swagger) spec generic over parameter and schema.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Api<P, S> {
+pub struct Api<P, R, S> {
     pub swagger: Version,
     #[serde(default = "BTreeMap::new")]
     pub definitions: BTreeMap<String, S>,
-    pub paths: BTreeMap<String, PathItem<P, S>>,
+    pub paths: BTreeMap<String, PathItem<P, R>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub host: Option<String>,
     #[serde(rename = "basePath", skip_serializing_if = "Option::is_none")]
@@ -105,6 +105,8 @@ pub struct Api<P, S> {
     pub schemes: BTreeSet<OperationProtocol>,
     #[serde(default = "BTreeMap::new", skip_serializing_if = "BTreeMap::is_empty")]
     pub parameters: BTreeMap<String, P>,
+    #[serde(default = "BTreeMap::new", skip_serializing_if = "BTreeMap::is_empty")]
+    pub responses: BTreeMap<String, R>,
     #[serde(
         default,
         rename = "x-rust-coders",
@@ -129,12 +131,13 @@ pub struct Api<P, S> {
     )]
     pub support_crates: BTreeMap<String, String>,
     /// This field is set manually, because we don't know the format in which
-    /// the spec was provided.
+    /// the spec was provided and we need to use this as the fallback encoding.
     #[serde(skip)]
     pub spec_format: SpecFormat,
     pub info: Info,
 }
 
+/// The format used by spec (JSON/YAML).
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 pub enum SpecFormat {
     Json,
@@ -159,7 +162,7 @@ impl SpecFormat {
     }
 }
 
-impl<P, S> Api<P, S> {
+impl<P, R, S> Api<P, R, S> {
     /// Gets the parameters from the given path template and calls
     /// the given function with the parameter names.
     pub fn path_parameters_map(
@@ -219,23 +222,23 @@ pub struct License {
 }
 
 /// Path item that can be traversed and resolved for codegen.
-pub type ResolvablePathItem<S> = PathItem<ResolvableParameter<S>, Resolvable<S>>;
+pub type ResolvablePathItem<S> = PathItem<ResolvableParameter<S>, ResolvableResponse<S>>;
 
-/// Path item with default parameter and schema.
-pub type DefaultPathItemRaw = PathItem<DefaultParameterRaw, DefaultSchemaRaw>;
+/// Path item with default parameter and response.
+pub type DefaultPathItemRaw = PathItem<DefaultParameterRaw, DefaultResponseRaw>;
 
 /// Path item object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct PathItem<P, S> {
+pub struct PathItem<P, R> {
     #[serde(flatten, default = "BTreeMap::default")]
-    pub methods: BTreeMap<HttpMethod, Operation<P, S>>,
+    pub methods: BTreeMap<HttpMethod, Operation<P, R>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
     pub parameters: Vec<Either<Reference, P>>,
 }
 
-impl<S> PathItem<Parameter<S>, S> {
+impl<S> PathItem<Parameter<S>, Response<S>> {
     /// Normalizes this operation map.
     /// - Collects and removes parameters shared across operations
     /// and adds them to the list global to this map.
@@ -489,39 +492,39 @@ pub enum CollectionFormat {
 }
 
 /// Operation that can be traversed and resolved for codegen.
-pub type ResolvableOperation<S> = Operation<ResolvableParameter<S>, Resolvable<S>>;
+pub type ResolvableOperation<S> = Operation<ResolvableParameter<S>, ResolvableResponse<S>>;
 
-/// Operation with default raw parameter and schema.
-pub type DefaultOperationRaw = Operation<DefaultParameterRaw, DefaultSchemaRaw>;
+/// Operation with default raw parameter and response.
+pub type DefaultOperationRaw = Operation<DefaultParameterRaw, DefaultResponseRaw>;
 
 /// Operation object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
-pub struct Operation<P, S> {
+pub struct Operation<P, R> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
-    #[serde(default, skip_serializing_if = "Option::is_none")]
     // *NOTE:* `consumes` and `produces` are optional, because
     // local media ranges can be used to override global media ranges
     // (including setting it to empty), so we cannot go for an empty set.
+    #[serde(default, skip_serializing_if = "Option::is_none")]
     pub consumes: Option<BTreeSet<MediaRange>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub produces: Option<BTreeSet<MediaRange>>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub schemes: BTreeSet<OperationProtocol>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`
-    pub responses: BTreeMap<String, Response<S>>,
+    pub responses: BTreeMap<String, Either<Reference, R>>,
     #[serde(default = "Vec::default", skip_serializing_if = "Vec::is_empty")]
     pub parameters: Vec<Either<Reference, P>>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub deprecated: bool,
 }
 
-impl<S> Operation<Parameter<S>, S> {
+impl<S> Operation<Parameter<S>, Response<S>> {
     /// Overwrites the names of parameters in this operation using the
     /// given path template.
     ///
@@ -535,7 +538,7 @@ impl<S> Operation<Parameter<S>, S> {
             .iter_mut()
             .filter(|p| p.in_ == ParameterIn::Path)
             .peekable();
-        Api::<(), ()>::path_parameters_map(path, |p| {
+        Api::<(), (), ()>::path_parameters_map(path, |p| {
             let param = params
                 .next()
                 .unwrap_or_else(|| panic!("missing parameter {:?} in path {:?}", p, path));
@@ -572,10 +575,16 @@ pub enum OperationProtocol {
     Wss,
 }
 
+/// Response that can be traversed and resolved for codegen.
+pub type ResolvableResponse<S> = ArcRwLock<Response<Resolvable<S>>>;
+
+/// Response with the default raw schema.
+pub type DefaultResponseRaw = Response<DefaultSchemaRaw>;
+
 /// Response object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject
-#[derive(Clone, Debug, Serialize, Deserialize)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Response<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,

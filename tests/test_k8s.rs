@@ -90,8 +90,8 @@ fn test_definition_ref_cycles() {
 
 #[test]
 fn test_resolved_schema() {
-    let api_versions = &SCHEMA.paths["/api/"].methods[&HttpMethod::Get].responses["200"].schema;
-    let schema = api_versions.as_ref().expect("bleh?").read();
+    let resp = &SCHEMA.paths["/api/"].methods[&HttpMethod::Get].responses["200"].read();
+    let schema = resp.schema.as_ref().expect("bleh?").read();
     assert!(schema.reference.is_none()); // this was a reference
     assert_eq!(
         &SCHEMA.definitions["io.k8s.apimachinery.pkg.apis.meta.v1.APIVersions"]

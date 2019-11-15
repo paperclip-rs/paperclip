@@ -1018,15 +1018,17 @@ where
     /// Returns the first 2xx response schema in this operation.
     ///
     /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
-    fn get_2xx_response_schema<'o>(
-        op: &'o ResolvableOperation<E::Definition>,
-    ) -> Option<&'o ArcRwLock<E::Definition>> {
+    fn get_2xx_response_schema(
+        op: &ResolvableOperation<E::Definition>,
+    ) -> Option<ArcRwLock<E::Definition>> {
         op.responses
             .iter()
             .filter(|(c, _)| c.starts_with('2')) // 2xx response
-            .filter_map(|(_, r)| r.schema.as_ref())
+            .filter_map(|(_, r)| {
+                let resp = r.read();
+                resp.schema.as_ref().map(|r| (&**r).clone())
+            })
             .next()
-            .map(|r| &**r)
     }
 
     /// Returns the coder based on the given local and global media range, and `None`

@@ -126,14 +126,14 @@ where
     fn update_response(op: &mut DefaultOperationRaw) {
         op.responses.insert(
             "200".into(),
-            Response {
+            Either::Right(Response {
                 description: None,
                 schema: Some({
                     let mut def = T::schema_with_ref();
                     def.retain_ref();
                     def
                 }),
-            },
+            }),
         );
     }
 }
