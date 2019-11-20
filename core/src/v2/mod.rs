@@ -52,6 +52,10 @@ impl<S: Schema + Default> ResolvableApi<S> {
             parameters: resolver.params,
             responses: resolver.resp,
             spec_format: self.spec_format,
+            external_docs: self.external_docs,
+            security: self.security,
+            security_definitions: self.security_definitions,
+            tags: self.tags,
         })
     }
 }

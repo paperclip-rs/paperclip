@@ -107,12 +107,12 @@ pub struct Api<P, R, S> {
     pub parameters: BTreeMap<String, P>,
     #[serde(default = "BTreeMap::new", skip_serializing_if = "BTreeMap::is_empty")]
     pub responses: BTreeMap<String, R>,
-    #[serde(default, rename = "securityDefinitions"), skip_serializing_if = "BTreeMap::is_empty"]
+    #[serde(default, rename = "securityDefinitions", skip_serializing_if = "BTreeMap::is_empty")]
     pub security_definitions: BTreeMap<String, SecurityScheme>,
-    #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
     pub security: BTreeMap<String, Vec<String>>,
     #[serde(skip_serializing_if = "Vec::is_empty")]
-    pub tags: Vec<Tags>,
+    pub tags: Vec<Tag>,
     #[serde(rename = "externalDocs", skip_serializing_if = "Option::is_none")]
     pub external_docs: Option<ExternalDocs>,
     #[serde(
