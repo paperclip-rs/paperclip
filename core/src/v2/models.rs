@@ -103,11 +103,17 @@ pub struct Api<P, R, S> {
     pub produces: BTreeSet<MediaRange>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub schemes: BTreeSet<OperationProtocol>,
-    pub parameters: BTreeMap<String, Parameter<S>>,
-    pub responses: BTreeMap<String, Response<S>>,
-    pub security_definitions: BTreeMap<String, SecurityDefinition<S>>
-    pub security: Vec<Security>,
+    #[serde(default = "BTreeMap::new", skip_serializing_if = "BTreeMap::is_empty")]
+    pub parameters: BTreeMap<String, P>,
+    #[serde(default = "BTreeMap::new", skip_serializing_if = "BTreeMap::is_empty")]
+    pub responses: BTreeMap<String, R>,
+    #[serde(default, rename = "securityDefinitions")]
+    pub security_definitions: BTreeMap<String, SecurityScheme>
+    #[serde(skip_serializing_if = "BTreeSet::is_empty")]
+    pub security: BTreeMap<String, Vec<String>>,
+    #[serde(skip_serializing_if = "Vec::is_none")]
     pub tags: Vec<Tags>,
+    #[serde(default, rename = "externalDocs")]
     pub external_docs: Option<ExternalDocs>,
     #[serde(
         default,
@@ -223,40 +229,25 @@ pub struct License {
     pub url: Option<String>,
 }
 
-/// Security Definition object.
-///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityDefinitionsObject
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct SecurityDefinition {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<SecurityScheme>,
-}
-
 /// Security Scheme object.
 ///
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SecurityScheme {
-    pub type: String,
+    #[serde(rename = "type")]
+    pub type_: String,
     pub name: String,
-    pub in: String,
+    #[serde(rename = "in")]
+    pub in_: String,
     pub flow: String,
-    pub authorizationUrl: String,
-    pub tokenUrl: String,
-    pub scopes: Scopes,
+    #[serde(rename = "authorizationUrl")]
+    pub authorization_url: String,
+    #[serde(rename = "tokenUrl")]
+    pub token_url: String,
+    pub scopes: BTreeMap<String, String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
 }
-
-/// Scopes object.
-///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#scopesObject
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Scopes {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-}
-
 
 /// Tag object.
 ///
@@ -267,7 +258,8 @@ pub struct Tag {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
-    pub externalDocs: Option<ExternalDocs>,
+    #[serde(rename = "externalDocs")]
+    pub external_docs: Option<ExternalDocs>,
 }
 
 /// External Documentation object.
@@ -279,16 +271,6 @@ pub struct ExternalDocs {
     pub description: Option<String>,
     pub url: String,
 }
-
-/// Security object.
-///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityRequirementObject
-#[derive(Clone, Debug, Default, Serialize, Deserialize)]
-pub struct Security {
-    #[serde(skip_serializing_if = "Option::is_none")]
-    pub name: Option<String>,
-}
-
 
 /// Path item that can be traversed and resolved for codegen.
 pub type ResolvablePathItem<S> = PathItem<ResolvableParameter<S>, ResolvableResponse<S>>;
