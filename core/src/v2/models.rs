@@ -238,16 +238,19 @@ pub struct License {
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SecurityScheme {
-    #[serde(rename = "type")]
+    #[serde(rename = "type", skip_serializing_if = "String::is_empty")]
     pub type_: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub name: String,
-    #[serde(rename = "in")]
+    #[serde(rename = "in", skip_serializing_if = "String::is_empty")]
     pub in_: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
     pub flow: String,
-    #[serde(rename = "authorizationUrl")]
+    #[serde(rename = "authorizationUrl", skip_serializing_if = "String::is_empty")]
     pub authorization_url: String,
-    #[serde(rename = "tokenUrl")]
+    #[serde(rename = "tokenUrl", skip_serializing_if = "String::is_empty")]
     pub token_url: String,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
     pub scopes: BTreeMap<String, String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
