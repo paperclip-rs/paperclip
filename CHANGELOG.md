@@ -24,7 +24,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - CLI uses name and version from `info` field in spec.
 - Codegen for file responses with streaming to `AsyncWrite` implementors.
 - Codegen for `multipart/form-data` parameters with file streaming.
-- Referencing globally defined parameters.
+- Referencing globally defined parameters and responses.
+- Codegen for string enums in object definitions.
 
 ### Changed
 - Switched to templating for (almost) static modules.
@@ -33,7 +34,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Sendable` accepts the new `ApiClient` and is now async/await.
 - `SchemaRepr` renamed to `Resolvable`.
 - `OperationMap` renamed to `PathItem`.
-- `Api` struct is now generic over parameters in addition to definitions.
+- `Api` struct is now generic over parameters and responses in addition to definitions.
 
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.

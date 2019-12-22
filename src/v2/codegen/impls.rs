@@ -25,13 +25,20 @@ impl ApiObject {
     // FIXME: Make operations generic across builders. This will reduce the
     // number of structs generated.
     pub fn impl_repr<'a>(&'a self, helper_module_prefix: &'a str) -> ApiObjectImpl<'a> {
-        let needs_any = self.fields.iter().any(|f| f.needs_any);
+        if self.inner.is_enum() {
+            return ApiObjectImpl {
+                inner: self,
+                builders: vec![].into(),
+            };
+        }
+
+        let needs_any = self.fields().iter().any(|f| f.needs_any);
         // Always emit a builder for API objects (regardless of operations).
         let main_builder = ApiObjectBuilder {
             helper_module_prefix,
             object: &self.name,
             body_required: true,
-            fields: &self.fields,
+            fields: self.fields(),
             encoding: None,
             needs_any,
             ..Default::default()
@@ -63,7 +70,7 @@ impl ApiObject {
                         body_required: req.body_required,
                         encoding: req.encoding.as_ref(),
                         decoding: req.decoding.as_ref(),
-                        fields: &self.fields,
+                        fields: self.fields(),
                         global_params: &path_ops.params,
                         local_params: &req.params,
                         needs_any: needs_any && req.body_required,
@@ -1035,12 +1042,12 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
 impl<'a> Display for ApiObjectImpl<'a> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        let needs_any = self.inner.fields.iter().any(|f| f.needs_any);
         if self.builders.is_empty() {
             return Ok(());
         }
 
         f.write_str("impl")?;
+        let needs_any = self.inner.fields().iter().any(|f| f.needs_any);
         if needs_any {
             f.write_str("<")?;
             f.write_str(ANY_GENERIC_PARAMETER)?;

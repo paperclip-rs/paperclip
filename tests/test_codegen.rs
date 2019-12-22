@@ -288,24 +288,49 @@ fn test_anonymous_object_definition_in_schema() {
     // them from known definitions. In that case, we autogenerate stuff.
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/order.rs"),
-        "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+        "#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct Order {
     pub address: Option<crate::order::OrderAddress>,
     pub id: Option<i64>,
     pub list: Option<Vec<crate::order::OrderListItem>>,
+    pub status: Option<crate::order::OrderStatus>,
+    #[serde(rename = \"test-string-enum\")]
+    pub test_string_enum: Option<crate::order::OrderTestStringEnum>,
 }
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct OrderAddress {
     pub code: Option<String>,
     pub line1: Option<String>,
     pub line2: Option<String>,
     pub name: Option<String>,
 }
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct OrderListItem {
     #[serde(rename = \"petId\")]
     pub pet_id: Option<i64>,
     pub quantity: Option<i64>,
+}
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub enum OrderStatus {
+    #[serde(rename = \"paymentPending\")]
+    PaymentPending,
+    #[serde(rename = \"orderPlaced\")]
+    OrderPlaced,
+    #[serde(rename = \"shipped\")]
+    Shipped,
+    #[serde(rename = \"fulfilled\")]
+    Fulfilled,
+}
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub enum OrderTestStringEnum {
+    #[serde(rename = \"booya\")]
+    Booya,
+    #[serde(rename = \"72.9\")]
+    Number_72_9,
+    #[serde(rename = \"true\")]
+    True,
+    #[serde(rename = \"-53\")]
+    Number_53,
 }
 
 impl Order {
@@ -346,6 +371,18 @@ impl OrderBuilder {
     #[inline]
     pub fn list(mut self, value: impl Iterator<Item = crate::order::OrderListItem>) -> Self {
         self.body.list = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn status(mut self, value: crate::order::OrderStatus) -> Self {
+        self.body.status = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn test_string_enum(mut self, value: crate::order::OrderTestStringEnum) -> Self {
+        self.body.test_string_enum = Some(value.into());
         self
     }
 }
@@ -443,13 +480,13 @@ fn test_anonymous_object_definition_in_body() {
     let _ = &*CLI_CODEGEN;
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/post_shipments_body.rs"),
-        "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+        "#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct PostShipmentsBody {
     pub address: Option<crate::post_shipments_body::PostShipmentsBodyAddress>,
     #[serde(rename = \"orderId\")]
     pub order_id: Option<String>,
 }
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct PostShipmentsBodyAddress {
     pub code: Option<String>,
     pub line1: Option<String>,
@@ -606,7 +643,7 @@ impl PostShipmentsBodyAddressBuilder {
 fn test_anonymous_object_definition_in_response() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/get_shipments_id_response.rs"),
-        "#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+        "#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct GetShipmentsIdResponse {
     pub address: Option<crate::get_shipments_id_response::GetShipmentsIdResponseAddress>,
     #[serde(rename = \"createdOn\")]
@@ -616,7 +653,7 @@ pub struct GetShipmentsIdResponse {
     #[serde(rename = \"shippedOn\")]
     pub shipped_on: Option<String>,
 }
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct GetShipmentsIdResponseAddress {
     pub code: Option<String>,
     pub line1: Option<String>,

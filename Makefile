@@ -36,6 +36,6 @@ test:
 	cd tests/test_pet && cargo check
 	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check
 	cd tests/test_k8s && cargo check
-	cd tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo build
+	cd tests/test_k8s/cli && CARGO_TARGET_DIR=../target cargo check
 	# Test that the CLI runs successfully.
-	./tests/test_k8s/target/debug/test-k8s-cli --help > /dev/null
+	# ./tests/test_k8s/target/debug/test-k8s-cli --help > /dev/null

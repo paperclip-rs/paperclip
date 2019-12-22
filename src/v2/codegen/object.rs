@@ -31,10 +31,85 @@ pub struct ApiObject {
     pub description: Option<String>,
     /// Path to this object from (generated) root module.
     pub path: String,
-    /// List of fields.
-    pub fields: Vec<ObjectField>,
+    /// Fields/variants based on whether this is a struct/enum.
+    pub inner: ObjectContainer,
     /// Paths with operations which address this object.
     pub paths: BTreeMap<String, PathOps>,
+}
+
+impl ApiObject {
+    /// Get a mutable reference to the struct fields. **Panics** if this
+    /// is not a struct.
+    pub fn fields_mut(&mut self) -> &mut Vec<ObjectField> {
+        match &mut self.inner {
+            ObjectContainer::Struct { fields } => fields,
+            _ => panic!("cannot obtain fields for enum type"),
+        }
+    }
+
+    /// Get a reference to the struct fields. **Panics** if this
+    /// is not a struct.
+    pub fn fields(&self) -> &[ObjectField] {
+        match &self.inner {
+            ObjectContainer::Struct { fields } => fields,
+            _ => panic!("cannot obtain fields for enum type"),
+        }
+    }
+
+    /// Get a mutable reference to the enum variants. **Panics** if this
+    /// is not an enum.
+    pub fn variants_mut(&mut self) -> &mut Vec<ObjectVariant> {
+        match &mut self.inner {
+            ObjectContainer::Enum { variants, .. } => variants,
+            _ => panic!("cannot obtain fields for enum type"),
+        }
+    }
+
+    /// Get a reference to the enum variants. **Panics** if this
+    /// is not an enum.
+    pub fn variants(&self) -> &[ObjectVariant] {
+        match &self.inner {
+            ObjectContainer::Enum { variants, .. } => variants,
+            _ => panic!("cannot obtain fields for enum type"),
+        }
+    }
+}
+
+/// Container for the struct/enum containing fields/variants.
+#[derive(Debug, Clone)]
+pub enum ObjectContainer {
+    Enum {
+        /// Variants if it's an enum.
+        ///
+        /// **NOTE:** Currently, we only support simple enums.
+        variants: Vec<ObjectVariant>,
+        /// Flag to represent whether this enum is a string.
+        /// When that's the case, we leave de/serialization to
+        /// serde completely.
+        is_string: bool,
+    },
+    Struct {
+        /// Fields if it's a struct.
+        fields: Vec<ObjectField>,
+    },
+}
+
+impl ObjectContainer {
+    /// Returns whether this object is an enum.
+    pub fn is_enum(&self) -> bool {
+        match self {
+            ObjectContainer::Enum { .. } => true,
+            _ => false,
+        }
+    }
+
+    /// Returns whether this enum is to represent a string.
+    pub fn is_string_enum(&self) -> bool {
+        match self {
+            ObjectContainer::Enum { is_string, .. } => *is_string,
+            _ => false,
+        }
+    }
 }
 
 /// Operations in a path.
@@ -114,6 +189,16 @@ pub struct Parameter {
     pub presence: ParameterIn,
     /// If the parameter is an array of values, then the format for collecting them.
     pub delimiting: Vec<CollectionFormat>,
+}
+
+/// Represents an enum variant.
+#[derive(Debug, Clone)]
+pub struct ObjectVariant {
+    /// Name of the variant (case unspecified).
+    pub name: String,
+    /// Value of this variant (if any). Note that this is only applicable
+    /// for simple enums, and it's ignored entirely for string enums.
+    pub value: serde_json::Value,
 }
 
 /// Represents a struct field.
@@ -800,17 +885,19 @@ impl<'a> Display for ApiObjectBuilder<'a> {
 impl Display for ApiObject {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         ApiObject::write_docs(self.description.as_ref(), f, 0)?;
+        if self.inner.is_enum() {
+            return self.write_enum(f);
+        }
 
-        f.write_str("#[derive(Debug, Default, Clone, Deserialize, Serialize)]")?;
-        f.write_str("\npub struct ")?;
+        f.write_str("#[derive(Debug, Default, Clone, Serialize, Deserialize)]\npub struct ")?;
         f.write_str(&self.name)?;
-        if self.fields.iter().any(|f| f.needs_any) {
+        if !self.inner.is_enum() && self.fields().iter().any(|f| f.needs_any) {
             ApiObject::write_any_generic(f)?;
         }
 
         f.write_str(" {")?;
 
-        self.fields.iter().try_for_each(|field| {
+        self.fields().iter().try_for_each(|field| {
             let mut new_name = field.name.to_snek_case();
             // Check if the field matches a Rust keyword and add '_' suffix.
             if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
@@ -858,10 +945,92 @@ impl Display for ApiObject {
             Ok(())
         })?;
 
-        if !self.fields.is_empty() {
+        if !self.fields().is_empty() {
             f.write_str("\n")?;
         }
 
         f.write_str("}\n")
+    }
+}
+
+impl ApiObject {
+    /// Writes an enum declaration along with serde impl if needed.
+    fn write_enum<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: fmt::Write,
+    {
+        let is_string = self.inner.is_string_enum();
+        f.write_str("#[derive(Debug, Default, Clone")?;
+        if is_string {
+            f.write_str(", Serialize, Deserialize")?;
+        }
+
+        f.write_str(")]\npub enum ")?;
+        f.write_str(&self.name)?;
+        f.write_str(" {")?;
+
+        self.variants().iter().try_for_each(|var| {
+            if is_string {
+                f.write_str("\n    #[serde(rename = ")?;
+                if let serde_json::Value::String(s) = &var.value {
+                    write!(f, "{:?}", s)?;
+                } else {
+                    write!(f, "{:?}", var.value.to_string())?;
+                }
+
+                f.write_str(")]")?;
+            }
+
+            f.write_str("\n    ")?;
+            f.write_str(&var.name)?;
+            f.write_str(",")
+        })?;
+
+        f.write_str("\n}\n")?;
+        if !is_string {
+            self.write_enum_serde_impl(f)?;
+        }
+
+        Ok(())
+    }
+
+    /// Writes serde impl for non-string enums.
+    fn write_enum_serde_impl<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: fmt::Write,
+    {
+        //     f.write_str("impl serde::Serialize for ")?;
+        //     f.write_str(&self.name)?;
+        //     f.write_str(" {
+        // fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        //     match self {")?;
+        //     self.variants().iter().try_for_each(|var| {
+        //         write!(f, "
+        //         {}::{} => {}.serialize(ser),", self.name, var.name, var.value)
+        //     })?;
+        //     f.write_str("\n        }\n    }\n}")?;
+
+        //     f.write_str("impl<'de> Deserialize<'de>: Sized {
+        // fn deserialize<D: serde::Deserializer>(deser: D) -> Result<Self, D::Error> {
+        //     ")
+
+        Ok(())
+    }
+}
+
+// struct EnumSerdeWriter<'a> {
+//     has_true: bool,
+//     has_false: bool,
+//     i64_: Vec<&'a ObjectVariant>,
+//     u64_: Vec<&'a ObjectVariant>,
+//     f64_: Vec<&'a ObjectVariant>,
+//     str_: Vec<&'a ObjectVariant>,
+// }
+
+// impl<'a> From<&'a
+
+impl Default for ObjectContainer {
+    fn default() -> Self {
+        ObjectContainer::Struct { fields: vec![] }
     }
 }

@@ -1,4 +1,6 @@
-use super::object::{ApiObject, ObjectField, OpRequirement, Parameter, Response};
+use super::object::{
+    ApiObject, ObjectContainer, ObjectField, ObjectVariant, OpRequirement, Parameter, Response,
+};
 use super::state::{ChildModule, EmitterState};
 use super::CrateMeta;
 use crate::error::PaperClipError;
@@ -150,6 +152,30 @@ pub trait Emitter: Sized {
         }
     }
 
+    /// Returns the enum variant of a possible value in the given definition.
+    fn enum_variant(
+        &self,
+        def: &Self::Definition,
+        value: &serde_json::Value,
+    ) -> Option<ObjectVariant> {
+        use serde_json::Value;
+        let _ = def;
+
+        let name = match value {
+            Value::Number(ref n) => {
+                format!("Number_{}", n.to_string().to_snek_case().replace('.', "_"))
+            }
+            Value::Bool(b) => b.to_string().to_camel_case(),
+            Value::String(ref s) => s.to_string().to_camel_case(),
+            _ => return None,
+        };
+
+        Some(ObjectVariant {
+            name,
+            value: value.clone(),
+        })
+    }
+
     /// Returns the module path (from working directory) for the given definition.
     ///
     /// **NOTE:** This should set `.rs` extension to the leaf path component.
@@ -297,6 +323,10 @@ pub trait Emitter: Sized {
         def: &Self::Definition,
         ctx: DefinitionContext<'a>,
     ) -> Result<EmittedUnit, Error> {
+        if let Some(u) = CodegenEmitter(self).try_emit_enum(def, ctx.clone())? {
+            return Ok(u);
+        }
+
         if let Some(ty) = matching_unit_type(def.format(), def.data_type()) {
             trace!("Matches unit type: {}", ty);
             if ctx.define {
@@ -447,6 +477,55 @@ where
         Ok(obj.map_known(ty))
     }
 
+    /// Checks if the given definition is a simple enum and returns an unit if it can be
+    /// represented as a Rust enum.
+    fn try_emit_enum(
+        &self,
+        def: &E::Definition,
+        ctx: DefinitionContext<'_>,
+    ) -> Result<Option<EmittedUnit>, Error> {
+        // FIXME: Research on how we can support complex enums.
+        if def.data_type().is_some() && matching_unit_type(def.format(), def.data_type()).is_none()
+        {
+            return Ok(None);
+        }
+
+        let values = match def.enum_variants() {
+            Some(v) => v,
+            None => return Ok(None),
+        };
+
+        if !ctx.define {
+            return CodegenEmitter(self)
+                .emit_known_object_path(def, ctx)
+                .map(Some);
+        }
+
+        let name = self.def_name(def).or_else(|e| {
+            // anonymous object
+            self.def_anon_name(def, &ctx.parents).ok_or_else(|| e)
+        })?;
+
+        let mut obj = ApiObject::with_name(&name);
+        obj.description = def.description().map(String::from);
+        obj.inner = ObjectContainer::Enum {
+            variants: vec![],
+            is_string: def.data_type() == Some(DataType::String),
+        };
+
+        for val in values {
+            if let Some(var) = self.0.enum_variant(def, val) {
+                obj.variants_mut().push(var);
+            }
+        }
+
+        if obj.variants().is_empty() {
+            return Ok(None);
+        }
+
+        Ok(Some(EmittedUnit::Objects(vec![obj])))
+    }
+
     /// Assumes that the given definition is an object and returns the corresponding
     /// Rust struct / map.
     fn emit_object<'c>(
@@ -460,41 +539,7 @@ where
         }
 
         if !ctx.define {
-            // Use absolute paths to save some pain.
-            let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));
-
-            // If this is an anonymous object, then address it directly.
-            if def.name().is_none() {
-                let objects = match self.build_def(def, ctx.clone().define(true))? {
-                    EmittedUnit::Objects(o) => o,
-                    _ => unreachable!(),
-                };
-
-                // If the object has an anonymous name, then it would definitely
-                // be in its own module, which is identified by the initial parent name.
-                if let Some(name) = self.def_anon_name(def, &ctx.parents) {
-                    ty_path.push_str("::");
-                    let parent = ctx.parents.get(0).expect("expected first parent name");
-                    ty_path.push_str(&parent.to_snek_case());
-                    ty_path.push_str("::");
-                    ty_path.push_str(&name);
-                    return Ok(EmittedUnit::KnownButAnonymous(ty_path, objects));
-                }
-            }
-
-            let mut iter = self.def_ns_name(def)?.peekable();
-            while let Some(mut c) = iter.next() {
-                ty_path.push_str("::");
-                if iter.peek().is_none() {
-                    ty_path.push_str(&c);
-                    ty_path.push_str("::");
-                    c = c.to_camel_case();
-                }
-
-                ty_path.push_str(&c);
-            }
-
-            return Ok(EmittedUnit::Known(ty_path));
+            return self.emit_known_object_path(def, ctx);
         }
 
         self.emit_struct(def, ctx)
@@ -521,6 +566,48 @@ where
             }
             _ => Ok(EmittedUnit::None),
         }
+    }
+
+    fn emit_known_object_path<'c>(
+        &self,
+        def: &E::Definition,
+        ctx: DefinitionContext<'c>,
+    ) -> Result<EmittedUnit, Error> {
+        // Use absolute paths to save some pain.
+        let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));
+
+        // If this is an anonymous object, then address it directly.
+        if def.name().is_none() {
+            let objects = match self.build_def(def, ctx.clone().define(true))? {
+                EmittedUnit::Objects(o) => o,
+                _ => unreachable!(),
+            };
+
+            // If the object has an anonymous name, then it would definitely
+            // be in its own module, which is identified by the initial parent name.
+            if let Some(name) = self.def_anon_name(def, &ctx.parents) {
+                ty_path.push_str("::");
+                let parent = ctx.parents.get(0).expect("expected first parent name");
+                ty_path.push_str(&parent.to_snek_case());
+                ty_path.push_str("::");
+                ty_path.push_str(&name);
+                return Ok(EmittedUnit::KnownButAnonymous(ty_path, objects));
+            }
+        }
+
+        let mut iter = self.def_ns_name(def)?.peekable();
+        while let Some(mut c) = iter.next() {
+            ty_path.push_str("::");
+            if iter.peek().is_none() {
+                ty_path.push_str(&c);
+                ty_path.push_str("::");
+                c = c.to_camel_case();
+            }
+
+            ty_path.push_str(&c);
+        }
+
+        Ok(EmittedUnit::Known(ty_path))
     }
 
     /// Helper for `emit_object` - This returns the Rust struct definition for the
@@ -557,7 +644,7 @@ where
                     let ty = self.build_def(&schema, ctx)?;
                     let ty_path = ty.known_type();
 
-                    obj.fields.push(ObjectField {
+                    obj.fields_mut().push(ObjectField {
                         name: name.clone(),
                         description: prop.get_description(),
                         ty_path,

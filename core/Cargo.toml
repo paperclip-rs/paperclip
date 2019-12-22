@@ -28,7 +28,7 @@ serde_yaml = "0.8"
 uuid = { version = "0", optional = true }
 
 [features]
-actix = ["default", "actix-http", "actix-web", "futures"]
+actix = ["v2", "actix-http", "actix-web", "futures"]
 datetime = ["chrono"]
 default = ["v2", "codegen"]
 v2 = ["paperclip-macros/v2"]

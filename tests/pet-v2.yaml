@@ -33,6 +33,12 @@ definitions:
               type: integer
             quantity:
               type: integer
+      status:
+        type: string
+        enum: ["paymentPending", "orderPlaced", "shipped", "fulfilled"]
+      test-string-enum:
+        type: string
+        enum: ["booya", 72.9, true, -53]
       address:
         type: object
         properties:

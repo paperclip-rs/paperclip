@@ -407,7 +407,7 @@ fn test_struct_for_complex_object() {
         &(ROOT.clone() + "/tests/test_k8s/io/k8s/apiextensions_apiserver/pkg/apis/apiextensions/v1beta1/json_schema_props.rs"),
         "
 /// JSONSchemaProps is a JSON-Schema following Specification Draft 4 (http://json-schema.org/).
-#[derive(Debug, Default, Clone, Deserialize, Serialize)]
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct JsonSchemaProps<Any> {
     #[serde(rename = \"$ref\")]
     pub ref_: Option<String>,
