@@ -960,12 +960,12 @@ impl ApiObject {
         F: fmt::Write,
     {
         let is_string = self.inner.is_string_enum();
-        f.write_str("#[derive(Debug, Default, Clone")?;
+        f.write_str("#[derive(Debug, Clone")?;
         if is_string {
             f.write_str(", Serialize, Deserialize")?;
         }
 
-        f.write_str(")]\npub enum ")?;
+        f.write_str(")]\n#[allow(non_camel_case_types)]\npub enum ")?;
         f.write_str(&self.name)?;
         f.write_str(" {")?;
 
@@ -988,46 +988,165 @@ impl ApiObject {
 
         f.write_str("\n}\n")?;
         if !is_string {
-            self.write_enum_serde_impl(f)?;
+            EnumSerdeImpl::from(self).write_to(f)?;
         }
-
-        Ok(())
-    }
-
-    /// Writes serde impl for non-string enums.
-    fn write_enum_serde_impl<F>(&self, f: &mut F) -> fmt::Result
-    where
-        F: fmt::Write,
-    {
-        //     f.write_str("impl serde::Serialize for ")?;
-        //     f.write_str(&self.name)?;
-        //     f.write_str(" {
-        // fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
-        //     match self {")?;
-        //     self.variants().iter().try_for_each(|var| {
-        //         write!(f, "
-        //         {}::{} => {}.serialize(ser),", self.name, var.name, var.value)
-        //     })?;
-        //     f.write_str("\n        }\n    }\n}")?;
-
-        //     f.write_str("impl<'de> Deserialize<'de>: Sized {
-        // fn deserialize<D: serde::Deserializer>(deser: D) -> Result<Self, D::Error> {
-        //     ")
 
         Ok(())
     }
 }
 
-// struct EnumSerdeWriter<'a> {
-//     has_true: bool,
-//     has_false: bool,
-//     i64_: Vec<&'a ObjectVariant>,
-//     u64_: Vec<&'a ObjectVariant>,
-//     f64_: Vec<&'a ObjectVariant>,
-//     str_: Vec<&'a ObjectVariant>,
-// }
+/// Abstraction for implementing Serialize/Deserialize mechanism
+/// for non-string enums.
+struct EnumSerdeImpl<'a> {
+    obj: &'a ApiObject,
+    true_: Option<&'a ObjectVariant>,
+    false_: Option<&'a ObjectVariant>,
+    i64_: Vec<&'a ObjectVariant>,
+    u64_: Vec<&'a ObjectVariant>,
+    f64_: Vec<&'a ObjectVariant>,
+    str_: Vec<&'a ObjectVariant>,
+}
 
-// impl<'a> From<&'a
+impl<'a> EnumSerdeImpl<'a> {
+    fn from(o: &'a ApiObject) -> Self {
+        use serde_json::Value;
+        let mut writer = EnumSerdeImpl {
+            obj: o,
+            true_: None,
+            false_: None,
+            i64_: vec![],
+            u64_: vec![],
+            f64_: vec![],
+            str_: vec![],
+        };
+
+        o.variants().iter().for_each(|var| match var.value {
+            Value::Number(ref n) => {
+                if n.is_u64() {
+                    writer.u64_.push(var);
+                } else if n.is_i64() {
+                    writer.i64_.push(var);
+                } else if n.is_f64() {
+                    writer.f64_.push(var);
+                }
+            }
+            Value::Bool(ref b) if *b => writer.true_ = Some(var),
+            Value::Bool(_) => writer.false_ = Some(var),
+            Value::String(_) => writer.str_.push(var),
+            _ => (),
+        });
+
+        writer
+    }
+
+    /// Writes the serde impl to the given formatter.
+    fn write_to<F>(self, f: &mut F) -> fmt::Result
+    where
+        F: fmt::Write,
+    {
+        f.write_str("impl serde::Serialize for ")?;
+        f.write_str(&self.obj.name)?;
+        f.write_str(
+            " {
+    fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {
+        match self {",
+        )?;
+
+        // We've already checked that we have non-zero variants when we emitted
+        // the enum, so we're okay here.
+        self.obj.variants().iter().try_for_each(|var| {
+            write!(
+                f,
+                "
+            {}::{} => ({}).serialize(ser),",
+                self.obj.name, var.name, var.value
+            )
+        })?;
+        f.write_str("\n        }\n    }\n}")?;
+
+        write!(
+            f,
+            "
+impl<'de> serde::Deserialize<'de> for {name} {{
+    fn deserialize<D: serde::Deserializer<'de>>(deser: D) -> Result<Self, D::Error> {{
+        use serde::de::{{Error, Unexpected, Visitor}};
+        struct VariantVisitor;
+        const EXPECT_MSG: &str = \"valid value for enum {name}\";
+
+        impl<'de> Visitor<'de> for VariantVisitor {{
+            type Value = {name};
+
+            fn expecting(&self, f: &mut std::fmt::Formatter) -> std::fmt::Result {{
+                f.write_str(EXPECT_MSG)
+            }}",
+            name = self.obj.name,
+        )?;
+
+        self.write_visit_methods(f)?;
+        f.write_str(
+            "\n        }
+
+        deser.deserialize_any(VariantVisitor)\n    }\n}\n",
+        )
+    }
+
+    /// Writes the necessary visitor methods for deserializing the enum.
+    fn write_visit_methods<F>(&self, f: &mut F) -> fmt::Result
+    where
+        F: fmt::Write,
+    {
+        let mut bool_vis = vec![];
+        if let Some(var) = self.true_ {
+            bool_vis.push(var);
+        }
+        if let Some(var) = self.false_ {
+            bool_vis.push(var);
+        }
+
+        let visitors = &[
+            ("bool", None, &bool_vis, "Bool", bool_vis.len() == 1),
+            ("i64", None, &self.i64_, "Signed", true),
+            ("u64", None, &self.u64_, "Unsigned", true),
+            ("f64", None, &self.f64_, "Float", true),
+            ("str", Some("&str"), &self.str_, "Str", true),
+        ];
+
+        for (vis_name, vis_ty, vars, ident, needs_error) in visitors {
+            write!(
+                f,
+                "
+
+            fn visit_{name}<E: Error>(self, v: {ty}) -> Result<Self::Value, E> {{",
+                name = vis_name,
+                ty = vis_ty.unwrap_or(vis_name)
+            )?;
+
+            for var in *vars {
+                write!(
+                    f,
+                    "
+                if v == {} {{
+                    return Ok({}::{});
+                }}",
+                    var.value, self.obj.name, var.name
+                )?;
+            }
+
+            // For bool, this is needed for "unreachable" code check.
+            if *needs_error {
+                write!(
+                    f,
+                    "
+                Err(E::invalid_value(Unexpected::{ident}(v), &EXPECT_MSG))
+            }}",
+                    ident = ident,
+                )?;
+            }
+        }
+
+        Ok(())
+    }
+}
 
 impl Default for ObjectContainer {
     fn default() -> Self {

@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Codegen for file responses with streaming to `AsyncWrite` implementors.
 - Codegen for `multipart/form-data` parameters with file streaming.
 - Referencing globally defined parameters and responses.
-- Codegen for string enums in object definitions.
+- Codegen for enums in object definitions.
 
 ### Changed
 - Switched to templating for (almost) static modules.

@@ -162,9 +162,10 @@ pub trait Emitter: Sized {
         let _ = def;
 
         let name = match value {
-            Value::Number(ref n) => {
-                format!("Number_{}", n.to_string().to_snek_case().replace('.', "_"))
-            }
+            Value::Number(ref n) => format!(
+                "Number_{}",
+                n.to_string().replace('-', "_").replace('.', "_")
+            ),
             Value::Bool(b) => b.to_string().to_camel_case(),
             Value::String(ref s) => s.to_string().to_camel_case(),
             _ => return None,

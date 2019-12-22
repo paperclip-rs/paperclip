@@ -19,6 +19,8 @@ definitions:
       id:
         type: integer
     type: object
+  TestEnum:
+    enum: [true, 1.5, 23, 964, -79.23, 14343, -964, "hello", "foo", "bar"]
   Order:
     type: object
     properties:
