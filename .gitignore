@@ -10,3 +10,4 @@ Cargo.lock
 **/test_pet/
 _book/
 .vscode/
+.idea/

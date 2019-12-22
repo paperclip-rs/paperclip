@@ -109,6 +109,18 @@ pub struct Api<P, R, S> {
     pub responses: BTreeMap<String, R>,
     #[serde(
         default,
+        rename = "securityDefinitions",
+        skip_serializing_if = "BTreeMap::is_empty"
+    )]
+    pub security_definitions: BTreeMap<String, SecurityScheme>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub security: Vec<BTreeMap<String, Vec<String>>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<Tag>,
+    #[serde(rename = "externalDocs", skip_serializing_if = "Option::is_none")]
+    pub external_docs: Option<ExternalDocs>,
+    #[serde(
+        default,
         rename = "x-rust-coders",
         skip_serializing_if = "<Coders as Deref>::Target::is_empty"
     )]
@@ -219,6 +231,52 @@ pub struct License {
     pub name: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub url: Option<String>,
+}
+
+/// Security Scheme object.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct SecurityScheme {
+    #[serde(rename = "type", skip_serializing_if = "String::is_empty")]
+    pub type_: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub name: String,
+    #[serde(rename = "in", skip_serializing_if = "String::is_empty")]
+    pub in_: String,
+    #[serde(skip_serializing_if = "String::is_empty")]
+    pub flow: String,
+    #[serde(rename = "authorizationUrl", skip_serializing_if = "String::is_empty")]
+    pub authorization_url: String,
+    #[serde(rename = "tokenUrl", skip_serializing_if = "String::is_empty")]
+    pub token_url: String,
+    #[serde(skip_serializing_if = "BTreeMap::is_empty")]
+    pub scopes: BTreeMap<String, String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+}
+
+/// Tag object.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#tag-object
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Tag {
+    pub name: String,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "externalDocs")]
+    pub external_docs: Option<ExternalDocs>,
+}
+
+/// External Documentation object.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#external-documentation-object
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct ExternalDocs {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    pub url: String,
 }
 
 /// Path item that can be traversed and resolved for codegen.
