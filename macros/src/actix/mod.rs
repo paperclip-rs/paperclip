@@ -204,7 +204,7 @@ fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
 
 /// Generates code for a tuple struct with fields.
 fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macro2::TokenStream) {
-    let field = fields.unnamed.iter().nth(0).unwrap();
+    let field = fields.unnamed.iter().next().unwrap();
     let (ty_ref, _) = get_field_type(&field);
 
     if let Some(ty_ref) = ty_ref {
