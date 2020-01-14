@@ -29,7 +29,7 @@ log = "0.4"
 paperclip-actix = { path = "plugins/actix-web", version = "0.1.0", optional = true }
 paperclip-core = { path = "core", version = "0.1.0" }
 paperclip-macros = { path = "macros", version = "0.2.0", optional = true }
-parking_lot = { version = "0.8" }
+parking_lot = { version = "0.10" }
 regex = { version = "1.1", optional = true }
 reqwest = { version = "0.9", optional = true }
 # rustfmt-nightly = { version = "1.2.2", optional = true }
