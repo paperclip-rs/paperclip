@@ -10,7 +10,7 @@ homepage = "https://github.com/wafflespeanut/paperclip"
 repository = "https://github.com/wafflespeanut/paperclip"
 
 [dependencies]
-futures = "0.1"
+futures = "0.3"
 actix-service = "0.4.1"
 actix-web = "1.0.4"
 lazy_static = "1.3"
