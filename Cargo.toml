@@ -46,7 +46,7 @@ url = "1.7"
 [dev-dependencies]
 actix-rt = "0.2.3"
 actix-service = "0.4.1"
-actix-web = "1.0.4"
+actix-web = "2.0.0"
 chrono = { version = "0.4", features = ["serde"] }
 futures = "0.1"
 uuid = { version = "0.8", features = ["serde"] }
