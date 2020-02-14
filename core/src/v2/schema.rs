@@ -174,6 +174,12 @@ impl_type_simple!(
     DataType::String,
     DataTypeFormat::DateTime
 );
+#[cfg(feature = "decimal")]
+impl_type_simple!(
+    rust_decimal::Decimal,
+    DataType::Number,
+    DataTypeFormat::Float
+);
 
 #[cfg(feature = "uid")]
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);

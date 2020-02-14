@@ -21,6 +21,7 @@ log = "0.4"
 mime = { git = "https://github.com/hyperium/mime", features = ["serde1"] }
 paperclip-macros = { path = "../macros", version = "0.2.0" }
 parking_lot = "0.10"
+rust_decimal = { version = "1.0", optional = true }
 regex = "1.1"
 serde = { version = "1.0", features = ["derive", "rc"] }
 serde_json = "1.0"
@@ -30,6 +31,7 @@ uuid = { version = "0", optional = true }
 [features]
 actix = ["v2", "actix-http", "actix-web", "futures"]
 datetime = ["chrono"]
+decimal = ["rust_decimal"]
 default = ["v2", "codegen"]
 v2 = ["paperclip-macros/v2"]
 codegen = ["heck"]
