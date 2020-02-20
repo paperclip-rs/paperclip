@@ -703,7 +703,7 @@ fn test_impl_traits() {
         }
     }
 
-    /// TODO: Returning impl Responder will not output any schema schema. How to tell what really function returns?
+    /// TODO: Returning impl Responder will not output any schema. How to tell what really function returns?
     #[api_v2_operation]
     async fn get_pet_async() -> impl Responder {
         Pet::default()

@@ -135,14 +135,6 @@ where
         self
     }
 
-    /// Proxy for [`actix_web::App::hostname`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.hostname).
-    ///
-    /// **NOTE:** This doesn't affect spec generation.
-    // pub fn hostname(mut self, val: &str) -> Self {
-    //     self.inner = self.inner.hostname(val);
-    //     self
-    // }
-
     /// Proxy for [`actix_web::App::default_service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.default_service).
     ///
     /// **NOTE:** This doesn't affect spec generation.

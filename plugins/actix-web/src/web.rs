@@ -6,7 +6,7 @@ pub use actix_web::web::{
 };
 
 use crate::Mountable;
-use actix_service::ServiceFactory;
+use actix_service::{IntoServiceFactory, ServiceFactory};
 use actix_web::dev::{
     AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse, Transform,
 };
@@ -69,7 +69,7 @@ where
     }
 }
 
-impl<T> actix_service::IntoServiceFactory<T> for Resource<actix_web::Resource<T>>
+impl<T> IntoServiceFactory<T> for Resource<actix_web::Resource<T>>
 where
     T: ServiceFactory<
             Config = (),
@@ -138,6 +138,15 @@ where
     /// **NOTE:** This doesn't affect spec generation.
     pub fn data<U: 'static>(mut self, data: U) -> Self {
         self.inner = self.inner.data(data);
+        self
+    }
+
+    /// Proxy for [`actix_web::Resource::app_data`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.app_data).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn app_data<U: 'static>(mut self, data: U) -> Self {
+        let w = self.inner.app_data(data);
+        self.inner = w;
         self
     }
 
@@ -542,22 +551,6 @@ impl Route {
         self.inner = self.inner.to(handler);
         self
     }
-
-    // /// Wrapper for [`actix_web::Route::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to_async)
-    // #[allow(clippy::wrong_self_convention)]
-    // pub fn to_async<F, I, R>(mut self, handler: F) -> Self
-    // where
-    //     F: Apiv2Operation<I, R> + AsyncFactory<I, R> + 'static,
-    //     I: FromRequest + 'static,
-    //     R: IntoFuture + 'static,
-    //     R::Item: Responder,
-    //     R::Error: Into<Error>,
-    // {
-    //     self.operation = Some(F::operation());
-    //     self.definitions = F::definitions();
-    //     self.inner = self.inner.to_async(handler);
-    //     self
-    // }
 }
 
 /// Wrapper for [`actix_web::web::method`](https://docs.rs/actix-web/*/actix_web/web/fn.method.html).
