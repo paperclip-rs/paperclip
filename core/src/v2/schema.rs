@@ -334,7 +334,7 @@ impl_schema_map!(BTreeMap<K, V>);
 ///
 /// **NOTE:** The type parameters specified here aren't used by the trait itself,
 /// but *can* be used for constraining stuff in framework-related impls.
-pub trait Apiv2Operation<T, R, U> {
+pub trait Apiv2Operation<T, R> {
     /// Returns the definition for this operation.
     fn operation() -> DefaultOperationRaw;
 

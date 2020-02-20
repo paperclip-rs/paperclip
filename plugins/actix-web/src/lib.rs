@@ -263,7 +263,9 @@ where
 #[derive(Clone)]
 struct SpecHandler(Arc<RwLock<DefaultApiRaw>>);
 
-impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>> for SpecHandler {
+impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>>
+    for SpecHandler
+{
     fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
         fut_ok(HttpResponse::Ok().json(&*self.0.read()))
     }

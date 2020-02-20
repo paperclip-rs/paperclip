@@ -10,7 +10,7 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use chrono;
-use futures::future::{Future, Ready, ok as fut_ok, ready};
+use futures::future::{ok as fut_ok, ready, Future, Ready};
 use paperclip::actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
 
@@ -37,32 +37,54 @@ struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
-    updated: chrono::NaiveDateTime,
+    updated: Option<chrono::NaiveDateTime>,
     uid: Option<uuid::Uuid>,
+}
+
+impl Default for Pet {
+    fn default() -> Self {
+        Self {
+            name: "".to_string(),
+            class: PetClass::EverythingElse,
+            id: None,
+            updated: None,
+            uid: None,
+        }
+    }
 }
 
 #[test]
 fn test_simple_app() {
     #[api_v2_operation]
-    fn echo_pet(body: web::Json<Pet>) -> impl Future<Output=Result<web::Json<Pet>, Error>> {
+    fn echo_pet(body: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
         fut_ok(body)
     }
 
-    // #[api_v2_operation]
-    // async fn echo_pet_async(body: web::Json<Pet>) -> Result<web::Json<Pet>, actix_web::Error> {
-    //     Ok(body)
-    // }
+    #[api_v2_operation]
+    async fn echo_pet_async(body: web::Json<Pet>) -> Result<web::Json<Pet>, actix_web::Error> {
+        Ok(body)
+    }
+
+    async fn inner_async_func(body: web::Json<Pet>) -> Pet {
+        body.into_inner()
+    }
 
     #[api_v2_operation]
-    fn some_pet(_data: web::Data<String>) -> impl Future<Output=Result<web::Json<Pet>, Error>> {
+    async fn echo_pet_async_2(body: web::Json<Pet>) -> Result<web::Json<Pet>, actix_web::Error> {
+        let pet = inner_async_func(body).await;
+        Ok(web::Json(pet))
+    }
+
+    #[api_v2_operation]
+    fn some_pet(_data: web::Data<String>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
         #[allow(unreachable_code)]
         fut_ok(unimplemented!())
     }
 
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
-            // FIXME: How to use async funcs?
-            // .service(web::resource("/echo").route(web::post().to(echo_pet_async)))
+            .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
+            .service(web::resource("/async_echo_2").route(web::post().to(echo_pet_async_2)))
             .service(web::resource("/random").to(some_pet));
     }
 
@@ -107,11 +129,49 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name", "updated"]
+                      "required":["class", "name"]
                     }
                   },
                   "paths": {
                     "/api/echo": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/api/async_echo": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/api/async_echo_2": {
                       "parameters": [{
                         "in": "body",
                         "name": "body",
@@ -234,17 +294,23 @@ fn test_params() {
     }
 
     #[api_v2_operation]
-    fn get_resource_2(_p: web::Path<String>) -> impl Future<Output=&'static str> {
+    fn get_resource_2(_p: web::Path<String>) -> impl Future<Output = &'static str> {
         ready("")
     }
 
     #[api_v2_operation]
-    fn get_known_badge_1(_p: web::Path<KnownResourceBadge>, _q: web::Query<BadgeParams>) -> impl Future<Output=&'static str> {
+    fn get_known_badge_1(
+        _p: web::Path<KnownResourceBadge>,
+        _q: web::Query<BadgeParams>,
+    ) -> impl Future<Output = &'static str> {
         ready("")
     }
 
     #[api_v2_operation]
-    fn get_known_badge_2(_p: web::Path<(String, String)>, _q: web::Query<BadgeParams>) -> impl Future<Output=&'static str> {
+    fn get_known_badge_2(
+        _p: web::Path<(String, String)>,
+        _q: web::Query<BadgeParams>,
+    ) -> impl Future<Output = &'static str> {
         ready("")
     }
 
@@ -253,12 +319,15 @@ fn test_params() {
         _p: web::Path<KnownResourceBadge>,
         _q: web::Query<BadgeParams>,
         _f: web::Form<BadgeForm>,
-    ) -> impl Future<Output=&'static str> {
+    ) -> impl Future<Output = &'static str> {
         ready("")
     }
 
     #[api_v2_operation]
-    fn post_badge_2(_p: web::Path<(String, String)>, _b: web::Json<BadgeBody>) -> impl Future<Output=&'static str> {
+    fn post_badge_2(
+        _p: web::Path<(String, String)>,
+        _b: web::Json<BadgeBody>,
+    ) -> impl Future<Output = &'static str> {
         ready("")
     }
 
@@ -433,7 +502,7 @@ fn test_map_in_out() {
     }
 
     #[api_v2_operation]
-    fn some_images() -> impl Future<Output=web::Json<BTreeMap<String, Image>>> {
+    fn some_images() -> impl Future<Output = web::Json<BTreeMap<String, Image>>> {
         #[allow(unreachable_code)]
         ready(unimplemented!())
     }
@@ -510,7 +579,7 @@ fn test_list_in_out() {
     }
 
     #[api_v2_operation]
-    fn get_pets(_q: web::Query<Params>) -> impl Future<Output=web::Json<Vec<Pet>>> {
+    fn get_pets(_q: web::Query<Params>) -> impl Future<Output = web::Json<Vec<Pet>>> {
         #[allow(unreachable_code)]
         ready(unimplemented!())
     }
@@ -556,7 +625,7 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name", "updated"]
+                      "required":["class", "name"]
                     }
                   },
                   "paths": {
@@ -597,8 +666,8 @@ fn test_list_in_out() {
 #[allow(unreachable_code)]
 fn test_impl_traits() {
     #[api_v2_operation]
-    fn index() -> impl Future<Output=Result<impl Responder, ()>> {
-        fut_ok("")
+    fn index() -> impl Responder {
+        ""
     }
 
     #[api_v2_schema]
@@ -611,13 +680,38 @@ fn test_impl_traits() {
     fn get_pets(
         _data: web::Data<String>,
         _q: web::Query<Params>,
-    ) -> impl Future<Output=Result<web::Json<Vec<Pet>>, ()>> {
+    ) -> impl Future<Output = Result<web::Json<Vec<Pet>>, ()>> {
         if true {
             // test for return in wrapper blocks (#75)
             return futures::future::err(());
         }
 
         futures::future::err(())
+    }
+
+    impl Responder for Pet {
+        type Error = Error;
+        type Future = Ready<Result<actix_web::HttpResponse, Error>>;
+
+        fn respond_to(self, _req: &HttpRequest) -> Self::Future {
+            let body = serde_json::to_string(&self).unwrap();
+
+            // Create response and set content type
+            ready(Ok(actix_web::HttpResponse::Ok()
+                .content_type("application/json")
+                .body(body)))
+        }
+    }
+
+    /// TODO: Returning impl Responder will not output any schema schema. How to tell what really function returns?
+    #[api_v2_operation]
+    async fn get_pet_async() -> impl Responder {
+        Pet::default()
+    }
+
+    #[api_v2_operation]
+    fn get_pet() -> impl Responder {
+        Pet::default()
     }
 
     run_and_check_app(
@@ -627,6 +721,8 @@ fn test_impl_traits() {
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/").route(web::get().to(index)))
                 .service(web::resource("/pets").route(web::get().to(get_pets)))
+                .service(web::resource("/pet").route(web::get().to(get_pet)))
+                .service(web::resource("/pet_async").route(web::get().to(get_pet_async)))
                 .build()
         },
         |addr| {
@@ -662,7 +758,7 @@ fn test_impl_traits() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name", "updated"]
+                      "required":["class", "name"]
                     }
                   },
                   "paths": {
@@ -690,6 +786,16 @@ fn test_impl_traits() {
                         "name": "limit",
                         "type": "integer"
                       }]
+                    },
+                    "/pet": {
+                      "get": {
+                        "responses": {}
+                      }
+                    },
+                    "/pet_async": {
+                      "get": {
+                        "responses": {}
+                      }
                     }
                   },
                   "swagger": "2.0"
@@ -702,12 +808,12 @@ fn test_impl_traits() {
 #[test] // issue #71
 fn test_multiple_method_routes() {
     #[api_v2_operation]
-    fn test_get() -> impl Future<Output=String> {
+    fn test_get() -> impl Future<Output = String> {
         ready("get".into())
     }
 
     #[api_v2_operation]
-    fn test_post() -> impl Future<Output=String> {
+    fn test_post() -> impl Future<Output = String> {
         ready("post".into())
     }
 
@@ -811,7 +917,11 @@ fn test_custom_extractor_empty_schema() {
     }
 
     #[api_v2_operation]
-    fn index(_req: HttpRequest, _payload: String, _thing: SomeUselessThing<String>) -> impl Future<Output=&'static str> {
+    fn index(
+        _req: HttpRequest,
+        _payload: String,
+        _thing: SomeUselessThing<String>,
+    ) -> impl Future<Output = &'static str> {
         ready("")
     }
 

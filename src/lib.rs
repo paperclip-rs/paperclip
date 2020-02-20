@@ -23,5 +23,5 @@ pub mod actix {
 
     pub use paperclip_actix::{api_v2_operation, api_v2_schema};
     pub use paperclip_actix::{web, App, Mountable, OpenApiExt};
-    pub use paperclip_core::v2::{FutureWrapper, ResponderWrapper};
+    pub use paperclip_core::v2::ResponderWrapper;
 }

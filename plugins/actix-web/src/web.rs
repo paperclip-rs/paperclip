@@ -1,15 +1,14 @@
 //! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
 
 pub use actix_web::web::{
-    block, service, to, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
-    HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
+    block, service, to, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest, HttpResponse, Json,
+    JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
 };
 
 use crate::Mountable;
 use actix_service::ServiceFactory;
 use actix_web::dev::{
-    AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse,
-    Transform,
+    AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse, Transform,
 };
 use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
@@ -145,7 +144,7 @@ where
     /// Wrapper for [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
     pub fn to<F, I, R, U>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation<I, R, U> + Factory<I, R, U> + 'static,
+        F: Apiv2Operation<I, U> + Factory<I, R, U> + 'static,
         I: FromRequest + 'static,
         R: Future<Output = U> + 'static,
         U: Responder + 'static,
@@ -154,20 +153,6 @@ where
         self.inner = self.inner.to(handler);
         self
     }
-
-    /// Wrapper for [`actix_web::Resource::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to_async).
-    // #[allow(clippy::wrong_self_convention)]
-    // pub fn to_async<F, I, R>(mut self, handler: F) -> Self
-    // where
-    //     F: Apiv2Operation<I, R> + Factory<I, _, R> + 'static,
-    //     I: FromRequest + 'static,
-    //     R: Future + 'static,
-    //     R::Output: Responder,
-    // {
-    //     self.update_from_handler::<F, I, R>();
-    //     self.inner = self.inner.to_async(handler);
-    //     self
-    // }
 
     /// Proxy for [`actix_web::web::Resource::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap).
     ///
@@ -254,7 +239,7 @@ where
     /// Updates this resource using the given handler.
     fn update_from_handler<F, I, R, U>(&mut self)
     where
-        F: Apiv2Operation<I, R, U>,
+        F: Apiv2Operation<I, U>,
     {
         let mut op = F::operation();
         op.set_parameter_names_from_path_template(&self.path);
@@ -547,7 +532,7 @@ impl Route {
     /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
     pub fn to<F, I, R, U>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation<I, R, U> + Factory<I, R, U>,
+        F: Apiv2Operation<I, U> + Factory<I, R, U>,
         I: FromRequest + 'static,
         R: Future<Output = U> + 'static,
         U: Responder + 'static,
