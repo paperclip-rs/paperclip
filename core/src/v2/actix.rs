@@ -6,9 +6,11 @@ use actix_web::{
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
     HttpRequest, HttpResponse, Responder,
 };
-use futures::future::IntoFuture;
 
 use std::collections::BTreeMap;
+use std::future::Future;
+use std::pin::Pin;
+use std::task::{Context, Poll};
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.
@@ -257,50 +259,48 @@ impl<T: Responder> Responder for ResponderWrapper<T> {
 
 impl<I> Apiv2Schema for FutureWrapper<I>
 where
-    I: IntoFuture,
-    I::Item: Apiv2Schema,
+    I: Future,
+    I::Output: Apiv2Schema,
 {
-    const NAME: Option<&'static str> = I::Item::NAME;
+    const NAME: Option<&'static str> = I::Output::NAME;
 
     fn raw_schema() -> DefaultSchemaRaw {
-        I::Item::raw_schema()
+        I::Output::raw_schema()
     }
 }
 
 impl<I> OperationModifier for FutureWrapper<I>
 where
-    I: IntoFuture,
-    I::Item: OperationModifier,
+    I: Future,
+    I::Output: OperationModifier,
 {
     fn update_parameter(op: &mut DefaultOperationRaw) {
-        I::Item::update_parameter(op);
+        I::Output::update_parameter(op);
     }
 
     fn update_response(op: &mut DefaultOperationRaw) {
-        I::Item::update_response(op);
+        I::Output::update_response(op);
     }
 
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
-        I::Item::update_definitions(map);
+        I::Output::update_definitions(map);
     }
 }
 
-impl<I> IntoFuture for FutureWrapper<I>
+impl<I> Future for FutureWrapper<I>
 where
-    I: IntoFuture,
+    I: Future + std::marker::Unpin
 {
-    type Future = I::Future;
-    type Item = I::Item;
-    type Error = I::Error;
+    type Output = I::Output;
 
     #[inline]
-    fn into_future(self) -> Self::Future {
-        self.0.into_future()
+    fn poll(mut self: Pin<&mut Self>, cx: &mut Context<'_>) -> Poll<Self::Output> {
+        Future::poll(Pin::new(&mut (*self).0), cx)
     }
 }
 
 macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
-    impl<U, $($ty,)* R> Apiv2Operation<($($ty,)*), R> for U
+    impl<U, $($ty,)* R, RU> Apiv2Operation<($($ty,)*), R, RU> for U
         where U: Fn($($ty,)*) -> R,
               $($ty: OperationModifier,)*
               R: OperationModifier,
@@ -324,11 +324,11 @@ macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
         }
     }
 
-    impl<U, $($ty,)* R> Apiv2Operation<($($ty,)*), R> for U
+    impl<U, $($ty,)* R, RU> Apiv2Operation<($($ty,)*), R, RU> for U
         where U: Fn($($ty,)*) -> R,
               $($ty: OperationModifier,)*
-              R: OperationModifier + IntoFuture,
-              R::Item: OperationModifier,
+              R: OperationModifier + Future<Output=RU>,
+              RU: OperationModifier,
     {
         fn operation() -> DefaultOperationRaw {
             let mut op = DefaultOperationRaw::default();

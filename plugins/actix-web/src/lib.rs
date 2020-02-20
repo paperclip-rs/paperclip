@@ -3,11 +3,11 @@ pub mod web;
 pub use self::web::{Resource, Route, Scope};
 pub use paperclip_macros::{api_v2_operation, api_v2_schema};
 
-use self::web::{Data, RouteWrapper, ServiceConfig};
-use actix_service::NewService;
+use self::web::{RouteWrapper, ServiceConfig};
+use actix_service::ServiceFactory;
 use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform};
 use actix_web::{web::HttpResponse, Error};
-use futures::IntoFuture;
+use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{
     DefaultApiRaw, DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
 };
@@ -15,6 +15,7 @@ use parking_lot::RwLock;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
+use std::future::Future;
 use std::sync::Arc;
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
@@ -70,7 +71,7 @@ pub trait Mountable {
 impl<T, B> App<T, B>
 where
     B: MessageBody,
-    T: NewService<
+    T: ServiceFactory<
         Config = (),
         Request = ServiceRequest,
         Response = ServiceResponse<B>,
@@ -89,21 +90,22 @@ where
     /// Proxy for [`actix_web::App::data_factory`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.data_factory).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn data_factory<F, Out>(mut self, data: F) -> Self
+    pub fn data_factory<F, Out, D, E>(mut self, data: F) -> Self
     where
         F: Fn() -> Out + 'static,
-        Out: IntoFuture + 'static,
-        Out::Error: Debug,
+        Out: Future<Output = Result<D, E>> + 'static,
+        D: 'static,
+        E: Debug,
     {
         self.inner = self.inner.data_factory(data);
         self
     }
 
-    /// Proxy for [`actix_web::App::register_data`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.register_data).
+    /// Proxy for [`actix_web::App::app_data`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.app_data).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn register_data<U: 'static>(mut self, data: Data<U>) -> Self {
-        self.inner = self.inner.register_data(data);
+    pub fn app_data<U: 'static>(mut self, data: U) -> Self {
+        self.inner = self.inner.app_data(data);
         self
     }
 
@@ -136,18 +138,18 @@ where
     /// Proxy for [`actix_web::App::hostname`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.hostname).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn hostname(mut self, val: &str) -> Self {
-        self.inner = self.inner.hostname(val);
-        self
-    }
+    // pub fn hostname(mut self, val: &str) -> Self {
+    //     self.inner = self.inner.hostname(val);
+    //     self
+    // }
 
     /// Proxy for [`actix_web::App::default_service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.default_service).
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn default_service<F, U>(mut self, f: F) -> Self
     where
-        F: actix_service::IntoNewService<U>,
-        U: NewService<
+        F: actix_service::IntoServiceFactory<U>,
+        U: ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -175,11 +177,11 @@ where
     /// Proxy for [`actix_web::web::App::wrap`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn wrap<M, B1, F>(
+    pub fn wrap<M, B1>(
         self,
-        mw: F,
+        mw: M,
     ) -> App<
-        impl NewService<
+        impl ServiceFactory<
             Config = (),
             Request = ServiceRequest,
             Response = ServiceResponse<B1>,
@@ -197,7 +199,6 @@ where
             InitError = (),
         >,
         B1: MessageBody,
-        F: actix_service::IntoTransform<M, T::Service>,
     {
         App {
             spec: self.spec,
@@ -212,7 +213,7 @@ where
         self,
         mw: F,
     ) -> App<
-        impl NewService<
+        impl ServiceFactory<
             Config = (),
             Request = ServiceRequest,
             Response = ServiceResponse<B1>,
@@ -224,7 +225,7 @@ where
     where
         B1: MessageBody,
         F: FnMut(ServiceRequest, &mut T::Service) -> R + Clone,
-        R: IntoFuture<Item = ServiceResponse<B1>, Error = Error>,
+        R: Future<Output = Result<ServiceResponse<B1>, Error>>,
     {
         App {
             spec: self.spec,
@@ -262,8 +263,8 @@ where
 #[derive(Clone)]
 struct SpecHandler(Arc<RwLock<DefaultApiRaw>>);
 
-impl actix_web::dev::Factory<(), HttpResponse> for SpecHandler {
-    fn call(&self, _: ()) -> HttpResponse {
-        HttpResponse::Ok().json(&*self.0.read())
+impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>> for SpecHandler {
+    fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
+        fut_ok(HttpResponse::Ok().json(&*self.0.read()))
     }
 }

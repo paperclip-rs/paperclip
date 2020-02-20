@@ -1,19 +1,18 @@
 //! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
 
 pub use actix_web::web::{
-    block, service, to, to_async, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
+    block, service, to, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest,
     HttpResponse, Json, JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
 };
 
 use crate::Mountable;
-use actix_service::NewService;
+use actix_service::ServiceFactory;
 use actix_web::dev::{
-    AppService, AsyncFactory, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse,
+    AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse,
     Transform,
 };
 use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
-use futures::future::IntoFuture;
 use paperclip_core::v2::models::{
     DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
 };
@@ -21,6 +20,7 @@ use paperclip_core::v2::schema::Apiv2Operation;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
+use std::future::Future;
 use std::mem;
 
 const METHODS: &[Method] = &[
@@ -57,7 +57,7 @@ impl Resource {
 
 impl<T> HttpServiceFactory for Resource<actix_web::Resource<T>>
 where
-    T: NewService<
+    T: ServiceFactory<
             Config = (),
             Request = ServiceRequest,
             Response = ServiceResponse,
@@ -70,9 +70,9 @@ where
     }
 }
 
-impl<T> actix_service::IntoNewService<T> for Resource<actix_web::Resource<T>>
+impl<T> actix_service::IntoServiceFactory<T> for Resource<actix_web::Resource<T>>
 where
-    T: NewService<
+    T: ServiceFactory<
             Config = (),
             Request = ServiceRequest,
             Response = ServiceResponse,
@@ -80,8 +80,8 @@ where
             InitError = (),
         > + 'static,
 {
-    fn into_new_service(self) -> T {
-        self.inner.into_new_service()
+    fn into_factory(self) -> T {
+        self.inner.into_factory()
     }
 }
 
@@ -101,7 +101,7 @@ impl<T> Mountable for Resource<T> {
 
 impl<T> Resource<actix_web::Resource<T>>
 where
-    T: NewService<
+    T: ServiceFactory<
         Config = (),
         Request = ServiceRequest,
         Response = ServiceResponse,
@@ -143,41 +143,41 @@ where
     }
 
     /// Wrapper for [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
-    pub fn to<F, I, R>(mut self, handler: F) -> Self
+    pub fn to<F, I, R, U>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation<I, R> + Factory<I, R> + 'static,
+        F: Apiv2Operation<I, R, U> + Factory<I, R, U> + 'static,
         I: FromRequest + 'static,
-        R: Responder + 'static,
+        R: Future<Output = U> + 'static,
+        U: Responder + 'static,
     {
-        self.update_from_handler::<F, I, R>();
+        self.update_from_handler::<F, I, R, U>();
         self.inner = self.inner.to(handler);
         self
     }
 
     /// Wrapper for [`actix_web::Resource::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to_async).
-    #[allow(clippy::wrong_self_convention)]
-    pub fn to_async<F, I, R>(mut self, handler: F) -> Self
-    where
-        F: Apiv2Operation<I, R> + AsyncFactory<I, R> + 'static,
-        I: FromRequest + 'static,
-        R: IntoFuture + 'static,
-        R::Item: Responder,
-        R::Error: Into<Error>,
-    {
-        self.update_from_handler::<F, I, R>();
-        self.inner = self.inner.to_async(handler);
-        self
-    }
+    // #[allow(clippy::wrong_self_convention)]
+    // pub fn to_async<F, I, R>(mut self, handler: F) -> Self
+    // where
+    //     F: Apiv2Operation<I, R> + Factory<I, _, R> + 'static,
+    //     I: FromRequest + 'static,
+    //     R: Future + 'static,
+    //     R::Output: Responder,
+    // {
+    //     self.update_from_handler::<F, I, R>();
+    //     self.inner = self.inner.to_async(handler);
+    //     self
+    // }
 
     /// Proxy for [`actix_web::web::Resource::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn wrap<M, F>(
+    pub fn wrap<M>(
         self,
-        mw: F,
+        mw: M,
     ) -> Resource<
         actix_web::Resource<
-            impl NewService<
+            impl ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -194,7 +194,6 @@ where
             Error = Error,
             InitError = (),
         >,
-        F: actix_service::IntoTransform<M, T::Service>,
     {
         Resource {
             path: self.path,
@@ -212,7 +211,7 @@ where
         mw: F,
     ) -> Resource<
         actix_web::Resource<
-            impl NewService<
+            impl ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -223,13 +222,13 @@ where
     >
     where
         F: FnMut(ServiceRequest, &mut T::Service) -> R + Clone,
-        R: IntoFuture<Item = ServiceResponse, Error = Error>,
+        R: Future<Output = Result<ServiceResponse, Error>>,
     {
         Resource {
             path: self.path,
             operations: self.operations,
             definitions: self.definitions,
-            inner: self.inner.wrap(mw),
+            inner: self.inner.wrap_fn(mw),
         }
     }
 
@@ -238,8 +237,8 @@ where
     /// **NOTE:** This doesn't affect spec generation.
     pub fn default_service<F, U>(mut self, f: F) -> Self
     where
-        F: actix_service::IntoNewService<U>,
-        U: NewService<
+        F: actix_service::IntoServiceFactory<U>,
+        U: ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -253,9 +252,9 @@ where
     }
 
     /// Updates this resource using the given handler.
-    fn update_from_handler<F, I, R>(&mut self)
+    fn update_from_handler<F, I, R, U>(&mut self)
     where
-        F: Apiv2Operation<I, R>,
+        F: Apiv2Operation<I, R, U>,
     {
         let mut op = F::operation();
         op.set_parameter_names_from_path_template(&self.path);
@@ -297,7 +296,7 @@ impl Scope {
 
 impl<T> HttpServiceFactory for Scope<actix_web::Scope<T>>
 where
-    T: NewService<
+    T: ServiceFactory<
             Config = (),
             Request = ServiceRequest,
             Response = ServiceResponse,
@@ -312,7 +311,7 @@ where
 
 impl<T> Scope<actix_web::Scope<T>>
 where
-    T: NewService<
+    T: ServiceFactory<
         Config = (),
         Request = ServiceRequest,
         Response = ServiceResponse,
@@ -379,8 +378,8 @@ where
     /// **NOTE:** This doesn't affect spec generation.
     pub fn default_service<F, U>(mut self, f: F) -> Self
     where
-        F: actix_service::IntoNewService<U>,
-        U: NewService<
+        F: actix_service::IntoServiceFactory<U>,
+        U: ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -396,12 +395,12 @@ where
     /// Proxy for [`actix_web::web::Scope::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.wrap).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn wrap<M, F>(
+    pub fn wrap<M>(
         self,
-        mw: F,
+        mw: M,
     ) -> Scope<
         actix_web::Scope<
-            impl NewService<
+            impl ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -418,7 +417,6 @@ where
             Error = Error,
             InitError = (),
         >,
-        F: actix_service::IntoTransform<M, T::Service>,
     {
         Scope {
             path: self.path,
@@ -436,7 +434,7 @@ where
         mw: F,
     ) -> Scope<
         actix_web::Scope<
-            impl NewService<
+            impl ServiceFactory<
                 Config = (),
                 Request = ServiceRequest,
                 Response = ServiceResponse,
@@ -447,7 +445,7 @@ where
     >
     where
         F: FnMut(ServiceRequest, &mut T::Service) -> R + Clone,
-        R: IntoFuture<Item = ServiceResponse, Error = Error>,
+        R: Future<Output = Result<ServiceResponse, Error>>,
     {
         Scope {
             path: self.path,
@@ -504,16 +502,17 @@ pub struct Route {
     inner: actix_web::Route,
 }
 
-impl NewService for Route {
+impl ServiceFactory for Route {
     type Config = ();
     type Request = ServiceRequest;
     type Response = ServiceResponse;
     type Error = Error;
     type InitError = ();
-    type Service = <actix_web::Route as NewService>::Service;
-    type Future = <actix_web::Route as NewService>::Future;
+    type Service = <actix_web::Route as ServiceFactory>::Service;
+    type Future = <actix_web::Route as ServiceFactory>::Future;
 
-    fn new_service(&self, cfg: &Self::Config) -> Self::Future {
+    fn new_service(&self, cfg: Self::Config) -> Self::Future {
+        #[allow(clippy::unit_arg)]
         self.inner.new_service(cfg)
     }
 }
@@ -546,11 +545,12 @@ impl Route {
     }
 
     /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
-    pub fn to<F, I, R>(mut self, handler: F) -> Self
+    pub fn to<F, I, R, U>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation<I, R> + Factory<I, R> + 'static,
+        F: Apiv2Operation<I, R, U> + Factory<I, R, U>,
         I: FromRequest + 'static,
-        R: Responder + 'static,
+        R: Future<Output = U> + 'static,
+        U: Responder + 'static,
     {
         self.operation = Some(F::operation());
         self.definitions = F::definitions();
@@ -558,21 +558,21 @@ impl Route {
         self
     }
 
-    /// Wrapper for [`actix_web::Route::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to_async)
-    #[allow(clippy::wrong_self_convention)]
-    pub fn to_async<F, I, R>(mut self, handler: F) -> Self
-    where
-        F: Apiv2Operation<I, R> + AsyncFactory<I, R> + 'static,
-        I: FromRequest + 'static,
-        R: IntoFuture + 'static,
-        R::Item: Responder,
-        R::Error: Into<Error>,
-    {
-        self.operation = Some(F::operation());
-        self.definitions = F::definitions();
-        self.inner = self.inner.to_async(handler);
-        self
-    }
+    // /// Wrapper for [`actix_web::Route::to_async`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to_async)
+    // #[allow(clippy::wrong_self_convention)]
+    // pub fn to_async<F, I, R>(mut self, handler: F) -> Self
+    // where
+    //     F: Apiv2Operation<I, R> + AsyncFactory<I, R> + 'static,
+    //     I: FromRequest + 'static,
+    //     R: IntoFuture + 'static,
+    //     R::Item: Responder,
+    //     R::Error: Into<Error>,
+    // {
+    //     self.operation = Some(F::operation());
+    //     self.definitions = F::definitions();
+    //     self.inner = self.inner.to_async(handler);
+    //     self
+    // }
 }
 
 /// Wrapper for [`actix_web::web::method`](https://docs.rs/actix-web/*/actix_web/web/fn.method.html).
@@ -704,7 +704,7 @@ impl<T> Mountable for ServiceConfig<T> {
 
 impl<T> ServiceConfig<actix_web::Scope<T>>
 where
-    T: NewService<
+    T: ServiceFactory<
         Config = (),
         Request = ServiceRequest,
         Response = ServiceResponse,
