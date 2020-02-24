@@ -8,9 +8,8 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
-# NOTE: Requires `actix-web = "^1.0.4"`
-actix-web = "1.0.4"
-paperclip = { version = "0.3", features = ["actix"] }
+actix-web = "2.0"
+paperclip = { git = "https://github.com/wafflespeanut/paperclip", features = ["actix"] }
 serde = "1.0"
 ```
 
@@ -71,14 +70,23 @@ fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         // Record services and routes from this line.
         .wrap_api()
-        // Mount the JSON spec at this path.
-        .with_json_spec_at("/api/spec")
-        // Everything else is the same!
+        // Add routes like you normally do...
         .service(
             web::resource("/pets")
                 .route(web::post().to(add_pet))
         )
-        // Build the app!
+        // Mount the JSON spec at this path.
+        .with_json_spec_at("/api/spec")
+
+        // ... or if you wish to build the spec by yourself...
+
+        // .with_raw_json_spec(|app, spec| {
+        //     app.route("/api/spec", web::get().to(move || {
+        //         actix_web::HttpResponse::Ok().json(&spec)
+        //     }))
+        // })
+
+        // IMPORTANT: Build the app!
         .build()
     ).bind("127.0.0.1:8080")?
     .run()

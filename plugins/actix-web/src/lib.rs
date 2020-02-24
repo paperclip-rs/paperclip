@@ -236,6 +236,20 @@ where
         self
     }
 
+    /// Calls the given function with `App` and JSON `Value` representing your API
+    /// specification **built until now**.
+    ///
+    /// **NOTE:** Unlike `with_json_spec_at`, this only has the API spec built until
+    /// this function call. Any route handler added after this call won't affect the
+    /// spec. So, it's important to call this function after adding all route handlers.
+    pub fn with_raw_json_spec<F>(self, mut call: F) -> Self
+    where
+        F: FnMut(Self, serde_json::Value) -> Self,
+    {
+        let spec = serde_json::to_value(&*self.spec.read()).expect("generating json spec");
+        call(self, spec)
+    }
+
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
         self.inner

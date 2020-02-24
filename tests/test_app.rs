@@ -929,8 +929,13 @@ fn test_custom_extractor_empty_schema() {
         || {
             App::new()
                 .wrap_api()
-                .with_json_spec_at("/api/spec")
                 .service(web::resource("/").route(web::get().to(index)))
+                .with_raw_json_spec(|app, spec| {
+                    app.route(
+                        "/api/spec",
+                        web::get().to(move || actix_web::HttpResponse::Ok().json(&spec)),
+                    )
+                })
                 .build()
         },
         |addr| {

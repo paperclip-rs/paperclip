@@ -238,11 +238,11 @@ pub struct License {
 /// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SecurityScheme {
-    pub name: String,
+    pub name: Option<String>,
     #[serde(rename = "type")]
     pub type_: String,
     #[serde(rename = "in")]
-    pub in_: String,
+    pub in_: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flow: Option<String>,
     #[serde(rename = "authorizationUrl")]
