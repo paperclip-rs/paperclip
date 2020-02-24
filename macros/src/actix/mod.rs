@@ -46,27 +46,37 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
             let t = quote!(#ty).to_string();
             // FIXME: This is a hack for functions returning known
             // `impl Trait`. Need a better way!
-            if t.contains("Future") {
-                wrapper = Some(quote!(paperclip::actix::FutureWrapper));
-            } else if t.contains("Responder") {
+            if t.contains("Responder") {
                 wrapper = Some(quote!(paperclip::actix::ResponderWrapper));
             }
 
             if let (Type::ImplTrait(_), Some(ref w)) = (&**ty, wrapper.as_ref()) {
-                *ty = Box::new(syn::parse2(quote!(#w<#ty>)).expect("parsing wrapper type"));
+                if item_ast.sig.asyncness.is_some() {
+                    *ty = Box::new(syn::parse2(quote!(#w<#ty>)).expect("parsing wrapper type"));
+                } else {
+                    *ty = Box::new(
+                        syn::parse2(quote!(impl Future<Output=#w<#ty>>))
+                            .expect("parsing wrapper type"),
+                    );
+                }
             }
         }
     }
 
     if let Some(w) = wrapper {
         let block = item_ast.block;
+        let wrapped_value = if item_ast.sig.asyncness.is_some() {
+            quote!(#w(f))
+        } else {
+            quote!(futures::future::ready(#w(f)))
+        };
         item_ast.block = Box::new(
             syn::parse2(quote!(
                 {
                     let f = (|| {
                         #block
                     })();
-                    #w(f)
+                    #wrapped_value
                 }
             ))
             .expect("parsing wrapped block"),

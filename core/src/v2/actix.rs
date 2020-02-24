@@ -6,9 +6,9 @@ use actix_web::{
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
     HttpRequest, HttpResponse, Responder,
 };
-use futures::future::IntoFuture;
 
 use std::collections::BTreeMap;
+use std::future::Future;
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.
@@ -231,9 +231,6 @@ impl_path_tuple!(A, B, C, D, E);
 // our `OperationModifier` impl. One solution would be to use trait-specific
 // wrappers which can then be added to the actual code using proc macros later.
 
-/// Wrapper for wrapping over `impl Future` thingies (to avoid breakage).
-pub struct FutureWrapper<T>(pub T);
-
 /// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).
 pub struct ResponderWrapper<T>(pub T);
 
@@ -255,87 +252,19 @@ impl<T: Responder> Responder for ResponderWrapper<T> {
     }
 }
 
-impl<I> Apiv2Schema for FutureWrapper<I>
-where
-    I: IntoFuture,
-    I::Item: Apiv2Schema,
-{
-    const NAME: Option<&'static str> = I::Item::NAME;
-
-    fn raw_schema() -> DefaultSchemaRaw {
-        I::Item::raw_schema()
-    }
-}
-
-impl<I> OperationModifier for FutureWrapper<I>
-where
-    I: IntoFuture,
-    I::Item: OperationModifier,
-{
-    fn update_parameter(op: &mut DefaultOperationRaw) {
-        I::Item::update_parameter(op);
-    }
-
-    fn update_response(op: &mut DefaultOperationRaw) {
-        I::Item::update_response(op);
-    }
-
-    fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
-        I::Item::update_definitions(map);
-    }
-}
-
-impl<I> IntoFuture for FutureWrapper<I>
-where
-    I: IntoFuture,
-{
-    type Future = I::Future;
-    type Item = I::Item;
-    type Error = I::Error;
-
-    #[inline]
-    fn into_future(self) -> Self::Future {
-        self.0.into_future()
-    }
-}
-
 macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
-    impl<U, $($ty,)* R> Apiv2Operation<($($ty,)*), R> for U
+    impl<U, $($ty,)* R, RV> Apiv2Operation<($($ty,)*), RV> for U
         where U: Fn($($ty,)*) -> R,
               $($ty: OperationModifier,)*
-              R: OperationModifier,
-    {
-        default fn operation() -> DefaultOperationRaw {
-            let mut op = DefaultOperationRaw::default();
-            $(
-                $ty::update_parameter(&mut op);
-            )*
-            R::update_response(&mut op);
-            op
-        }
-
-        default fn definitions() -> BTreeMap<String, DefaultSchemaRaw> {
-            let mut map = BTreeMap::new();
-            $(
-                $ty::update_definitions(&mut map);
-            )*
-            R::update_definitions(&mut map);
-            map
-        }
-    }
-
-    impl<U, $($ty,)* R> Apiv2Operation<($($ty,)*), R> for U
-        where U: Fn($($ty,)*) -> R,
-              $($ty: OperationModifier,)*
-              R: OperationModifier + IntoFuture,
-              R::Item: OperationModifier,
+              R: Future<Output=RV>,
+              RV: OperationModifier,
     {
         fn operation() -> DefaultOperationRaw {
             let mut op = DefaultOperationRaw::default();
             $(
                 $ty::update_parameter(&mut op);
             )*
-            R::update_response(&mut op);
+            RV::update_response(&mut op);
             op
         }
 
@@ -344,7 +273,7 @@ macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
             $(
                 $ty::update_definitions(&mut map);
             )*
-            R::update_definitions(&mut map);
+            RV::update_definitions(&mut map);
             map
         }
     }
