@@ -1,13 +1,14 @@
 //! Convenience macros for the [actix-web](https://github.com/wafflespeanut/paperclip/tree/master/plugins/actix-web)
 //! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
+use heck::*;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
 use syn::spanned::Spanned;
 use syn::{
-    Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, ItemFn, Meta, NestedMeta,
-    PathArguments, ReturnType, Token, TraitBound, Type,
+    Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, ItemFn, Lit, Meta,
+    NestedMeta, PathArguments, ReturnType, Token, TraitBound, Type,
 };
 
 const SCHEMA_MACRO: &str = "api_v2_schema";
@@ -96,6 +97,7 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
         Err(ts) => return ts,
     };
 
+    let props = SerdeProps::from_item_attrs(&item_ast.attrs);
     let attrs = crate::parse_input_attrs(attrs);
     let needs_empty_schema = attrs.0.iter().any(|meta| match meta {
         NestedMeta::Meta(Meta::Path(ref n)) => n
@@ -127,12 +129,12 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
         ).into();
     }
 
-    // FIXME: Use attr path segments to find serde renames, flattening, skipping, etc.
+    // FIXME: Use attr path segments to find flattening, skipping, etc.
     let mut props_gen = quote! {};
 
     match &item_ast.data {
         Data::Struct(ref s) => match &s.fields {
-            Fields::Named(ref f) => handle_field_struct(f, &mut props_gen),
+            Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
             Fields::Unnamed(ref f) => {
                 if f.unnamed.len() == 1 {
                     handle_unnamed_field_struct(f, &mut props_gen)
@@ -152,7 +154,7 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
                 s.help(&*EMPTY_SCHEMA_HELP).emit();
             }
         },
-        Data::Enum(ref e) => handle_enum(e, &mut props_gen),
+        Data::Enum(ref e) => handle_enum(e, &props, &mut props_gen),
         Data::Union(ref u) => u
             .union_token
             .span()
@@ -225,13 +227,23 @@ fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macr
 }
 
 /// Generates code for a struct with fields.
-fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenStream) {
+fn handle_field_struct(
+    fields: &FieldsNamed,
+    serde: &SerdeProps,
+    props_gen: &mut proc_macro2::TokenStream,
+) {
     for field in &fields.named {
-        let field_name = field
+        let mut field_name = field
             .ident
             .as_ref()
             .expect("missing field name?")
             .to_string();
+
+        if let Some(renamed) = SerdeRename::from_field_attrs(&field.attrs) {
+            field_name = renamed;
+        } else if let Some(prop) = serde.rename {
+            field_name = prop.rename(&field_name);
+        }
 
         let (ty_ref, is_required) = get_field_type(&field);
 
@@ -253,13 +265,13 @@ fn handle_field_struct(fields: &FieldsNamed, props_gen: &mut proc_macro2::TokenS
 }
 
 /// Generates code for an enum (if supported).
-fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) {
+fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::TokenStream) {
     props_gen.extend(quote!(
         schema.data_type = Some(DataType::String);
     ));
 
     for var in &e.variants {
-        let name = var.ident.to_string();
+        let mut name = var.ident.to_string();
         match &var.fields {
             Fields::Unit => (),
             Fields::Named(ref f) => {
@@ -276,6 +288,12 @@ fn handle_enum(e: &DataEnum, props_gen: &mut proc_macro2::TokenStream) {
                     .emit();
                 continue;
             }
+        }
+
+        if let Some(renamed) = SerdeRename::from_field_attrs(&var.attrs) {
+            name = renamed;
+        } else if let Some(prop) = serde.rename {
+            name = prop.rename(&name);
         }
 
         props_gen.extend(quote!(
@@ -308,4 +326,129 @@ fn address_type_for_fn_call(old_ty: &Type) -> proc_macro2::TokenStream {
     }
 
     quote!(#ty)
+}
+
+/// Supported renaming options in serde (https://serde.rs/variant-attrs.html).
+#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString)]
+enum SerdeRename {
+    #[strum(serialize = "lowercase")]
+    Lower,
+    #[strum(serialize = "UPPERCASE")]
+    Upper,
+    #[strum(serialize = "PascalCase")]
+    Pascal,
+    #[strum(serialize = "camelCase")]
+    Camel,
+    #[strum(serialize = "snake_case")]
+    Snake,
+    #[strum(serialize = "SCREAMING_SNAKE_CASE")]
+    ScreamingSnake,
+    #[strum(serialize = "kebab-case")]
+    Kebab,
+    #[strum(serialize = "SCREAMING-KEBAB-CASE")]
+    ScreamingKebab,
+}
+
+impl SerdeRename {
+    /// Traverses the field attributes and returns the renamed value from the first matching
+    /// `#[serde(rename = "...")]` pattern.
+    fn from_field_attrs(field_attrs: &[Attribute]) -> Option<String> {
+        for meta in field_attrs.iter().filter_map(|a| a.parse_meta().ok()) {
+            let inner_meta = match meta {
+                Meta::List(ref l)
+                    if l.path
+                        .segments
+                        .last()
+                        .map(|p| p.ident == "serde")
+                        .unwrap_or(false) =>
+                {
+                    &l.nested
+                }
+                _ => continue,
+            };
+
+            for meta in inner_meta {
+                let rename = match meta {
+                    NestedMeta::Meta(Meta::NameValue(ref v))
+                        if v.path
+                            .segments
+                            .last()
+                            .map(|p| p.ident == "rename")
+                            .unwrap_or(false) =>
+                    {
+                        &v.lit
+                    }
+                    _ => continue,
+                };
+
+                if let Lit::Str(ref s) = rename {
+                    return Some(s.value());
+                }
+            }
+        }
+
+        None
+    }
+
+    /// Renames the given value using the current option.
+    fn rename(&self, name: &str) -> String {
+        match self {
+            SerdeRename::Lower => name.to_lowercase(),
+            SerdeRename::Upper => name.to_uppercase(),
+            SerdeRename::Pascal => name.to_camel_case(),
+            SerdeRename::Camel => name.to_mixed_case(),
+            SerdeRename::Snake => name.to_snek_case(),
+            SerdeRename::ScreamingSnake => name.to_snek_case().to_uppercase(),
+            SerdeRename::Kebab => name.to_kebab_case(),
+            SerdeRename::ScreamingKebab => name.to_kebab_case().to_uppercase(),
+        }
+    }
+}
+
+#[derive(Clone, Debug, Default)]
+struct SerdeProps {
+    rename: Option<SerdeRename>,
+}
+
+impl SerdeProps {
+    /// Traverses the serde attributes in the given item attributes and returns
+    /// the applicable properties.
+    fn from_item_attrs(item_attrs: &[Attribute]) -> Self {
+        let mut props = Self::default();
+        for meta in item_attrs.iter().filter_map(|a| a.parse_meta().ok()) {
+            let inner_meta = match meta {
+                Meta::List(ref l)
+                    if l.path
+                        .segments
+                        .last()
+                        .map(|p| p.ident == "serde")
+                        .unwrap_or(false) =>
+                {
+                    &l.nested
+                }
+                _ => continue,
+            };
+
+            for meta in inner_meta {
+                let global_rename = match meta {
+                    NestedMeta::Meta(Meta::NameValue(ref v))
+                        if v.path
+                            .segments
+                            .last()
+                            .map(|p| p.ident == "rename_all")
+                            .unwrap_or(false) =>
+                    {
+                        &v.lit
+                    }
+                    _ => continue,
+                };
+
+                if let Lit::Str(ref s) = global_rename {
+                    props.rename = s.value().parse().ok();
+                }
+            }
+        }
+
+        props
+    }
 }

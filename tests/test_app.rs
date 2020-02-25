@@ -25,19 +25,23 @@ lazy_static! {
 
 #[api_v2_schema]
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "lowercase")]
 enum PetClass {
     Dog,
     Cat,
+    #[serde(rename = "other")]
     EverythingElse,
 }
 
 #[api_v2_schema]
 #[derive(Deserialize, Serialize)]
+#[serde(rename_all = "camelCase")]
 struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
-    updated: Option<chrono::NaiveDateTime>,
+    updated_on: Option<chrono::NaiveDateTime>,
+    #[serde(rename = "uuid")]
     uid: Option<uuid::Uuid>,
 }
 
@@ -47,7 +51,7 @@ impl Default for Pet {
             name: "".to_string(),
             class: PetClass::EverythingElse,
             id: None,
-            updated: None,
+            updated_on: None,
             uid: None,
         }
     }
@@ -110,7 +114,7 @@ fn test_simple_app() {
                     "Pet": {
                       "properties": {
                         "class": {
-                          "enum": ["Dog", "Cat", "EverythingElse"],
+                          "enum": ["dog", "cat", "other"],
                           "type": "string"
                         },
                         "id": {
@@ -120,11 +124,11 @@ fn test_simple_app() {
                         "name": {
                           "type": "string"
                         },
-                        "updated": {
+                        "updatedOn": {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uid": {
+                        "uuid": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -606,7 +610,7 @@ fn test_list_in_out() {
                     "Pet": {
                       "properties": {
                         "class": {
-                          "enum": ["Dog", "Cat", "EverythingElse"],
+                          "enum": ["dog", "cat", "other"],
                           "type": "string"
                         },
                         "id": {
@@ -616,11 +620,11 @@ fn test_list_in_out() {
                         "name": {
                           "type": "string"
                         },
-                        "updated": {
+                        "updatedOn": {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uid": {
+                        "uuid": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -739,7 +743,7 @@ fn test_impl_traits() {
                     "Pet": {
                       "properties": {
                         "class": {
-                          "enum": ["Dog", "Cat", "EverythingElse"],
+                          "enum": ["dog", "cat", "other"],
                           "type": "string"
                         },
                         "id": {
@@ -749,11 +753,11 @@ fn test_impl_traits() {
                         "name": {
                           "type": "string"
                         },
-                        "updated": {
+                        "updatedOn": {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uid": {
+                        "uuid": {
                           "format": "uuid",
                           "type": "string"
                         }

@@ -60,7 +60,7 @@ impl DataType {
 }
 
 /// Supported data type formats.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
 #[serde(rename_all = "lowercase")]
 pub enum DataTypeFormat {
     Int32,

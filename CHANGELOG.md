@@ -26,6 +26,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Codegen for `multipart/form-data` parameters with file streaming.
 - Referencing globally defined parameters and responses.
 - Codegen for enums in object definitions.
+- Actix plugin: Raw JSON spec generation from handlers.
+- Actix plugin: Support for `#[serde(rename = "...")]` and `#[serde(rename_all = "...")]`.
 
 ### Changed
 - Switched to templating for (almost) static modules.
@@ -35,6 +37,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `SchemaRepr` renamed to `Resolvable`.
 - `OperationMap` renamed to `PathItem`.
 - `Api` struct is now generic over parameters and responses in addition to definitions.
+- Actix plugin: Switched to `actix-web = "^2.0"`.
 
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.
