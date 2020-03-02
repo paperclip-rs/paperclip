@@ -90,6 +90,60 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     .into()
 }
 
+/// Actual parser and emitter for `api_v2_errors` macro.
+pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    let item_ast = match crate::expect_struct_or_enum(input) {
+        Ok(i) => i,
+        Err(ts) => return ts,
+    };
+
+    let name = &item_ast.ident;
+    let attrs = crate::parse_input_attrs(attrs);
+    let generics = item_ast.generics.clone();
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    // Convert macro attributes to tuples in form of ("error_code", "error_message")
+    let error_codes = attrs
+        .0
+        .iter()
+        .filter_map(|attr| match attr {
+            NestedMeta::Lit(Lit::Str(attr)) => {
+                let attr_value = attr.value();
+                let mut chunks = attr_value.splitn(2, ' ').map(str::to_string);
+
+                let error_code = chunks.next().unwrap_or_else(|| "".to_string());
+                let error_message = chunks.next().unwrap_or_else(|| "".to_string());
+
+                Some(quote! {
+                    (#error_code, #error_message),
+                })
+            }
+            _ => {
+                let s = attr.span().unwrap();
+                s.warning("This macro accepts only string attributes")
+                    .emit();
+
+                None
+            }
+        })
+        .fold(proc_macro2::TokenStream::new(), |mut stream, tokens| {
+            stream.extend(tokens);
+            stream
+        });
+
+    let gen = quote! {
+        #item_ast
+
+        impl #impl_generics paperclip::v2::schema::Apiv2Errors for #name #ty_generics #where_clause {
+            const ERROR_MAP: &'static [(&'static str, &'static str)] = &[
+                #error_codes
+            ];
+        }
+    };
+
+    gen.into()
+}
+
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
@@ -391,7 +445,7 @@ impl SerdeRename {
     }
 
     /// Renames the given value using the current option.
-    fn rename(&self, name: &str) -> String {
+    fn rename(self, name: &str) -> String {
         match self {
             SerdeRename::Lower => name.to_lowercase(),
             SerdeRename::Upper => name.to_uppercase(),
