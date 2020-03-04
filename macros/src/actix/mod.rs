@@ -109,56 +109,42 @@ pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
         .iter()
         // Pair code attrs with description attrs; save attr itself to properly span error messages at later stage
         .fold(Vec::new(), |mut list: Vec<(Option<u16>, Option<String>, _)>, attr| {
+            let span = attr.span().unwrap();
             match attr {
-                // Read named attribute
+                // Read named attribute.
                 NestedMeta::Meta(Meta::NameValue(name_value)) => {
                     let attr_name = name_value.path.get_ident().map(|ident| ident.to_string());
                     let attr_value = &name_value.lit;
 
                     match (attr_name.as_ref().map(String::as_str), attr_value) {
-                        // Code attrubite adds new element to list
+                        // "code" attribute adds new element to list
                         (Some("code"), Lit::Int(attr_value)) => {
                             let status_code = attr_value.base10_parse::<u16>()
-                                .map_err(|_| {
-                                    let s = attr.span().unwrap();
-                                    s.error("Invalid u16 in code argument").emit();
-                                })
-                                .ok();
+                                .map_err(|_| span.error("Invalid u16 in code argument").emit()).ok();
                             list.push((status_code, None, attr));
                         },
-                        // Description attribute updates last element in list
+                        // "description" attribute updates last element in list
                         (Some("description"), Lit::Str(attr_value)) =>
                             if let Some(last_value) = list.last_mut() {
                                 if last_value.1.is_some() {
-                                    let s = attr.span().unwrap();
-                                    s.warning("This attribute overwrites previous description").emit();
+                                    span.warning("This attribute overwrites previous description").emit();
                                 }
                                 last_value.1 = Some(attr_value.value());
                             } else {
-                                let s = attr.span().unwrap();
-                                s.error("Attribute 'description' can be only placed after prior 'code' argument").emit();
+                                span.error("Attribute 'description' can be only placed after prior 'code' argument").emit();
                             },
-                        _ => {
-                            let s = attr.span().unwrap();
-                            s.error("Invalid macro attribute. Should be plain u16, 'code = u16' or 'description = str'").emit();
-                        }
+                        _ => span.error("Invalid macro attribute. Should be plain u16, 'code = u16' or 'description = str'").emit()
                     }
                 },
-                // Read plain status code as attribute
+                // Read plain status code as attribute.
                 NestedMeta::Lit(Lit::Int(attr_value)) => {
                     let status_code = attr_value.base10_parse::<u16>()
-                    .map_err(|_| {
-                        let s = attr.span().unwrap();
-                        s.error("Invalid u16 in code argument").emit();
-                    })
-                    .ok();
+                    .map_err(|_| span.error("Invalid u16 in code argument").emit()).ok();
                     list.push((status_code, None, attr));
                 },
-                _ => {
-                    let s = attr.span().unwrap();
-                    s.error("This macro supports only named attributes - 'code' (u16) or 'description' (str)").emit();
-                }
+                _ => span.error("This macro supports only named attributes - 'code' (u16) or 'description' (str)").emit()
             }
+
             list
         })
         .iter()
@@ -167,21 +153,20 @@ pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
             let (code, description) = match triple {
                 (Some(code), Some(description), _) => (code, description.to_owned()),
                 (Some(code), None, attr) => {
+                    let span = attr.span().unwrap();
                     let description = StatusCode::from_u16(*code)
                         .map_err(|_| {
-                            let s = attr.span().unwrap();
-                            s.warning(format!("Invalid status code {}", code)).emit();
-                            "".to_string()
+                            span.warning(format!("Invalid status code {}", code)).emit();
+                            String::new()
                         })
                         .map(|s| s.canonical_reason()
                             .map(str::to_string)
                             .unwrap_or_else(|| {
-                                let s = attr.span().unwrap();
-                                s.warning(format!("Status code {} doesn't have a canonical name", code)).emit();
-                                "".to_string()
+                                span.warning(format!("Status code {} doesn't have a canonical name", code)).emit();
+                                String::new()
                             })
                         )
-                        .unwrap_or_else(|_| "".to_string());
+                        .unwrap_or_else(|_| String::new());
                     (code, description)
                 },
                 (None, _, _) => return None,

@@ -158,7 +158,7 @@ Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T
 
 #### Manually defining additional response codes
 
-There is a macro `api_v2_errors` which helps to manually add responses other than 200.
+There is a macro `api_v2_errors` which helps to manually add error (non-2xx) response codes.
 
 ```rust
 use paperclip::actix::api_v2_errors;
@@ -169,6 +169,15 @@ use paperclip::actix::api_v2_errors;
     code=500,
 )]
 pub enum MyError {
+    /* ... */
+}
+```
+
+You can now use this error in handlers and they'll emit operations containing those response codes.
+
+```rust
+#[api_v2_operation]
+async fn my_handler() -> Result<(), MyError> {
     /* ... */
 }
 ```

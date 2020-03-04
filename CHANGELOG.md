@@ -28,6 +28,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Codegen for enums in object definitions.
 - Actix plugin: Raw JSON spec generation from handlers.
 - Actix plugin: Support for `#[serde(rename = "...")]` and `#[serde(rename_all = "...")]`.
+- Actix plugin: Support for error (non-2xx) response codes.
 
 ### Changed
 - Switched to templating for (almost) static modules.

@@ -185,7 +185,7 @@ impl_type_simple!(
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
-/// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_schema.html) macro.
+/// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_schema.html) macro.
 ///
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
@@ -330,7 +330,7 @@ impl_schema_map!(BTreeMap<K, V>);
 /// Represents a OpenAPI v2 operation convertible. This is auto-implemented by
 /// framework-specific macros:
 ///
-/// - [`paperclip_actix::api_v2_operation`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_operation.html).
+/// - [`paperclip_actix::api_v2_operation`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_operation.html).
 ///
 /// **NOTE:** The type parameters specified here aren't used by the trait itself,
 /// but *can* be used for constraining stuff in framework-related impls.
@@ -343,7 +343,9 @@ pub trait Apiv2Operation<T, R> {
 }
 
 /// Represents a OpenAPI v2 error convertible. This is auto-implemented by
-/// [`api_v2_errors`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_errors.html) macro.
+/// framework-specific macros:
+///
+/// - [`paperclip_actix::api_v2_errors`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_errors.html).
 pub trait Apiv2Errors {
     const ERROR_MAP: &'static [(u16, &'static str)];
 }

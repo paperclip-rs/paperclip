@@ -49,6 +49,8 @@ pub fn api_v2_schema(attrs: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_definition(attrs, input)
 }
 
+/// Marker attribute for indicating that the marked object can represent non-2xx (error)
+/// status codes with optional descriptions.
 #[cfg(feature = "actix")]
 #[proc_macro_attribute]
 pub fn api_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
