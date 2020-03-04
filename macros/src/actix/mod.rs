@@ -6,6 +6,7 @@ use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
+use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
     Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, ItemFn, Lit, Meta,

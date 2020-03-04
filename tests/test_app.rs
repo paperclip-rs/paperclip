@@ -149,6 +149,7 @@ fn test_simple_app() {
                       "post": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -168,6 +169,7 @@ fn test_simple_app() {
                       "post": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -187,6 +189,7 @@ fn test_simple_app() {
                       "post": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -198,6 +201,7 @@ fn test_simple_app() {
                       "delete": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -207,6 +211,7 @@ fn test_simple_app() {
                       "get": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -216,6 +221,7 @@ fn test_simple_app() {
                       "head": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -225,6 +231,7 @@ fn test_simple_app() {
                       "options": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -234,6 +241,7 @@ fn test_simple_app() {
                       "patch": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -243,6 +251,7 @@ fn test_simple_app() {
                       "post": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -252,6 +261,7 @@ fn test_simple_app() {
                       "put": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -548,6 +558,7 @@ fn test_map_in_out() {
                       "get": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "additionalProperties": {
                                 "$ref": "#/definitions/Image"
@@ -637,6 +648,7 @@ fn test_list_in_out() {
                       "get": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "type": "array",
                               "items": {
@@ -775,6 +787,7 @@ fn test_impl_traits() {
                       "get": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "type": "array",
                               "items": {
@@ -1064,6 +1077,7 @@ fn test_errors_app() {
                       "post": {
                         "responses": {
                           "200": {
+                            "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }

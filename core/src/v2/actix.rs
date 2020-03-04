@@ -162,7 +162,8 @@ where
         op.responses.insert(
             "200".into(),
             Either::Right(Response {
-                description: None,
+                // TODO: Support configuring other 2xx codes using macro attribute.
+                description: Some("OK".into()),
                 schema: Some({
                     let mut def = T::schema_with_ref();
                     def.retain_ref();

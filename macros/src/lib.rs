@@ -7,8 +7,6 @@
 #![recursion_limit = "512"]
 
 extern crate proc_macro;
-#[macro_use]
-extern crate strum_macros;
 
 #[cfg(feature = "actix")]
 mod actix;
