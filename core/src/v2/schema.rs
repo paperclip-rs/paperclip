@@ -344,8 +344,6 @@ pub trait Apiv2Operation<T, R> {
 
 /// Represents a OpenAPI v2 error convertible. This is auto-implemented by
 /// [`api_v2_errors`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_errors.html) macro.
-///
-/// This is implemented for primitive types by default.
 pub trait Apiv2Errors {
-    const ERROR_MAP: &'static [(&'static str, &'static str)];
+    const ERROR_MAP: &'static [(u16, &'static str)];
 }

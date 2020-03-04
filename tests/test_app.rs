@@ -975,7 +975,14 @@ fn test_errors_app() {
     };
     use std::fmt;
 
-    #[api_v2_errors("400 Sorry, bad request", "403 Forbidden, go away")]
+    #[api_v2_errors(
+        400,
+        description = "Sorry, bad request",
+        code = 401,
+        code = 403,
+        description = "Forbidden, go away",
+        500
+    )]
     #[derive(Debug)]
     struct PetError {}
 
@@ -1064,8 +1071,14 @@ fn test_errors_app() {
                           "400": {
                             "description": "Sorry, bad request"
                           },
+                          "401": {
+                            "description": "Unauthorized"
+                          },
                           "403":{
                             "description":"Forbidden, go away"
+                          },
+                          "500": {
+                            "description": "Internal Server Error"
                           }
                         }
                       }

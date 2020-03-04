@@ -158,51 +158,19 @@ Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T
 
 #### Manually defining additional response codes
 
-There is a macro `api_v2_errors` which helps to manually add responses other than 200. Here is an example.
-We define an enum that represents the error. To use it in actix-web it needs to implement `Display` and `ResponseError`.
-There is no need to impl Display by hand for such simple enums - we can use `enum-display-derive` lib.
+There is a macro `api_v2_errors` which helps to manually add responses other than 200.
 
 ```rust
-use actix_web::{
-    error::{ErrorInternalServerError, ErrorUnauthorized, ResponseError},
-    HttpResponse,
-};
-use enum_display_derive::Display;
 use paperclip::actix::api_v2_errors;
-use std::fmt::Display;
 
 #[api_v2_errors(
-    "400 Bad Request",
-    "401 Unauthorized: Can't read session from header",
-    "500 Internal Server Error",
+    code=400,
+    code=401, description="Unauthorized: Can't read session from header",
+    code=500,
 )]
-#[derive(Debug, Display)]
-pub enum UserError {
-    Unauth,
-    Internal(String),
+pub enum MyError {
+    /* ... */
 }
-
-impl ResponseError for UserError {
-    fn error_response(&self) -> HttpResponse {
-        match self {
-            Self::Unauth =>
-              HttpResponse::from_error(
-                  ErrorUnauthorized("Unauthorized: Can't read session from header")
-              ),
-            Self::Internal(msg) =>
-              HttpResponse::from_error(
-                  ErrorInternalServerError(msg.clone())
-              ),
-        }
-    }
-}
-```
-
-Such enum can then be used in handler return type to have defined response codes added to this handler docs:
-
-```rust
-#[api_v2_operation]
-async fn my_handler() -> Result<Pet, UserError> { Err(UserError::Internal("Some error")) }
 ```
 
 #### Known limitations
