@@ -11,7 +11,7 @@ use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use chrono;
 use futures::future::{ok as fut_ok, ready, Future, Ready};
-use paperclip::actix::{api_v2_operation, api_v2_schema, web, OpenApiExt};
+use paperclip::actix::{api_v2_errors, api_v2_operation, api_v2_schema, web, OpenApiExt};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashSet};
@@ -959,6 +959,130 @@ fn test_custom_extractor_empty_schema() {
                         "responses": {}
                       }
                     }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_errors_app() {
+    use actix_web::{
+        error::{ErrorBadRequest, ResponseError},
+        HttpResponse,
+    };
+    use std::fmt;
+
+    #[api_v2_errors(
+        400,
+        description = "Sorry, bad request",
+        code = 401,
+        code = 403,
+        description = "Forbidden, go away",
+        500
+    )]
+    #[derive(Debug)]
+    struct PetError {}
+
+    impl fmt::Display for PetError {
+        fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+            write!(f, "Bad Request")
+        }
+    }
+
+    impl ResponseError for PetError {
+        fn error_response(&self) -> HttpResponse {
+            HttpResponse::from_error(ErrorBadRequest("Bad Request"))
+        }
+    }
+
+    #[api_v2_operation]
+    async fn echo_pet_with_errors(body: web::Json<Pet>) -> Result<web::Json<Pet>, PetError> {
+        Ok(body)
+    }
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(web::resource("/echo").route(web::post().to(echo_pet_with_errors)));
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::scope("/api").configure(config))
+                .build()
+        },
+        |addr| {
+            let mut resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                &mut resp,
+                json!({
+                  "info":{"title":"","version":""},
+                  "definitions": {
+                    "Pet": {
+                      "properties": {
+                        "class": {
+                          "enum": ["dog", "cat", "other"],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "required":["class", "name"]
+                    }
+                  },
+                  "paths": {
+                    "/api/echo": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                          "400": {
+                            "description": "Sorry, bad request"
+                          },
+                          "401": {
+                            "description": "Unauthorized"
+                          },
+                          "403":{
+                            "description":"Forbidden, go away"
+                          },
+                          "500": {
+                            "description": "Internal Server Error"
+                          }
+                        }
+                      }
+                    },
                   },
                   "swagger": "2.0"
                 }),

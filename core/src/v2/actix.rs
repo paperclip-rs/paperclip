@@ -1,7 +1,8 @@
 use super::models::{
-    DefaultOperationRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn, Response,
+    DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
+    Response,
 };
-use super::schema::{Apiv2Operation, Apiv2Schema};
+use super::schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema};
 use actix_web::{
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
     HttpRequest, HttpResponse, Responder,
@@ -22,6 +23,29 @@ pub trait OperationModifier: Apiv2Schema + Sized {
     /// Update the definitions map (if needed).
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         update_definitions_from_schema_type::<Self>(map);
+    }
+}
+
+/// Actix-specific trait for indicating that this entity can modify operation
+/// error codes
+pub trait OperationErrorsModifier: Apiv2Errors + Sized {
+    /// Update the responses map in the given operation (if needed).
+    fn update_response_errors(_op: &mut DefaultOperationRaw) {}
+}
+
+impl<T> OperationErrorsModifier for T
+where
+    T: Apiv2Errors,
+{
+    default fn update_response_errors(op: &mut DefaultOperationRaw) {
+        for error_definition in T::ERROR_MAP {
+            let response = DefaultResponseRaw {
+                description: Some(error_definition.1.to_string()),
+                schema: None,
+            };
+            op.responses
+                .insert(error_definition.0.to_string(), Either::Right(response));
+        }
     }
 }
 
@@ -64,12 +88,23 @@ where
         T::update_parameter(op);
     }
 
-    fn update_response(op: &mut DefaultOperationRaw) {
+    default fn update_response(op: &mut DefaultOperationRaw) {
         T::update_response(op);
     }
 
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         T::update_definitions(map);
+    }
+}
+
+impl<T, E> OperationModifier for Result<T, E>
+where
+    T: OperationModifier,
+    E: OperationErrorsModifier,
+{
+    fn update_response(op: &mut DefaultOperationRaw) {
+        T::update_response(op);
+        E::update_response_errors(op);
     }
 }
 

@@ -341,3 +341,9 @@ pub trait Apiv2Operation<T, R> {
     /// Returns the definitions used by this operation.
     fn definitions() -> BTreeMap<String, DefaultSchemaRaw>;
 }
+
+/// Represents a OpenAPI v2 error convertible. This is auto-implemented by
+/// [`api_v2_errors`](https://paperclip.waffles.space/paperclip_actix_macros/attr.api_v2_errors.html) macro.
+pub trait Apiv2Errors {
+    const ERROR_MAP: &'static [(u16, &'static str)];
+}

@@ -2,6 +2,7 @@
 //! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
 use heck::*;
+use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
@@ -88,6 +89,124 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
         #item_ast
     )
     .into()
+}
+
+/// Actual parser and emitter for `api_v2_errors` macro.
+pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    let item_ast = match crate::expect_struct_or_enum(input) {
+        Ok(i) => i,
+        Err(ts) => return ts,
+    };
+
+    let name = &item_ast.ident;
+    let attrs = crate::parse_input_attrs(attrs);
+    let generics = item_ast.generics.clone();
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+
+    // Convert macro attributes to tuples in form of (u16, &str)
+    let error_codes = attrs
+        .0
+        .iter()
+        // Pair code attrs with description attrs; save attr itself to properly span error messages at later stage
+        .fold(Vec::new(), |mut list: Vec<(Option<u16>, Option<String>, _)>, attr| {
+            match attr {
+                // Read named attribute
+                NestedMeta::Meta(Meta::NameValue(name_value)) => {
+                    let attr_name = name_value.path.get_ident().map(|ident| ident.to_string());
+                    let attr_value = &name_value.lit;
+
+                    match (attr_name.as_ref().map(String::as_str), attr_value) {
+                        // Code attrubite adds new element to list
+                        (Some("code"), Lit::Int(attr_value)) => {
+                            let status_code = attr_value.base10_parse::<u16>()
+                                .map_err(|_| {
+                                    let s = attr.span().unwrap();
+                                    s.error("Invalid u16 in code argument").emit();
+                                })
+                                .ok();
+                            list.push((status_code, None, attr));
+                        },
+                        // Description attribute updates last element in list
+                        (Some("description"), Lit::Str(attr_value)) =>
+                            if let Some(last_value) = list.last_mut() {
+                                if last_value.1.is_some() {
+                                    let s = attr.span().unwrap();
+                                    s.warning("This attribute overwrites previous description").emit();
+                                }
+                                last_value.1 = Some(attr_value.value());
+                            } else {
+                                let s = attr.span().unwrap();
+                                s.error("Attribute 'description' can be only placed after prior 'code' argument").emit();
+                            },
+                        _ => {
+                            let s = attr.span().unwrap();
+                            s.error("Invalid macro attribute. Should be plain u16, 'code = u16' or 'description = str'").emit();
+                        }
+                    }
+                },
+                // Read plain status code as attribute
+                NestedMeta::Lit(Lit::Int(attr_value)) => {
+                    let status_code = attr_value.base10_parse::<u16>()
+                    .map_err(|_| {
+                        let s = attr.span().unwrap();
+                        s.error("Invalid u16 in code argument").emit();
+                    })
+                    .ok();
+                    list.push((status_code, None, attr));
+                },
+                _ => {
+                    let s = attr.span().unwrap();
+                    s.error("This macro supports only named attributes - 'code' (u16) or 'description' (str)").emit();
+                }
+            }
+            list
+        })
+        .iter()
+        // Map code-message pairs into bits of code, filter empty codes out
+        .filter_map(|triple| {
+            let (code, description) = match triple {
+                (Some(code), Some(description), _) => (code, description.to_owned()),
+                (Some(code), None, attr) => {
+                    let description = StatusCode::from_u16(*code)
+                        .map_err(|_| {
+                            let s = attr.span().unwrap();
+                            s.warning(format!("Invalid status code {}", code)).emit();
+                            "".to_string()
+                        })
+                        .map(|s| s.canonical_reason()
+                            .map(str::to_string)
+                            .unwrap_or_else(|| {
+                                let s = attr.span().unwrap();
+                                s.warning(format!("Status code {} doesn't have a canonical name", code)).emit();
+                                "".to_string()
+                            })
+                        )
+                        .unwrap_or_else(|_| "".to_string());
+                    (code, description)
+                },
+                (None, _, _) => return None,
+            };
+
+            Some(quote! {
+                (#code, #description),
+            })
+        })
+        .fold(proc_macro2::TokenStream::new(), |mut stream, tokens| {
+            stream.extend(tokens);
+            stream
+        });
+
+    let gen = quote! {
+        #item_ast
+
+        impl #impl_generics paperclip::v2::schema::Apiv2Errors for #name #ty_generics #where_clause {
+            const ERROR_MAP: &'static [(u16, &'static str)] = &[
+                #error_codes
+            ];
+        }
+    };
+
+    gen.into()
 }
 
 /// Actual parser and emitter for `api_v2_schema` macro.
@@ -391,7 +510,7 @@ impl SerdeRename {
     }
 
     /// Renames the given value using the current option.
-    fn rename(&self, name: &str) -> String {
+    fn rename(self, name: &str) -> String {
         match self {
             SerdeRename::Lower => name.to_lowercase(),
             SerdeRename::Upper => name.to_uppercase(),

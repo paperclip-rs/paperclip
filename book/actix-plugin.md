@@ -156,6 +156,23 @@ curl http://localhost:8080/api/spec
 
 Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T>` or `web::Path`, the plugin will emit the corresponding specification as expected.
 
+#### Manually defining additional response codes
+
+There is a macro `api_v2_errors` which helps to manually add responses other than 200.
+
+```rust
+use paperclip::actix::api_v2_errors;
+
+#[api_v2_errors(
+    code=400,
+    code=401, description="Unauthorized: Can't read session from header",
+    code=500,
+)]
+pub enum MyError {
+    /* ... */
+}
+```
+
 #### Known limitations
 
 - **Enums:** OpenAPI (v2) itself supports using simple enums (i.e., with unit variants), but Rust and serde has support for variants with fields and tuples. I still haven't looked deep enough either to argue that this cannot be done in OpenAPI or find an elegant way to represent this in OpenAPI.
