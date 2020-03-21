@@ -3,10 +3,11 @@
 //! You shouldn't need to depend on this, because the stuff here is
 //! already exposed by the corresponding crates.
 
-#![feature(proc_macro_diagnostic)]
 #![recursion_limit = "512"]
 
 extern crate proc_macro;
+#[macro_use]
+extern crate proc_macro_error;
 
 #[cfg(feature = "actix")]
 mod actix;
@@ -35,6 +36,7 @@ pub fn api_v2_schema_struct(_attr: TokenStream, input: TokenStream) -> TokenStre
 
 /// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
 #[cfg(feature = "actix")]
+#[proc_macro_error]
 #[proc_macro_attribute]
 pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_operation(input)
@@ -42,6 +44,7 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
 
 /// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
 #[cfg(feature = "actix")]
+#[proc_macro_error]
 #[proc_macro_attribute]
 pub fn api_v2_schema(attrs: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_definition(attrs, input)
@@ -50,6 +53,7 @@ pub fn api_v2_schema(attrs: TokenStream, input: TokenStream) -> TokenStream {
 /// Marker attribute for indicating that the marked object can represent non-2xx (error)
 /// status codes with optional descriptions.
 #[cfg(feature = "actix")]
+#[proc_macro_error]
 #[proc_macro_attribute]
 pub fn api_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_errors(attrs, input)
@@ -57,17 +61,17 @@ pub fn api_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
 
 /// Generate an error at the call site and return empty token stream.
 fn span_error_with_msg<T: Spanned>(it: &T, msg: &str) -> TokenStream {
-    it.span().unwrap().error(msg).emit();
+    emit_error!(it.span().unwrap(), msg);
     (quote! {}).into()
 }
 
 /// Parses this token stream expecting a struct/enum and fails with an error otherwise.
 fn expect_struct_or_enum(ts: TokenStream) -> Result<DeriveInput, TokenStream> {
     syn::parse(ts).map_err(|e| {
-        e.span()
-            .unwrap()
-            .error("expected struct or enum for deriving schema.")
-            .emit();
+        emit_error!(
+            e.span().unwrap(),
+            "expected struct or enum for deriving schema."
+        );
         quote!().into()
     })
 }
@@ -86,10 +90,10 @@ impl Parse for MacroAttribute {
 fn parse_input_attrs(ts: TokenStream) -> MacroAttribute {
     syn::parse(ts)
         .map_err(|e| {
-            e.span()
-                .unwrap()
-                .warning("cannot parse proc-macro input attributes.")
-                .emit();
+            emit_warning!(
+                e.span().unwrap(),
+                "cannot parse proc-macro input attributes."
+            );
         })
         .ok()
         .unwrap_or_default()

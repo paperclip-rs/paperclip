@@ -256,7 +256,7 @@ fn named_fields(item_ast: &mut DeriveInput) -> Result<&mut FieldsNamed, TokenStr
             }
         }
     } else {
-        span.unwrap().error("expected struct for schema").emit();
+        emit_error!(span.unwrap(), "expected struct for schema");
         Err(quote!().into())
     }
 }

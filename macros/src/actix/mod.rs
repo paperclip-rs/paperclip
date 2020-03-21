@@ -30,21 +30,19 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
     let mut item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
         Err(e) => {
-            e.span()
-                .unwrap()
-                .error("operation must be a function.")
-                .emit();
+            emit_error!(e.span().unwrap(), "operation must be a function.");
             return quote!().into();
         }
     };
 
     let mut wrapper = None;
     match &mut item_ast.sig.output {
-        ReturnType::Default => item_ast
-            .span()
-            .unwrap()
-            .warning("operation doesn't seem to return a response.")
-            .emit(),
+        ReturnType::Default => {
+            emit_warning!(
+                item_ast.span().unwrap(),
+                "operation doesn't seem to return a response."
+            );
+        }
         ReturnType::Type(_, ty) => {
             let t = quote!(#ty).to_string();
             // FIXME: This is a hack for functions returning known
@@ -117,33 +115,33 @@ pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
                     let attr_name = name_value.path.get_ident().map(|ident| ident.to_string());
                     let attr_value = &name_value.lit;
 
-                    match (attr_name.as_ref().map(String::as_str), attr_value) {
+                    match (attr_name.as_deref(), attr_value) {
                         // "code" attribute adds new element to list
                         (Some("code"), Lit::Int(attr_value)) => {
                             let status_code = attr_value.base10_parse::<u16>()
-                                .map_err(|_| span.error("Invalid u16 in code argument").emit()).ok();
+                                .map_err(|_| emit_error!(span, "Invalid u16 in code argument")).ok();
                             list.push((status_code, None, attr));
                         },
                         // "description" attribute updates last element in list
                         (Some("description"), Lit::Str(attr_value)) =>
                             if let Some(last_value) = list.last_mut() {
                                 if last_value.1.is_some() {
-                                    span.warning("This attribute overwrites previous description").emit();
+                                    emit_warning!(span, "This attribute overwrites previous description");
                                 }
                                 last_value.1 = Some(attr_value.value());
                             } else {
-                                span.error("Attribute 'description' can be only placed after prior 'code' argument").emit();
+                                emit_error!(span, "Attribute 'description' can be only placed after prior 'code' argument");
                             },
-                        _ => span.error("Invalid macro attribute. Should be plain u16, 'code = u16' or 'description = str'").emit()
+                        _ => emit_error!(span, "Invalid macro attribute. Should be plain u16, 'code = u16' or 'description = str'")
                     }
                 },
                 // Read plain status code as attribute.
                 NestedMeta::Lit(Lit::Int(attr_value)) => {
                     let status_code = attr_value.base10_parse::<u16>()
-                    .map_err(|_| span.error("Invalid u16 in code argument").emit()).ok();
+                    .map_err(|_| emit_error!(span, "Invalid u16 in code argument")).ok();
                     list.push((status_code, None, attr));
                 },
-                _ => span.error("This macro supports only named attributes - 'code' (u16) or 'description' (str)").emit()
+                _ => emit_error!(span, "This macro supports only named attributes - 'code' (u16) or 'description' (str)")
             }
 
             list
@@ -157,13 +155,13 @@ pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
                     let span = attr.span().unwrap();
                     let description = StatusCode::from_u16(*code)
                         .map_err(|_| {
-                            span.warning(format!("Invalid status code {}", code)).emit();
+                            emit_warning!(span, format!("Invalid status code {}", code));
                             String::new()
                         })
                         .map(|s| s.canonical_reason()
                             .map(str::to_string)
                             .unwrap_or_else(|| {
-                                span.warning(format!("Status code {} doesn't have a canonical name", code)).emit();
+                                emit_warning!(span, format!("Status code {} doesn't have a canonical name", code));
                                 String::new()
                             })
                         )
@@ -244,28 +242,26 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
                 if f.unnamed.len() == 1 {
                     handle_unnamed_field_struct(f, &mut props_gen)
                 } else {
-                    let s = f.span().unwrap();
-                    s.warning(
-                        "tuple structs do not have named fields and hence will have empty schema.",
-                    )
-                    .emit();
-                    s.help(&*EMPTY_SCHEMA_HELP).emit();
+                    emit_warning!(
+                        f.span().unwrap(),
+                        "tuple structs do not have named fields and hence will have empty schema.";
+                        help = "{}", &*EMPTY_SCHEMA_HELP;
+                    );
                 }
             }
             Fields::Unit => {
-                let s = s.struct_token.span().unwrap();
-                s.warning("unit structs do not have any fields and hence will have empty schema.")
-                    .emit();
-                s.help(&*EMPTY_SCHEMA_HELP).emit();
+                emit_warning!(
+                    s.struct_token.span().unwrap(),
+                    "unit structs do not have any fields and hence will have empty schema.";
+                    help = "{}", &*EMPTY_SCHEMA_HELP;
+                );
             }
         },
         Data::Enum(ref e) => handle_enum(e, &props, &mut props_gen),
-        Data::Union(ref u) => u
-            .union_token
-            .span()
-            .unwrap()
-            .error("unions are unsupported for deriving schema")
-            .emit(),
+        Data::Union(ref u) => emit_error!(
+            u.union_token.span().unwrap(),
+            "unions are unsupported for deriving schema"
+        ),
     };
 
     let schema_name = name.to_string();
@@ -308,12 +304,10 @@ fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
         }
         Type::Reference(_) => (Some(address_type_for_fn_call(&field.ty)), is_required),
         _ => {
-            field
-                .ty
-                .span()
-                .unwrap()
-                .warning("unsupported field type will be ignored.")
-                .emit();
+            emit_warning!(
+                field.ty.span().unwrap(),
+                "unsupported field type will be ignored."
+            );
             (None, is_required)
         }
     }
@@ -380,17 +374,14 @@ fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::To
         match &var.fields {
             Fields::Unit => (),
             Fields::Named(ref f) => {
-                f.span()
-                    .unwrap()
-                    .warning("skipping enum variant with named fields in schema.")
-                    .emit();
+                emit_warning!(
+                    f.span().unwrap(),
+                    "skipping enum variant with named fields in schema."
+                );
                 continue;
             }
             Fields::Unnamed(ref f) => {
-                f.span()
-                    .unwrap()
-                    .warning("skipping tuple enum variant in schema.")
-                    .emit();
+                emit_warning!(f.span().unwrap(), "skipping tuple enum variant in schema.");
                 continue;
             }
         }
