@@ -26,30 +26,8 @@ pub trait OperationModifier: Apiv2Schema + Sized {
     }
 }
 
-/// Actix-specific trait for indicating that this entity can modify operation
-/// error codes
-pub trait OperationErrorsModifier: Apiv2Errors + Sized {
-    /// Update the responses map in the given operation (if needed).
-    fn update_response_errors(_op: &mut DefaultOperationRaw) {}
-}
-
-impl<T> OperationErrorsModifier for T
-where
-    T: Apiv2Errors,
-{
-    default fn update_response_errors(op: &mut DefaultOperationRaw) {
-        for error_definition in T::ERROR_MAP {
-            let response = DefaultResponseRaw {
-                description: Some(error_definition.1.to_string()),
-                schema: None,
-            };
-            op.responses
-                .insert(error_definition.0.to_string(), Either::Right(response));
-        }
-    }
-}
-
 /// All schema types default to updating the definitions map.
+#[cfg(feature = "nightly")]
 impl<T> OperationModifier for T
 where
     T: Apiv2Schema,
@@ -80,11 +58,12 @@ where
     }
 }
 
+#[cfg(feature = "nightly")]
 impl<T, E> OperationModifier for Result<T, E>
 where
     T: OperationModifier,
 {
-    fn update_parameter(op: &mut DefaultOperationRaw) {
+    default fn update_parameter(op: &mut DefaultOperationRaw) {
         T::update_parameter(op);
     }
 
@@ -92,7 +71,7 @@ where
         T::update_response(op);
     }
 
-    fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
+    default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         T::update_definitions(map);
     }
 }
@@ -100,11 +79,19 @@ where
 impl<T, E> OperationModifier for Result<T, E>
 where
     T: OperationModifier,
-    E: OperationErrorsModifier,
+    E: Apiv2Errors,
 {
+    fn update_parameter(op: &mut DefaultOperationRaw) {
+        T::update_parameter(op);
+    }
+
     fn update_response(op: &mut DefaultOperationRaw) {
         T::update_response(op);
-        E::update_response_errors(op);
+        update_error_definitions_from_schema_type::<E>(op);
+    }
+
+    fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
+        T::update_definitions(map);
     }
 }
 
@@ -122,6 +109,7 @@ impl_empty!(HttpRequest, HttpResponse, Bytes, Payload);
 
 // Other extractors
 
+#[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Json<T> {
     default const NAME: Option<&'static str> = None;
 
@@ -175,6 +163,7 @@ where
 }
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
+    #[cfg(feature = "nightly")]
     impl<T> Apiv2Schema for $ty {
         default const NAME: Option<&'static str> = None;
 
@@ -182,6 +171,9 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
             Default::default()
         }
     }
+
+    #[cfg(not(feature = "nightly"))]
+    impl<T: Apiv2Schema> Apiv2Schema for $ty {}
 
     impl<T: Apiv2Schema> OperationModifier for $ty {
         fn update_parameter(op: &mut DefaultOperationRaw) {
@@ -216,6 +208,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
 });
 
 /// `formData` can refer to the global definitions.
+#[cfg(feature = "nightly")]
 impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
     const NAME: Option<&'static str> = T::NAME;
 
@@ -229,7 +222,11 @@ impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
 
 macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
+    #[cfg(feature = "nightly")]
     impl<$($ty,)+> Apiv2Schema for Path<($($ty,)+)> {}
+
+    #[cfg(not(feature = "nightly"))]
+    impl<$($ty: Apiv2Schema,)+> Apiv2Schema for Path<($($ty,)+)> {}
 
     impl<$($ty,)+> OperationModifier for Path<($($ty,)+)>
         where $($ty: Apiv2Schema,)+
@@ -270,6 +267,7 @@ impl_path_tuple!(A, B, C, D, E);
 /// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).
 pub struct ResponderWrapper<T>(pub T);
 
+#[cfg(feature = "nightly")]
 impl<T: Responder> Apiv2Schema for ResponderWrapper<T> {
     default const NAME: Option<&'static str> = None;
 
@@ -346,5 +344,21 @@ where
         }
 
         break;
+    }
+}
+
+/// Given a schema type that represents an error, add the responses
+/// representing those errors.
+fn update_error_definitions_from_schema_type<T>(op: &mut DefaultOperationRaw)
+where
+    T: Apiv2Errors,
+{
+    for (status, def_name) in T::ERROR_MAP {
+        let response = DefaultResponseRaw {
+            description: Some((*def_name).to_string()),
+            schema: None,
+        };
+        op.responses
+            .insert(status.to_string(), Either::Right(response));
     }
 }
