@@ -351,5 +351,7 @@ pub trait Apiv2Operation<T, R> {
 ///
 /// - [`paperclip_actix::api_v2_errors`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_errors.html).
 pub trait Apiv2Errors {
-    const ERROR_MAP: &'static [(u16, &'static str)];
+    const ERROR_MAP: &'static [(u16, &'static str)] = &[];
 }
+
+impl Apiv2Errors for () {}
