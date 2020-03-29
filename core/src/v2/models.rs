@@ -484,9 +484,7 @@ where
                     match dt {
                         Some(ty) if ty.is_primitive() => break,
                         Some(DataType::Array) => {
-                            inner = inner
-                                .as_ref()
-                                .and_then(|s| s.items.as_ref().map(Deref::deref));
+                            inner = inner.as_ref().and_then(|s| s.items.as_deref());
                         }
                         None => {
                             return Err(ValidationError::InvalidParameterType(

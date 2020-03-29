@@ -98,14 +98,54 @@ where
 // We don't know what we should do with these abstractions
 // as they could be anything.
 impl<T> Apiv2Schema for Data<T> {}
+#[cfg(not(feature = "nightly"))]
+impl<T> OperationModifier for Data<T> {}
 
 macro_rules! impl_empty({ $($ty:ty),+ } => {
     $(
         impl Apiv2Schema for $ty {}
+        #[cfg(not(feature = "nightly"))]
+        impl OperationModifier for $ty {}
     )+
 });
 
 impl_empty!(HttpRequest, HttpResponse, Bytes, Payload);
+
+#[cfg(not(feature = "nightly"))]
+mod manual_impl {
+    use super::OperationModifier;
+
+    impl<'a> OperationModifier for &'a str {}
+    impl<'a, T: OperationModifier> OperationModifier for &'a [T] {}
+
+    macro_rules! impl_simple({ $ty:ty } => {
+        impl OperationModifier for $ty {}
+    });
+
+    impl_simple!(char);
+    impl_simple!(String);
+    impl_simple!(bool);
+    impl_simple!(f32);
+    impl_simple!(f64);
+    impl_simple!(i8);
+    impl_simple!(i16);
+    impl_simple!(i32);
+    impl_simple!(u8);
+    impl_simple!(u16);
+    impl_simple!(u32);
+    impl_simple!(i64);
+    impl_simple!(i128);
+    impl_simple!(isize);
+    impl_simple!(u64);
+    impl_simple!(u128);
+    impl_simple!(usize);
+    #[cfg(feature = "datetime")]
+    impl_simple!(chrono::NaiveDateTime);
+    #[cfg(feature = "decimal")]
+    impl_simple!(rust_decimal::Decimal);
+    #[cfg(feature = "uid")]
+    impl_simple!(uuid::Uuid);
+}
 
 // Other extractors
 
@@ -204,6 +244,10 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                 }));
             }
         }
+
+        // These don't require updating definitions, as we use them only
+        // to get their properties.
+        fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
     }
 });
 
@@ -275,6 +319,12 @@ impl<T: Responder> Apiv2Schema for ResponderWrapper<T> {
         DefaultSchemaRaw::default()
     }
 }
+
+#[cfg(not(feature = "nightly"))]
+impl<T: Responder> Apiv2Schema for ResponderWrapper<T> {}
+
+#[cfg(not(feature = "nightly"))]
+impl<T: Responder> OperationModifier for ResponderWrapper<T> {}
 
 impl<T: Responder> Responder for ResponderWrapper<T> {
     type Error = T::Error;

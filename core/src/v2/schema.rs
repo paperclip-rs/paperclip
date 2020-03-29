@@ -355,3 +355,4 @@ pub trait Apiv2Errors {
 }
 
 impl Apiv2Errors for () {}
+impl Apiv2Errors for actix_web::Error {}

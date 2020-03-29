@@ -482,7 +482,7 @@ impl<'a> ApiObjectBuilder<'a> {
             } else {
                 Property::OptionalField
             },
-            desc: field.description.as_ref().map(String::as_str),
+            desc: field.description.as_deref(),
             strict_child_fields: &*field.child_req_fields,
             param_loc: None,
             overridden: false,
@@ -511,7 +511,7 @@ impl<'a> ApiObjectBuilder<'a> {
                         } else {
                             Property::OptionalParam
                         },
-                        desc: param.description.as_ref().map(String::as_str),
+                        desc: param.description.as_deref(),
                         strict_child_fields: &[] as &[_],
                         param_loc: Some(param.presence),
                         overridden: false,

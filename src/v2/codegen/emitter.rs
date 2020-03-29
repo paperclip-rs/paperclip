@@ -1161,11 +1161,9 @@ fn resolve_parameter_type(
         None if dt == Some(DataType::File) => return Some((FILE_MARKER.into(), vec![])),
         None if dt == Some(DataType::Array) => {
             if let Some(i) = items {
-                if let Some((ty, mut fmts)) = resolve_parameter_type(
-                    i.data_type,
-                    i.format.as_ref(),
-                    i.items.as_ref().map(Deref::deref),
-                ) {
+                if let Some((ty, mut fmts)) =
+                    resolve_parameter_type(i.data_type, i.format.as_ref(), i.items.as_deref())
+                {
                     fmts.insert(0, i.collection_format.unwrap_or_default());
                     // We collect it as `Vec` for now - we'll replace it with our
                     // `Delimited` wrapper when we actually write the code.
