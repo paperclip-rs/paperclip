@@ -39,6 +39,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `OperationMap` renamed to `PathItem`.
 - `Api` struct is now generic over parameters and responses in addition to definitions.
 - Actix plugin: Switched to `actix-web = "^2.0"`.
+- Actix plugin: **Supports stable compiler**.
 
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.

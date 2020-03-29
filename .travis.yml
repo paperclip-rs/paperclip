@@ -17,7 +17,6 @@ matrix:
     - cargo build
     - cargo build --features actix
     - cargo build --features cli
-    - cargo build --all --all-features
   - name: test-nightly
     before_script:
     - rustup toolchain install nightly
@@ -34,7 +33,7 @@ matrix:
   - name: docs
     script:
     - rm -rf target/doc
-    - cargo doc --all --all-features --no-deps
+    - cargo doc --all --features "actix cli datetime uid" --no-deps
     - gitbook build book/
     - cp -r book/_book/* target/doc/
 
