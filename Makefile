@@ -9,7 +9,7 @@ clean:
 	rm -rf tests/test_pet
 
 prepare:
-	rustup override set $$(head  -1 ./rust-toolchain)
+	rustup override set stable
 	rustup component add rustfmt
 	rustup component add clippy
 
@@ -21,17 +21,12 @@ doc:
 
 build:
 	cargo build
-	cargo build --features v2
-	cargo build --features datetime
-	cargo build --features default
 	cargo build --features actix
 	cargo build --features cli
-	cargo build --features uid
-	cargo build --all --all-features
 
 test:
 	cargo clippy --all -- -D clippy::all
-	cargo test --all --all-features
+	cargo test --all --features "actix cli datetime uid"
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check
 	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check

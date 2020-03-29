@@ -9,14 +9,18 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 
 [dependencies]
 actix-web = "2.0"
-paperclip = { git = "https://github.com/wafflespeanut/paperclip", features = ["actix"] }
+# The "nightly" feature can be specified if you're using nightly compiler. Even though
+# this plugin works smoothly with the nightly compiler, it also works in stable
+# channel (remove "nightly" feature in that case). There maybe compilation errors,
+# but those can be fixed.
+paperclip = { git = "https://github.com/wafflespeanut/paperclip", features = ["actix", "nightly"] }
 serde = "1.0"
 ```
 
 Our `main.rs` looks like this:
 
 ```rust
-use actix_web::{App, web::{self, Json}};
+use actix_web::{App, HttpServer, web::{self, Json}};
 use serde::{Serialize, Deserialize};
 
 #[derive(Serialize, Deserialize)]
@@ -25,18 +29,19 @@ struct Pet {
     id: Option<i64>,
 }
 
-fn add_pet(_body: Json<Pet>) -> Json<Pet> {
-    unimplemented!();
+async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
+    Ok(body)
 }
 
-fn main() -> std::io::Result<()> {
-    let server = HttpServer::new(|| App::new()
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
+    HttpServer::new(|| App::new()
         .service(
             web::resource("/pets")
-                .route(web::post().to(add_pet))
+                .route(web::post().to(echo_pet))
         )
     ).bind("127.0.0.1:8080")?
-    .run()
+    .run().await
 }
 ```
 
@@ -62,18 +67,19 @@ struct Pet {
 
 // Mark operations like so...
 #[api_v2_operation]
-fn add_pet(_body: Json<Pet>) -> Json<Pet> {
-    unimplemented!();
+async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
+    Ok(body)
 }
 
-fn main() -> std::io::Result<()> {
+#[actix_rt::main]
+async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         // Record services and routes from this line.
         .wrap_api()
         // Add routes like you normally do...
         .service(
             web::resource("/pets")
-                .route(web::post().to(add_pet))
+                .route(web::post().to(echo_pet))
         )
         // Mount the JSON spec at this path.
         .with_json_spec_at("/api/spec")
@@ -89,7 +95,7 @@ fn main() -> std::io::Result<()> {
         // IMPORTANT: Build the app!
         .build()
     ).bind("127.0.0.1:8080")?
-    .run()
+    .run().await
 }
 ```
 
@@ -135,6 +141,7 @@ curl http://localhost:8080/api/spec
       "post": {
         "responses": {
           "200": {
+            "description": "OK",
             "schema": {
               "$ref": "#/definitions/Pet"
             }
@@ -150,6 +157,10 @@ curl http://localhost:8080/api/spec
         }
       }]
     }
+  },
+  "info": {
+    "version": "",
+    "title": ""
   }
 }
 ```
@@ -184,8 +195,8 @@ async fn my_handler() -> Result<(), MyError> {
 
 #### Known limitations
 
-- **Enums:** OpenAPI (v2) itself supports using simple enums (i.e., with unit variants), but Rust and serde has support for variants with fields and tuples. I still haven't looked deep enough either to argue that this cannot be done in OpenAPI or find an elegant way to represent this in OpenAPI.
-- **Functions returning abstractions:** The plugin has no way to obtain any useful information from functions returning abstractions such as `HttpResponse`, `impl Responder` or containers such as `Result<T, E>` containing those abstractions. So, the plugin silently ignores these types, which results in an empty value in your hosted specification.
+- **Enums:** OpenAPI (v2) itself supports using simple enums (i.e., with unit variants), but Rust and serde has support for variants with fields and tuples. I still haven't looked deep enough either to say whether this can/cannot be done in OpenAPI or find an elegant way to represent this in OpenAPI.
+- **Functions returning abstractions:** The plugin has no way to obtain any useful information from functions returning abstractions such as `HttpResponse`, `impl Responder` or containers such as `Result<T, E>` containing those abstractions. So currently, the plugin silently ignores these types, which results in an empty value in your hosted specification.
 
 #### Missing features
 
@@ -195,7 +206,6 @@ Affected entity | Missing feature(s)
 --------------- | ---------------
 [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc.
 [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Headers as parameters.
-[Responses](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responsesObject) | Response codes other than `200 OK`.
 Security ([definitions](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityDefinitionsObject) and [requirements](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityRequirementObject)) | Authentication and Authorization.
 
 #### Performance implications?

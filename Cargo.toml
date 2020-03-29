@@ -53,14 +53,15 @@ uuid = { version = "0.8", features = ["serde"] }
 
 [features]
 actix = ["paperclip-macros/actix", "paperclip-actix"]
-decimal = ["paperclip-core/decimal"]
-datetime = ["paperclip-core/datetime"]
-default = ["v2", "codegen"]
-v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
-codegen = ["heck", "lazy_static", "regex", "tinytemplate", "paperclip-core/codegen"]
+actix-nightly = ["actix", "paperclip-actix/nightly"]
 cli = ["default", "env_logger", "structopt", "git2", "reqwest"]
+codegen = ["heck", "lazy_static", "regex", "tinytemplate", "paperclip-core/codegen"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
+datetime = ["paperclip-core/datetime"]
+decimal = ["paperclip-core/decimal"]
+default = ["v2", "codegen"]
 uid = ["paperclip-core/uid"]
+v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 
 [workspace]
 members = [

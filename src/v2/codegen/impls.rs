@@ -62,9 +62,9 @@ impl ApiObject {
                         },
                         helper_module_prefix,
                         rel_path: Some(path),
-                        description: req.description.as_ref().map(String::as_str),
+                        description: req.description.as_deref(),
                         object: &self.name,
-                        op_id: req.id.as_ref().map(String::as_str),
+                        op_id: req.id.as_deref(),
                         deprecated: req.deprecated,
                         method: Some(method),
                         body_required: req.body_required,
@@ -75,7 +75,7 @@ impl ApiObject {
                         local_params: &req.params,
                         needs_any: needs_any && req.body_required,
                         response: Response {
-                            ty_path: req.response.ty_path.as_ref().map(String::as_str),
+                            ty_path: req.response.ty_path.as_deref(),
                             contains_any: req.response.contains_any,
                         },
                     })

@@ -9,8 +9,8 @@ use quote::quote;
 use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
-    Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, ItemFn, Lit, Meta,
-    NestedMeta, PathArguments, ReturnType, Token, TraitBound, Type,
+    Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, Generics, Ident, ItemFn,
+    Lit, Meta, NestedMeta, PathArguments, ReturnType, Token, TraitBound, Type,
 };
 
 const SCHEMA_MACRO: &str = "api_v2_schema";
@@ -223,12 +223,15 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
         });
     }
 
+    let opt_impl = add_optional_impl(&name, &generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     if needs_empty_schema {
         return quote!(
             #item_ast
 
             impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
+
+            #opt_impl
         ).into();
     }
 
@@ -281,9 +284,25 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
                 schema
             }
         }
+
+        #opt_impl
     };
 
     gen.into()
+}
+
+#[cfg(feature = "nightly")]
+fn add_optional_impl(_: &Ident, _: &Generics) -> proc_macro2::TokenStream {
+    // Empty impl for "nightly" feature because specialization helps us there.
+    quote!()
+}
+
+#[cfg(not(feature = "nightly"))]
+fn add_optional_impl(name: &Ident, generics: &Generics) -> proc_macro2::TokenStream {
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    quote! {
+        impl #impl_generics paperclip::actix::OperationModifier for #name #ty_generics #where_clause {}
+    }
 }
 
 fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
@@ -423,6 +442,8 @@ fn address_type_for_fn_call(old_ty: &Type) -> proc_macro2::TokenStream {
 
     quote!(#ty)
 }
+
+/* Serde attributes */
 
 /// Supported renaming options in serde (https://serde.rs/variant-attrs.html).
 #[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString)]

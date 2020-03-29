@@ -185,7 +185,9 @@ impl_type_simple!(
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
-/// [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_schema.html) macro.
+/// framework-specific macros:
+///
+/// - [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_schema.html) macro.
 ///
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
@@ -231,6 +233,7 @@ impl<T: TypedData> Apiv2Schema for T {
     }
 }
 
+#[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Option<T> {
     default const NAME: Option<&'static str> = None;
 
@@ -247,6 +250,7 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     }
 }
 
+#[cfg(feature = "nightly")]
 impl<T, E> Apiv2Schema for Result<T, E> {
     default const NAME: Option<&'static str> = None;
 
@@ -347,5 +351,9 @@ pub trait Apiv2Operation<T, R> {
 ///
 /// - [`paperclip_actix::api_v2_errors`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_errors.html).
 pub trait Apiv2Errors {
-    const ERROR_MAP: &'static [(u16, &'static str)];
+    const ERROR_MAP: &'static [(u16, &'static str)] = &[];
 }
+
+impl Apiv2Errors for () {}
+#[cfg(feature = "actix")]
+impl Apiv2Errors for actix_web::Error {}
