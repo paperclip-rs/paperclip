@@ -835,36 +835,43 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         }
 
         // Write struct fields and the associated markers if needed.
-        self.struct_fields_iter().try_for_each::<_, fmt::Result>(|field| {
-            let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
-            if needs_container {
-                self.write_parameter_if_required(
-                    field.prop,
-                    &sk,
-                    field.ty,
-                    &field.delimiting,
-                    &mut container,
-                )?;
-            } else {
-                self.write_parameter_if_required(field.prop, &sk, field.ty, &field.delimiting, f)?;
-            }
-
-            if field.prop.is_required() {
-                f.write_str("\n    ")?;
-                if field.prop.is_parameter() {
-                    f.write_str("_param")?;
+        self.struct_fields_iter()
+            .try_for_each::<_, fmt::Result>(|field| {
+                let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
+                if needs_container {
+                    self.write_parameter_if_required(
+                        field.prop,
+                        &sk,
+                        field.ty,
+                        &field.delimiting,
+                        &mut container,
+                    )?;
+                } else {
+                    self.write_parameter_if_required(
+                        field.prop,
+                        &sk,
+                        field.ty,
+                        &field.delimiting,
+                        f,
+                    )?;
                 }
 
-                f.write_str("_")?;
-                f.write_str(&sk)?;
-                f.write_str(": ")?;
-                f.write_str("core::marker::PhantomData<")?;
-                f.write_str(&cc)?;
-                f.write_str(">,")?;
-            }
+                if field.prop.is_required() {
+                    f.write_str("\n    ")?;
+                    if field.prop.is_parameter() {
+                        f.write_str("_param")?;
+                    }
 
-            Ok(())
-        })?;
+                    f.write_str("_")?;
+                    f.write_str(&sk)?;
+                    f.write_str(": ")?;
+                    f.write_str("core::marker::PhantomData<")?;
+                    f.write_str(&cc)?;
+                    f.write_str(">,")?;
+                }
+
+                Ok(())
+            })?;
 
         if has_fields || self.body_required {
             f.write_str("\n}\n")?;
@@ -897,53 +904,55 @@ impl Display for ApiObject {
 
         f.write_str(" {")?;
 
-        self.fields().iter().try_for_each::<_, fmt::Result>(|field| {
-            let mut new_name = field.name.to_snek_case();
-            // Check if the field matches a Rust keyword and add '_' suffix.
-            if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
-                new_name.push('_');
-            }
+        self.fields()
+            .iter()
+            .try_for_each::<_, fmt::Result>(|field| {
+                let mut new_name = field.name.to_snek_case();
+                // Check if the field matches a Rust keyword and add '_' suffix.
+                if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
+                    new_name.push('_');
+                }
 
-            ApiObject::write_docs(field.description.as_ref(), f, 1)?;
-            if field.description.is_none() {
-                f.write_str("\n")?;
-            }
+                ApiObject::write_docs(field.description.as_ref(), f, 1)?;
+                if field.description.is_none() {
+                    f.write_str("\n")?;
+                }
 
-            f.write_str("    ")?;
-            if new_name != field.name.as_str() {
-                f.write_str("#[serde(rename = \"")?;
-                f.write_str(&field.name)?;
-                f.write_str("\")]\n    ")?;
-            }
+                f.write_str("    ")?;
+                if new_name != field.name.as_str() {
+                    f.write_str("#[serde(rename = \"")?;
+                    f.write_str(&field.name)?;
+                    f.write_str("\")]\n    ")?;
+                }
 
-            f.write_str("pub ")?;
-            f.write_str(&new_name)?;
-            f.write_str(": ")?;
-            if !field.is_required {
-                f.write_str("Option<")?;
-            }
+                f.write_str("pub ")?;
+                f.write_str(&new_name)?;
+                f.write_str(": ")?;
+                if !field.is_required {
+                    f.write_str("Option<")?;
+                }
 
-            if field.boxed {
-                f.write_str("Box<")?;
-            }
+                if field.boxed {
+                    f.write_str("Box<")?;
+                }
 
-            if field.needs_any {
-                Self::write_field_with_any(&field.ty_path, f)?;
-            } else {
-                f.write_str(&field.ty_path)?;
-            }
+                if field.needs_any {
+                    Self::write_field_with_any(&field.ty_path, f)?;
+                } else {
+                    f.write_str(&field.ty_path)?;
+                }
 
-            if field.boxed {
-                f.write_str(">")?;
-            }
+                if field.boxed {
+                    f.write_str(">")?;
+                }
 
-            if !field.is_required {
-                f.write_str(">")?;
-            }
+                if !field.is_required {
+                    f.write_str(">")?;
+                }
 
-            f.write_str(",")?;
-            Ok(())
-        })?;
+                f.write_str(",")?;
+                Ok(())
+            })?;
 
         if !self.fields().is_empty() {
             f.write_str("\n")?;
