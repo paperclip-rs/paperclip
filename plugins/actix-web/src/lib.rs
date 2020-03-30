@@ -18,6 +18,8 @@ use std::fmt::Debug;
 use std::future::Future;
 use std::sync::Arc;
 
+use askama::Template;
+
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
@@ -229,10 +231,16 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_at(mut self, path: &str) -> Self {
-        self.inner = self.inner.service(
-            actix_web::web::resource(path)
-                .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
-        );
+        self.inner = self
+            .inner
+            .service(
+                actix_web::web::resource(path)
+                    .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
+            )
+            .service(
+                actix_web::web::resource(path.to_owned() + "/swagger-ui.html")
+                    .route(actix_web::web::get().to(SwaggerUIHandler(path.to_string()))),
+            );
         self
     }
 
@@ -274,5 +282,27 @@ impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<Http
 {
     fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
         fut_ok(HttpResponse::Ok().json(&*self.0.read()))
+    }
+}
+
+#[derive(Clone)]
+struct SwaggerUIHandler(String);
+
+#[derive(Template)]
+#[template(path = "swagger-ui.html")]
+struct SwaggerUITemplate<'a> {
+    api_spec_url: &'a str,
+}
+
+impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>>
+    for SwaggerUIHandler
+{
+    fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
+        let s = SwaggerUITemplate {
+            api_spec_url: &*self.0.as_str(),
+        }
+        .render()
+        .unwrap();
+        fut_ok(HttpResponse::Ok().content_type("text/html").body(s))
     }
 }
