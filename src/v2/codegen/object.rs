@@ -835,7 +835,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         }
 
         // Write struct fields and the associated markers if needed.
-        self.struct_fields_iter().try_for_each(|field| {
+        self.struct_fields_iter().try_for_each::<_, fmt::Result>(|field| {
             let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
             if needs_container {
                 self.write_parameter_if_required(
@@ -897,7 +897,7 @@ impl Display for ApiObject {
 
         f.write_str(" {")?;
 
-        self.fields().iter().try_for_each(|field| {
+        self.fields().iter().try_for_each::<_, fmt::Result>(|field| {
             let mut new_name = field.name.to_snek_case();
             // Check if the field matches a Rust keyword and add '_' suffix.
             if RUST_KEYWORDS.iter().any(|&k| k == new_name) {

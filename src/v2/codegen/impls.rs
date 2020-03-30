@@ -251,7 +251,7 @@ impl<'a> ApiObjectImpl<'a> {
                 f.write_str("body: Default::default(),")?;
             }
 
-            builder.struct_fields_iter().try_for_each(|field| {
+            builder.struct_fields_iter().try_for_each::<_, fmt::Result>(|field| {
                 if field.prop.is_required() {
                     f.write_str("\n            ")?;
                     if field.prop.is_parameter() {
