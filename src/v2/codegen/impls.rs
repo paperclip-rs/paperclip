@@ -251,25 +251,27 @@ impl<'a> ApiObjectImpl<'a> {
                 f.write_str("body: Default::default(),")?;
             }
 
-            builder.struct_fields_iter().try_for_each(|field| {
-                if field.prop.is_required() {
-                    f.write_str("\n            ")?;
-                    if field.prop.is_parameter() {
-                        f.write_str("_param")?;
+            builder
+                .struct_fields_iter()
+                .try_for_each::<_, fmt::Result>(|field| {
+                    if field.prop.is_required() {
+                        f.write_str("\n            ")?;
+                        if field.prop.is_parameter() {
+                            f.write_str("_param")?;
+                        }
+
+                        f.write_str("_")?;
+                        f.write_str(&field.name.to_snek_case())?;
+                        f.write_str(": core::marker::PhantomData,")?;
+                    // If we have a container, then we store parameters inside that.
+                    } else if field.prop.is_parameter() && !needs_container {
+                        f.write_str("\n            param_")?;
+                        f.write_str(&field.name.to_snek_case())?;
+                        f.write_str(": None,")?;
                     }
 
-                    f.write_str("_")?;
-                    f.write_str(&field.name.to_snek_case())?;
-                    f.write_str(": core::marker::PhantomData,")?;
-                // If we have a container, then we store parameters inside that.
-                } else if field.prop.is_parameter() && !needs_container {
-                    f.write_str("\n            param_")?;
-                    f.write_str(&field.name.to_snek_case())?;
-                    f.write_str(": None,")?;
-                }
-
-                Ok(())
-            })?;
+                    Ok(())
+                })?;
 
             if has_fields || builder.body_required {
                 f.write_str("\n        }")?;
