@@ -267,6 +267,14 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
     }
 }
 
+impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
+    const NAME: Option<&'static str> = T::NAME;
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        T::raw_schema()
+    }
+}
+
 impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
     fn raw_schema() -> DefaultSchemaRaw {
         Vec::<T>::raw_schema()
