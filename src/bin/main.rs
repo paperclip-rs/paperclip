@@ -14,11 +14,11 @@ use std::io::Cursor;
 use std::path::PathBuf;
 
 fn parse_version(s: &str) -> Result<OApiVersion, Error> {
-    Ok(match s {
-        "v2" => OApiVersion::V2,
-        "v3" => OApiVersion::V3,
-        _ => Err(PaperClipError::UnsupportedOpenAPIVersion)?,
-    })
+    match s {
+        "v2" => Ok(OApiVersion::V2),
+        "v3" => Ok(OApiVersion::V3),
+        _ => Err(PaperClipError::UnsupportedOpenAPIVersion.into()),
+    }
 }
 
 fn parse_spec(s: &str) -> Result<ResolvableApi<DefaultSchema>, Error> {
@@ -66,7 +66,7 @@ struct Opt {
 fn parse_args_and_run() -> Result<(), Error> {
     let opt = Opt::from_args();
     if let OApiVersion::V3 = opt.api {
-        Err(PaperClipError::UnsupportedOpenAPIVersion)?;
+        return Err(PaperClipError::UnsupportedOpenAPIVersion.into());
     }
 
     let spec = opt.spec.resolve()?;
