@@ -27,7 +27,7 @@ runtime = "0.3.0-alpha.7"
 runtime-tokio = "0.3.0-alpha.6"
 
 [build-dependencies]
-paperclip = "0"
+paperclip = { git = "https://github.com/wafflespeanut/paperclip", features = ["v2", "codegen"] }
 ```
 
 - Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml).
@@ -154,4 +154,4 @@ let pet = Pet::add_pet()
 
 ... and the code will compile.
 
-> **NOTE:** The types of arguments are also checked.
+> **NOTE:** The types of arguments are also enforced.

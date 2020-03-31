@@ -37,6 +37,7 @@ lazy_static! {
 #[derive(Debug, Clone)]
 pub struct MediaRange(pub mime::MediaRange);
 
+#[cfg(feature = "codegen")]
 impl MediaRange {
     /// Implementation from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L155
     fn matches_params(&self, r: &Self) -> bool {

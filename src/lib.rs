@@ -6,7 +6,8 @@
 
 #[macro_use]
 extern crate failure;
-#[macro_use]
+#[cfg_attr(feature = "codegen", macro_use)]
+#[cfg(feature = "codegen")]
 extern crate log;
 
 mod error;

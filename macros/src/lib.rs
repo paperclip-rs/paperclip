@@ -11,7 +11,7 @@ extern crate proc_macro_error;
 
 #[cfg(feature = "actix")]
 mod actix;
-#[cfg(feature = "default")]
+#[cfg(feature = "v2")]
 mod core;
 
 use proc_macro::TokenStream;

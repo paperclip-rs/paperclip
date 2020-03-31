@@ -83,7 +83,7 @@ where
         // and we'll have to resolve them anyway.
         let mut paths = mem::replace(&mut self.paths, BTreeMap::new());
         paths.iter_mut().try_for_each(|(path, map)| {
-            trace!("Checking path: {}", path);
+            log::trace!("Checking path: {}", path);
 
             self.resolve_operations(path, map)
         })?;
@@ -92,7 +92,7 @@ where
         // FIXME: We don't support definitions that refer another definition
         // directly from the root (i.e., alias). Should we?
         for (name, schema) in &self.defs {
-            trace!("Entering: {}", name);
+            log::trace!("Entering: {}", name);
             {
                 // Set the name and cyclic-ness of the current definition.
                 let mut s = schema.write();
@@ -159,7 +159,7 @@ where
     fn resolve_definitions(&self, schema: &mut Resolvable<S>) -> Result<(), ValidationError> {
         let ref_def = {
             if let Some(ref_name) = schema.read().reference() {
-                trace!("Resolving definition {}", ref_name);
+                log::trace!("Resolving definition {}", ref_name);
                 Some(self.resolve_definition_reference(ref_name)?)
             } else {
                 None
@@ -191,7 +191,7 @@ where
             self.resolve_parameters(Some(method), path, &mut op.parameters)?;
             for resp in op.responses.values_mut() {
                 let ref_resp = if let Some(r) = resp.left() {
-                    trace!("Resolving response {}", r.reference);
+                    log::trace!("Resolving response {}", r.reference);
                     Some(self.resolve_response_reference(&r.reference)?)
                 } else {
                     None
@@ -223,7 +223,7 @@ where
     ) -> Result<(), ValidationError> {
         for p in params.iter_mut() {
             let ref_param = if let Some(r) = p.left() {
-                trace!("Resolving parameter {}", r.reference);
+                log::trace!("Resolving parameter {}", r.reference);
                 Some(self.resolve_parameter_reference(&r.reference)?)
             } else {
                 None
