@@ -6,7 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Actix plugin: `#[api_v2_schema(empty)]` can be used to implement empty schema for any type and ignore the warning.
+- Actix plugin: `#[openapi(empty)]` attribute can be used to any type to implement empty schema and ignore the warning.
 - Actix plugin: Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 - Client timeout in CLI.
 - Codegen for header parameters in operations.
@@ -29,6 +29,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: Raw JSON spec generation from handlers.
 - Actix plugin: Support for `#[serde(rename = "...")]` and `#[serde(rename_all = "...")]`.
 - Actix plugin: Support for error (non-2xx) response codes.
+- Actix plugin: Type-level and field-level documentation is now used for `description` fields in schema and properties.
 
 ### Changed
 - Switched to templating for (almost) static modules.
@@ -40,6 +41,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `Api` struct is now generic over parameters and responses in addition to definitions.
 - Actix plugin: Switched to `actix-web = "^2.0"`.
 - Actix plugin: **Supports stable compiler**.
+- Actix plugin: `#[api_v2_schema]` macro attribute is now `#[derive(Apiv2Schema)]`.
 
 ### Fixed
 - Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.

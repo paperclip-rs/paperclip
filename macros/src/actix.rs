@@ -14,12 +14,12 @@ use syn::{
     Type,
 };
 
-const SCHEMA_MACRO: &str = "api_v2_schema";
+const SCHEMA_MACRO_ATTR: &str = "openapi";
 
 lazy_static! {
     static ref EMPTY_SCHEMA_HELP: String = format!(
         "you can mark the struct with #[{}(empty)] to ignore this warning.",
-        SCHEMA_MACRO
+        SCHEMA_MACRO_ATTR
     );
 }
 
