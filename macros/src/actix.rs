@@ -391,9 +391,15 @@ fn handle_field_struct(
 
         let (ty_ref, is_required) = get_field_type(&field);
 
+        let docs = extract_documentation(&field.attrs);
+        let docs = docs.trim();
+
         let mut gen = quote!(
             {
-                let s = #ty_ref::raw_schema();
+                let mut s = #ty_ref::raw_schema();
+                if !#docs.is_empty() {
+                    s.description = Some(#docs.to_string());
+                }
                 schema.properties.insert(#field_name.into(), s.into());
             }
         );
