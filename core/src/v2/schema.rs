@@ -194,6 +194,9 @@ pub trait Apiv2Schema {
     /// Name of this schema. This is the object's name.
     const NAME: Option<&'static str> = None;
 
+    /// Description of this schema. In case the trait is derived, uses the documentation on the type.
+    const DESCRIPTION: &'static str = "";
+
     /// Returns the raw schema for this object.
     fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -216,6 +219,9 @@ pub trait Apiv2Schema {
         let mut def = Self::raw_schema();
         if let Some(n) = Self::NAME {
             def.reference = Some(String::from("#/definitions/") + n);
+        }
+        if !Self::DESCRIPTION.is_empty() {
+            def.description = Some(Self::DESCRIPTION.to_owned());
         }
 
         def

@@ -34,6 +34,7 @@ enum PetClass {
 
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
+/// Pets are awesome!
 struct Pet {
     name: String,
     class: PetClass,
@@ -601,6 +602,7 @@ fn test_list_in_out() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -733,6 +735,7 @@ fn test_impl_traits() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
