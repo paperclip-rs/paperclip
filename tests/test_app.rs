@@ -11,7 +11,9 @@ use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use chrono;
 use futures::future::{ok as fut_ok, ready, Future, Ready};
-use paperclip::actix::{api_v2_errors, api_v2_operation, web, Apiv2Schema, OpenApiExt};
+use paperclip::actix::{
+    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
+};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashSet};
@@ -1093,6 +1095,231 @@ fn test_errors_app() {
                         }
                       }
                     },
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_security_app() {
+    #[derive(Apiv2Security, Deserialize)]
+    #[openapi(
+        apiKey,
+        alias = "JWT",
+        in = "header",
+        name = "Authorization",
+        description = "Use format 'Bearer TOKEN'"
+    )]
+    struct AccessToken;
+
+    impl FromRequest for AccessToken {
+        type Future = Ready<Result<Self, Self::Error>>;
+        type Error = Error;
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {}))
+        }
+    }
+
+    #[derive(Apiv2Security, Deserialize)]
+    #[openapi(
+        oauth2,
+        auth_url = "http://example.com/",
+        token_url = "http://example.com/token",
+        flow = "password"
+    )]
+    struct OAuth2Access;
+
+    impl FromRequest for OAuth2Access {
+        type Future = Ready<Result<Self, Self::Error>>;
+        type Error = Error;
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {}))
+        }
+    }
+
+    #[derive(Apiv2Security, Deserialize)]
+    #[openapi(parent = "oauth2", scopes("pets.read", "pets.write"))]
+    struct PetScope;
+
+    impl FromRequest for PetScope {
+        type Future = Ready<Result<Self, Self::Error>>;
+        type Error = Error;
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {}))
+        }
+    }
+
+    #[api_v2_operation]
+    async fn echo_pet_with_jwt(_: AccessToken, body: web::Json<Pet>) -> web::Json<Pet> {
+        body
+    }
+
+    #[api_v2_operation]
+    async fn echo_pet_with_oauth2(_: OAuth2Access, body: web::Json<Pet>) -> web::Json<Pet> {
+        body
+    }
+
+    #[api_v2_operation]
+    async fn echo_pet_with_petstore(_: PetScope, body: web::Json<Pet>) -> web::Json<Pet> {
+        body
+    }
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_jwt)))
+            .service(web::resource("/echo2").route(web::post().to(echo_pet_with_oauth2)))
+            .service(web::resource("/echo3").route(web::post().to(echo_pet_with_petstore)));
+    }
+
+    run_and_check_app(
+        move || {
+            App::new()
+                .wrap_api()
+                .service(web::scope("/api").configure(config))
+                .with_json_spec_at("/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "info":{"title":"","version":""},
+                  "definitions": {
+                    "Pet": {
+                      "properties": {
+                        "class": {
+                          "enum": ["dog", "cat", "other"],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "required":["class", "name"]
+                    }
+                  },
+                  "paths": {
+                    "/api/echo1": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                        },
+                        "security": [
+                          {
+                            "JWT": []
+                          }
+                        ]
+                      }
+                    },
+                    "/api/echo2": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                        },
+                      "security": [
+                          {
+                            "oauth2": []
+                          }
+                        ]
+                      }
+                    },
+                    "/api/echo3": {
+                      "parameters": [{
+                        "in": "body",
+                        "name": "body",
+                        "required": true,
+                        "schema": {
+                          "$ref": "#/definitions/Pet"
+                        }
+                      }],
+                      "post": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                        },
+                        "security": [
+                          {
+                            "oauth2": ["pets.read", "pets.write"]
+                          }
+                        ]
+                      }
+                    },
+                  },
+                  "securityDefinitions": {
+                    "JWT": {
+                        "description":"Use format 'Bearer TOKEN'",
+                        "in": "header",
+                        "name": "Authorization",
+                        "type": "apiKey"
+                    },
+                    "oauth2": {
+                        "in": null,
+                        "name": null,
+                        "scopes": {
+                          "pets.read": "pets.read",
+                          "pets.write": "pets.write"
+                        },
+                        "type": "oauth2",
+                        "authorizationUrl": "http://example.com/",
+                        "tokenUrl": "http://example.com/token",
+                        "flow": "password"
+                    }
                   },
                   "swagger": "2.0"
                 }),

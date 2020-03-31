@@ -1,7 +1,7 @@
 pub mod web;
 
 pub use self::web::{Resource, Route, Scope};
-pub use paperclip_macros::{api_v2_errors, api_v2_operation, Apiv2Schema};
+pub use paperclip_macros::{api_v2_errors, api_v2_operation, Apiv2Schema, Apiv2Security};
 
 use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;
@@ -251,6 +251,7 @@ where
 
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
+        self.spec.write().resolve_security_defs();
         self.inner
     }
 
