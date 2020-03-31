@@ -1,7 +1,7 @@
 pub mod web;
 
 pub use self::web::{Resource, Route, Scope};
-pub use paperclip_macros::{api_v2_errors, api_v2_operation, api_v2_schema};
+pub use paperclip_macros::{api_v2_errors, api_v2_operation, Apiv2Schema};
 
 use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;

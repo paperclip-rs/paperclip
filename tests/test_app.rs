@@ -11,7 +11,7 @@ use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use chrono;
 use futures::future::{ok as fut_ok, ready, Future, Ready};
-use paperclip::actix::{api_v2_errors, api_v2_operation, api_v2_schema, web, OpenApiExt};
+use paperclip::actix::{api_v2_errors, api_v2_operation, web, Apiv2Schema, OpenApiExt};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashSet};
@@ -23,8 +23,7 @@ lazy_static! {
     static ref PORTS: Mutex<HashSet<u16>> = Mutex::new(HashSet::new());
 }
 
-#[api_v2_schema]
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "lowercase")]
 enum PetClass {
     Dog,
@@ -33,8 +32,7 @@ enum PetClass {
     EverythingElse,
 }
 
-#[api_v2_schema]
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 struct Pet {
     name: String,
@@ -280,29 +278,25 @@ fn test_simple_app() {
 #[test]
 #[allow(dead_code)]
 fn test_params() {
-    #[api_v2_schema]
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Apiv2Schema)]
     struct KnownResourceBadge {
         resource: String,
         name: String,
     }
 
-    #[api_v2_schema]
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Apiv2Schema)]
     struct BadgeParams {
         res: Option<u16>,
         color: String,
     }
 
-    #[api_v2_schema]
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Apiv2Schema)]
     struct BadgeBody {
         json: Option<serde_json::Value>,
         yaml: Option<serde_yaml::Value>,
     }
 
-    #[api_v2_schema]
-    #[derive(Deserialize)]
+    #[derive(Deserialize, Apiv2Schema)]
     struct BadgeForm {
         data: String,
     }
@@ -496,12 +490,10 @@ fn test_params() {
 
 #[test]
 fn test_map_in_out() {
-    #[api_v2_schema]
-    #[derive(Deserialize, Serialize)]
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
     struct ImageId(u64);
 
-    #[api_v2_schema]
-    #[derive(Serialize)]
+    #[derive(Serialize, Apiv2Schema)]
     struct Image {
         data: String,
         id: ImageId,
@@ -571,15 +563,13 @@ fn test_map_in_out() {
 
 #[test]
 fn test_list_in_out() {
-    #[api_v2_schema]
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
     enum Sort {
         Asc,
         Desc,
     }
 
-    #[api_v2_schema]
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
     struct Params {
         sort: Option<Sort>,
         limit: Option<u16>,
@@ -678,8 +668,7 @@ fn test_impl_traits() {
         ""
     }
 
-    #[api_v2_schema]
-    #[derive(Serialize, Deserialize)]
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
     struct Params {
         limit: Option<u16>,
     }
@@ -911,7 +900,8 @@ fn test_multiple_method_routes() {
 
 #[test]
 fn test_custom_extractor_empty_schema() {
-    #[api_v2_schema(empty)]
+    #[derive(Apiv2Schema)]
+    #[openapi(empty)]
     struct SomeUselessThing<T>(T);
 
     impl FromRequest for SomeUselessThing<String> {

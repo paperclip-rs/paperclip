@@ -22,7 +22,7 @@ pub use paperclip_macros::api_v2_schema_struct as api_v2_schema;
 pub mod actix {
     //! Plugin types, traits and macros for actix-web framework.
 
-    pub use paperclip_actix::{api_v2_errors, api_v2_operation, api_v2_schema};
+    pub use paperclip_actix::{api_v2_errors, api_v2_operation, Apiv2Schema};
     pub use paperclip_actix::{web, App, Mountable, OpenApiExt};
     pub use paperclip_core::v2::{OperationModifier, ResponderWrapper};
 }
