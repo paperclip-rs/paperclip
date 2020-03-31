@@ -34,7 +34,9 @@ enum PetClass {
 
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
+/// Pets are awesome!
 struct Pet {
+    /// Pick a good one.
     name: String,
     class: PetClass,
     id: Option<u64>,
@@ -120,6 +122,7 @@ fn test_simple_app() {
                           "type": "integer"
                         },
                         "name": {
+                          "description": "Pick a good one.",
                           "type": "string"
                         },
                         "updatedOn": {
@@ -292,6 +295,7 @@ fn test_params() {
 
     #[derive(Deserialize, Apiv2Schema)]
     struct BadgeBody {
+        /// all your json are belong to us
         json: Option<serde_json::Value>,
         yaml: Option<serde_yaml::Value>,
     }
@@ -375,7 +379,7 @@ fn test_params() {
                   "definitions": {
                     "BadgeBody":{
                       "properties":{
-                        "json":{},
+                        "json":{"description": "all your json are belong to us"},
                         "yaml":{}
                       }
                     }
@@ -601,6 +605,7 @@ fn test_list_in_out() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -611,6 +616,7 @@ fn test_list_in_out() {
                           "type": "integer"
                         },
                         "name": {
+                          "description": "Pick a good one.",
                           "type": "string"
                         },
                         "updatedOn": {
@@ -733,6 +739,7 @@ fn test_impl_traits() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -743,6 +750,7 @@ fn test_impl_traits() {
                           "type": "integer"
                         },
                         "name": {
+                          "description": "Pick a good one.",
                           "type": "string"
                         },
                         "updatedOn": {
@@ -1031,6 +1039,7 @@ fn test_errors_app() {
                           "type": "integer"
                         },
                         "name": {
+                          "description": "Pick a good one.",
                           "type": "string"
                         },
                         "updatedOn": {

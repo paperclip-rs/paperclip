@@ -201,6 +201,9 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         Err(ts) => return ts,
     };
 
+    let docs = extract_documentation(&item_ast.attrs);
+    let docs = docs.trim();
+
     let props = SerdeProps::from_item_attrs(&item_ast.attrs);
     let needs_empty_schema = extract_openapi_attrs(&item_ast.attrs).any(|nested| {
         nested.len() == 1
@@ -226,7 +229,9 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     if needs_empty_schema {
         return quote!(
-            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
+            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
+                const DESCRIPTION: &'static str = #docs;
+            }
 
             #opt_impl
         ).into();
@@ -268,6 +273,8 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             const NAME: Option<&'static str> = Some(#schema_name);
+
+            const DESCRIPTION: &'static str = #docs;
 
             fn raw_schema() -> paperclip::v2::models::DefaultSchemaRaw {
                 use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw};
@@ -349,6 +356,20 @@ fn extract_openapi_attrs<'a>(
     })
 }
 
+/// Checks for `api_v2_empty` attributes and removes them.
+fn extract_documentation(attrs: &[Attribute]) -> String {
+    attrs
+        .iter()
+        .filter_map(|a| match a.parse_meta() {
+            Ok(Meta::NameValue(mnv)) if mnv.path.is_ident("doc") => match &mnv.lit {
+                Lit::Str(s) => Some(s.value()),
+                _ => None,
+            },
+            _ => None,
+        })
+        .collect()
+}
+
 /// Generates code for a struct with fields.
 fn handle_field_struct(
     fields: &FieldsNamed,
@@ -370,9 +391,15 @@ fn handle_field_struct(
 
         let (ty_ref, is_required) = get_field_type(&field);
 
+        let docs = extract_documentation(&field.attrs);
+        let docs = docs.trim();
+
         let mut gen = quote!(
             {
-                let s = #ty_ref::raw_schema();
+                let mut s = #ty_ref::raw_schema();
+                if !#docs.is_empty() {
+                    s.description = Some(#docs.to_string());
+                }
                 schema.properties.insert(#field_name.into(), s.into());
             }
         );
