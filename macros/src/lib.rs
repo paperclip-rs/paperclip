@@ -42,12 +42,12 @@ pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
     self::actix::emit_v2_operation(input)
 }
 
-/// Marker attribute for indicating that an object is an OpenAPI v2 compatible definition.
+/// Derive attribute for indicating that a type is an OpenAPI v2 compatible definition.
 #[cfg(feature = "actix")]
 #[proc_macro_error]
-#[proc_macro_attribute]
-pub fn api_v2_schema(attrs: TokenStream, input: TokenStream) -> TokenStream {
-    self::actix::emit_v2_definition(attrs, input)
+#[proc_macro_derive(Apiv2Schema, attributes(openapi))]
+pub fn api_v2_schema(input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_definition(input)
 }
 
 /// Marker attribute for indicating that the marked object can represent non-2xx (error)

@@ -9,8 +9,9 @@ use quote::quote;
 use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
-    Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed, Generics, Ident, ItemFn,
-    Lit, Meta, NestedMeta, PathArguments, ReturnType, Token, TraitBound, Type,
+    punctuated::Punctuated, Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed,
+    Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, ReturnType, Token, TraitBound,
+    Type,
 };
 
 const SCHEMA_MACRO: &str = "api_v2_schema";
@@ -194,21 +195,19 @@ pub fn emit_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 /// Actual parser and emitter for `api_v2_schema` macro.
-pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream {
+pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
         Ok(i) => i,
         Err(ts) => return ts,
     };
 
     let props = SerdeProps::from_item_attrs(&item_ast.attrs);
-    let attrs = crate::parse_input_attrs(attrs);
-    let needs_empty_schema = attrs.0.iter().any(|meta| match meta {
-        NestedMeta::Meta(Meta::Path(ref n)) => n
-            .segments
-            .last()
-            .map(|p| p.ident == "empty")
-            .unwrap_or(false),
-        _ => false,
+    let needs_empty_schema = extract_openapi_attrs(&item_ast.attrs).any(|nested| {
+        nested.len() == 1
+            && match &nested[0] {
+                NestedMeta::Meta(Meta::Path(path)) => path.is_ident("empty"),
+                _ => false,
+            }
     });
 
     let name = &item_ast.ident;
@@ -227,8 +226,6 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     if needs_empty_schema {
         return quote!(
-            #item_ast
-
             impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
 
             #opt_impl
@@ -269,8 +266,6 @@ pub fn emit_v2_definition(attrs: TokenStream, input: TokenStream) -> TokenStream
 
     let schema_name = name.to_string();
     let gen = quote! {
-        #item_ast
-
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             const NAME: Option<&'static str> = Some(#schema_name);
 
@@ -342,6 +337,16 @@ fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macr
             schema = #ty_ref::raw_schema();
         }));
     }
+}
+
+/// Checks for `api_v2_empty` attributes and removes them.
+fn extract_openapi_attrs<'a>(
+    field_attrs: &'a [Attribute],
+) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + 'a {
+    field_attrs.iter().filter_map(|a| match a.parse_meta() {
+        Ok(Meta::List(list)) if list.path.is_ident("openapi") => Some(list.nested),
+        _ => None,
+    })
 }
 
 /// Generates code for a struct with fields.
