@@ -133,22 +133,23 @@ path = \"lib.rs\"
 
 [dependencies]
 async-trait = \"0.1\"
+bytes = \"0.5\"
 failure = \"0.1\"
-futures = \"0.1\"
-futures-preview = { version = \"0.3.0-alpha.19\", features = [\"compat\"], package = \"futures-preview\" }
-http = \"0.1\"
+futures = \"0.3\"
+http = \"0.2\"
 lazy_static = \"1.4\"
 log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
 mime_guess = \"2.0\"
 parking_lot = \"0.8\"
-reqwest = \"0.9\"
-serde = \"1.0\"
+serde = { version = \"1.0\", features = [\"derive\"] }
 serde_json = \"1.0\"
 serde_yaml = \"0.8\"
-tokio-io-old = { version = \"0.1\", package = \"tokio-io\" }
-tokio-fs-old = { version = \"0.1\", package = \"tokio-fs\" }
+tokio-util = { version = \"0.3\", features = [\"codec\"] }
 url = \"2.1\"
+
+tokio = { version = \"0.2\", features = [\"fs\", \"io-util\"] }
+reqwest = { version = \"0.10\", features = [\"stream\", \"json\"] }
 
 [workspace]
 ",
@@ -163,9 +164,9 @@ fn test_overridden_path() {
         &(ROOT.clone() + "/tests/test_pet/lib.rs"),
         "
     #[async_trait::async_trait]
-    impl ApiClient for reqwest::r#async::Client {
-        type Request = reqwest::r#async::RequestBuilder;
-        type Response = reqwest::r#async::Response;
+    impl ApiClient for reqwest::Client {
+        type Request = reqwest::RequestBuilder;
+        type Response = reqwest::Response;
 
         fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
             let mut u = String::from(\"https://pets.com:8888/api\");
@@ -175,12 +176,12 @@ fn test_overridden_path() {
 
         async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
             let req = req.build().map_err(ApiError::Reqwest)?;
-            let resp = self.execute(req).map_err(ApiError::Reqwest).compat().await?;
+            let resp = self.execute(req).await.map_err(ApiError::Reqwest)?;
             Ok(resp)
         }
     }
 ",
-        Some(7261),
+        Some(7019),
     );
 }
 
@@ -952,7 +953,7 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
     }
 }
 ",
-        Some(2085),
+        Some(2193),
     );
 }
 
@@ -1000,7 +1001,7 @@ impl MiscellaneousPostBuilder2<crate::generics::ValuesExists> {
     }
 }
 ",
-        Some(6627),
+        Some(6735),
     );
 }
 
@@ -1016,7 +1017,7 @@ pub struct MiscellaneousGetBuilder1;
 
 #[async_trait::async_trait]
 impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for MiscellaneousGetBuilder1 {
-    type Output = crate::util::ResponseStream<<<Client as crate::client::ApiClient>::Response as crate::client::Response>::Stream>;
+    type Output = crate::util::ResponseStream<<<Client as crate::client::ApiClient>::Response as crate::client::Response>::Bytes, <<Client as crate::client::ApiClient>::Response as crate::client::Response>::Error>;
 
     const METHOD: http::Method = http::Method::GET;
 
@@ -1027,8 +1028,8 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
     async fn send(&self, client: &Client) -> Result<Self::Output, crate::client::ApiError<Client::Response>> {
         use crate::client::Response;
 
-        let mut resp = self.send_raw(client).await?;
-        Ok(resp.stream())
+        let resp = self.send_raw(client).await?;
+        Ok(crate::util::ResponseStream(resp.stream()))
     }
 }
 ",

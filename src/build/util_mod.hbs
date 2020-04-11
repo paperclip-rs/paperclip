@@ -1,26 +1,20 @@
 
-use futures::\{Async, Stream as OldStream};
-use futures_preview::\{
-    compat::Stream01CompatExt,
-    io::\{AsyncReadExt, AsyncWrite},
-    stream::TryStreamExt,
-};
-use reqwest::r#async::multipart::Part;
+use futures::stream::\{Stream, StreamExt};
 use serde::\{Deserialize, Deserializer};
-use tokio_io_old::AsyncRead as OldAsyncRead;
+use tokio::io::\{AsyncWrite, AsyncWriteExt};
 
 use std::error::Error;
 use std::fmt::\{self, Display, Write};
-use std::io::\{self, BufReader};
+use std::io;
 use std::marker::\{PhantomData, Unpin};
 use std::ops::Deref;
 use std::str::FromStr;
 
 /// HTTP body response stream.
-pub struct ResponseStream<S>(S);
+pub struct ResponseStream<T, E>(pub Box<dyn Stream<Item=Result<T, E>> + Unpin>);
 
 /// **NOTE:** This is just a stub. It panics on deserialization.
-impl<'de, S> Deserialize<'de> for ResponseStream<S> \{
+impl<'de, T, E> Deserialize<'de> for ResponseStream<T, E> \{
     fn deserialize<D>(_: D) -> Result<Self, D::Error>
     where
         D: Deserializer<'de>
@@ -29,69 +23,20 @@ impl<'de, S> Deserialize<'de> for ResponseStream<S> \{
     }
 }
 
-impl<S> From<S> for ResponseStream<S> \{
-    fn from(s: S) -> Self \{
-        ResponseStream(s)
-    }
-}
-
-impl<S, I, E> ResponseStream<S>
-    where S: OldStream<Item=I, Error=E>,
-          I: AsRef<[u8]>,
+impl<T, E> ResponseStream<T, E>
+    where T: AsRef<[u8]>,
           E: Into<Box<dyn Error + Send + Sync + 'static>>
 \{
     /// Copy this stream to anything that implements `AsyncWrite`.
-    pub async fn to_writer<W>(self, writer: &mut W) -> io::Result<()>
+    pub async fn to_writer<W>(mut self, writer: &mut W) -> io::Result<()>
         where W: AsyncWrite + Unpin + ?Sized
     \{
-        self.0.compat()
-            .map_err(|e| io::Error::new(io::ErrorKind::Other, e))
-            .into_async_read()
-            .copy_into(writer).await?;
-        Ok(())
-    }
-}
-
-/// Wrapper for converting a buffered `AsyncRead` implementor into a `Stream`.
-///
-/// **NOTE:** Both `AsyncRead` and `Stream` are from 0.1 futures and tokio.
-/// This is blocked on `reqwest` crate at the time of this writing.
-pub struct AsyncReadStream<R>(BufReader<R>);
-
-impl<R> From<BufReader<R>> for AsyncReadStream<R> \{
-    fn from(r: BufReader<R>) -> Self \{
-        AsyncReadStream(r)
-    }
-}
-
-impl<R> OldStream for AsyncReadStream<R>
-    where R: OldAsyncRead
-\{
-    type Item = Vec<u8>;
-    type Error = io::Error;
-
-    fn poll(&mut self) -> Result<Async<Option<Self::Item>>, Self::Error> \{
-        let mut buf = vec![];
-        match self.0.poll_read(&mut buf) \{
-            Ok(Async::NotReady) if buf.is_empty() => Ok(Async::NotReady),
-            Ok(Async::NotReady) => Ok(Async::Ready(Some(buf))),
-            Ok(Async::Ready(n)) => \{
-                if buf.is_empty() && n == 0 \{
-                    Ok(Async::Ready(None))
-                } else \{
-                    Ok(Async::Ready(Some(buf)))
-                }
-            }
-            Err(e) => Err(e),
+        while let Some(r) = self.0.next().await \{
+            let chunk = r.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
+            writer.write(chunk.as_ref()).await?;
         }
-    }
-}
 
-impl<R> Into<Part> for AsyncReadStream<R>
-    where R: OldAsyncRead + Send + 'static
-\{
-    fn into(self) -> Part \{
-        Part::stream(self)
+        Ok(())
     }
 }
 

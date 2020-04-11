@@ -701,7 +701,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         }
 
         if self.builder.response.is_file() {
-            write!(f, "{prefix}util::ResponseStream<<<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Stream>",
+            write!(f, "{prefix}util::ResponseStream<<<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Bytes, <<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Error>",
                    prefix=self.builder.helper_module_prefix)?;
         } else if let Some(resp) = self.builder.response.ty_path.as_ref() {
             // If we've acquired a response type, then write that.
@@ -1032,12 +1032,14 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         f.write_str(&self.builder.helper_module_prefix)?;
         f.write_str("client::ApiError<Client::Response>> {\n        use ")?;
         f.write_str(&self.builder.helper_module_prefix)?;
-        f.write_str(
+        write!(
+            f,
             "client::Response;
 
-        let mut resp = self.send_raw(client).await?;
-        Ok(resp.stream())
-    }",
+        let resp = self.send_raw(client).await?;
+        Ok({prefix}util::ResponseStream(resp.stream()))
+    }}",
+            prefix = self.builder.helper_module_prefix
         )
     }
 }

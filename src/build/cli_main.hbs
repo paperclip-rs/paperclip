@@ -1,9 +1,8 @@
 
-use self::client::\{ApiClient, ApiError};
+use self::client::\{ApiClient, ApiError, Response};
+use self::util::ResponseStream;
 use clap::\{App, ArgMatches};
 use failure::Error;
-use futures::\{Future, Stream};
-use futures_preview::compat::Future01CompatExt;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -24,15 +23,15 @@ enum ClientError \{
     #[fail(display = "Client error: \{}", _0)]
     Reqwest(reqwest::Error),
     #[fail(display = "URL error: \{}", _0)]
-    Url(reqwest::UrlError),
+    Url(url::ParseError),
     #[fail(display = "\{}", _0)]
-    Api(self::client::ApiError<reqwest::r#async::Response>),
+    Api(self::client::ApiError<reqwest::Response>),
     #[fail(display = "")]
     Empty,
 }
 
-impl From<ApiError<reqwest::r#async::Response>> for ClientError \{
-    fn from(e: ApiError<reqwest::r#async::Response>) -> Self \{
+impl From<ApiError<reqwest::Response>> for ClientError \{
+    fn from(e: ApiError<reqwest::Response>) -> Self \{
         ClientError::Api(e)
     }
 }
@@ -47,14 +46,14 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> \{
 #[derive(Clone)]
 struct WrappedClient \{
     verbose: bool,
-    inner: reqwest::r#async::Client,
+    inner: reqwest::Client,
     url: reqwest::Url,
 }
 
 #[async_trait::async_trait]
 impl ApiClient for WrappedClient \{
-    type Request = reqwest::r#async::RequestBuilder;
-    type Response = reqwest::r#async::Response;
+    type Request = reqwest::RequestBuilder;
+    type Response = reqwest::Response;
 
     async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> \{
         let req = req.build().map_err(ApiError::Reqwest)?;
@@ -62,7 +61,7 @@ impl ApiClient for WrappedClient \{
             println!("\{} \{}", req.method(), req.url());
         }
 
-        Ok(self.inner.execute(req).map_err(ApiError::Reqwest).compat().await?)
+        Ok(self.inner.execute(req).await.map_err(ApiError::Reqwest)?)
     }
 
     fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request \{
@@ -79,7 +78,7 @@ impl ApiClient for WrappedClient \{
 }
 
 fn make_client<'a>(matches: &'a ArgMatches<'a>) -> Result<WrappedClient, Error> \{
-    let mut client = reqwest::r#async::Client::builder();
+    let mut client = reqwest::Client::builder();
 
     if let Some(p) = matches.value_of("ca-cert") \{
         let ca_cert = X509::from_pem(&read_file(p)?)
@@ -134,14 +133,8 @@ async fn run_app() -> Result<(), Error> \{
         println!("\{}", status);
     }
 
-    let bytes = response
-        .into_body()
-        .concat2()
-        .map_err(ClientError::Reqwest)
-        .compat()
-        .await?;
-
-    let _ = std::io::copy(&mut &*bytes, &mut std::io::stdout());
+    let mut stdout = tokio::io::stdout();
+    ResponseStream(response.stream()).to_writer(&mut stdout).await?;
     if !status.is_success() \{
         Err(ClientError::Empty)?
     }

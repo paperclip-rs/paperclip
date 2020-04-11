@@ -13,27 +13,29 @@ path = "lib.rs"
 {{ endif }}
 [dependencies]
 async-trait = "0.1"
+bytes = "0.5"
 failure = "0.1"
-futures = "0.1"
-futures-preview = \{ version = "0.3.0-alpha.19", features = ["compat"], package = "futures-preview" }
-http = "0.1"
+futures = "0.3"
+http = "0.2"
 lazy_static = "1.4"
 log = "0.4"
 mime = \{ git = "https://github.com/hyperium/mime" }
 mime_guess = "2.0"
 parking_lot = "0.8"
-reqwest = "0.9"
-serde = "1.0"
+serde = \{ version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
-tokio-io-old = \{ version = "0.1", package = "tokio-io" }
-tokio-fs-old = \{ version = "0.1", package = "tokio-fs" }
+tokio-util = \{ version = "0.3", features = ["codec"] }
 url = "2.1"
 {{ if is_cli }}
 clap = \{ version = "2.33", features = ["yaml"] }
 env_logger = "0.6"
 humantime = "1.2"
 openssl = \{ version = "0.10", features = ["vendored"] }
-tokio = \{ version = "0.2.0-alpha.6", features = ["rt-current-thread"] }
+tokio = \{ version = "0.2", features = ["fs", "io-util", "io-std", "macros", "rt-threaded"] }
+reqwest = \{ version = "0.10", features = ["stream", "json", "native-tls"] }
+{{ else }}
+tokio = \{ version = "0.2", features = ["fs", "io-util"] }
+reqwest = \{ version = "0.10", features = ["stream", "json"] }
 {{ endif }}
 [workspace]

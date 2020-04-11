@@ -782,10 +782,8 @@ pub mod miscellaneous {
 }
 
 pub mod client {
-    use crate::codegen::util::{AsyncReadStream, ResponseStream};
     use failure::Fail;
-    use futures::{Stream, Future};
-    use futures_preview::compat::Future01CompatExt;
+    use futures::Stream;
     use parking_lot::Mutex;
 
     use std::borrow::Cow;
@@ -850,32 +848,37 @@ pub mod client {
         fn query<T: serde::Serialize>(self, params: &T) -> Self;
     }
 
-    impl Form for reqwest::r#async::multipart::Form {
+    impl Form for reqwest::multipart::Form {
         fn new() -> Self {
-            reqwest::r#async::multipart::Form::new()
+            reqwest::multipart::Form::new()
         }
 
         fn text<T, U>(self, key: T, value: U) -> Self
             where T: Into<Cow<'static, str>>,
                   U: Into<Cow<'static, str>>
         {
-            reqwest::r#async::multipart::Form::text(self, key, value)
+            reqwest::multipart::Form::text(self, key, value)
         }
 
         fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
             where K: Into<Cow<'static, str>>
         {
+            use reqwest::multipart::{Form, Part};
+            use tokio_util::codec::{BytesCodec, FramedRead};
+
             let fd = std::fs::File::open(path)?;
-            let reader = std::io::BufReader::new(tokio_fs_old::File::from_std(fd));
-            Ok(reqwest::r#async::multipart::Form::part(self, key, AsyncReadStream::from(reader).into()))
+            let reader = tokio::fs::File::from_std(fd);
+            let bytes_stream = FramedRead::new(reader, BytesCodec::new());
+            let part = Part::stream(reqwest::Body::wrap_stream(bytes_stream));
+            Ok(Form::part(self, key, part))
         }
     }
 
-    impl Request for reqwest::r#async::RequestBuilder {
-        type Form = reqwest::r#async::multipart::Form;
+    impl Request for reqwest::RequestBuilder {
+        type Form = reqwest::multipart::Form;
 
         fn header(self, name: &'static str, value: &str) -> Self {
-            reqwest::r#async::RequestBuilder::header(self, name, value)
+            reqwest::RequestBuilder::header(self, name, value)
         }
 
         fn multipart_form_data(self, form: Self::Form) -> Self {
@@ -887,11 +890,11 @@ pub mod client {
         }
 
         fn json<T: serde::Serialize>(self, value: &T) -> Self {
-            reqwest::r#async::RequestBuilder::json(self, value)
+            <reqwest::RequestBuilder>::json(self, value)
         }
 
         fn query<T: serde::Serialize>(self, params: &T) -> Self {
-            reqwest::r#async::RequestBuilder::query(self, params)
+            reqwest::RequestBuilder::query(self, params)
         }
     }
 
@@ -899,7 +902,7 @@ pub mod client {
     #[async_trait::async_trait]
     pub trait Response: Debug + Send + Sized {
         type Bytes: AsRef<[u8]>;
-        type Stream;
+        type Error;
 
         /// Gets the value for the given header name, if any.
         fn header(&self, name: &'static str) -> Option<&str>;
@@ -911,23 +914,23 @@ pub mod client {
         fn media_type(&self) -> Option<mime::MediaType>;
 
         /// Response body as a stream.
-        fn stream(&mut self) -> ResponseStream<Self::Stream>;
+        fn stream(self) -> Box<dyn Stream<Item=Result<Self::Bytes, Self::Error>> + Unpin>;
 
         /// Vector of bytes from the response body.
-        async fn body_bytes(self) -> Result<(Self, Self::Bytes), ApiError<Self>>;
+        async fn body_bytes(self) -> Result<Self::Bytes, ApiError<Self>>;
     }
 
     #[async_trait::async_trait]
-    impl Response for reqwest::r#async::Response {
-        type Bytes = reqwest::r#async::Chunk;
-        type Stream = reqwest::r#async::Decoder;
+    impl Response for reqwest::Response {
+        type Bytes = bytes::Bytes;
+        type Error = reqwest::Error;
 
         fn header(&self, name: &'static str) -> Option<&str> {
             self.headers().get(name).and_then(|v| v.to_str().ok())
         }
 
         fn status(&self) -> http::status::StatusCode {
-            reqwest::r#async::Response::status(self)
+            reqwest::Response::status(self)
         }
 
         fn media_type(&self) -> Option<mime::MediaType> {
@@ -935,15 +938,12 @@ pub mod client {
                 .and_then(|v| v.parse().ok())
         }
 
-        fn stream(&mut self) -> ResponseStream<Self::Stream> {
-            let body = std::mem::replace(self.body_mut(), reqwest::r#async::Decoder::empty());
-            ResponseStream::from(body)
+        fn stream(self) -> Box<dyn Stream<Item=Result<Self::Bytes, Self::Error>> + Unpin> {
+            Box::new(self.bytes_stream()) as Box<_>
         }
 
-        async fn body_bytes(mut self) -> Result<(Self, Self::Bytes), ApiError<Self>> {
-            let body = std::mem::replace(self.body_mut(), reqwest::r#async::Decoder::empty());
-            let bytes = body.concat2().map_err(ApiError::Reqwest).compat().await?;
-            Ok((self, bytes))
+        async fn body_bytes(self) -> Result<Self::Bytes, ApiError<Self>> {
+            Ok(self.bytes().await.map_err(ApiError::Reqwest)?)
         }
     }
 
@@ -962,9 +962,9 @@ pub mod client {
     }
 
     #[async_trait::async_trait]
-    impl ApiClient for reqwest::r#async::Client {
-        type Request = reqwest::r#async::RequestBuilder;
-        type Response = reqwest::r#async::Response;
+    impl ApiClient for reqwest::Client {
+        type Request = reqwest::RequestBuilder;
+        type Response = reqwest::Response;
 
         fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
             let mut u = String::from(\"https://example.com/\");
@@ -974,7 +974,7 @@ pub mod client {
 
         async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
             let req = req.build().map_err(ApiError::Reqwest)?;
-            let resp = self.execute(req).map_err(ApiError::Reqwest).compat().await?;
+            let resp = self.execute(req).await.map_err(ApiError::Reqwest)?;
             Ok(resp)
         }
     }
@@ -1008,11 +1008,11 @@ pub mod client {
             let media = resp.media_type();
             if let Some(ty) = media {
                 if media_types::M_0.matches(&ty) {
-                    let (_, bytes) = resp.body_bytes().await?;
+                    let bytes = resp.body_bytes().await?;
                     return serde_json::from_reader(bytes.as_ref()).map_err(ApiError::from)
                 }
                 else if media_types::M_1.matches(&ty) {
-                    let (_, bytes) = resp.body_bytes().await?;
+                    let bytes = resp.body_bytes().await?;
                     return serde_yaml::from_reader(bytes.as_ref()).map_err(ApiError::from)
                 }
             }
@@ -1599,28 +1599,27 @@ path = \"main.rs\"
 
 [dependencies]
 async-trait = \"0.1\"
+bytes = \"0.5\"
 failure = \"0.1\"
-futures = \"0.1\"
-futures-preview = { version = \"0.3.0-alpha.19\", features = [\"compat\"], package = \"futures-preview\" }
-http = \"0.1\"
+futures = \"0.3\"
+http = \"0.2\"
 lazy_static = \"1.4\"
 log = \"0.4\"
 mime = { git = \"https://github.com/hyperium/mime\" }
 mime_guess = \"2.0\"
 parking_lot = \"0.8\"
-reqwest = \"0.9\"
-serde = \"1.0\"
+serde = { version = \"1.0\", features = [\"derive\"] }
 serde_json = \"1.0\"
 serde_yaml = \"0.8\"
-tokio-io-old = { version = \"0.1\", package = \"tokio-io\" }
-tokio-fs-old = { version = \"0.1\", package = \"tokio-fs\" }
+tokio-util = { version = \"0.3\", features = [\"codec\"] }
 url = \"2.1\"
 
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
 humantime = \"1.2\"
 openssl = { version = \"0.10\", features = [\"vendored\"] }
-tokio = { version = \"0.2.0-alpha.6\", features = [\"rt-current-thread\"] }
+tokio = { version = \"0.2\", features = [\"fs\", \"io-util\", \"io-std\", \"macros\", \"rt-threaded\"] }
+reqwest = { version = \"0.10\", features = [\"stream\", \"json\", \"native-tls\"] }
 
 [workspace]
 ",
@@ -1635,11 +1634,10 @@ fn test_cli_main() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_k8s/cli/main.rs"),
         "
-use self::client::{ApiClient, ApiError};
+use self::client::{ApiClient, ApiError, Response};
+use self::util::ResponseStream;
 use clap::{App, ArgMatches};
 use failure::Error;
-use futures::{Future, Stream};
-use futures_preview::compat::Future01CompatExt;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -1660,15 +1658,15 @@ enum ClientError {
     #[fail(display = \"Client error: {}\", _0)]
     Reqwest(reqwest::Error),
     #[fail(display = \"URL error: {}\", _0)]
-    Url(reqwest::UrlError),
+    Url(url::ParseError),
     #[fail(display = \"{}\", _0)]
-    Api(self::client::ApiError<reqwest::r#async::Response>),
+    Api(self::client::ApiError<reqwest::Response>),
     #[fail(display = \"\")]
     Empty,
 }
 
-impl From<ApiError<reqwest::r#async::Response>> for ClientError {
-    fn from(e: ApiError<reqwest::r#async::Response>) -> Self {
+impl From<ApiError<reqwest::Response>> for ClientError {
+    fn from(e: ApiError<reqwest::Response>) -> Self {
         ClientError::Api(e)
     }
 }
@@ -1683,14 +1681,14 @@ fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
 #[derive(Clone)]
 struct WrappedClient {
     verbose: bool,
-    inner: reqwest::r#async::Client,
+    inner: reqwest::Client,
     url: reqwest::Url,
 }
 
 #[async_trait::async_trait]
 impl ApiClient for WrappedClient {
-    type Request = reqwest::r#async::RequestBuilder;
-    type Response = reqwest::r#async::Response;
+    type Request = reqwest::RequestBuilder;
+    type Response = reqwest::Response;
 
     async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
         let req = req.build().map_err(ApiError::Reqwest)?;
@@ -1698,7 +1696,7 @@ impl ApiClient for WrappedClient {
             println!(\"{} {}\", req.method(), req.url());
         }
 
-        Ok(self.inner.execute(req).map_err(ApiError::Reqwest).compat().await?)
+        Ok(self.inner.execute(req).await.map_err(ApiError::Reqwest)?)
     }
 
     fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
@@ -1715,7 +1713,7 @@ impl ApiClient for WrappedClient {
 }
 
 fn make_client<'a>(matches: &'a ArgMatches<'a>) -> Result<WrappedClient, Error> {
-    let mut client = reqwest::r#async::Client::builder();
+    let mut client = reqwest::Client::builder();
 
     if let Some(p) = matches.value_of(\"ca-cert\") {
         let ca_cert = X509::from_pem(&read_file(p)?)
@@ -1770,14 +1768,8 @@ async fn run_app() -> Result<(), Error> {
         println!(\"{}\", status);
     }
 
-    let bytes = response
-        .into_body()
-        .concat2()
-        .map_err(ClientError::Reqwest)
-        .compat()
-        .await?;
-
-    let _ = std::io::copy(&mut &*bytes, &mut std::io::stdout());
+    let mut stdout = tokio::io::stdout();
+    ResponseStream(response.stream()).to_writer(&mut stdout).await?;
     if !status.is_success() {
         Err(ClientError::Empty)?
     }
@@ -1793,7 +1785,7 @@ async fn main() {
     }
 }
 ",
-        Some(11157),
+        Some(10869),
     );
 }
 
