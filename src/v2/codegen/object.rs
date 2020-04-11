@@ -5,7 +5,7 @@
 
 pub use super::impls::{ApiObjectBuilderImpl, ApiObjectImpl};
 
-use super::emitter::{ANY_GENERIC_PARAMETER, FILE_MARKER};
+use super::emitter::{ANY_GENERIC_PARAMETER, EXTRA_PROPS_FIELD, FILE_MARKER};
 use super::RUST_KEYWORDS;
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
 use heck::{CamelCase, SnekCase};
@@ -919,7 +919,9 @@ impl Display for ApiObject {
                 }
 
                 f.write_str("    ")?;
-                if new_name != field.name.as_str() {
+                if field.name == EXTRA_PROPS_FIELD {
+                    f.write_str("#[serde(flatten)]\n    ")?;
+                } else if new_name != field.name.as_str() {
                     f.write_str("#[serde(rename = \"")?;
                     f.write_str(&field.name)?;
                     f.write_str("\")]\n    ")?;

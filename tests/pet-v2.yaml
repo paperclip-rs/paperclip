@@ -57,6 +57,7 @@ definitions:
     required:
     - id
     - name
+    additionalProperties: true
     properties:
       id:
         type: integer

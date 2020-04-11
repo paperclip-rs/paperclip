@@ -28,6 +28,8 @@ use url::Host;
 pub(super) const ANY_GENERIC_PARAMETER: &str = "Any";
 /// Identifier used for file types in schema. This will be replaced with `ResponseStream`.
 pub(super) const FILE_MARKER: &str = "--FILE--";
+/// Field that collects all properties when "additionalProperties" is set to "true"
+pub(super) const EXTRA_PROPS_FIELD: &str = "other_fields";
 
 /// Some "thing" emitted by the emitter.
 #[derive(Debug)]
@@ -663,7 +665,21 @@ where
                     }
 
                     Ok(())
-                })?
+                })?;
+
+            // If additional properties are enabled, then collect them into
+            // a separate field for flattening.
+            if let Some(Either::Left(true)) = def.additional_properties() {
+                obj.fields_mut().push(ObjectField {
+                    name: EXTRA_PROPS_FIELD.into(),
+                    ty_path: "std::collections::BTreeMap<String, Any>".into(),
+                    description: None,
+                    is_required: false,
+                    needs_any: true,
+                    boxed: false,
+                    child_req_fields: vec![],
+                });
+            }
         }
 
         objects.insert(0, obj);

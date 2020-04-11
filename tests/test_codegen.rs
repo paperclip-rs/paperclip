@@ -189,9 +189,9 @@ fn test_header_parameters() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/pet.rs"),
         "
-impl<XAuth, Id, Name> PetPostBuilder<XAuth, Id, Name> {
+impl<XAuth, Id, Name, Any> PetPostBuilder<XAuth, Id, Name, Any> {
     #[inline]
-    pub fn x_auth(mut self, value: impl Into<String>) -> PetPostBuilder<crate::generics::XAuthExists, Id, Name> {
+    pub fn x_auth(mut self, value: impl Into<String>) -> PetPostBuilder<crate::generics::XAuthExists, Id, Name, Any> {
         self.inner.param_x_auth = Some(value.into());
         unsafe { std::mem::transmute(self) }
     }
@@ -202,14 +202,14 @@ impl<XAuth, Id, Name> PetPostBuilder<XAuth, Id, Name> {
         self
     }
 ",
-        Some(4005),
+        Some(4513),
     );
 
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/pet.rs"),
         "
-impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for PetPostBuilder<crate::generics::XAuthExists, crate::generics::IdExists, crate::generics::NameExists> {
-    type Output = crate::pet::Pet;
+impl<Client: crate::client::ApiClient + Sync + 'static, Any: serde::Serialize> crate::client::Sendable<Client> for PetPostBuilder<crate::generics::XAuthExists, crate::generics::IdExists, crate::generics::NameExists, Any> {
+    type Output = crate::pet::Pet<serde_yaml::Value>;
 
     const METHOD: http::Method = http::Method::POST;
 
@@ -231,11 +231,12 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
             let mut vec = vec![];
             serde_yaml::to_writer(&mut vec, &self.inner.body)?;
             vec
-        }))
+        })
+        .header(http::header::ACCEPT.as_str(), \"application/yaml\"))
     }
 }
 ",
-        Some(5492),
+        Some(6303),
     );
 }
 
@@ -252,7 +253,7 @@ pub struct PetGetBuilder;
 
 
 impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for PetGetBuilder {
-    type Output = Vec<Pet>;
+    type Output = Vec<Pet<serde_yaml::Value>>;
 
     const METHOD: http::Method = http::Method::GET;
 
@@ -261,7 +262,7 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
     }
 }
 ",
-        Some(2992),
+        Some(3461),
     );
 }
 
