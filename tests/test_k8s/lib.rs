@@ -7,4 +7,4 @@ mod codegen {
 
 pub use codegen::{io::k8s::*, miscellaneous};
 pub use codegen::client::{ApiError, Sendable};
-pub use codegen::util::{AsyncReadStream, ResponseStream};
+pub use codegen::util::ResponseStream;
