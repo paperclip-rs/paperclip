@@ -78,13 +78,7 @@ fn test_definition_ref_cycles() {
         ["io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1beta1.JSONSchemaProps"];
     let desc = json_props_def.read().description.clone();
     let all_of = json_props_def.read().properties["allOf"].clone();
-    let items = all_of
-        .read()
-        .items
-        .as_ref()
-        .and_then(|e| e.left_or_one_in_right())
-        .unwrap()
-        .clone();
+    let items = all_of.read().items.as_ref().unwrap().clone();
     assert_eq!(items.read().description, desc); // both point to same `JSONSchemaProps`
 }
 

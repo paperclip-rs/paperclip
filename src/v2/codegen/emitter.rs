@@ -449,7 +449,6 @@ where
     ) -> Result<EmittedUnit, Error> {
         let it = def
             .items()
-            .and_then(|e| e.left_or_one_in_right())
             .ok_or_else(|| PaperClipError::MissingArrayItem(self.def_name(def).ok()))?;
 
         let mut ctx = ctx.clone();
@@ -699,7 +698,7 @@ where
                 }
             }
             Some(DataType::Array) => {
-                if let Some(s) = schema.items().and_then(|e| e.left_or_one_in_right()) {
+                if let Some(s) = schema.items() {
                     return self.children_requirements(&s.read());
                 }
             }
@@ -1027,11 +1026,7 @@ where
 
         let schema = &*s.read();
         let state = self.emitter.state();
-        let listable = schema
-            .items()
-            .and_then(|e| e.left_or_one_in_right())
-            .and_then(|s| s.read().data_type())
-            == Some(DataType::Object);
+        let listable = schema.items().and_then(|s| s.read().data_type()) == Some(DataType::Object);
 
         let mut unknown_schema_context = None;
         let s = match schema.data_type() {
@@ -1039,12 +1034,7 @@ where
             Some(DataType::Object) => s.clone(),
             // We can also deal with array of objects by mapping
             // the operation to that object.
-            _ if listable => Clone::clone(
-                &**schema
-                    .items()
-                    .and_then(|e| e.left_or_one_in_right())
-                    .unwrap(),
-            ),
+            _ if listable => Clone::clone(&**schema.items().unwrap()),
             // But... we can't deal with simple types or nested arrays, so we
             // let the emitter guess something based on this operation.
             _ => {

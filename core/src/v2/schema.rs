@@ -26,10 +26,10 @@ pub trait Schema: Sized {
     fn format(&self) -> Option<&DataTypeFormat>;
 
     /// Schema for array definitions, if any (`items` field).
-    fn items(&self) -> Option<&Either<Resolvable<Self>, Vec<Resolvable<Self>>>>;
+    fn items(&self) -> Option<&Resolvable<Self>>;
 
     /// Mutable access to the `items` field, if it exists.
-    fn items_mut(&mut self) -> Option<&mut Either<Resolvable<Self>, Vec<Resolvable<Self>>>>;
+    fn items_mut(&mut self) -> Option<&mut Resolvable<Self>>;
 
     /// Value schema for maps (`additional_properties` field).
     fn additional_properties(&self) -> Option<&Either<bool, Resolvable<Self>>>;
@@ -64,10 +64,7 @@ pub trait Schema: Sized {
             .unwrap_or(false)
             || self
                 .items()
-                .map(|e| match e {
-                    Either::Left(s) => s.read().contains_any(),
-                    Either::Right(v) => v.iter().any(|s| s.read().contains_any()),
-                })
+                .map(|s| s.read().contains_any())
                 .unwrap_or(false)
             || self
                 .additional_properties()
@@ -296,7 +293,7 @@ macro_rules! impl_schema_array {
             fn raw_schema() -> DefaultSchemaRaw {
                 let mut schema = DefaultSchemaRaw::default();
                 schema.data_type = Some(DataType::Array);
-                schema.items = Some(Either::Left(T::schema_with_ref().into()));
+                schema.items = Some(T::schema_with_ref().into());
                 schema
             }
         }

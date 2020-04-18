@@ -715,19 +715,6 @@ impl<L, R> Either<L, R> {
     }
 }
 
-impl<T> Either<T, Vec<T>> {
-    /// Convenience method for getting either the value in the left
-    /// or one from right, given that the right variant can contain
-    /// more than one values in a vector.
-    pub fn left_or_one_in_right(&self) -> Option<&T> {
-        match self {
-            Either::Left(l) => Some(l),
-            Either::Right(v) if v.len() == 1 => Some(&v[0]),
-            _ => None,
-        }
-    }
-}
-
 /// Wrapper for schema. This uses `Arc<RwLock<S>>` for interior
 /// mutability and differentiates raw schema from resolved schema
 /// (i.e., the one where `$ref` references point to the actual schema).

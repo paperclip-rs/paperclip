@@ -62,11 +62,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             /// Recursively removes all `$ref` values in this schema.
             pub fn remove_refs(&mut self) {
                 self.properties.values_mut().for_each(|s| s.remove_refs());
-                self.items.as_mut().map(|e| match e {
-                    paperclip::v2::models::Either::Left(s) => s.remove_refs(),
-                    paperclip::v2::models::Either::Right(ref mut v) =>
-                        v.iter_mut().for_each(|s| s.remove_refs()),
-                });
+                self.items.as_mut().map(|s| s.remove_refs());
                 self.extra_props.as_mut().and_then(|s| s.right_mut()).map(|s| s.remove_refs());
                 self.reference = None;
             }
@@ -80,11 +76,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
                     self.reference = ref_;
                 } else {
                     self.properties.values_mut().for_each(|s| s.retain_ref());
-                    self.items.as_mut().map(|e| match e {
-                        paperclip::v2::models::Either::Left(s) => s.retain_ref(),
-                        paperclip::v2::models::Either::Right(ref mut v) =>
-                            v.iter_mut().for_each(|s| s.retain_ref()),
-                    });
+                    self.items.as_mut().map(|s| s.retain_ref());
                     self.extra_props.as_mut().and_then(|s| s.right_mut()).map(|s| s.retain_ref());
                 }
             }
@@ -137,12 +129,12 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn items(&self) -> Option<&paperclip::v2::models::Either<paperclip::v2::models::Resolvable<Self>, Vec<paperclip::v2::models::Resolvable<Self>>>> {
+            fn items(&self) -> Option<&paperclip::v2::models::Resolvable<Self>> {
                 self.items.as_ref()
             }
 
             #[inline]
-            fn items_mut(&mut self) -> Option<&mut paperclip::v2::models::Either<paperclip::v2::models::Resolvable<Self>, Vec<paperclip::v2::models::Resolvable<Self>>>> {
+            fn items_mut(&mut self) -> Option<&mut paperclip::v2::models::Resolvable<Self>> {
                 self.items.as_mut()
             }
 
@@ -303,12 +295,10 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
 
     gen.extend(quote!(
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub items: Option<paperclip::v2::models::Either<
+        pub items: Option<
     ));
     add_self(&mut gen);
-    gen.extend(quote!(, Vec<));
-    add_self(&mut gen);
-    gen.extend(quote!(>>>,));
+    gen.extend(quote!(>,));
 
     gen.extend(quote!(
         #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]

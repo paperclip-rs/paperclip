@@ -52,7 +52,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Resolution of anonymous schema definitions in objects, operation parameters and responses.
 - Unmappable operations (i.e., without body parameters and simple response types) are now namespaced in a separate module.
 - Array definitions are now allowed in schemas.
-- `items` field accepts schema or an array of schemas.
 - `additionalProperties` takes boolean or a schema.
 
 ## [0.3.0] - 2019-07-30
