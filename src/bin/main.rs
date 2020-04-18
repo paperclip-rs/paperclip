@@ -5,7 +5,7 @@ use paperclip::v2::{
     models::{DefaultSchema, ResolvableApi},
 };
 use paperclip::PaperClipError;
-use reqwest::Client;
+use reqwest::blocking::Client;
 use structopt::StructOpt;
 use url::Url;
 
@@ -22,10 +22,10 @@ fn parse_version(s: &str) -> Result<OApiVersion, Error> {
 }
 
 fn parse_spec(s: &str) -> Result<ResolvableApi<DefaultSchema>, Error> {
-    if let Ok(u) = Url::parse(s) {
+    if Url::parse(s).is_ok() {
         let mut bytes = vec![];
         let client = Client::new();
-        let mut resp = client.get(u).send()?;
+        let mut resp = client.get(s).send()?;
         resp.copy_to(&mut bytes)?;
         Ok(v2::from_reader(Cursor::new(bytes))?)
     } else {

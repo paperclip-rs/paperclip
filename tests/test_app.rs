@@ -19,7 +19,7 @@ use std::sync::mpsc;
 use std::thread;
 
 lazy_static! {
-    static ref CLIENT: reqwest::Client = reqwest::Client::new();
+    static ref CLIENT: reqwest::blocking::Client = reqwest::blocking::Client::new();
     static ref PORTS: Mutex<HashSet<u16>> = Mutex::new(HashSet::new());
 }
 
@@ -101,13 +101,13 @@ fn test_simple_app() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {
@@ -367,13 +367,13 @@ fn test_params() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {
@@ -518,13 +518,13 @@ fn test_map_in_out() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {
@@ -594,13 +594,13 @@ fn test_list_in_out() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {
@@ -728,13 +728,13 @@ fn test_impl_traits() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {
@@ -835,27 +835,27 @@ fn test_multiple_method_routes() {
             > + 'static,
     {
         run_and_check_app(f, |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/foo", addr))
                 .send()
                 .expect("request failed?");
             assert_eq!(resp.status().as_u16(), 200);
             assert_eq!(resp.text().unwrap(), "get");
 
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .post(&format!("http://{}/foo", addr))
                 .send()
                 .expect("request failed?");
             assert_eq!(resp.status().as_u16(), 200);
             assert_eq!(resp.text().unwrap(), "post");
 
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {},
@@ -945,13 +945,13 @@ fn test_custom_extractor_empty_schema() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {},
@@ -1018,13 +1018,13 @@ fn test_errors_app() {
                 .build()
         },
         |addr| {
-            let mut resp = CLIENT
+            let resp = CLIENT
                 .get(&format!("http://{}/api/spec", addr))
                 .send()
                 .expect("request failed?");
 
             check_json(
-                &mut resp,
+                resp,
                 json!({
                   "info":{"title":"","version":""},
                   "definitions": {
@@ -1140,7 +1140,7 @@ where
     ret
 }
 
-fn check_json(resp: &mut reqwest::Response, expected: serde_json::Value) {
+fn check_json(resp: reqwest::blocking::Response, expected: serde_json::Value) {
     assert_eq!(resp.status().as_u16(), 200);
     let json = resp.json::<serde_json::Value>().expect("json error");
 
