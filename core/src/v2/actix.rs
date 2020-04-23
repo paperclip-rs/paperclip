@@ -161,6 +161,9 @@ mod manual_impl {
     impl_simple!(uuid::Uuid);
 }
 
+#[cfg(feature = "datetime")]
+impl<T: chrono::TimeZone> OperationModifier for chrono::DateTime<T> {}
+
 // Other extractors
 
 #[cfg(feature = "nightly")]
