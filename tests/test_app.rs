@@ -361,12 +361,12 @@ fn test_params() {
                                 .service(
                                     web::resource("/v/{name}")
                                         .route(web::get().to(get_known_badge_2))
-                                        .route(web::post().to(post_badge_2))
+                                        .route(web::post().to(post_badge_2)),
                                 )
                                 .service(
-                                    web::resource("/foo").route(web::get().to(get_resource_2))
-                                )
-                        )
+                                    web::resource("/foo").route(web::get().to(get_resource_2)),
+                                ),
+                        ),
                 )
                 .build()
         },

@@ -589,11 +589,16 @@ impl<S> Operation<Parameter<S>, Response<S>> {
             ":".into()
         });
 
-        for p in self.parameters.iter_mut().filter(|p| p.in_ == ParameterIn::Path).rev() {
+        for p in self
+            .parameters
+            .iter_mut()
+            .filter(|p| p.in_ == ParameterIn::Path)
+            .rev()
+        {
             if let Some(n) = names.pop() {
                 p.name = n;
             } else {
-                break
+                break;
             }
         }
     }

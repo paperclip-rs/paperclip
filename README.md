@@ -28,7 +28,7 @@ You may be interested in:
 
 This project welcomes all kinds of contributions. No contribution is too small!
 
-If you want to contribute to this project but don't know how to begin or if you need help with something related to this project, feel free to send me an email (in Github profile) or ping me in Discord (same handle).
+If you want to contribute to this project but don't know how to begin or if you need help with something related to this project, feel free to send me an email (in Github profile) or join the [Discord server](https://discord.gg/PPu4Dhj).
 
 ## Code of Conduct
 
