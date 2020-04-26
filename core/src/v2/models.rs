@@ -582,31 +582,19 @@ pub struct Operation<P, R> {
 impl<S> Operation<Parameter<S>, Response<S>> {
     /// Overwrites the names of parameters in this operation using the
     /// given path template.
-    ///
-    /// # Panics
-    ///
-    /// This method will panic if there's a mismatch between the parameters
-    /// in this operation and those in the given path template.
     pub fn set_parameter_names_from_path_template(&mut self, path: &str) {
-        let mut params = self
-            .parameters
-            .iter_mut()
-            .filter(|p| p.in_ == ParameterIn::Path)
-            .peekable();
+        let mut names = vec![];
         Api::<(), (), ()>::path_parameters_map(path, |p| {
-            let param = params
-                .next()
-                .unwrap_or_else(|| panic!("missing parameter {:?} in path {:?}", p, path));
-            param.name = p.into();
+            names.push(p.to_owned());
             ":".into()
         });
 
-        if params.peek().is_some() {
-            panic!(
-                "{} parameter(s) haven't been addressed by path {:?}",
-                params.count(),
-                path
-            );
+        for p in self.parameters.iter_mut().filter(|p| p.in_ == ParameterIn::Path).rev() {
+            if let Some(n) = names.pop() {
+                p.name = n;
+            } else {
+                break
+            }
         }
     }
 }

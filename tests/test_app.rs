@@ -295,7 +295,7 @@ fn test_params() {
 
     #[derive(Deserialize, Apiv2Schema)]
     struct BadgeBody {
-        /// all your json are belong to us
+        /// JSON value
         json: Option<serde_json::Value>,
         yaml: Option<serde_yaml::Value>,
     }
@@ -306,7 +306,7 @@ fn test_params() {
     }
 
     #[api_v2_operation]
-    fn get_resource_2(_p: web::Path<String>) -> impl Future<Output = &'static str> {
+    fn get_resource_2(_p: web::Path<u32>) -> impl Future<Output = &'static str> {
         ready("")
     }
 
@@ -320,7 +320,7 @@ fn test_params() {
 
     #[api_v2_operation]
     fn get_known_badge_2(
-        _p: web::Path<(String, String)>,
+        _p: web::Path<(u32, String)>,
         _q: web::Query<BadgeParams>,
     ) -> impl Future<Output = &'static str> {
         ready("")
@@ -337,7 +337,7 @@ fn test_params() {
 
     #[api_v2_operation]
     fn post_badge_2(
-        _p: web::Path<(String, String)>,
+        _p: web::Path<(u32, String)>,
         _b: web::Json<BadgeBody>,
     ) -> impl Future<Output = &'static str> {
         ready("")
@@ -356,13 +356,17 @@ fn test_params() {
                                 .route(web::post().to(post_badge_1)),
                         )
                         .service(
-                            web::resource("/v2/{resource}/v/{name}")
-                                .route(web::get().to(get_known_badge_2))
-                                .route(web::post().to(post_badge_2)),
+                            // Test that we can also have parameters in scopes
+                            web::scope("/v2/{resource}")
+                                .service(
+                                    web::resource("/v/{name}")
+                                        .route(web::get().to(get_known_badge_2))
+                                        .route(web::post().to(post_badge_2))
+                                )
+                                .service(
+                                    web::resource("/foo").route(web::get().to(get_resource_2))
+                                )
                         )
-                        .service(
-                            web::resource("/v2/{resource}").route(web::get().to(get_resource_2)),
-                        ),
                 )
                 .build()
         },
@@ -379,7 +383,7 @@ fn test_params() {
                   "definitions": {
                     "BadgeBody":{
                       "properties":{
-                        "json":{"description": "all your json are belong to us"},
+                        "json":{"description": "JSON value"},
                         "yaml":{}
                       }
                     }
@@ -435,15 +439,16 @@ fn test_params() {
                         "responses": {}
                       }
                     },
-                    "/api/v2/{resource}": {
+                    "/api/v2/{resource}/foo": {
                       "get": {
                         "responses": {}
                       },
                       "parameters": [{
+                        "format": "int32",
                         "in": "path",
                         "name": "resource",
                         "required": true,
-                        "type": "string"
+                        "type": "integer"
                       }]
                     },
                     "/api/v2/{resource}/v/{name}": {
@@ -467,10 +472,11 @@ fn test_params() {
                         "required": true,
                         "type": "string"
                       }, {
+                        "format": "int32",
                         "in": "path",
                         "name": "resource",
                         "required": true,
-                        "type": "string"
+                        "type": "integer"
                       }],
                       "post": {
                         "parameters": [{

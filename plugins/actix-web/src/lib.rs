@@ -64,7 +64,6 @@ pub trait Mountable {
             .entry(self.path().into())
             .or_insert_with(Default::default);
         op_map.methods.extend(self.operations().into_iter());
-        op_map.normalize();
     }
 }
 
@@ -263,6 +262,9 @@ where
         let mut api = self.spec.write();
         api.definitions.extend(factory.definitions().into_iter());
         factory.update_operations(&mut api.paths);
+        for map in api.paths.values_mut() {
+            map.normalize();
+        }
     }
 }
 

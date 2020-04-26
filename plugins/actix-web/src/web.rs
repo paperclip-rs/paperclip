@@ -457,8 +457,13 @@ where
         self.definitions.extend(factory.definitions().into_iter());
         let mut path_map = BTreeMap::new();
         factory.update_operations(&mut path_map);
-        for (path, map) in path_map {
-            self.path_map.insert(self.path.clone() + &path, map);
+        for (path, mut map) in path_map {
+            let p = self.path.clone() + &path;
+            for op in map.methods.values_mut() {
+                op.set_parameter_names_from_path_template(&p);
+            }
+
+            self.path_map.insert(p.clone(), map);
         }
     }
 }

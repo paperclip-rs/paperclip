@@ -48,6 +48,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: `web::Path<T>` also supports simple types (strings, integers, etc.).
 - Actix plugin: `#[api_v2_schema]` derivatives can now use references.
 - Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
+- Actix plugin: `web::scope` supports having path parameters.
 - Switched `enum` field to array of `any` rather than strings.
 - Resolution of anonymous schema definitions in objects, operation parameters and responses.
 - Unmappable operations (i.e., without body parameters and simple response types) are now namespaced in a separate module.
