@@ -998,6 +998,22 @@ impl ApiObject {
         })?;
 
         f.write_str("\n}\n")?;
+
+        // FIXME: Currently, we're implementing the first value as enum default.
+        // If "default" field exists, then we should use that instead.
+        if let Some(var) = self.variants().get(0) {
+            writeln!(
+                f,
+                "impl Default for {name} {{
+    fn default() -> Self {{
+        {name}::{first_var}
+    }}
+}}",
+                name = &self.name,
+                first_var = &var.name
+            )?;
+        }
+
         if !is_string {
             EnumSerdeImpl::from(self).write_to(f)?;
         }

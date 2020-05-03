@@ -54,6 +54,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Unmappable operations (i.e., without body parameters and simple response types) are now namespaced in a separate module.
 - Array definitions are now allowed in schemas.
 - `additionalProperties` takes boolean or a schema.
+- Deadlock when resolving some recursive types.
 
 ## [0.3.0] - 2019-07-30
 ### Added

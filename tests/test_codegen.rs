@@ -481,6 +481,11 @@ pub enum OrderStatus {
     #[serde(rename = \"fulfilled\")]
     Fulfilled,
 }
+impl Default for OrderStatus {
+    fn default() -> Self {
+        OrderStatus::PaymentPending
+    }
+}
 #[derive(Debug, Clone, Serialize, Deserialize)]
 #[allow(non_camel_case_types)]
 pub enum OrderTestStringEnum {
@@ -492,6 +497,11 @@ pub enum OrderTestStringEnum {
     True,
     #[serde(rename = \"-53\")]
     Number__53,
+}
+impl Default for OrderTestStringEnum {
+    fn default() -> Self {
+        OrderTestStringEnum::Booya
+    }
 }
 
 impl Order {
@@ -1333,6 +1343,11 @@ pub enum TestEnum {
     Hello,
     Foo,
     Bar,
+}
+impl Default for TestEnum {
+    fn default() -> Self {
+        TestEnum::True
+    }
 }
 impl serde::Serialize for TestEnum {
     fn serialize<S: serde::Serializer>(&self, ser: S) -> Result<S::Ok, S::Error> {

@@ -22,7 +22,7 @@ const RUST_KEYWORDS: &[&str] = &[
     "as", "break", "const", "continue", "crate", "dyn", "else", "enum", "extern", "false", "fn",
     "for", "if", "impl", "in", "let", "loop", "match", "mod", "move", "mut", "pub", "ref",
     "return", "self", "Self", "static", "struct", "super", "trait", "true", "type", "unsafe",
-    "use", "where", "while",
+    "use", "where", "while", "do",
 ];
 
 /// Default emitter for anything that implements `Schema` trait.

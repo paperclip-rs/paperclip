@@ -505,7 +505,7 @@ pub struct JsonSchemaPropsBuilder<Any> {
 
 impl<Any> JsonSchemaPropsBuilder<Any> {
     #[inline]
-    pub fn r#ref(mut self, value: impl Into<String>) -> Self {
+    pub fn ref_(mut self, value: impl Into<String>) -> Self {
         self.body.ref_ = Some(value.into());
         self
     }
@@ -565,7 +565,7 @@ impl<Any> JsonSchemaPropsBuilder<Any> {
     }
 
     #[inline]
-    pub fn r#enum(mut self, value: impl Iterator<Item = impl Into<Any>>) -> Self {
+    pub fn enum_(mut self, value: impl Iterator<Item = impl Into<Any>>) -> Self {
         self.body.enum_ = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
         self
     }
@@ -715,7 +715,7 @@ impl<Any> JsonSchemaPropsBuilder<Any> {
     }
 
     #[inline]
-    pub fn r#type(mut self, value: impl Into<String>) -> Self {
+    pub fn type_(mut self, value: impl Into<String>) -> Self {
         self.body.type_ = Some(value.into());
         self
     }

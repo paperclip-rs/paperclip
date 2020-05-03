@@ -555,11 +555,11 @@ where
 
         // Inline property methods.
         f.write_str("    #[inline]\n    pub fn ")?;
+        f.write_str(&field_name)?;
         if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
-            f.write_str("r#")?;
+            f.write_str("_")?;
         }
 
-        f.write_str(&field_name)?;
         f.write_str("(mut self, value: ")?;
         if field.needs_file {
             f.write_str("impl AsRef<std::path::Path>")?;
@@ -888,10 +888,6 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
     /// Handle field for an URL query parameter.
     fn handle_query_param(&mut self, field: StructField) {
-        if !self.query.is_empty() {
-            self.query.push_str(",");
-        }
-
         let name = field.name.to_snek_case();
         if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
             self.multi_value_query.push(format!(
@@ -905,6 +901,10 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             ));
 
             return;
+        }
+
+        if !self.query.is_empty() {
+            self.query.push_str(",");
         }
 
         let _ = write!(self.query, "\n            ({:?}, self.", &field.name);
