@@ -96,6 +96,14 @@ pub mod post_shipments_body {
     include!(\"./post_shipments_body.rs\");
 }
 
+pub mod recursive_container {
+    include!(\"./recursive_container.rs\");
+}
+
+pub mod recursive_object {
+    include!(\"./recursive_object.rs\");
+}
+
 pub mod status {
     include!(\"./status.rs\");
 }
@@ -181,7 +189,7 @@ fn test_overridden_path() {
         }
     }
 ",
-        Some(7019),
+        Some(7163),
     );
 }
 
@@ -284,6 +292,151 @@ fn test_operation_with_payload_no_arguments() {
             required: true
 ",
         None,
+    );
+}
+
+#[test]
+fn test_recursive_object() {
+    let _ = &*CLI_CODEGEN;
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/recursive_container.rs"),
+        "#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct RecursiveContainer<Any> {
+    pub object: Option<Box<crate::recursive_object::RecursiveObject<Any>>>,
+}
+
+impl<Any: Default> RecursiveContainer<Any> {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> RecursiveContainerBuilder<Any> {
+        RecursiveContainerBuilder {
+            body: Default::default(),
+        }
+    }
+
+    #[inline]
+    pub fn get() -> RecursiveContainerGetBuilder {
+        RecursiveContainerGetBuilder
+    }
+
+    #[inline]
+    pub fn post_1() -> RecursiveContainerPostBuilder1 {
+        RecursiveContainerPostBuilder1
+    }
+}
+
+impl<Any> Into<RecursiveContainer<Any>> for RecursiveContainerBuilder<Any> {
+    fn into(self) -> RecursiveContainer<Any> {
+        self.body
+    }
+}
+
+/// Builder for [`RecursiveContainer`](./struct.RecursiveContainer.html) object.
+#[derive(Debug, Clone)]
+pub struct RecursiveContainerBuilder<Any> {
+    body: self::RecursiveContainer<Any>,
+}
+
+impl<Any> RecursiveContainerBuilder<Any> {
+    #[inline]
+    pub fn object(mut self, value: crate::recursive_object::RecursiveObject<Any>) -> Self {
+        self.body.object = Some(value.into());
+        self
+    }
+}
+
+/// Builder created by [`RecursiveContainer::get`](./struct.RecursiveContainer.html#method.get) method for a `GET` operation associated with `RecursiveContainer`.
+#[derive(Debug, Clone)]
+pub struct RecursiveContainerGetBuilder;
+
+
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for RecursiveContainerGetBuilder {
+    type Output = RecursiveContainer<serde_yaml::Value>;
+
+    const METHOD: http::Method = http::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/another/route/referring/recursive/object\".into()
+    }
+}
+
+/// Builder created by [`RecursiveContainer::post_1`](./struct.RecursiveContainer.html#method.post_1) method for a `POST` operation associated with `RecursiveContainer`.
+#[derive(Debug, Clone)]
+pub struct RecursiveContainerPostBuilder1;
+
+
+impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<Client> for RecursiveContainerPostBuilder1 {
+    type Output = RecursiveContainer<serde_yaml::Value>;
+
+    const METHOD: http::Method = http::Method::POST;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        \"/route/referring/recursive/object\".into()
+    }
+}
+",
+        Some(0),
+    );
+
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/recursive_object.rs"),
+        "#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct RecursiveObject<Any> {
+    pub any: Option<Any>,
+    pub children: Option<Vec<crate::recursive_object::RecursiveObject<Any>>>,
+    pub id: Option<String>,
+    pub next: Option<Box<crate::recursive_object::RecursiveObject<Any>>>,
+}
+
+impl<Any: Default> RecursiveObject<Any> {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> RecursiveObjectBuilder<Any> {
+        RecursiveObjectBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl<Any> Into<RecursiveObject<Any>> for RecursiveObjectBuilder<Any> {
+    fn into(self) -> RecursiveObject<Any> {
+        self.body
+    }
+}
+
+/// Builder for [`RecursiveObject`](./struct.RecursiveObject.html) object.
+#[derive(Debug, Clone)]
+pub struct RecursiveObjectBuilder<Any> {
+    body: self::RecursiveObject<Any>,
+}
+
+impl<Any> RecursiveObjectBuilder<Any> {
+    #[inline]
+    pub fn any(mut self, value: impl Into<Any>) -> Self {
+        self.body.any = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn children(mut self, value: impl Iterator<Item = crate::recursive_object::RecursiveObject<Any>>) -> Self {
+        self.body.children = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn id(mut self, value: impl Into<String>) -> Self {
+        self.body.id = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn next(mut self, value: crate::recursive_object::RecursiveObject<Any>) -> Self {
+        self.body.next = Some(value.into());
+        self
+    }
+}",
+        Some(0),
     );
 }
 

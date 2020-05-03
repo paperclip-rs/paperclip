@@ -19,6 +19,23 @@ definitions:
       id:
         type: integer
     type: object
+  RecursiveContainer:
+    type: object
+    properties:
+      object:
+        $ref: '#/definitions/RecursiveObject'
+  RecursiveObject:
+    type: object
+    properties:
+      id:
+        type: string
+      next:
+        $ref: '#/definitions/RecursiveObject'
+      children:
+        type: array
+        items:
+          $ref: '#/definitions/RecursiveObject'
+      any: {}
   TestEnum:
     enum: [true, 1.5, 23, 964, -79.23, 14343, -964, "hello", "foo", "bar"]
   Order:
@@ -107,6 +124,9 @@ responses:
   StatusResponse:
     schema:
       $ref: '#/definitions/Status'
+  RecursiveContainer:
+    schema:
+      $ref: '#/definitions/RecursiveContainer'
 paths:
   /pets/{petId}:
     parameters:
@@ -315,3 +335,13 @@ paths:
       responses:
         '200':
           $ref: '#/responses/StatusResponse'
+  /route/referring/recursive/object:
+    post:
+      responses:
+        '200':
+          $ref: '#/responses/RecursiveContainer'
+  /another/route/referring/recursive/object:
+    get:
+      responses:
+        '200':
+          $ref: '#/responses/RecursiveContainer'

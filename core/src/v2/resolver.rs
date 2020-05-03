@@ -8,8 +8,8 @@ use super::{
 use crate::error::ValidationError;
 use heck::CamelCase;
 
-use std::cell::{Cell, RefCell};
-use std::collections::{BTreeMap, HashSet};
+use std::cell::RefCell;
+use std::collections::BTreeMap;
 use std::mem;
 
 // FIXME: The resolver is not in its best. It "just" works atm.
@@ -28,12 +28,8 @@ type ResponsesMap<S> = BTreeMap<String, ResolvableResponse<S>>;
 /// replacing the field with a reference to the actual definition.
 // FIXME: Move all validation to resolver.
 pub(crate) struct Resolver<S> {
-    /// Current definition being resolved.
-    cur_def: RefCell<Option<String>>,
-    /// Whether the current definition is cyclic.
-    cur_def_cyclic: Cell<bool>,
-    /// Set containing cyclic definition names.
-    cyclic_defs: HashSet<String>,
+    /// List of definitions that must be marked as cyclic while resolving a definition.
+    cyclic_defs: RefCell<Vec<Resolvable<S>>>,
     /// Globally defined object definitions.
     pub defs: DefinitionsMap<S>,
     /// Paths and the corresponding operations.
@@ -61,9 +57,7 @@ impl<S>
         ),
     ) -> Self {
         Resolver {
-            cur_def: RefCell::new(None),
-            cur_def_cyclic: Cell::new(false),
-            cyclic_defs: HashSet::new(),
+            cyclic_defs: vec![].into(),
             defs,
             paths,
             params,
@@ -84,58 +78,54 @@ where
         let mut paths = mem::replace(&mut self.paths, BTreeMap::new());
         paths.iter_mut().try_for_each(|(path, map)| {
             log::trace!("Checking path: {}", path);
-
             self.resolve_operations(path, map)
         })?;
         self.paths = paths;
 
-        // FIXME: We don't support definitions that refer another definition
-        // directly from the root (i.e., alias). Should we?
+        // Set the names of all schemas.
         for (name, schema) in &self.defs {
-            log::trace!("Entering: {}", name);
-            {
-                // Set the name and cyclic-ness of the current definition.
-                let mut s = schema.write();
-                s.set_name(name);
-                *self.cur_def.borrow_mut() = Some(name.clone());
-                self.cur_def_cyclic.set(false);
-            }
-
-            self.resolve_definitions_no_root_ref(schema)?;
-            if self.cur_def_cyclic.get() {
-                self.cyclic_defs.insert(name.clone());
-            }
+            schema.write().set_name(name);
         }
 
-        // We're doing this separately because we may have mutably borrowed
-        // definitions if they're cyclic and borrowing them again will result
-        // in a deadlock.
-        self.defs.iter().for_each(|(name, schema)| {
-            if self.cyclic_defs.contains(name) {
-                schema.write().set_cyclic(true);
+        for (name, schema) in &self.defs {
+            log::trace!("Entering: {}", name);
+            self.resolve_definitions_no_root_ref(schema)?;
+
+            for def in self.cyclic_defs.borrow_mut().drain(..) {
+                log::debug!(
+                    "Cyclic definition detected: {:?}",
+                    def.read().name().unwrap()
+                );
+                def.write().set_cyclic(true);
             }
-        });
+        }
 
         Ok(())
     }
 
     /// We've passed some definition. Resolve it assuming that it doesn't
     /// contain any reference.
-    // FIXME: This means we currently don't support definitions which
-    // directly refer some other definition (basically a type alias). Should we?
     fn resolve_definitions_no_root_ref(
         &self,
         schema: &Resolvable<S>,
     ) -> Result<(), ValidationError> {
-        let mut schema = schema.write();
+        let mut schema = match schema.try_write() {
+            Some(s) => s,
+            None => {
+                self.cyclic_defs.borrow_mut().push(schema.clone());
+                return Ok(());
+            }
+        };
+
         if let Some(inner) = schema.items_mut().take() {
             return self.resolve_definitions(inner);
         }
 
         if let Some(props) = schema.properties_mut().take() {
-            props
-                .values_mut()
-                .try_for_each(|s| self.resolve_definitions(s))?;
+            props.iter_mut().try_for_each(|(k, s)| {
+                log::trace!("Resolving property {:?}", k);
+                self.resolve_definitions(s)
+            })?;
         }
 
         if let Some(props) = schema
@@ -153,7 +143,15 @@ where
     /// otherwise traverse further.
     fn resolve_definitions(&self, schema: &mut Resolvable<S>) -> Result<(), ValidationError> {
         let ref_def = {
-            if let Some(ref_name) = schema.read().reference() {
+            let s = match schema.try_read() {
+                Some(s) => s,
+                None => {
+                    self.cyclic_defs.borrow_mut().push(schema.clone());
+                    return Ok(());
+                }
+            };
+
+            if let Some(ref_name) = s.reference() {
                 log::trace!("Resolving definition {}", ref_name);
                 Some(self.resolve_definition_reference(ref_name)?)
             } else {
@@ -169,11 +167,9 @@ where
                 },
                 _ => unimplemented!("schema already resolved?"),
             };
-        } else {
-            self.resolve_definitions_no_root_ref(&*schema)?;
         }
 
-        Ok(())
+        self.resolve_definitions_no_root_ref(&*schema)
     }
 
     /// Resolve a given operation.
@@ -248,15 +244,18 @@ where
             _ => return Ok(()),
         };
 
-        if schema.read().reference().is_none() {
-            // We've encountered an anonymous schema definition in some
-            // parameter/response. Give it a name and add it to global definitions.
-            let prefix = method.map(|s| s.to_string()).unwrap_or_default();
-            let def_name = (prefix + path + suffix).to_camel_case();
-            let mut ref_schema = S::default();
-            ref_schema.set_reference(format!("{}{}", DEF_REF_PREFIX, def_name));
-            let old_schema = mem::replace(schema, ref_schema.into());
-            self.defs.insert(def_name, old_schema);
+        match schema {
+            Resolvable::Raw(ref s) if s.read().reference().is_none() => {
+                // We've encountered an anonymous schema definition in some
+                // parameter/response. Give it a name and add it to global definitions.
+                let prefix = method.map(|s| s.to_string()).unwrap_or_default();
+                let def_name = (prefix + path + suffix).to_camel_case();
+                let mut ref_schema = S::default();
+                ref_schema.set_reference(format!("{}{}", DEF_REF_PREFIX, def_name));
+                let old_schema = mem::replace(schema, ref_schema.into());
+                self.defs.insert(def_name, old_schema);
+            }
+            _ => (),
         }
 
         self.resolve_definitions(schema)?;
@@ -270,11 +269,6 @@ where
         }
 
         let name = &name[DEF_REF_PREFIX.len()..];
-        match self.cur_def.borrow().as_ref() {
-            Some(n) if n == name => self.cur_def_cyclic.set(true),
-            _ => (),
-        }
-
         let schema = self
             .defs
             .get(name)

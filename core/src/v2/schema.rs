@@ -55,24 +55,7 @@ pub trait Schema: Sized {
 
     /// Returns whether this definition "is" or "has" `Any` type.
     fn contains_any(&self) -> bool {
-        if self.data_type().is_none() {
-            return true;
-        }
-
-        self.properties()
-            .map(|t| t.values().any(|s| s.read().contains_any()))
-            .unwrap_or(false)
-            || self
-                .items()
-                .map(|s| s.read().contains_any())
-                .unwrap_or(false)
-            || self
-                .additional_properties()
-                .map(|e| match e {
-                    Either::Left(extra_props_allowed) => *extra_props_allowed,
-                    Either::Right(s) => s.read().contains_any(),
-                })
-                .unwrap_or(false)
+        _schema_contains_any(self, vec![])
     }
 
     /* MARK: Resolver-specific methods. */
@@ -97,6 +80,39 @@ pub trait Schema: Sized {
 
     /// Sets the name for this schema. This is done by the resolver.
     fn set_name(&mut self, name: &str);
+}
+
+fn _schema_contains_any<'a, S: Schema>(schema: &'a S, mut nodes: Vec<&'a str>) -> bool {
+    if schema.data_type().is_none() {
+        return true;
+    }
+
+    if let Some(name) = schema.name() {
+        if nodes.iter().any(|&n| n == name) {
+            return false; // We've encountered a cycle.
+        } else {
+            nodes.push(name);
+        }
+    }
+
+    schema
+        .properties()
+        .map(|t| {
+            t.values()
+                .any(|s| _schema_contains_any(&*s.read(), nodes.clone()))
+        })
+        .unwrap_or(false)
+        || schema
+            .items()
+            .map(|s| _schema_contains_any(&*s.read(), nodes.clone()))
+            .unwrap_or(false)
+        || schema
+            .additional_properties()
+            .map(|e| match e {
+                Either::Left(extra_props_allowed) => *extra_props_allowed,
+                Either::Right(s) => _schema_contains_any(&*s.read(), nodes),
+            })
+            .unwrap_or(false)
 }
 
 /// Trait for returning OpenAPI data type and format for the implementor.
