@@ -193,6 +193,53 @@ async fn my_handler() -> Result<(), MyError> {
 }
 ```
 
+#### Defining security
+
+Use `Apiv2Security` derive macro for struct used as handler parameter to have this handler marked as requiring authorization.
+
+```rust
+use paperclip::actix::Apiv2Security;
+
+#[derive(Apiv2Security)]
+#[openapi(
+  apiKey,
+  in = "header",
+  name = "Authorization",
+  description = "Use format 'Bearer TOKEN'"
+)]
+pub struct AccessToken;
+
+impl FromRequest for Accesstoken { /*...*/ }
+
+#[api_v2_operation]
+async fn my_handler(access_token: AccessToken) -> Result {
+    /*...*/
+}
+```
+
+First parameter is the type of security, currently supported types are "apiKey" and "oauth2". Possible parameters are `alias`, `description`, `name`, `in`, `flow`, `auth_url`, `token_url` or `parent`.
+
+Use `alias` parameter if you need to have two different security definitions of the same type.
+
+If you need to define scopes for `oauth2`, use `parent` attribute:
+
+```rust
+#[derive(Apiv2Security, Deserialize)]
+#[openapi(
+  oauth2,
+  auth_url = "http://example.com/",
+  token_url = "http://example.com/token",
+  flow = "password"
+)]
+struct OAuth2Access;
+
+#[derive(Apiv2Security, Deserialize)]
+#[openapi(parent = "oauth2", scopes("pets.read", "pets.write"))]
+struct PetScopeAccess;
+```
+
+Keep in mind that the parent struct must be used in a mounted handler so paperclip could generate proper security definition when generating spec.
+
 #### Known limitations
 
 - **Enums:** OpenAPI (v2) itself supports using simple enums (i.e., with unit variants), but Rust and serde has support for variants with fields and tuples. I still haven't looked deep enough either to say whether this can/cannot be done in OpenAPI or find an elegant way to represent this in OpenAPI.

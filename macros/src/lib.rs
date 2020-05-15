@@ -50,6 +50,14 @@ pub fn api_v2_schema(input: TokenStream) -> TokenStream {
     self::actix::emit_v2_definition(input)
 }
 
+/// Marker attribute for indicating that an object forbids public access to operation (for example AccessToken).
+#[cfg(feature = "actix")]
+#[proc_macro_error]
+#[proc_macro_derive(Apiv2Security, attributes(openapi))]
+pub fn api_v2_security(input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_security(input)
+}
+
 /// Marker attribute for indicating that the marked object can represent non-2xx (error)
 /// status codes with optional descriptions.
 #[cfg(feature = "actix")]

@@ -1,6 +1,6 @@
 use super::models::{
     DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
-    Response,
+    Response, SecurityScheme,
 };
 use super::schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema};
 use actix_web::{
@@ -24,6 +24,11 @@ pub trait OperationModifier: Apiv2Schema + Sized {
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         update_definitions_from_schema_type::<Self>(map);
     }
+
+    /// Update the security map in the given operation (if needed).
+    fn update_security(op: &mut DefaultOperationRaw) {
+        update_security(op, Self::security_schema());
+    }
 }
 
 /// All schema types default to updating the definitions map.
@@ -38,6 +43,11 @@ where
 
     default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         update_definitions_from_schema_type::<Self>(map);
+    }
+
+    /// Update the security map in the given operation (if needed).
+    default fn update_security(op: &mut DefaultOperationRaw) {
+        update_security(op, Self::security_schema());
     }
 }
 
@@ -55,6 +65,10 @@ where
 
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         T::update_definitions(map);
+    }
+
+    fn update_security(op: &mut DefaultOperationRaw) {
+        T::update_security(op);
     }
 }
 
@@ -347,6 +361,7 @@ macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
             let mut op = DefaultOperationRaw::default();
             $(
                 $ty::update_parameter(&mut op);
+                $ty::update_security(&mut op);
             )*
             RV::update_response(&mut op);
             op
@@ -410,5 +425,22 @@ where
         };
         op.responses
             .insert(status.to_string(), Either::Right(response));
+    }
+}
+
+/// Add security definitions to operation.
+fn update_security(op: &mut DefaultOperationRaw, security_def: Option<(String, SecurityScheme)>) {
+    if let Some(security_def) = &security_def {
+        let mut security_roles = Vec::new();
+        for role in security_def.1.scopes.keys() {
+            security_roles.push(role.clone());
+        }
+
+        let mut security_def_map = BTreeMap::new();
+        security_def_map.insert(security_def.0.to_string(), security_roles);
+
+        op.security.push(security_def_map);
+        op.security_definitions
+            .insert(security_def.0.to_string(), security_def.1.clone());
     }
 }

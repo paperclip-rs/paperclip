@@ -15,7 +15,7 @@ use regex::{Captures, Regex};
 use actix_http::http::Method;
 
 use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet};
+use std::collections::{btree_map::Entry, BTreeMap, BTreeSet};
 use std::fmt::{self, Display};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
@@ -183,6 +183,54 @@ impl<P, R, S> Api<P, R, S> {
     ) -> Cow<'_, str> {
         PATH_TEMPLATE_REGEX.replace_all(path, |c: &Captures| f(&c[1]))
     }
+
+    fn merge_scopes(
+        scopes: &mut BTreeMap<String, String>,
+        scopes_to_add: &BTreeMap<String, String>,
+    ) {
+        for (scope_key, scope_value) in scopes_to_add.iter() {
+            scopes.insert(scope_key.to_string(), scope_value.to_string());
+        }
+    }
+
+    pub fn resolve_security_defs(&mut self) {
+        self.security_definitions = self
+            .paths
+            .iter()
+            // For every route...
+            .map(|(_path, item)| item.methods.iter())
+            .flatten()
+            // ...and every method in route...
+            .map(|(_method, operation)| operation.security_definitions.iter())
+            .flatten()
+            // ...get all security defs and store them in global Api model.
+            .fold(
+                BTreeMap::new(),
+                |mut acc, (security_name, security_schema)| {
+                    match acc.entry(security_name.to_string()) {
+                        Entry::Vacant(entry) => {
+                            entry.insert(security_schema.clone());
+                        }
+                        Entry::Occupied(entry) => {
+                            if security_schema.type_.is_empty() {
+                                // Child definition - add scopes
+                                Self::merge_scopes(
+                                    &mut entry.into_mut().scopes,
+                                    &security_schema.scopes,
+                                );
+                            } else {
+                                // Parent definition - replace and add previous scope set
+                                let entry_value = entry.into_mut();
+                                let old_scopes = entry_value.scopes.clone();
+                                *entry_value = security_schema.clone();
+                                Self::merge_scopes(&mut entry_value.scopes, &old_scopes);
+                            }
+                        }
+                    }
+                    acc
+                },
+            );
+    }
 }
 
 use crate as paperclip; // hack for proc macro
@@ -245,7 +293,7 @@ pub struct SecurityScheme {
     pub in_: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub flow: Option<String>,
-    #[serde(rename = "authorizationUrl")]
+    #[serde(rename = "authorizationUrl", skip_serializing_if = "Option::is_none")]
     pub auth_url: Option<String>,
     #[serde(rename = "tokenUrl", skip_serializing_if = "Option::is_none")]
     pub token_url: Option<String>,
@@ -569,6 +617,10 @@ pub struct Operation<P, R> {
     pub consumes: Option<BTreeSet<MediaRange>>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub produces: Option<BTreeSet<MediaRange>>,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub security: Vec<BTreeMap<String, Vec<String>>>,
+    #[serde(skip)]
+    pub security_definitions: BTreeMap<String, SecurityScheme>,
     #[serde(default, skip_serializing_if = "BTreeSet::is_empty")]
     pub schemes: BTreeSet<OperationProtocol>,
     // FIXME: Validate using `http::status::StatusCode::from_u16`

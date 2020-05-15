@@ -6,6 +6,7 @@ use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
+use std::collections::HashMap;
 use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
@@ -288,6 +289,240 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         }
 
         #opt_impl
+    };
+
+    gen.into()
+}
+
+/// Actual parser and emitter for `Apiv2Security` derive macro.
+pub fn emit_v2_security(input: TokenStream) -> TokenStream {
+    let item_ast = match crate::expect_struct_or_enum(input) {
+        Ok(i) => i,
+        Err(ts) => return ts,
+    };
+
+    let needs_empty_schema = extract_openapi_attrs(&item_ast.attrs).any(|nested| {
+        nested.len() == 1
+            && match &nested[0] {
+                NestedMeta::Meta(Meta::Path(path)) => path.is_ident("empty"),
+                _ => false,
+            }
+    });
+
+    let name = &item_ast.ident;
+
+    // Add `Apiv2Schema` bound for impl if the type is generic.
+    let mut generics = item_ast.generics.clone();
+    if !needs_empty_schema {
+        let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
+            .expect("expected to parse trait bound");
+        generics.type_params_mut().for_each(|param| {
+            param.bounds.push(bound.clone().into());
+        });
+    }
+
+    let opt_impl = add_optional_impl(&name, &generics);
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    if needs_empty_schema {
+        return quote!(
+            #item_ast
+
+            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
+
+            #opt_impl
+        ).into();
+    }
+
+    let mut security_attrs = HashMap::new();
+    let mut scopes = Vec::new();
+
+    let valid_attrs = vec![
+        "alias",
+        "description",
+        "name",
+        "in",
+        "flow",
+        "auth_url",
+        "token_url",
+        "parent",
+    ];
+    let invalid_attr_msg = format!("Invalid macro attribute. Should be bare security type [\"apiKey\", \"oauth2\"] or named attribute {:?}", valid_attrs);
+
+    // Read security params from openapi attr.
+    for nested in extract_openapi_attrs(&item_ast.attrs) {
+        for nested_attr in nested {
+            let span = nested_attr.span().unwrap();
+            match &nested_attr {
+                // Read bare attribute.
+                NestedMeta::Meta(Meta::Path(attr_path)) => {
+                    if let Some(type_) = attr_path.get_ident() {
+                        if security_attrs
+                            .insert("type".to_string(), type_.to_string())
+                            .is_some()
+                        {
+                            emit_warning!(span, "Auth type defined multiple times.");
+                        }
+                    }
+                }
+                // Read named attribute.
+                NestedMeta::Meta(Meta::NameValue(name_value)) => {
+                    let attr_name = name_value.path.get_ident().map(|id| id.to_string());
+                    let attr_value = &name_value.lit;
+
+                    if let Some(attr_name) = attr_name {
+                        if valid_attrs.contains(&attr_name.as_str()) {
+                            if let Lit::Str(attr_value) = attr_value {
+                                if security_attrs
+                                    .insert(attr_name.clone(), attr_value.value())
+                                    .is_some()
+                                {
+                                    emit_warning!(
+                                        span,
+                                        "Attribute {} defined multiple times.",
+                                        attr_name
+                                    );
+                                }
+                            } else {
+                                emit_warning!(
+                                    span,
+                                    "Invalid value for named attribute: {}",
+                                    attr_name
+                                );
+                            }
+                        } else {
+                            emit_warning!(span, invalid_attr_msg);
+                        }
+                    } else {
+                        emit_error!(span, invalid_attr_msg);
+                    }
+                }
+                // Read scopes attribute
+                NestedMeta::Meta(Meta::List(list_attr)) => {
+                    match list_attr
+                        .path
+                        .get_ident()
+                        .map(|id| id.to_string())
+                        .as_deref()
+                    {
+                        Some("scopes") => {
+                            for nested in &list_attr.nested {
+                                match nested {
+                                    NestedMeta::Lit(Lit::Str(value)) => {
+                                        scopes.push(value.value().to_string())
+                                    }
+                                    _ => emit_error!(
+                                        nested.span().unwrap(),
+                                        "Invalid list attribute value"
+                                    ),
+                                }
+                            }
+                        }
+                        Some(path) => emit_error!(span, "Invalid list attribute: {}", path),
+                        _ => emit_error!(span, "Invalid list attribute"),
+                    }
+                }
+                _ => {
+                    emit_error!(span, invalid_attr_msg);
+                }
+            }
+        }
+    }
+
+    fn quote_option(value: Option<&String>) -> proc_macro_error::proc_macro2::TokenStream {
+        if let Some(value) = value {
+            quote! { Some(#value.to_string()) }
+        } else {
+            quote! { None }
+        }
+    }
+
+    let scopes_stream = scopes
+        .iter()
+        .fold(proc_macro2::TokenStream::new(), |mut stream, scope| {
+            stream.extend(quote! {
+                oauth2_scopes.insert(#scope.to_string(), #scope.to_string());
+            });
+            stream
+        });
+
+    let security_def = match (security_attrs.get("type"), security_attrs.get("parent")) {
+        (Some(type_), None) => {
+            let alias = security_attrs.get("alias").unwrap_or_else(|| type_);
+            let quoted_description = quote_option(security_attrs.get("description"));
+            let quoted_name = quote_option(security_attrs.get("name"));
+            let quoted_in = quote_option(security_attrs.get("in"));
+            let quoted_flow = quote_option(security_attrs.get("flow"));
+            let quoted_auth_url = quote_option(security_attrs.get("auth_url"));
+            let quoted_token_url = quote_option(security_attrs.get("token_url"));
+
+            Some(quote! {
+                let mut oauth2_scopes = std::collections::BTreeMap::new();
+                #scopes_stream
+                Some((
+                    #alias.to_string(),
+                    paperclip::v2::models::SecurityScheme {
+                        type_: #type_.to_string(),
+                        name: #quoted_name,
+                        in_: #quoted_in,
+                        flow: #quoted_flow,
+                        auth_url: #quoted_auth_url,
+                        token_url: #quoted_token_url,
+                        scopes: oauth2_scopes,
+                        description: #quoted_description,
+                    }
+                ))
+            })
+        }
+        (None, Some(parent)) => {
+            // Child of security definition (Scopes will be glued to parent definition).
+            Some(quote! {
+                let mut oauth2_scopes = std::collections::BTreeMap::new();
+                #scopes_stream
+                Some((
+                    #parent.to_string(),
+                    paperclip::v2::models::SecurityScheme {
+                        type_: "".to_string(),
+                        name: None,
+                        in_: None,
+                        flow: None,
+                        auth_url: None,
+                        token_url: None,
+                        scopes: oauth2_scopes,
+                        description: None,
+                    }
+                ))
+            })
+        }
+        (Some(_), Some(_)) => {
+            emit_error!(
+                item_ast.span().unwrap(),
+                "Can't define new security type and use parent attribute together."
+            );
+            None
+        }
+        (None, None) => {
+            emit_error!(
+                item_ast.span().unwrap(),
+                "Invalid attributes. Expected security type or parent defined."
+            );
+            None
+        }
+    };
+
+    let gen = if let Some(security_def) = security_def {
+        quote! {
+            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
+                const NAME: Option<&'static str> = None;
+
+                fn security_schema() -> Option<(String, paperclip::v2::models::SecurityScheme)> {
+                    #security_def
+                }
+            }
+
+            #opt_impl
+        }
+    } else {
+        quote! {}
     };
 
     gen.into()

@@ -2,6 +2,7 @@
 
 use super::models::{
     DataType, DataTypeFormat, DefaultOperationRaw, DefaultSchemaRaw, Either, Resolvable,
+    SecurityScheme,
 };
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -239,6 +240,11 @@ pub trait Apiv2Schema {
 
         def
     }
+
+    /// Returns the security scheme for this object.
+    fn security_schema() -> Option<(String, SecurityScheme)> {
+        Default::default()
+    }
 }
 
 impl Apiv2Schema for () {}
@@ -259,6 +265,10 @@ impl<T> Apiv2Schema for Option<T> {
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
     }
+
+    default fn security_schema() -> Option<(String, SecurityScheme)> {
+        Default::default()
+    }
 }
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
@@ -266,6 +276,10 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
+    }
+
+    fn security_schema() -> Option<(String, SecurityScheme)> {
+        T::security_schema()
     }
 }
 
@@ -276,6 +290,10 @@ impl<T, E> Apiv2Schema for Result<T, E> {
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
     }
+
+    default fn security_schema() -> Option<(String, SecurityScheme)> {
+        Default::default()
+    }
 }
 
 impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
@@ -283,6 +301,10 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
+    }
+
+    fn security_schema() -> Option<(String, SecurityScheme)> {
+        T::security_schema()
     }
 }
 
@@ -292,11 +314,19 @@ impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
     }
+
+    fn security_schema() -> Option<(String, SecurityScheme)> {
+        T::security_schema()
+    }
 }
 
 impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
     fn raw_schema() -> DefaultSchemaRaw {
         Vec::<T>::raw_schema()
+    }
+
+    fn security_schema() -> Option<(String, SecurityScheme)> {
+        Vec::<T>::security_schema()
     }
 }
 
