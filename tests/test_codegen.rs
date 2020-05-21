@@ -189,7 +189,7 @@ fn test_overridden_path() {
         }
     }
 ",
-        Some(7163),
+        Some(7433),
     );
 }
 
@@ -811,6 +811,46 @@ impl PostShipmentsBodyAddressBuilder {
 }
 
 #[test]
+fn test_response_headers() {
+    assert_file_contains_content_at(
+        &(ROOT.clone() + "/tests/test_pet/pet.rs"),
+        "
+impl<Any> crate::client::ResponseWrapper<crate::pet::Pet<serde_yaml::Value>, PetPostBuilder<crate::generics::XAuthExists, crate::generics::IdExists, crate::generics::NameExists, Any>> {
+    /// Maximum allowed requests in the current period
+    #[inline]
+    pub fn x_rate_limit(&self) -> Option<i64> {
+        self.headers.get(\"x-rate-limit\").and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }
+    /// Whether the requests have exceeded for this window.
+    #[inline]
+    pub fn x_rate_limit_exceeded(&self) -> Option<bool> {
+        self.headers.get(\"x-rate-limit-exceeded\").and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }
+    /// Remaining requests in the current period
+    #[inline]
+    pub fn x_rate_limit_remaining(&self) -> Option<i64> {
+        self.headers.get(\"x-rate-limit-remaining\").and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }
+    /// Time at which rate limit is reset (in UNIX epoch)
+    #[inline]
+    pub fn x_rate_limit_reset(&self) -> Option<i64> {
+        self.headers.get(\"x-rate-limit-reset\").and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }
+    #[inline]
+    pub fn x_array(&self) -> Option<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<crate::util::Delimited<f64, crate::util::Ssv>, crate::util::Tsv>, crate::util::Csv>, crate::util::Csv>> {
+        self.headers.get(\"x-array\").and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }
+    #[inline]
+    pub fn x_string(&self) -> Option<String> {
+        self.headers.get(\"x-string\").and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }
+}
+",
+        Some(7517),
+    );
+}
+
+#[test]
 fn test_anonymous_object_definition_in_response() {
     assert_file_contains_content_at(
         &(ROOT.clone() + "/tests/test_pet/get_shipments_id_response.rs"),
@@ -1116,7 +1156,7 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
     }
 }
 ",
-        Some(2193),
+        Some(2324),
     );
 }
 
@@ -1164,7 +1204,7 @@ impl MiscellaneousPostBuilder2<crate::generics::ValuesExists> {
     }
 }
 ",
-        Some(6735),
+        Some(6866),
     );
 }
 
@@ -1188,11 +1228,12 @@ impl<Client: crate::client::ApiClient + Sync + 'static> crate::client::Sendable<
         \"/test/file\".into()
     }
 
-    async fn send(&self, client: &Client) -> Result<Self::Output, crate::client::ApiError<Client::Response>> {
+    async fn send(&self, client: &Client) -> Result<crate::client::ResponseWrapper<Self::Output, Self>, crate::client::ApiError<Client::Response>> {
         use crate::client::Response;
-
         let resp = self.send_raw(client).await?;
-        Ok(crate::util::ResponseStream(resp.stream()))
+        Ok(crate::client::ResponseWrapper::wrap(resp, |r| async {
+            Ok(crate::util::ResponseStream(r.stream()))
+        }).await.unwrap())
     }
 }
 ",

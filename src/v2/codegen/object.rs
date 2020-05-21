@@ -140,7 +140,7 @@ pub struct OpRequirement {
     /// Whether this operation returns a list of the associated `ApiObject`.
     pub listable: bool,
     /// Response information for this operation.
-    pub response: Response<String>,
+    pub response: Response<String, Vec<Parameter>>,
     /// Preferred media range and encoder for the client. This is ignored for
     /// methods that don't accept a body. If there's no coder, then JSON
     /// encoding is assumed.
@@ -152,16 +152,18 @@ pub struct OpRequirement {
 }
 
 #[derive(Default, Debug, Clone)]
-pub struct Response<S> {
+pub struct Response<S, H> {
     /// Type path for this operation's response (if any). If this is empty,
     /// then we go for `Any`.
     pub ty_path: Option<S>,
     /// Whether the response contains an `Any`. This is useful when operations
     /// get bound to some other object.
     pub contains_any: bool,
+    /// Custom response headers for this operation (if any).
+    pub headers: H,
 }
 
-impl<S> Response<S>
+impl<S, H> Response<S, H>
 where
     S: AsRef<str>,
 {
@@ -345,7 +347,7 @@ pub(super) struct ApiObjectBuilder<'a> {
     /// Whether this operation returns a list object.
     pub is_list_op: bool,
     /// Response for this operation, if any.
-    pub response: Response<&'a str>,
+    pub response: Response<&'a str, &'a [Parameter]>,
     /// Object to which this builder belongs to.
     pub object: &'a str,
     /// Encoding for the operation, if it's not JSON.

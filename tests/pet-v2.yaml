@@ -184,6 +184,36 @@ paths:
         type: integer
       responses:
         "200":
+          headers:
+            X-Rate-Limit:
+              description: Maximum allowed requests in the current period
+              type: integer
+            X-Rate-Limit-Remaining:
+              description: Remaining requests in the current period
+              type: integer
+            X-Rate-Limit-Reset:
+              description: Time at which rate limit is reset (in UNIX epoch)
+              type: integer
+            X-Rate-Limit-Exceeded:
+              description: Whether the requests have exceeded for this window.
+              type: boolean
+            X-unknown: {} # will be skipped
+            X-string:
+              type: string
+            X-array:
+              type: array
+              collectionFormat: pipes
+              items:
+                type: array
+                collectionFormat: multi # will get replaced to "csv"
+                items:
+                  type: array
+                  collectionFormat: tsv
+                  items:
+                    type: array
+                    collectionFormat: ssv
+                    items:
+                      type: number
           schema:
             $ref: '#/definitions/Pet'
   /shipments:

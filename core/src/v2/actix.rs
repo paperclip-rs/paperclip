@@ -211,6 +211,7 @@ where
                     def.retain_ref();
                     def
                 }),
+                ..Default::default()
             }),
         );
     }
@@ -421,7 +422,7 @@ where
     for (status, def_name) in T::ERROR_MAP {
         let response = DefaultResponseRaw {
             description: Some((*def_name).to_string()),
-            schema: None,
+            ..Default::default()
         };
         op.responses
             .insert(status.to_string(), Either::Right(response));

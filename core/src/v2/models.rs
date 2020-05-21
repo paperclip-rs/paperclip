@@ -690,6 +690,51 @@ pub struct Response<S> {
     pub description: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub schema: Option<S>,
+    #[serde(default, skip_serializing_if = "BTreeMap::is_empty")]
+    pub headers: BTreeMap<String, Header>,
+}
+
+/// Header object.
+///
+/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#headerObject
+#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+pub struct Header {
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub description: Option<String>,
+    #[serde(rename = "type", skip_serializing_if = "Option::is_none")]
+    pub data_type: Option<DataType>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub format: Option<DataTypeFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub items: Option<Items>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub collection_format: Option<CollectionFormat>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub default: Option<serde_json::Value>,
+    #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
+    pub enum_: Vec<serde_json::Value>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub maximum: Option<f32>,
+    #[serde(rename = "exclusiveMaximum", skip_serializing_if = "Option::is_none")]
+    pub exclusive_maximum: Option<bool>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub minimum: Option<f32>,
+    #[serde(rename = "exclusiveMinimum", skip_serializing_if = "Option::is_none")]
+    pub exclusive_minimum: Option<bool>,
+    #[serde(rename = "maxLength", skip_serializing_if = "Option::is_none")]
+    pub max_length: Option<u32>,
+    #[serde(rename = "minLength", skip_serializing_if = "Option::is_none")]
+    pub min_length: Option<u32>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub pattern: Option<String>,
+    #[serde(rename = "maxItems", skip_serializing_if = "Option::is_none")]
+    pub max_items: Option<u32>,
+    #[serde(rename = "minItems", skip_serializing_if = "Option::is_none")]
+    pub min_items: Option<u32>,
+    #[serde(rename = "uniqueItems", skip_serializing_if = "Option::is_none")]
+    pub unique_items: Option<bool>,
+    #[serde(rename = "multipleOf", skip_serializing_if = "Option::is_none")]
+    pub multiple_of: Option<f32>,
 }
 
 /// The HTTP method used for an operation.

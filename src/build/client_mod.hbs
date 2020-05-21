@@ -125,6 +125,9 @@ pub mod client \{
         /// Gets the value for the given header name, if any.
         fn header(&self, name: &'static str) -> Option<&str>;
 
+        /// Takes all headers from the response.
+        fn take_headers(&mut self) -> http::header::HeaderMap;
+
         /// Status code for this response.
         fn status(&self) -> http::status::StatusCode;
 
@@ -145,6 +148,10 @@ pub mod client \{
 
         fn header(&self, name: &'static str) -> Option<&str> \{
             self.headers().get(name).and_then(|v| v.to_str().ok())
+        }
+
+        fn take_headers(&mut self) -> http::header::HeaderMap \{
+            std::mem::replace(self.headers_mut(), http::header::HeaderMap::new())
         }
 
         fn status(&self) -> http::status::StatusCode \{
@@ -202,6 +209,7 @@ pub mod client \{
     pub trait Sendable<Client>
     where
         Client: ApiClient + Sync + 'static,
+        Self: Sized
     \{
         /// The output object from this API request.
         type Output: serde::de::DeserializeOwned;
@@ -221,17 +229,21 @@ pub mod client \{
         }
 
         /// Sends the request and returns a future for the response object.
-        async fn send(&self, client: &Client) -> Result<Self::Output, ApiError<Client::Response>> \{
+        async fn send(&self, client: &Client) -> Result<ResponseWrapper<Self::Output, Self>, ApiError<Client::Response>> \{
             let resp = self.send_raw(client).await?;
             let media = resp.media_type();
             if let Some(ty) = media \{
                 if media_types::M_0.matches(&ty) \{
-                    let bytes = resp.body_bytes().await?;
-                    return serde_json::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                    return ResponseWrapper::wrap(resp, |r| async \{
+                        let bytes = r.body_bytes().await?;
+                        serde_json::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                    }).await
                 }
                 else if media_types::M_1.matches(&ty) \{
-                    let bytes = resp.body_bytes().await?;
-                    return serde_yaml::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                    return ResponseWrapper::wrap(resp, |r| async \{
+                        let bytes = r.body_bytes().await?;
+                        serde_yaml::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                    }).await
                 }
             }
 
@@ -251,6 +263,56 @@ pub mod client \{
             } else \{
                 Err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)))
             }
+        }
+    }
+
+    /// Wrapper containing response-related information.
+    pub struct ResponseWrapper<T, B> \{
+        /// Response object
+        pub object: T,
+        /// Response headers
+        pub headers: http::HeaderMap,
+        /// Response status code
+        pub status: http::status::StatusCode,
+        _builder: core::marker::PhantomData<B>,
+    }
+
+    impl<T, B> ResponseWrapper<T, B> \{
+        pub(crate) async fn wrap<F, R>(mut resp: R, f: impl FnOnce(R) -> F) -> Result<Self, ApiError<R>>
+            where F: std::future::Future<Output=Result<T, ApiError<R>>>,
+                  R: Response + 'static
+        \{
+            let status = resp.status();
+            let headers = resp.take_headers();
+            Ok(ResponseWrapper \{
+                object: f(resp).await?,
+                headers,
+                status,
+                _builder: core::marker::PhantomData,
+            })
+        }
+    }
+
+    impl<'de, T, B> serde::de::Deserialize<'de> for ResponseWrapper<T, B> \{
+        fn deserialize<D>(_: D) -> Result<Self, D::Error>
+        where
+            D: serde::de::Deserializer<'de>
+        \{
+            unimplemented!("ResponseWrapper is not supposed to be deserialized.");
+        }
+    }
+
+    impl<T, B> std::ops::Deref for ResponseWrapper<T, B> \{
+        type Target = T;
+
+        fn deref(&self) -> &Self::Target \{
+            &self.object
+        }
+    }
+
+    impl<T, B> std::ops::DerefMut for ResponseWrapper<T, B> \{
+        fn deref_mut(&mut self) -> &mut <Self as std::ops::Deref>::Target \{
+            &mut self.object
         }
     }
 

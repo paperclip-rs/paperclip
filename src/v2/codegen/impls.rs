@@ -77,6 +77,7 @@ impl ApiObject {
                         response: Response {
                             ty_path: req.response.ty_path.as_deref(),
                             contains_any: req.response.contains_any,
+                            headers: &req.response.headers,
                         },
                     })
             });
@@ -545,8 +546,8 @@ where
             field.prop.is_required(),
             self.0.needs_container(),
         );
-        let needs_trailing_dash =
-            field.prop.is_field() && RUST_KEYWORDS.iter().any(|&k| k == field_name);
+        let collides_with_keyword = RUST_KEYWORDS.iter().any(|&k| k == field_name);
+        let needs_trailing_dash = collides_with_keyword && field.prop.is_field();
 
         ApiObject::write_docs(field.desc, f, 1)?;
         if field.desc.is_none() {
@@ -556,7 +557,7 @@ where
         // Inline property methods.
         f.write_str("    #[inline]\n    pub fn ")?;
         f.write_str(&field_name)?;
-        if RUST_KEYWORDS.iter().any(|&k| k == field_name) {
+        if collides_with_keyword {
             f.write_str("_")?;
         }
 
@@ -696,41 +697,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         self.builder
             .write_generics_if_necessary(f, None, TypeParameters::ChangeAll)?;
         f.write_str(" {\n    type Output = ")?;
-        if self.builder.is_list_op {
-            f.write_str("Vec<")?;
-        }
-
-        if self.builder.response.is_file() {
-            write!(f, "{prefix}util::ResponseStream<<<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Bytes, <<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Error>",
-                   prefix=self.builder.helper_module_prefix)?;
-        } else if let Some(resp) = self.builder.response.ty_path.as_ref() {
-            // If we've acquired a response type, then write that.
-            f.write_str(resp)?;
-        }
-
-        // If the type has `Any` or if we don't know what we're going to get, then
-        // assume we have to write `Any` type.
-        let mut accepted_range = None;
-        if self.builder.needs_any
-            || self.builder.response.ty_path.is_none()
-            || self.builder.response.contains_any
-        {
-            let (range, coder) = match self.builder.decoding {
-                Some(&(ref r, ref c)) => (r.as_str(), c),
-                None => ((*JSON_MIME).0.as_ref(), &*JSON_CODER),
-            };
-
-            accepted_range = Some(range);
-            if self.builder.response.ty_path.is_some() {
-                write!(f, "<{}>", coder.any_value)?;
-            } else {
-                f.write_str(&coder.any_value)?;
-            }
-        }
-
-        if self.builder.is_list_op {
-            f.write_str(">")?;
-        }
+        let accepted_range = self.write_output_ty(f)?;
 
         f.write_str(";\n\n    const METHOD: http::Method = http::Method::")?;
         f.write_str(&method.to_string().to_uppercase())?;
@@ -769,7 +736,113 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
             self.write_file_acceptor(f)?;
         }
 
+        f.write_str("\n}\n")?;
+        self.write_response_headers_impl(f)
+    }
+
+    fn write_response_headers_impl<F: Write>(&mut self, f: &mut F) -> fmt::Result {
+        if self.builder.response.headers.is_empty() {
+            return Ok(());
+        }
+
+        f.write_str("\nimpl")?;
+        if self.builder.needs_any {
+            ApiObject::write_any_generic(f)?;
+        }
+
+        write!(
+            f,
+            " {}client::ResponseWrapper<",
+            self.builder.helper_module_prefix
+        )?;
+        self.write_output_ty(f)?;
+        f.write_str(", ")?;
+        self.builder.write_name(f)?;
+        self.builder
+            .write_generics_if_necessary(f, None, TypeParameters::ChangeAll)?;
+        f.write_str("> {")?;
+
+        self.builder
+            .response
+            .headers
+            .iter()
+            .try_for_each(|header| {
+                let name = header.name.to_snek_case();
+                let collides_with_keyword = RUST_KEYWORDS.iter().any(|&k| k == name);
+                ApiObject::write_docs(header.description.as_ref(), f, 1)?;
+                if header.description.is_none() {
+                    f.write_str("\n")?;
+                }
+
+                // Inline property methods.
+                f.write_str("    #[inline]\n    pub fn ")?;
+                f.write_str(&name)?;
+                if collides_with_keyword {
+                    f.write_str("_")?;
+                }
+
+                f.write_str("(&self) -> Option<")?;
+                ApiObjectBuilder::write_wrapped_ty(
+                    &self.builder.helper_module_prefix,
+                    &header.ty_path,
+                    &header.delimiting,
+                    f,
+                )?;
+                write!(
+                    f,
+                    "> {{
+        self.headers.get({:?}).and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
+    }}",
+                    header.name
+                )
+            })?;
+
         f.write_str("\n}\n")
+    }
+
+    /// Writes the output type for a `Sendable` implementor and returns
+    /// acceptable media range if it's "any" type.
+    fn write_output_ty<F>(&mut self, f: &mut F) -> Result<Option<String>, fmt::Error>
+    where
+        F: Write,
+    {
+        if self.builder.is_list_op {
+            f.write_str("Vec<")?;
+        }
+
+        if self.builder.response.is_file() {
+            write!(f, "{prefix}util::ResponseStream<<<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Bytes, <<Client as {prefix}client::ApiClient>::Response as {prefix}client::Response>::Error>",
+                   prefix=self.builder.helper_module_prefix)?;
+        } else if let Some(resp) = self.builder.response.ty_path.as_ref() {
+            // If we've acquired a response type, then write that.
+            f.write_str(resp)?;
+        }
+
+        // If the type has `Any` or if we don't know what we're going to get, then
+        // assume we have to write `Any` type.
+        let mut accepted_range = None;
+        if self.builder.needs_any
+            || self.builder.response.ty_path.is_none()
+            || self.builder.response.contains_any
+        {
+            let (range, coder) = match self.builder.decoding {
+                Some(&(ref r, ref c)) => (r.as_str(), c),
+                None => ((*JSON_MIME).0.as_ref(), &*JSON_CODER),
+            };
+
+            accepted_range = Some(range);
+            if self.builder.response.ty_path.is_some() {
+                write!(f, "<{}>", coder.any_value)?;
+            } else {
+                f.write_str(&coder.any_value)?;
+            }
+        }
+
+        if self.builder.is_list_op {
+            f.write_str(">")?;
+        }
+
+        Ok(accepted_range.map(|s| s.to_owned()))
     }
 
     /// Handle field for a path parameter.
@@ -920,7 +993,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     }
 
     /// We have determined that we have to override the default `modify` method.
-    fn write_modify_method<F>(&mut self, f: &mut F, accepted_range: Option<&str>) -> fmt::Result
+    fn write_modify_method<F>(&mut self, f: &mut F, accepted_range: Option<String>) -> fmt::Result
     where
         F: Write,
     {
@@ -1028,16 +1101,16 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     where
         F: Write,
     {
-        f.write_str("\n\n    async fn send(&self, client: &Client) -> Result<Self::Output, ")?;
-        f.write_str(&self.builder.helper_module_prefix)?;
-        f.write_str("client::ApiError<Client::Response>> {\n        use ")?;
-        f.write_str(&self.builder.helper_module_prefix)?;
         write!(
             f,
-            "client::Response;
+            "
 
+    async fn send(&self, client: &Client) -> Result<{prefix}client::ResponseWrapper<Self::Output, Self>, {prefix}client::ApiError<Client::Response>> {{
+        use {prefix}client::Response;
         let resp = self.send_raw(client).await?;
-        Ok({prefix}util::ResponseStream(resp.stream()))
+        Ok({prefix}client::ResponseWrapper::wrap(resp, |r| async {{
+            Ok({prefix}util::ResponseStream(r.stream()))
+        }}).await.unwrap())
     }}",
             prefix = self.builder.helper_module_prefix
         )

@@ -7,16 +7,17 @@ use crate::error::PaperClipError;
 use crate::v2::{
     im::ArcRwLock,
     models::{
-        self, Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
-        MediaRange, ParameterIn, Reference, Resolvable, ResolvableApi, ResolvableOperation,
-        ResolvableParameter, ResolvablePathItem, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
+        Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items, MediaRange,
+        ParameterIn, Reference, ResolvableApi, ResolvableOperation, ResolvableParameter,
+        ResolvablePathItem, ResolvableResponse, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
     },
     Schema,
 };
 use failure::Error;
 use heck::{CamelCase, SnekCase};
+use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;
-use std::collections::{BTreeSet, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fmt::Debug;
 use std::fs;
 use std::ops::Deref;
@@ -832,57 +833,60 @@ where
         Ok(())
     }
 
-    /// If the parameter is an array, then validate the collection formats and
-    /// default if needed.
-    fn validate_collection_format(
-        &mut self,
-        p: &models::Parameter<Resolvable<E::Definition>>,
-        it_fmts: &mut Vec<CollectionFormat>,
-    ) {
-        if p.data_type != Some(DataType::Array) {
-            return;
-        }
-
-        let default_fmt = CollectionFormat::default();
-        it_fmts.insert(0, p.collection_format.unwrap_or(default_fmt));
-        it_fmts.pop(); // pop the final format, as it's unnecessary.
-        let is_url_encoded = p.in_ == ParameterIn::Query || p.in_ == ParameterIn::FormData;
-        if it_fmts.contains(&CollectionFormat::Multi) {
-            let needs_override = if is_url_encoded {
-                let mut fmt_idx_iter = it_fmts
-                    .iter()
-                    .enumerate()
-                    .filter(|&(_, &fmt)| fmt == CollectionFormat::Multi);
-                fmt_idx_iter.next().expect("expected collection format?");
-                // We support URL encoding multiple values only when it's specified in root.
-                fmt_idx_iter.next().is_some()
-            } else {
-                true
-            };
-
-            if needs_override {
-                if is_url_encoded {
-                    info!("Parameter {:?} in {:?} doesn't allow multiple instances in nested arrays. \
-                                Replacing with default ({:?}).", p.name, p.in_, default_fmt);
-                } else {
-                    info!(
-                        "Parameter {:?} is in {:?}, which doesn't allow array values as multiple \
-                         instances. Replacing with default ({:?}).",
-                        p.name, p.in_, default_fmt
-                    );
-                }
-
-                for (i, f) in it_fmts.iter_mut().enumerate() {
-                    if *f == CollectionFormat::Multi {
-                        if i == 0 && is_url_encoded {
-                            continue;
-                        }
-
-                        *f = default_fmt;
+    /// Collects headers as parameters for all responses in some operation.
+    fn collect_response_headers(
+        &self,
+        responses: &BTreeMap<String, Either<Reference, ResolvableResponse<E::Definition>>>,
+    ) -> Vec<Parameter> {
+        let mut map = HeaderMap::<Parameter>::with_capacity(2);
+        for resp in responses.values() {
+            let r = resp.read();
+            for (name, info) in &r.headers {
+                let name = match HeaderName::from_bytes(name.as_bytes()) {
+                    Ok(n) => n,
+                    Err(_) => {
+                        warn!("Skipping response header {:?} because it's invalid.", name);
+                        continue;
                     }
-                }
+                };
+
+                // Enforce that the parameter is an allowed type and collect it.
+                let (ty, mut it_fmts) = match resolve_parameter_type(
+                    info.data_type,
+                    info.format.as_ref(),
+                    info.items.as_ref(),
+                ) {
+                    Some(t) => t,
+                    None => {
+                        warn!(
+                            "Skipping response header {:?} with unknown type {:?} in path {:?}",
+                            name, info.data_type, self.path
+                        );
+                        continue;
+                    }
+                };
+
+                validate_collection_format(
+                    name.as_str(),
+                    info.data_type,
+                    ParameterIn::Header,
+                    info.collection_format,
+                    &mut it_fmts,
+                );
+                let param = Parameter {
+                    name: name.as_str().into(),
+                    description: info.description.clone(),
+                    ty_path: ty,
+                    presence: ParameterIn::Header,
+                    required: false,
+                    delimiting: it_fmts,
+                };
+
+                map.insert(name, param);
             }
         }
+
+        map.into_iter().map(|(_, v)| v).collect()
     }
 
     /// Given a bunch of resolved parameters, validate and collect a simplified version of them.
@@ -931,7 +935,13 @@ where
                     }
                 };
 
-            self.validate_collection_format(&p, &mut it_fmts);
+            validate_collection_format(
+                &p.name,
+                p.data_type,
+                p.in_,
+                p.collection_format,
+                &mut it_fmts,
+            );
 
             params.push(Parameter {
                 name: p.name.clone(),
@@ -994,6 +1004,7 @@ where
                 response: Response {
                     contains_any: response_contains_any,
                     ty_path: response_ty_path,
+                    headers: self.collect_response_headers(&op.responses),
                 },
                 body_required: true,
                 encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
@@ -1100,6 +1111,7 @@ where
                 response: Response {
                     ty_path: response_ty_path,
                     contains_any: schema.contains_any(),
+                    headers: self.collect_response_headers(&op.responses),
                 },
                 encoding: self.get_coder(op.consumes.as_ref(), &self.api.consumes),
                 decoding: self.get_coder(op.produces.as_ref(), &self.api.produces),
@@ -1200,5 +1212,63 @@ fn matching_unit_type(
             Some(DataType::String) => Some("String"),
             _ => None,
         },
+    }
+}
+
+/// If the parameter is an array, then validate the collection formats and
+/// default if needed.
+fn validate_collection_format(
+    name: &str,
+    data_type: Option<DataType>,
+    in_: ParameterIn,
+    collection_format: Option<CollectionFormat>,
+    it_fmts: &mut Vec<CollectionFormat>,
+) {
+    if data_type != Some(DataType::Array) {
+        return;
+    }
+
+    let default_fmt = CollectionFormat::default();
+    it_fmts.insert(0, collection_format.unwrap_or(default_fmt));
+    it_fmts.pop(); // pop the final format, as it's unnecessary.
+    let is_url_encoded = in_ == ParameterIn::Query || in_ == ParameterIn::FormData;
+    if it_fmts.contains(&CollectionFormat::Multi) {
+        let needs_override = if is_url_encoded {
+            let mut fmt_idx_iter = it_fmts
+                .iter()
+                .enumerate()
+                .filter(|&(_, &fmt)| fmt == CollectionFormat::Multi);
+            fmt_idx_iter.next().expect("expected collection format?");
+            // We support URL encoding multiple values only when it's specified in root.
+            fmt_idx_iter.next().is_some()
+        } else {
+            true
+        };
+
+        if needs_override {
+            if is_url_encoded {
+                info!(
+                    "Parameter {:?} in {:?} doesn't allow multiple instances in nested arrays. \
+                            Replacing with default ({:?}).",
+                    name, in_, default_fmt
+                );
+            } else {
+                info!(
+                    "Parameter {:?} is in {:?}, which doesn't allow array values as multiple \
+                        instances. Replacing with default ({:?}).",
+                    name, in_, default_fmt
+                );
+            }
+
+            for (i, f) in it_fmts.iter_mut().enumerate() {
+                if *f == CollectionFormat::Multi {
+                    if i == 0 && is_url_encoded {
+                        continue;
+                    }
+
+                    *f = default_fmt;
+                }
+            }
+        }
     }
 }
