@@ -6,8 +6,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Actix plugin: `#[openapi(empty)]` attribute can be used to any type to implement empty schema and ignore the warning.
-- Actix plugin: Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 - Client timeout in CLI.
 - Codegen for header parameters in operations.
 - Validation for non-body parameters.
@@ -16,7 +14,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Methods to `Schema` trait for aiding resolution and codegen.
 - Codegen for nested arrays in operation parameters.
 - Codegen for form data parameters in operations.
-- Actix plugin: Support for `serde_json::Value`, `serde_yaml::Value`, `uuid::Uuid` (through `uid` feature) and `chrono::NaiveDateTime` (through `datetime` feature) in structs.
 - Codegen for `Any` type in schema.
 - CLI payload encoding/decoding supports custom types and not limited to JSON.
 - Codegen for `#[deprecated]` attribute when `deprecated` field is set to `true` in schema.
@@ -26,10 +23,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Codegen for `multipart/form-data` parameters with file streaming.
 - Referencing globally defined parameters and responses.
 - Codegen for enums in object definitions.
+- Response wrapper containing headers and status code for operation.
+- Parsing for custom response headers.
+- Actix plugin: `#[openapi(empty)]` attribute can be used to any type to implement empty schema and ignore the warning.
+- Actix plugin: Empty impls for some actix-web types (like `Payload`, `Data<T>`, etc.).
 - Actix plugin: Raw JSON spec generation from handlers.
 - Actix plugin: Support for `#[serde(rename = "...")]` and `#[serde(rename_all = "...")]`.
 - Actix plugin: Support for error (non-2xx) response codes.
 - Actix plugin: Type-level and field-level documentation is now used for `description` fields in schema and properties.
+- Actix plugin: Security definitions (globally) and security requirements (for operations).
+- Actix plugin: Support for `serde_json::Value`, `serde_yaml::Value`, `uuid::Uuid` (through `uid` feature) and `chrono::NaiveDateTime` (through `datetime` feature) in structs.
 
 ### Changed
 - Switched to templating for (almost) static modules.
@@ -44,17 +47,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: `#[api_v2_schema]` macro attribute is now `#[derive(Apiv2Schema)]`.
 
 ### Fixed
-- Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.
-- Actix plugin: `web::Path<T>` also supports simple types (strings, integers, etc.).
-- Actix plugin: `#[api_v2_schema]` derivatives can now use references.
-- Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
-- Actix plugin: `web::scope` supports having path parameters.
 - Switched `enum` field to array of `any` rather than strings.
 - Resolution of anonymous schema definitions in objects, operation parameters and responses.
 - Unmappable operations (i.e., without body parameters and simple response types) are now namespaced in a separate module.
 - Array definitions are now allowed in schemas.
 - `additionalProperties` takes boolean or a schema.
 - Deadlock when resolving some recursive types.
+- Actix plugin: `.route()` method call on `App`, `Scope` and `ServiceConfig` don't override existing route operations.
+- Actix plugin: `web::Path<T>` also supports simple types (strings, integers, etc.).
+- Actix plugin: `#[api_v2_schema]` derivatives can now use references.
+- Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
+- Actix plugin: `web::scope` supports having path parameters.
 
 ## [0.3.0] - 2019-07-30
 ### Added
