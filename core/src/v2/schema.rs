@@ -182,6 +182,12 @@ impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
+#[cfg(feature = "actix-multipart")]
+impl_type_simple!(
+    actix_multipart::Multipart,
+    DataType::File,
+    DataTypeFormat::Binary
+);
 #[cfg(feature = "datetime")]
 impl_type_simple!(
     chrono::NaiveDateTime,
