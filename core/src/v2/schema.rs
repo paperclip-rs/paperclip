@@ -198,6 +198,16 @@ impl_type_simple!(
 #[cfg(feature = "uid")]
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
+#[cfg(feature = "datetime")]
+impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
+    fn data_type() -> DataType {
+        DataType::String
+    }
+    fn format() -> Option<DataTypeFormat> {
+        Some(DataTypeFormat::DateTime)
+    }
+}
+
 /// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
 /// framework-specific macros:
 ///
