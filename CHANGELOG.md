@@ -58,6 +58,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: `#[api_v2_schema]` derivatives can now use references.
 - Actix plugin: Breakage of `#[api_v2_operation]` when returning `impl Handler`.
 - Actix plugin: `web::scope` supports having path parameters.
+- Actix plugin: Misuse of `actix_web::Scope` in `App::configure` which resulted in missing overwritten routes.
 
 ## [0.3.0] - 2019-07-30
 ### Added

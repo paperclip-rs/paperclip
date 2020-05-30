@@ -21,7 +21,7 @@ use std::sync::Arc;
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
-    inner: actix_web::App<T, B>,
+    inner: Option<actix_web::App<T, B>>,
 }
 
 /// Extension trait for actix-web applications.
@@ -39,7 +39,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
     fn wrap_api(self) -> Self::Wrapper {
         App {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
-            inner: self,
+            inner: Some(self),
         }
     }
 }
@@ -82,7 +82,7 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn data<U: 'static>(mut self, data: U) -> Self {
-        self.inner = self.inner.data(data);
+        self.inner = self.inner.take().map(|a| a.data(data));
         self
     }
 
@@ -96,7 +96,7 @@ where
         D: 'static,
         E: Debug,
     {
-        self.inner = self.inner.data_factory(data);
+        self.inner = self.inner.take().map(|a| a.data_factory(data));
         self
     }
 
@@ -104,23 +104,30 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn app_data<U: 'static>(mut self, data: U) -> Self {
-        self.inner = self.inner.app_data(data);
+        self.inner = self.inner.take().map(|a| a.app_data(data));
         self
     }
 
     /// Wrapper for [`actix_web::App::configure`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.configure).
-    pub fn configure<F>(self, f: F) -> Self
+    pub fn configure<F>(mut self, f: F) -> Self
     where
         F: FnOnce(&mut ServiceConfig),
     {
-        self.service(Scope::new("").configure(f))
+        self.inner = self.inner.take().map(|s| {
+            s.configure(|c| {
+                let mut cfg = ServiceConfig::from(c);
+                f(&mut cfg);
+                self.update_from_mountable(&mut cfg);
+            })
+        });
+        self
     }
 
     /// Wrapper for [`actix_web::App::route`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.route).
     pub fn route(mut self, path: &str, route: Route) -> Self {
         let mut w = RouteWrapper::from(path, route);
         self.update_from_mountable(&mut w);
-        self.inner = self.inner.route(path, w.inner);
+        self.inner = self.inner.take().map(|a| a.route(path, w.inner));
         self
     }
 
@@ -130,7 +137,7 @@ where
         F: Mountable + HttpServiceFactory + 'static,
     {
         self.update_from_mountable(&mut factory);
-        self.inner = self.inner.service(factory);
+        self.inner = self.inner.take().map(|a| a.service(factory));
         self
     }
 
@@ -149,7 +156,7 @@ where
             > + 'static,
         U::InitError: Debug,
     {
-        self.inner = self.inner.default_service(f);
+        self.inner = self.inner.take().map(|a| a.default_service(f));
         self
     }
 
@@ -161,7 +168,7 @@ where
         N: AsRef<str>,
         U: AsRef<str>,
     {
-        self.inner = self.inner.external_resource(name, url);
+        self.inner = self.inner.take().map(|a| a.external_resource(name, url));
         self
     }
 
@@ -169,7 +176,7 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn wrap<M, B1>(
-        self,
+        mut self,
         mw: M,
     ) -> App<
         impl ServiceFactory<
@@ -193,7 +200,7 @@ where
     {
         App {
             spec: self.spec,
-            inner: self.inner.wrap(mw),
+            inner: self.inner.take().map(|a| a.wrap(mw)),
         }
     }
 
@@ -201,7 +208,7 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn wrap_fn<B1, F, R>(
-        self,
+        mut self,
         mw: F,
     ) -> App<
         impl ServiceFactory<
@@ -220,7 +227,7 @@ where
     {
         App {
             spec: self.spec,
-            inner: self.inner.wrap_fn(mw),
+            inner: self.inner.take().map(|a| a.wrap_fn(mw)),
         }
     }
 
@@ -228,10 +235,12 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_at(mut self, path: &str) -> Self {
-        self.inner = self.inner.service(
-            actix_web::web::resource(path)
-                .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
-        );
+        self.inner = self.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource(path)
+                    .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
+            )
+        });
         self
     }
 
@@ -252,7 +261,7 @@ where
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
         self.spec.write().resolve_security_defs();
-        self.inner
+        self.inner.expect("missing app?")
     }
 
     /// Updates the underlying spec with definitions and operations from the given factory.

@@ -273,7 +273,7 @@ pub struct Scope<S = actix_web::Scope> {
     path: String,
     path_map: BTreeMap<String, DefaultPathItemRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
-    inner: S,
+    inner: Option<S>,
 }
 
 impl Scope {
@@ -283,7 +283,7 @@ impl Scope {
             path: path.into(),
             path_map: BTreeMap::new(),
             definitions: BTreeMap::new(),
-            inner: actix_web::Scope::new(path),
+            inner: Some(actix_web::Scope::new(path)),
         }
     }
 }
@@ -299,7 +299,7 @@ where
         > + 'static,
 {
     fn register(self, config: &mut AppService) {
-        self.inner.register(config)
+        self.inner.map(|s| s.register(config));
     }
 }
 
@@ -317,7 +317,7 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn guard<G: Guard + 'static>(mut self, guard: G) -> Self {
-        self.inner = self.inner.guard(guard);
+        self.inner = self.inner.take().map(|s| s.guard(guard));
         self
     }
 
@@ -325,27 +325,22 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn data<U: 'static>(mut self, data: U) -> Self {
-        self.inner = self.inner.data(data);
+        self.inner = self.inner.take().map(|s| s.data(data));
         self
     }
 
     /// Wrapper for [`actix_web::Scope::configure`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.configure).
     pub fn configure<F>(mut self, f: F) -> Self
     where
-        F: FnOnce(&mut ServiceConfig<actix_web::Scope<T>>),
+        F: FnOnce(&mut ServiceConfig),
     {
-        let mut cfg = ServiceConfig {
-            path_map: BTreeMap::new(),
-            definitions: BTreeMap::new(),
-            scope: Some(self.inner),
-        };
-
-        f(&mut cfg);
-        self.inner = cfg
-            .scope
-            .take()
-            .expect("missing scope object after configuring?");
-        self.update_from_mountable(&mut cfg);
+        self.inner = self.inner.take().map(|s| {
+            s.configure(|c| {
+                let mut cfg = ServiceConfig::from(c);
+                f(&mut cfg);
+                self.update_from_mountable(&mut cfg);
+            })
+        });
         self
     }
 
@@ -355,7 +350,7 @@ where
         F: Mountable + HttpServiceFactory + 'static,
     {
         self.update_from_mountable(&mut factory);
-        self.inner = self.inner.service(factory);
+        self.inner = self.inner.take().map(|s| s.service(factory));
         self
     }
 
@@ -363,7 +358,7 @@ where
     pub fn route(mut self, path: &str, route: Route) -> Self {
         let mut w = RouteWrapper::from(path, route);
         self.update_from_mountable(&mut w);
-        self.inner = self.inner.route(path, w.inner);
+        self.inner = self.inner.take().map(|s| s.route(path, w.inner));
         self
     }
 
@@ -382,7 +377,7 @@ where
             > + 'static,
         U::InitError: Debug,
     {
-        self.inner = self.inner.default_service(f);
+        self.inner = self.inner.map(|s| s.default_service(f));
         self
     }
 
@@ -390,7 +385,7 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn wrap<M>(
-        self,
+        mut self,
         mw: M,
     ) -> Scope<
         actix_web::Scope<
@@ -416,7 +411,7 @@ where
             path: self.path,
             path_map: self.path_map,
             definitions: self.definitions,
-            inner: self.inner.wrap(mw),
+            inner: self.inner.take().map(|s| s.wrap(mw)),
         }
     }
 
@@ -424,7 +419,7 @@ where
     ///
     /// **NOTE:** This doesn't affect spec generation.
     pub fn wrap_fn<F, R>(
-        self,
+        mut self,
         mw: F,
     ) -> Scope<
         actix_web::Scope<
@@ -445,7 +440,7 @@ where
             path: self.path,
             path_map: self.path_map,
             definitions: self.definitions,
-            inner: self.inner.wrap_fn(mw),
+            inner: self.inner.take().map(|s| s.wrap_fn(mw)),
         }
     }
 
@@ -482,7 +477,12 @@ impl<T> Mountable for Scope<T> {
     }
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
-        *map = mem::replace(&mut self.path_map, BTreeMap::new());
+        for (path, item) in mem::replace(&mut self.path_map, BTreeMap::new()) {
+            let op_map = map
+                .entry(path)
+                .or_insert_with(Default::default);
+            op_map.methods.extend(item.methods.into_iter());
+        }
     }
 }
 
@@ -659,13 +659,23 @@ where
 /* Service config */
 
 /// Wrapper for [`actix_web::web::ServiceConfig`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html).
-pub struct ServiceConfig<S = actix_web::Scope> {
+pub struct ServiceConfig<'a> {
     path_map: BTreeMap<String, DefaultPathItemRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
-    scope: Option<S>,
+    inner: &'a mut actix_web::web::ServiceConfig,
 }
 
-impl<T> Mountable for ServiceConfig<T> {
+impl<'a> From<&'a mut actix_web::web::ServiceConfig> for ServiceConfig<'a> {
+    fn from(cfg: &'a mut actix_web::web::ServiceConfig) -> Self {
+        ServiceConfig {
+            path_map: BTreeMap::new(),
+            definitions: BTreeMap::new(),
+            inner: cfg,
+        }
+    }
+}
+
+impl<'a> Mountable for ServiceConfig<'a> {
     fn path(&self) -> &str {
         unimplemented!("ServiceConfig has multiple paths. Use `update_operations` object instead.");
     }
@@ -681,26 +691,22 @@ impl<T> Mountable for ServiceConfig<T> {
     }
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
-        *map = mem::replace(&mut self.path_map, BTreeMap::new());
+        for (path, item) in mem::replace(&mut self.path_map, BTreeMap::new()) {
+            let op_map = map
+                .entry(path)
+                .or_insert_with(Default::default);
+            op_map.methods.extend(item.methods.into_iter());
+        }
     }
 }
 
-impl<T> ServiceConfig<actix_web::Scope<T>>
-where
-    T: ServiceFactory<
-        Config = (),
-        Request = ServiceRequest,
-        Response = ServiceResponse,
-        Error = Error,
-        InitError = (),
-    >,
-{
+impl<'a> ServiceConfig<'a> {
     /// Wrapper for [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
     pub fn route(&mut self, path: &str, route: Route) -> &mut Self {
         let mut w = RouteWrapper::from(path, route);
         self.definitions.extend(w.definitions().into_iter());
         w.update_operations(&mut self.path_map);
-        self.scope = self.scope.take().map(|s| s.route(path, w.inner));
+        self.inner.route(path, w.inner);
         self
     }
 
@@ -711,7 +717,7 @@ where
     {
         self.definitions.extend(factory.definitions().into_iter());
         factory.update_operations(&mut self.path_map);
-        self.scope = self.scope.take().map(|s| s.service(factory));
+        self.inner.service(factory);
         self
     }
 
@@ -723,11 +729,7 @@ where
         N: AsRef<str>,
         U: AsRef<str>,
     {
-        self.scope = self.scope.take().map(|s| {
-            s.configure(|cfg| {
-                cfg.external_resource(name, url);
-            })
-        });
+        self.inner.external_resource(name, url);
         self
     }
 }

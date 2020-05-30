@@ -843,14 +843,14 @@ fn test_multiple_method_routes() {
     {
         run_and_check_app(f, |addr| {
             let resp = CLIENT
-                .get(&format!("http://{}/foo", addr))
+                .get(&format!("http://{}/v1/foo", addr))
                 .send()
                 .expect("request failed?");
             assert_eq!(resp.status().as_u16(), 200);
             assert_eq!(resp.text().unwrap(), "get");
 
             let resp = CLIENT
-                .post(&format!("http://{}/foo", addr))
+                .post(&format!("http://{}/v1/foo", addr))
                 .send()
                 .expect("request failed?");
             assert_eq!(resp.status().as_u16(), 200);
@@ -867,7 +867,7 @@ fn test_multiple_method_routes() {
                   "info":{"title":"","version":""},
                   "definitions": {},
                   "paths": {
-                    "/foo": {
+                    "/v1/foo": {
                       "get": {
                         "responses": {},
                       },
@@ -886,29 +886,40 @@ fn test_multiple_method_routes() {
         App::new()
             .wrap_api()
             .with_json_spec_at("/api/spec")
-            .route("/foo", web::get().to(test_get))
-            .route("/foo", web::post().to(test_post))
+            .route("/v1/foo", web::get().to(test_get))
+            .route("/v1/foo", web::post().to(test_post))
             .build()
     });
 
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.route("/foo", web::get().to(test_get))
-            .route("/foo", web::post().to(test_post));
+           .route("/foo", web::post().to(test_post));
     }
 
     test_app(|| {
         App::new()
             .wrap_api()
             .with_json_spec_at("/api/spec")
-            .service(web::scope("").configure(config))
+            .service(
+                web::scope("/v1").configure(config)
+            )
             .build()
     });
+
+    fn config_1(cfg: &mut web::ServiceConfig) {
+        cfg.route("/v1/foo", web::get().to(test_get));
+    }
+
+    fn config_2(cfg: &mut web::ServiceConfig) {
+        cfg.route("/v1/foo", web::post().to(test_post));
+    }
 
     test_app(|| {
         App::new()
             .wrap_api()
             .with_json_spec_at("/api/spec")
-            .configure(config)
+            .configure(config_1)
+            .configure(config_2)
             .build()
     });
 }
