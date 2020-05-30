@@ -13,7 +13,7 @@ use actix_web::dev::{
 use actix_web::guard::Guard;
 use actix_web::{http::Method, Error, FromRequest, Responder};
 use paperclip_core::v2::models::{
-    DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
+    DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod, SecurityScheme,
 };
 use paperclip_core::v2::schema::Apiv2Operation;
 
@@ -39,6 +39,7 @@ pub struct Resource<R = actix_web::Resource> {
     path: String,
     operations: BTreeMap<HttpMethod, DefaultOperationRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
+    security: BTreeMap<String, SecurityScheme>,
     inner: R,
 }
 
@@ -49,6 +50,7 @@ impl Resource {
             path: path.into(),
             operations: BTreeMap::new(),
             definitions: BTreeMap::new(),
+            security: BTreeMap::new(),
             inner: actix_web::Resource::new(path),
         }
     }
@@ -96,6 +98,10 @@ impl<T> Mountable for Resource<T> {
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
         mem::replace(&mut self.definitions, BTreeMap::new())
     }
+
+    fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
+        mem::replace(&mut self.security, BTreeMap::new())
+    }
 }
 
 impl<T> Resource<actix_web::Resource<T>>
@@ -129,6 +135,7 @@ where
         let w = RouteWrapper::from(&self.path, route);
         self.operations.extend(w.operations.into_iter());
         self.definitions.extend(w.definitions.into_iter());
+        SecurityScheme::append_map(w.security, &mut self.security);
         self.inner = self.inner.route(w.inner);
         self
     }
@@ -193,6 +200,7 @@ where
             path: self.path,
             operations: self.operations,
             definitions: self.definitions,
+            security: self.security,
             inner: self.inner.wrap(mw),
         }
     }
@@ -222,6 +230,7 @@ where
             path: self.path,
             operations: self.operations,
             definitions: self.definitions,
+            security: self.security,
             inner: self.inner.wrap_fn(mw),
         }
     }
@@ -252,12 +261,12 @@ where
     {
         let mut op = F::operation();
         op.set_parameter_names_from_path_template(&self.path);
-
         for method in METHODS {
             self.operations.insert(method.into(), op.clone());
         }
 
         self.definitions.extend(F::definitions().into_iter());
+        SecurityScheme::append_map(F::security_definitions(), &mut self.security);
     }
 }
 
@@ -273,6 +282,7 @@ pub struct Scope<S = actix_web::Scope> {
     path: String,
     path_map: BTreeMap<String, DefaultPathItemRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
+    security: BTreeMap<String, SecurityScheme>,
     inner: Option<S>,
 }
 
@@ -283,6 +293,7 @@ impl Scope {
             path: path.into(),
             path_map: BTreeMap::new(),
             definitions: BTreeMap::new(),
+            security: BTreeMap::new(),
             inner: Some(actix_web::Scope::new(path)),
         }
     }
@@ -299,7 +310,9 @@ where
         > + 'static,
 {
     fn register(self, config: &mut AppService) {
-        self.inner.map(|s| s.register(config));
+        if let Some(s) = self.inner {
+            s.register(config);
+        }
     }
 }
 
@@ -411,6 +424,7 @@ where
             path: self.path,
             path_map: self.path_map,
             definitions: self.definitions,
+            security: self.security,
             inner: self.inner.take().map(|s| s.wrap(mw)),
         }
     }
@@ -440,6 +454,7 @@ where
             path: self.path,
             path_map: self.path_map,
             definitions: self.definitions,
+            security: self.security,
             inner: self.inner.take().map(|s| s.wrap_fn(mw)),
         }
     }
@@ -460,6 +475,8 @@ where
 
             self.path_map.insert(p.clone(), map);
         }
+
+        SecurityScheme::append_map(factory.security_definitions(), &mut self.security);
     }
 }
 
@@ -472,15 +489,17 @@ impl<T> Mountable for Scope<T> {
         unimplemented!("Scope has multiple operation maps. Use `update_operations` object instead.")
     }
 
+    fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
+        mem::replace(&mut self.security, BTreeMap::new())
+    }
+
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
         mem::replace(&mut self.definitions, BTreeMap::new())
     }
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         for (path, item) in mem::replace(&mut self.path_map, BTreeMap::new()) {
-            let op_map = map
-                .entry(path)
-                .or_insert_with(Default::default);
+            let op_map = map.entry(path).or_insert_with(Default::default);
             op_map.methods.extend(item.methods.into_iter());
         }
     }
@@ -498,6 +517,7 @@ pub struct Route {
     method: Option<HttpMethod>,
     operation: Option<DefaultOperationRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
+    security: BTreeMap<String, SecurityScheme>,
     inner: actix_web::Route,
 }
 
@@ -524,6 +544,7 @@ impl Route {
             method: None,
             operation: None,
             definitions: BTreeMap::new(),
+            security: BTreeMap::new(),
             inner: actix_web::Route::new(),
         }
     }
@@ -553,6 +574,7 @@ impl Route {
     {
         self.operation = Some(F::operation());
         self.definitions = F::definitions();
+        self.security = F::security_definitions();
         self.inner = self.inner.to(handler);
         self
     }
@@ -609,6 +631,7 @@ pub(crate) struct RouteWrapper<S> {
     path: S,
     pub(crate) operations: BTreeMap<HttpMethod, DefaultOperationRaw>,
     pub(crate) definitions: BTreeMap<String, DefaultSchemaRaw>,
+    pub(crate) security: BTreeMap<String, SecurityScheme>,
     pub(crate) inner: actix_web::Route,
 }
 
@@ -634,6 +657,7 @@ where
             path,
             operations,
             definitions: route.definitions,
+            security: route.security,
             inner: route.inner,
         }
     }
@@ -651,6 +675,10 @@ where
         mem::replace(&mut self.operations, BTreeMap::new())
     }
 
+    fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
+        mem::replace(&mut self.security, BTreeMap::new())
+    }
+
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
         mem::replace(&mut self.definitions, BTreeMap::new())
     }
@@ -662,6 +690,7 @@ where
 pub struct ServiceConfig<'a> {
     path_map: BTreeMap<String, DefaultPathItemRaw>,
     definitions: BTreeMap<String, DefaultSchemaRaw>,
+    security: BTreeMap<String, SecurityScheme>,
     inner: &'a mut actix_web::web::ServiceConfig,
 }
 
@@ -670,6 +699,7 @@ impl<'a> From<&'a mut actix_web::web::ServiceConfig> for ServiceConfig<'a> {
         ServiceConfig {
             path_map: BTreeMap::new(),
             definitions: BTreeMap::new(),
+            security: BTreeMap::new(),
             inner: cfg,
         }
     }
@@ -686,15 +716,17 @@ impl<'a> Mountable for ServiceConfig<'a> {
         )
     }
 
+    fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
+        mem::replace(&mut self.security, BTreeMap::new())
+    }
+
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
         mem::replace(&mut self.definitions, BTreeMap::new())
     }
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         for (path, item) in mem::replace(&mut self.path_map, BTreeMap::new()) {
-            let op_map = map
-                .entry(path)
-                .or_insert_with(Default::default);
+            let op_map = map.entry(path).or_insert_with(Default::default);
             op_map.methods.extend(item.methods.into_iter());
         }
     }
@@ -706,6 +738,7 @@ impl<'a> ServiceConfig<'a> {
         let mut w = RouteWrapper::from(path, route);
         self.definitions.extend(w.definitions().into_iter());
         w.update_operations(&mut self.path_map);
+        SecurityScheme::append_map(w.security, &mut self.security);
         self.inner.route(path, w.inner);
         self
     }
@@ -717,6 +750,7 @@ impl<'a> ServiceConfig<'a> {
     {
         self.definitions.extend(factory.definitions().into_iter());
         factory.update_operations(&mut self.path_map);
+        SecurityScheme::append_map(factory.security_definitions(), &mut self.security);
         self.inner.service(factory);
         self
     }

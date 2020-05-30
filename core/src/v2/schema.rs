@@ -214,14 +214,17 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
     }
 }
 
-/// Represents a OpenAPI v2 schema convertible. This is auto-implemented by
+/// Represents a OpenAPI v2 schema object convertible. This is auto-implemented by
 /// framework-specific macros:
 ///
-/// - [`api_v2_schema`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_schema.html) macro.
+/// - [`Apiv2Schema`](https://paperclip.waffles.space/paperclip_actix/derive.Apiv2Schema.html)
+/// for schema objects.
+/// - [`Apiv2Security`](https://paperclip.waffles.space/paperclip_actix/derive.Apiv2Security.html)
+/// for security scheme objects.
 ///
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
-    /// Name of this schema. This is the object's name.
+    /// Name of this schema. This is the name to which the definition of the object is mapped.
     const NAME: Option<&'static str> = None;
 
     /// Description of this schema. In case the trait is derived, uses the documentation on the type.
@@ -258,8 +261,8 @@ pub trait Apiv2Schema {
     }
 
     /// Returns the security scheme for this object.
-    fn security_schema() -> Option<(String, SecurityScheme)> {
-        Default::default()
+    fn security_scheme() -> Option<SecurityScheme> {
+        None
     }
 }
 
@@ -282,8 +285,8 @@ impl<T> Apiv2Schema for Option<T> {
         Default::default()
     }
 
-    default fn security_schema() -> Option<(String, SecurityScheme)> {
-        Default::default()
+    default fn security_scheme() -> Option<SecurityScheme> {
+        None
     }
 }
 
@@ -294,8 +297,8 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
         T::raw_schema()
     }
 
-    fn security_schema() -> Option<(String, SecurityScheme)> {
-        T::security_schema()
+    fn security_scheme() -> Option<SecurityScheme> {
+        T::security_scheme()
     }
 }
 
@@ -307,7 +310,7 @@ impl<T, E> Apiv2Schema for Result<T, E> {
         Default::default()
     }
 
-    default fn security_schema() -> Option<(String, SecurityScheme)> {
+    default fn security_scheme() -> Option<SecurityScheme> {
         Default::default()
     }
 }
@@ -319,8 +322,8 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
         T::raw_schema()
     }
 
-    fn security_schema() -> Option<(String, SecurityScheme)> {
-        T::security_schema()
+    fn security_scheme() -> Option<SecurityScheme> {
+        T::security_scheme()
     }
 }
 
@@ -331,18 +334,14 @@ impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
         T::raw_schema()
     }
 
-    fn security_schema() -> Option<(String, SecurityScheme)> {
-        T::security_schema()
+    fn security_scheme() -> Option<SecurityScheme> {
+        T::security_scheme()
     }
 }
 
 impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
     fn raw_schema() -> DefaultSchemaRaw {
         Vec::<T>::raw_schema()
-    }
-
-    fn security_schema() -> Option<(String, SecurityScheme)> {
-        Vec::<T>::security_schema()
     }
 }
 
@@ -414,6 +413,9 @@ impl_schema_map!(BTreeMap<K, V>);
 pub trait Apiv2Operation<T, R> {
     /// Returns the definition for this operation.
     fn operation() -> DefaultOperationRaw;
+
+    /// Returns a map of security definitions that will be merged globally.
+    fn security_definitions() -> BTreeMap<String, SecurityScheme>;
 
     /// Returns the definitions used by this operation.
     fn definitions() -> BTreeMap<String, DefaultSchemaRaw>;

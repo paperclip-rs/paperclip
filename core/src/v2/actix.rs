@@ -29,7 +29,12 @@ pub trait OperationModifier: Apiv2Schema + Sized {
 
     /// Update the security map in the given operation (if needed).
     fn update_security(op: &mut DefaultOperationRaw) {
-        update_security(op, Self::security_schema());
+        update_security::<Self>(op);
+    }
+
+    /// Update the security defition map (if needed).
+    fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
+        update_security_definitions::<Self>(map);
     }
 }
 
@@ -47,9 +52,12 @@ where
         update_definitions_from_schema_type::<Self>(map);
     }
 
-    /// Update the security map in the given operation (if needed).
     default fn update_security(op: &mut DefaultOperationRaw) {
-        update_security(op, Self::security_schema());
+        update_security::<Self>(op);
+    }
+
+    default fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
+        update_security_definitions::<Self>(map);
     }
 }
 
@@ -72,6 +80,10 @@ where
     fn update_security(op: &mut DefaultOperationRaw) {
         T::update_security(op);
     }
+
+    fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
+        T::update_security_definitions(map);
+    }
 }
 
 #[cfg(feature = "nightly")]
@@ -89,6 +101,10 @@ where
 
     default fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         T::update_definitions(map);
+    }
+
+    default fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
+        T::update_security_definitions(map);
     }
 }
 
@@ -108,6 +124,10 @@ where
 
     fn update_definitions(map: &mut BTreeMap<String, DefaultSchemaRaw>) {
         T::update_definitions(map);
+    }
+
+    fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
+        T::update_security_definitions(map);
     }
 }
 
@@ -388,6 +408,15 @@ macro_rules! impl_fn_operation ({ $($ty:ident),* } => {
             op
         }
 
+        #[allow(unused_mut)]
+        fn security_definitions() -> BTreeMap<String, SecurityScheme> {
+            let mut map = BTreeMap::new();
+            $(
+                $ty::update_security_definitions(&mut map);
+            )*
+            map
+        }
+
         fn definitions() -> BTreeMap<String, DefaultSchemaRaw> {
             let mut map = BTreeMap::new();
             $(
@@ -449,19 +478,25 @@ where
     }
 }
 
-/// Add security definitions to operation.
-fn update_security(op: &mut DefaultOperationRaw, security_def: Option<(String, SecurityScheme)>) {
-    if let Some(security_def) = &security_def {
-        let mut security_roles = Vec::new();
-        for role in security_def.1.scopes.keys() {
-            security_roles.push(role.clone());
-        }
+/// Add security requirements to operation.
+fn update_security<T>(op: &mut DefaultOperationRaw)
+where
+    T: Apiv2Schema,
+{
+    if let (Some(name), Some(scheme)) = (T::NAME, T::security_scheme()) {
+        let mut security_map = BTreeMap::new();
+        let scopes = scheme.scopes.keys().map(String::clone).collect();
+        security_map.insert(name.into(), scopes);
+        op.security.push(security_map);
+    }
+}
 
-        let mut security_def_map = BTreeMap::new();
-        security_def_map.insert(security_def.0.to_string(), security_roles);
-
-        op.security.push(security_def_map);
-        op.security_definitions
-            .insert(security_def.0.to_string(), security_def.1.clone());
+/// Merge security scheme into existing security definitions or add new.
+fn update_security_definitions<T>(map: &mut BTreeMap<String, SecurityScheme>)
+where
+    T: Apiv2Schema,
+{
+    if let (Some(name), Some(new)) = (T::NAME, T::security_scheme()) {
+        new.update_definitions(name, map);
     }
 }

@@ -10,9 +10,9 @@ use std::collections::HashMap;
 use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
-    punctuated::Punctuated, Attribute, Data, DataEnum, Field, Fields, FieldsNamed, FieldsUnnamed,
-    Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, ReturnType, Token, TraitBound,
-    Type,
+    punctuated::Punctuated, Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed,
+    FieldsUnnamed, Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, ReturnType,
+    Token, TraitBound, Type,
 };
 
 const SCHEMA_MACRO_ATTR: &str = "openapi";
@@ -202,41 +202,26 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         Err(ts) => return ts,
     };
 
+    if let Some(empty) = check_empty_schema(&item_ast) {
+        return empty;
+    }
+
     let docs = extract_documentation(&item_ast.attrs);
     let docs = docs.trim();
 
     let props = SerdeProps::from_item_attrs(&item_ast.attrs);
-    let needs_empty_schema = extract_openapi_attrs(&item_ast.attrs).any(|nested| {
-        nested.len() == 1
-            && match &nested[0] {
-                NestedMeta::Meta(Meta::Path(path)) => path.is_ident("empty"),
-                _ => false,
-            }
-    });
-
     let name = &item_ast.ident;
 
     // Add `Apiv2Schema` bound for impl if the type is generic.
     let mut generics = item_ast.generics.clone();
-    if !needs_empty_schema {
-        let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
-            .expect("expected to parse trait bound");
-        generics.type_params_mut().for_each(|param| {
-            param.bounds.push(bound.clone().into());
-        });
-    }
+    let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
+        .expect("expected to parse trait bound");
+    generics.type_params_mut().for_each(|param| {
+        param.bounds.push(bound.clone().into());
+    });
 
     let opt_impl = add_optional_impl(&name, &generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    if needs_empty_schema {
-        return quote!(
-            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-                const DESCRIPTION: &'static str = #docs;
-            }
-
-            #opt_impl
-        ).into();
-    }
 
     // FIXME: Use attr path segments to find flattening, skipping, etc.
     let mut props_gen = quote! {};
@@ -301,37 +286,21 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
         Err(ts) => return ts,
     };
 
-    let needs_empty_schema = extract_openapi_attrs(&item_ast.attrs).any(|nested| {
-        nested.len() == 1
-            && match &nested[0] {
-                NestedMeta::Meta(Meta::Path(path)) => path.is_ident("empty"),
-                _ => false,
-            }
-    });
+    if let Some(empty) = check_empty_schema(&item_ast) {
+        return empty;
+    }
 
     let name = &item_ast.ident;
-
     // Add `Apiv2Schema` bound for impl if the type is generic.
     let mut generics = item_ast.generics.clone();
-    if !needs_empty_schema {
-        let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
-            .expect("expected to parse trait bound");
-        generics.type_params_mut().for_each(|param| {
-            param.bounds.push(bound.clone().into());
-        });
-    }
+    let bound = syn::parse2::<TraitBound>(quote!(paperclip::v2::schema::Apiv2Schema))
+        .expect("expected to parse trait bound");
+    generics.type_params_mut().for_each(|param| {
+        param.bounds.push(bound.clone().into());
+    });
 
     let opt_impl = add_optional_impl(&name, &generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    if needs_empty_schema {
-        return quote!(
-            #item_ast
-
-            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
-
-            #opt_impl
-        ).into();
-    }
 
     let mut security_attrs = HashMap::new();
     let mut scopes = Vec::new();
@@ -445,7 +414,10 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
             stream
         });
 
-    let security_def = match (security_attrs.get("type"), security_attrs.get("parent")) {
+    let (security_def, security_def_name) = match (
+        security_attrs.get("type"),
+        security_attrs.get("parent"),
+    ) {
         (Some(type_), None) => {
             let alias = security_attrs.get("alias").unwrap_or_else(|| type_);
             let quoted_description = quote_option(security_attrs.get("description"));
@@ -455,67 +427,60 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
             let quoted_auth_url = quote_option(security_attrs.get("auth_url"));
             let quoted_token_url = quote_option(security_attrs.get("token_url"));
 
-            Some(quote! {
-                let mut oauth2_scopes = std::collections::BTreeMap::new();
-                #scopes_stream
-                Some((
-                    #alias.to_string(),
-                    paperclip::v2::models::SecurityScheme {
+            (
+                Some(quote! {
+                    Some(paperclip::v2::models::SecurityScheme {
                         type_: #type_.to_string(),
                         name: #quoted_name,
                         in_: #quoted_in,
                         flow: #quoted_flow,
                         auth_url: #quoted_auth_url,
                         token_url: #quoted_token_url,
-                        scopes: oauth2_scopes,
+                        scopes: std::collections::BTreeMap::new(),
                         description: #quoted_description,
-                    }
-                ))
-            })
+                    })
+                }),
+                Some(quote!(Some(#alias))),
+            )
         }
         (None, Some(parent)) => {
+            let parent_ident = Ident::new(parent, proc_macro2::Span::call_site());
             // Child of security definition (Scopes will be glued to parent definition).
-            Some(quote! {
-                let mut oauth2_scopes = std::collections::BTreeMap::new();
-                #scopes_stream
-                Some((
-                    #parent.to_string(),
-                    paperclip::v2::models::SecurityScheme {
-                        type_: "".to_string(),
-                        name: None,
-                        in_: None,
-                        flow: None,
-                        auth_url: None,
-                        token_url: None,
-                        scopes: oauth2_scopes,
-                        description: None,
-                    }
-                ))
-            })
+            (
+                Some(quote! {
+                    let mut oauth2_scopes = std::collections::BTreeMap::new();
+                    #scopes_stream
+                    let mut scheme = #parent_ident::security_scheme()
+                        .expect("empty schema. did you derive `Apiv2Security` for parent struct?");
+                    scheme.scopes = oauth2_scopes;
+                    Some(scheme)
+                }),
+                Some(quote!(<#parent_ident as paperclip::v2::schema::Apiv2Schema>::NAME)),
+            )
         }
         (Some(_), Some(_)) => {
             emit_error!(
                 item_ast.span().unwrap(),
                 "Can't define new security type and use parent attribute together."
             );
-            None
+            (None, None)
         }
         (None, None) => {
             emit_error!(
                 item_ast.span().unwrap(),
                 "Invalid attributes. Expected security type or parent defined."
             );
-            None
+            (None, None)
         }
     };
 
-    let gen = if let Some(security_def) = security_def {
+    let gen = if let (Some(def_block), Some(def_name)) = (security_def, security_def_name) {
         quote! {
             impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-                const NAME: Option<&'static str> = None;
+                const NAME: Option<&'static str> = #def_name;
 
-                fn security_schema() -> Option<(String, paperclip::v2::models::SecurityScheme)> {
-                    #security_def
+                fn security_scheme() -> Option<paperclip::v2::models::SecurityScheme> {
+                    #def_block
                 }
             }
 
@@ -603,6 +568,31 @@ fn extract_documentation(attrs: &[Attribute]) -> String {
             _ => None,
         })
         .collect()
+}
+
+/// Checks if an empty schema has been requested and generate if needed.
+fn check_empty_schema(item_ast: &DeriveInput) -> Option<TokenStream> {
+    let needs_empty_schema = extract_openapi_attrs(&item_ast.attrs).any(|nested| {
+        nested.len() == 1
+            && match &nested[0] {
+                NestedMeta::Meta(Meta::Path(path)) => path.is_ident("empty"),
+                _ => false,
+            }
+    });
+
+    if needs_empty_schema {
+        let name = &item_ast.ident;
+        let generics = item_ast.generics.clone();
+        let opt_impl = add_optional_impl(&name, &generics);
+        let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+        return Some(quote!(
+            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
+
+            #opt_impl
+        ).into());
+    }
+
+    None
 }
 
 /// Generates code for a struct with fields.

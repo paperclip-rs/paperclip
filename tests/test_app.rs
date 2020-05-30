@@ -893,16 +893,14 @@ fn test_multiple_method_routes() {
 
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.route("/foo", web::get().to(test_get))
-           .route("/foo", web::post().to(test_post));
+            .route("/foo", web::post().to(test_post));
     }
 
     test_app(|| {
         App::new()
             .wrap_api()
             .with_json_spec_at("/api/spec")
-            .service(
-                web::scope("/v1").configure(config)
-            )
+            .service(web::scope("/v1").configure(config))
             .build()
     });
 
@@ -1138,6 +1136,7 @@ fn test_security_app() {
     #[derive(Apiv2Security, Deserialize)]
     #[openapi(
         oauth2,
+        alias = "MyOAuth2",
         auth_url = "http://example.com/",
         token_url = "http://example.com/token",
         flow = "password"
@@ -1155,7 +1154,7 @@ fn test_security_app() {
     }
 
     #[derive(Apiv2Security, Deserialize)]
-    #[openapi(parent = "oauth2", scopes("pets.read", "pets.write"))]
+    #[openapi(parent = "OAuth2Access", scopes("pets.read", "pets.write"))]
     struct PetScope;
 
     impl FromRequest for PetScope {
@@ -1174,19 +1173,13 @@ fn test_security_app() {
     }
 
     #[api_v2_operation]
-    async fn echo_pet_with_oauth2(_: OAuth2Access, body: web::Json<Pet>) -> web::Json<Pet> {
-        body
-    }
-
-    #[api_v2_operation]
     async fn echo_pet_with_petstore(_: PetScope, body: web::Json<Pet>) -> web::Json<Pet> {
         body
     }
 
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_jwt)))
-            .service(web::resource("/echo2").route(web::post().to(echo_pet_with_oauth2)))
-            .service(web::resource("/echo3").route(web::post().to(echo_pet_with_petstore)));
+            .service(web::resource("/echo2").route(web::post().to(echo_pet_with_petstore)));
     }
 
     run_and_check_app(
@@ -1278,34 +1271,9 @@ fn test_security_app() {
                             }
                           },
                         },
-                      "security": [
-                          {
-                            "oauth2": []
-                          }
-                        ]
-                      }
-                    },
-                    "/api/echo3": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
-                      "post": {
-                        "responses": {
-                          "200": {
-                            "description": "OK",
-                            "schema": {
-                              "$ref": "#/definitions/Pet"
-                            }
-                          },
-                        },
                         "security": [
                           {
-                            "oauth2": ["pets.read", "pets.write"]
+                            "MyOAuth2": ["pets.read", "pets.write"]
                           }
                         ]
                       }
@@ -1318,9 +1286,7 @@ fn test_security_app() {
                         "name": "Authorization",
                         "type": "apiKey"
                     },
-                    "oauth2": {
-                        "in": null,
-                        "name": null,
+                    "MyOAuth2": {
                         "scopes": {
                           "pets.read": "pets.read",
                           "pets.write": "pets.write"

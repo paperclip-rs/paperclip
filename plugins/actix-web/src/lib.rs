@@ -10,6 +10,7 @@ use actix_web::{web::HttpResponse, Error};
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{
     DefaultApiRaw, DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
+    SecurityScheme,
 };
 use parking_lot::RwLock;
 
@@ -54,6 +55,9 @@ pub trait Mountable {
 
     /// The definitions recorded by this object.
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw>;
+
+    /// The security definitions recorded by this object.
+    fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme>;
 
     /// Updates the given map of operations with operations tracked by this object.
     ///
@@ -260,7 +264,6 @@ where
 
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
-        self.spec.write().resolve_security_defs();
         self.inner.expect("missing app?")
     }
 
@@ -271,6 +274,10 @@ where
     {
         let mut api = self.spec.write();
         api.definitions.extend(factory.definitions().into_iter());
+        SecurityScheme::append_map(
+            factory.security_definitions(),
+            &mut api.security_definitions,
+        );
         factory.update_operations(&mut api.paths);
         for map in api.paths.values_mut() {
             map.normalize();

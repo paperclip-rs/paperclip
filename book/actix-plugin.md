@@ -234,11 +234,9 @@ If you need to define scopes for `oauth2`, use `parent` attribute:
 struct OAuth2Access;
 
 #[derive(Apiv2Security, Deserialize)]
-#[openapi(parent = "oauth2", scopes("pets.read", "pets.write"))]
+#[openapi(parent = "OAuth2Access", scopes("pets.read", "pets.write"))]
 struct PetScopeAccess;
 ```
-
-Keep in mind that the parent struct must be used in a mounted handler so paperclip could generate proper security definition when generating spec.
 
 #### Known limitations
 
@@ -253,7 +251,6 @@ Affected entity | Missing feature(s)
 --------------- | ---------------
 [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc.
 [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Headers as parameters.
-Security ([definitions](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityDefinitionsObject) and [requirements](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#securityRequirementObject)) | Authentication and Authorization.
 
 #### Performance implications?
 
