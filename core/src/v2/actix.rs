@@ -155,15 +155,15 @@ mod manual_impl {
     impl_simple!(u64);
     impl_simple!(u128);
     impl_simple!(usize);
-    #[cfg(feature = "datetime")]
+    #[cfg(feature = "chrono")]
     impl_simple!(chrono::NaiveDateTime);
-    #[cfg(feature = "decimal")]
+    #[cfg(feature = "rust_decimal")]
     impl_simple!(rust_decimal::Decimal);
-    #[cfg(feature = "uid")]
+    #[cfg(feature = "uuid")]
     impl_simple!(uuid::Uuid);
 }
 
-#[cfg(feature = "datetime")]
+#[cfg(feature = "chrono")]
 impl<T: chrono::TimeZone> OperationModifier for chrono::DateTime<T> {}
 
 // Other extractors

@@ -188,23 +188,23 @@ impl_type_simple!(
     DataType::File,
     DataTypeFormat::Binary
 );
-#[cfg(feature = "datetime")]
+#[cfg(feature = "chrono")]
 impl_type_simple!(
     chrono::NaiveDateTime,
     DataType::String,
     DataTypeFormat::DateTime
 );
-#[cfg(feature = "decimal")]
+#[cfg(feature = "rust_decimal")]
 impl_type_simple!(
     rust_decimal::Decimal,
     DataType::Number,
     DataTypeFormat::Float
 );
 
-#[cfg(feature = "uid")]
+#[cfg(feature = "uuid")]
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
-#[cfg(feature = "datetime")]
+#[cfg(feature = "chrono")]
 impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
     fn data_type() -> DataType {
         DataType::String

@@ -12,7 +12,7 @@ repository = "https://github.com/wafflespeanut/paperclip"
 [dependencies]
 actix-web = { version = "2.0", optional = true }
 actix-http = { version = "1.0", optional = true }
-actix-multipart = { version = "0.2", optional = true }
+actix-multipart = { version = "0", optional = true }
 chrono = { version = "0", optional = true }
 failure = "0.1"
 heck = { version = "0.3", optional = true }
@@ -30,10 +30,6 @@ uuid = { version = "0", optional = true }
 
 [features]
 actix = ["v2", "actix-http", "actix-web"]
-codegen = ["heck", "log"]
-datetime = ["chrono"]
-decimal = ["rust_decimal"]
-default = ["v2", "codegen"]
+codegen = ["v2", "heck", "log"]
 nightly = ["paperclip-macros/nightly"]
-uid = ["uuid"]
 v2 = ["paperclip-macros/v2"]

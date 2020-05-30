@@ -32,7 +32,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Actix plugin: Support for error (non-2xx) response codes.
 - Actix plugin: Type-level and field-level documentation is now used for `description` fields in schema and properties.
 - Actix plugin: Security definitions (globally) and security requirements (for operations).
-- Actix plugin: Support for `serde_json::Value`, `serde_yaml::Value`, `uuid::Uuid` (through `uid` feature) and `chrono::NaiveDateTime` (through `datetime` feature) in structs.
+- Actix plugin: Support for `serde_json::Value` and `serde_yaml::Value` (by default), and for objects from `uuid`, `rust_decimal`, `chrono`, etc. (through features of the same name) in structs.
 
 ### Changed
 - Switched to templating for (almost) static modules.

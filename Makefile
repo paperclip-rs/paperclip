@@ -26,7 +26,7 @@ build:
 
 test:
 	cargo clippy --all -- -D clippy::all
-	cargo test --all --features "actix cli datetime uid"
+	cargo test --all --features "actix cli chrono uuid"
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check
 	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check

@@ -1,7 +1,7 @@
 #![cfg_attr(feature = "nightly", feature(specialization))]
 //! Core structs and traits for paperclip.
 
-#[macro_use]
+#[cfg_attr(feature = "v2", macro_use)]
 extern crate serde;
 
 mod error;

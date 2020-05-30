@@ -1,5 +1,6 @@
 //! Interior mutability stuff.
 
+#[cfg(feature = "v2")]
 use crate::v2::models::Resolvable;
 use parking_lot::RwLock;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
@@ -119,6 +120,7 @@ where
     }
 }
 
+#[cfg(feature = "v2")]
 impl<T> Serialize for Resolvable<T>
 where
     T: Serialize,

@@ -22,10 +22,10 @@ matrix:
     - rustup toolchain install nightly
     - rustup default nightly
     script:
-    - cargo test --all --features "actix-nightly cli datetime uid"
+    - cargo test --all --features "actix-nightly cli chrono uuid"
   - name: test
     script:
-    - cargo test --all --features "actix cli datetime uid"
+    - cargo test --all --features "actix cli chrono uuid"
     - cd tests/test_k8s && cargo check
     - cd ../test_pet && cargo check
     - cd cli && CARGO_TARGET_DIR=../target cargo check
@@ -33,7 +33,7 @@ matrix:
   - name: docs
     script:
     - rm -rf target/doc
-    - cargo doc --all --features "actix cli datetime uid" --no-deps
+    - cargo doc --all --features "actix cli chrono uuid" --no-deps
     - gitbook build book/
     - cp -r book/_book/* target/doc/
 

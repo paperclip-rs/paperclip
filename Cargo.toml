@@ -34,7 +34,6 @@ parking_lot = { version = "0.10" }
 regex = { version = "1.1", optional = true }
 reqwest = { version = "0.10", features = ["blocking"], optional = true }
 # rustfmt-nightly = { version = "1.2.2", optional = true }
-rust_decimal = { version = "1.0", optional = true }
 semver = "0.10"
 serde = "1.0"
 serde_derive = "1.0"
@@ -48,23 +47,25 @@ url = "1.7"
 actix-rt = "1.0"
 actix-service = "1.0"
 actix-web = "2.0"
-chrono = { version = "0.4", features = ["serde"] }
+chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
 futures = "0.3"
-uuid = { version = "0.8", features = ["serde"] }
+uuid_dev = { version = "0.8", features = ["serde"], package = "uuid" }
 reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
 
 [features]
 actix = ["paperclip-macros/actix", "paperclip-actix", "v2"]
 actix-nightly = ["actix", "paperclip-actix/nightly", "v2"]
-actix-multipart = ["paperclip-core/actix-multipart"]
 cli = ["env_logger", "structopt", "git2", "reqwest", "v2", "codegen"]
 codegen = ["heck", "http", "lazy_static", "log", "regex", "tinytemplate", "paperclip-core/codegen"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
-datetime = ["paperclip-core/datetime"]
-decimal = ["paperclip-core/decimal"]
-uid = ["paperclip-core/uid"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
+
+# Features for implementing traits for dependencies.
+actix-multipart = ["paperclip-core/actix-multipart"]
+chrono = ["paperclip-core/chrono"]
+rust_decimal = ["paperclip-core/rust_decimal"]
+uuid = ["paperclip-core/uuid"]
 
 [workspace]
 members = [

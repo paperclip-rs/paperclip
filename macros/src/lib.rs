@@ -68,12 +68,14 @@ pub fn api_v2_errors(attrs: TokenStream, input: TokenStream) -> TokenStream {
 }
 
 /// Generate an error at the call site and return empty token stream.
+#[allow(dead_code)]
 fn span_error_with_msg<T: Spanned>(it: &T, msg: &str) -> TokenStream {
     emit_error!(it.span().unwrap(), msg);
     (quote! {}).into()
 }
 
 /// Parses this token stream expecting a struct/enum and fails with an error otherwise.
+#[allow(dead_code)]
 fn expect_struct_or_enum(ts: TokenStream) -> Result<DeriveInput, TokenStream> {
     syn::parse(ts).map_err(|e| {
         emit_error!(

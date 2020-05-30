@@ -9,7 +9,6 @@ use actix_rt::System;
 use actix_service::ServiceFactory;
 use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
-use chrono;
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use paperclip::actix::{
     api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
@@ -42,9 +41,9 @@ struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
-    updated_on: Option<chrono::NaiveDateTime>,
+    updated_on: Option<chrono_dev::NaiveDateTime>,
     #[serde(rename = "uuid")]
-    uid: Option<uuid::Uuid>,
+    uid: Option<uuid_dev::Uuid>,
 }
 
 impl Default for Pet {
