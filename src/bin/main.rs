@@ -1,4 +1,4 @@
-use failure::Error;
+use anyhow::Error;
 use paperclip::v2::{
     self,
     codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},

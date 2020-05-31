@@ -13,7 +13,7 @@ use crate::v2::{
     },
     Schema,
 };
-use failure::Error;
+use anyhow::Error;
 use heck::{CamelCase, SnekCase};
 use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;

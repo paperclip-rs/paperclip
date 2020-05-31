@@ -1,6 +1,5 @@
 
 pub mod client \{
-    use failure::Fail;
     use futures::Stream;
     use parking_lot::Mutex;
 
@@ -9,18 +8,18 @@ pub mod client \{
     use std::path::Path;
 
     /// Common API errors.
-    #[derive(Debug, Fail)]
+    #[derive(Debug, thiserror::Error)]
     pub enum ApiError<R: Debug + Send + 'static> \{
-        #[fail(display = "API request failed for path: \{} (code: \{})", _0, _1)]
+        #[error("API request failed for path: \{} (code: \{})", _0, _1)]
         Failure(String, http::status::StatusCode, Mutex<R>),
-        #[fail(display = "Unsupported media type in response: \{}", _0)]
+        #[error("Unsupported media type in response: \{}", _0)]
         UnsupportedMediaType(String, Mutex<R>),
-        #[fail(display = "An error has occurred while performing the API request: \{}", _0)]
+        #[error("An error has occurred while performing the API request: \{}", _0)]
         Reqwest(reqwest::Error),
-        #[fail(display = "I/O error: \{}", _0)]
+        #[error("I/O error: \{}", _0)]
         Io(std::io::Error),
         {{- for coder in media_coders }}
-        #[fail(display = "Error en/decoding \"{coder.range | unescaped}\" data: \{}", _0)]
+        #[error("Error en/decoding \"{coder.range | unescaped}\" data: \{}", _0)]
         {coder.error_variant | unescaped}({coder.error_ty_path | unescaped}),
         {{- endfor }}
     }

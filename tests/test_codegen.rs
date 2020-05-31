@@ -68,8 +68,6 @@ fn test_lib_creation() {
         &(ROOT.clone() + "/tests/test_pet/lib.rs"),
         "
 #[macro_use]
-extern crate failure;
-#[macro_use]
 extern crate serde;
 
 pub mod category {
@@ -142,7 +140,7 @@ path = \"lib.rs\"
 [dependencies]
 async-trait = \"0.1\"
 bytes = \"0.5\"
-failure = \"0.1\"
+thiserror = \"1.0.19\"
 futures = \"0.3\"
 http = \"0.2\"
 lazy_static = \"1.4\"
@@ -189,7 +187,7 @@ fn test_overridden_path() {
         }
     }
 ",
-        Some(7433),
+        Some(7333),
     );
 }
 

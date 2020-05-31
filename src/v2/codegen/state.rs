@@ -2,7 +2,7 @@ use super::template::{self, TEMPLATE};
 use super::{object::ApiObject, CrateMeta, EmitMode};
 use crate::error::PaperClipError;
 use crate::v2::models::{Coders, SpecFormat};
-use failure::Error;
+use anyhow::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
 use heck::SnekCase;
@@ -127,8 +127,6 @@ impl EmitterState {
                 mod_path = self.root_module_path();
                 contents.push_str(
                     "
-#[macro_use]
-extern crate failure;
 #[macro_use]
 extern crate serde;
 ",

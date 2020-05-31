@@ -15,56 +15,53 @@ macro_rules! impl_err_from {
 pub type PaperClipResult<T> = Result<T, PaperClipError>;
 
 /// Global error which encapsulates all related errors.
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 pub enum PaperClipError {
     /// Error encountered during spec validation.
-    #[fail(display = "{}", _0)]
+    #[error("{}", _0)]
     Validation(paperclip_core::ValidationError),
     /// The given directory cannot be used for generating code.
-    #[fail(display = "Cannot generate code in the given directory")]
+    #[error("Cannot generate code in the given directory")]
     InvalidCodegenDirectory,
     /// Currently, we only support OpenAPI v2, and eventually v3.
-    #[fail(display = "This version of OpenAPI is unsupported.")]
+    #[error("This version of OpenAPI is unsupported.")]
     UnsupportedOpenAPIVersion,
     /// Paths listed in the spec must be unique.
-    #[fail(display = "Path similar to {:?} already exists.", _0)]
+    #[error("Path similar to {:?} already exists.", _0)]
     RelativePathNotUnique(String),
-    #[fail(
-        display = "Parameter(s) {:?} aren't defined for templated path {:?}",
-        _1, _0
-    )]
+    #[error("Parameter(s) {:?} aren't defined for templated path {:?}", _1, _0)]
     MissingParametersInPath(String, HashSet<String>),
     /// Invalid host for URL.
-    #[fail(display = "Cannot parse host {:?}: {}", _0, _1)]
+    #[error("Cannot parse host {:?}: {}", _0, _1)]
     InvalidHost(String, url::ParseError),
     /// Invalid base path URL.
-    #[fail(display = "Cannot set URL {:?}: {}", _0, _1)]
+    #[error("Cannot set URL {:?}: {}", _0, _1)]
     InvalidBasePathURL(String, url::ParseError),
     /// The given schema object is an array, but the `items` field is missing.
-    #[fail(display = "Mising item schema for array: {:?}", _0)]
+    #[error("Mising item schema for array: {:?}", _0)]
     MissingArrayItem(Option<String>),
     /// The name for the given definition is missing or invalid.
-    #[fail(display = "Invalid name for definition")]
+    #[error("Invalid name for definition")]
     InvalidDefinitionName,
     /// A valid path cannot be obtained for the given definition.
-    #[fail(display = "Invalid path for definition: {:?}", _0)]
+    #[error("Invalid path for definition: {:?}", _0)]
     InvalidDefinitionPath(PathBuf),
     /// I/O errors.
-    #[fail(display = "I/O error: {}", _0)]
+    #[error("I/O error: {}", _0)]
     Io(std::io::Error),
     /// JSON coding errors.
-    #[fail(display = "JSON error: {}", _0)]
+    #[error("JSON error: {}", _0)]
     Json(serde_json::Error),
     /// YAML coding errors.
-    #[fail(display = "YAML error: {}", _0)]
+    #[error("YAML error: {}", _0)]
     Yaml(serde_yaml::Error),
     #[cfg(feature = "codegen-fmt")]
     /// Errors from rustfmt.
-    #[fail(display = "Rustfmt formatting error: {}", _0)]
+    #[error("Rustfmt formatting error: {}", _0)]
     RustFmt(rustfmt_nightly::ErrorKind),
     #[cfg(feature = "codegen")]
     /// Errors in templating.
-    #[fail(display = "Templating error: {}", _0)]
+    #[error("Templating error: {}", _0)]
     Templating(tinytemplate::error::Error),
 }
 

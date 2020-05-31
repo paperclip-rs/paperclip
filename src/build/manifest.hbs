@@ -14,7 +14,7 @@ path = "lib.rs"
 [dependencies]
 async-trait = "0.1"
 bytes = "0.5"
-failure = "0.1"
+thiserror = "1.0.19"
 futures = "0.3"
 http = "0.2"
 lazy_static = "1.4"
@@ -28,6 +28,7 @@ serde_yaml = "0.8"
 tokio-util = \{ version = "0.3", features = ["codec"] }
 url = "2.1"
 {{ if is_cli }}
+anyhow = "1.0"
 clap = \{ version = "2.33", features = ["yaml"] }
 env_logger = "0.6"
 humantime = "1.2"
