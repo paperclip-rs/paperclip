@@ -5,7 +5,6 @@ use super::state::{ChildModule, EmitterState};
 use super::CrateMeta;
 use crate::error::PaperClipError;
 use crate::v2::{
-    im::ArcRwLock,
     models::{
         Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items, MediaRange,
         ParameterIn, Reference, ResolvableApi, ResolvableOperation, ResolvableParameter,
@@ -17,6 +16,7 @@ use failure::Error;
 use heck::{CamelCase, SnekCase};
 use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;
+use parking_lot::RwLock;
 use std::collections::{BTreeMap, BTreeSet, HashSet};
 use std::fmt::Debug;
 use std::fs;
@@ -1126,7 +1126,7 @@ where
     /// **NOTE:** This assumes that 2xx response schemas are the same for an operation.
     fn get_2xx_response_schema(
         op: &ResolvableOperation<E::Definition>,
-    ) -> Option<ArcRwLock<E::Definition>> {
+    ) -> Option<Arc<RwLock<E::Definition>>> {
         op.responses
             .iter()
             .filter(|(c, _)| c.starts_with('2')) // 2xx response
