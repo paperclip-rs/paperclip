@@ -6,7 +6,6 @@ pub use super::extensions::{
 
 use super::schema::Schema;
 use crate::error::ValidationError;
-use crate::im::ArcRwLock;
 use lazy_static::lazy_static;
 use paperclip_macros::api_v2_schema_struct;
 use regex::{Captures, Regex};
@@ -14,6 +13,7 @@ use regex::{Captures, Regex};
 #[cfg(feature = "actix")]
 use actix_http::http::Method;
 
+use parking_lot::RwLock;
 use std::borrow::Cow;
 use std::collections::{BTreeMap, BTreeSet};
 use std::fmt::{self, Display};
@@ -379,7 +379,7 @@ impl<S> PathItem<Parameter<S>, Response<S>> {
 }
 
 /// Parameter that can be traversed and resolved for codegen.
-pub type ResolvableParameter<S> = ArcRwLock<Parameter<Resolvable<S>>>;
+pub type ResolvableParameter<S> = Arc<RwLock<Parameter<Resolvable<S>>>>;
 
 /// Parameter with the default raw schema.
 pub type DefaultParameterRaw = Parameter<DefaultSchemaRaw>;
@@ -658,7 +658,7 @@ pub enum OperationProtocol {
 }
 
 /// Response that can be traversed and resolved for codegen.
-pub type ResolvableResponse<S> = ArcRwLock<Response<Resolvable<S>>>;
+pub type ResolvableResponse<S> = Arc<RwLock<Response<Resolvable<S>>>>;
 
 /// Response with the default raw schema.
 pub type DefaultResponseRaw = Response<DefaultSchemaRaw>;
@@ -793,11 +793,11 @@ impl<L, R> Either<L, R> {
 #[derive(Debug, Deserialize)]
 #[serde(untagged)]
 pub enum Resolvable<S> {
-    Raw(ArcRwLock<S>),
+    Raw(Arc<RwLock<S>>),
     #[serde(skip)]
     Resolved {
-        new: ArcRwLock<S>,
-        old: ArcRwLock<S>,
+        new: Arc<RwLock<S>>,
+        old: Arc<RwLock<S>>,
     },
 }
 
@@ -859,7 +859,7 @@ impl<T> DerefMut for Either<Reference, T> {
 }
 
 impl<S> Deref for Resolvable<S> {
-    type Target = ArcRwLock<S>;
+    type Target = Arc<RwLock<S>>;
 
     fn deref(&self) -> &Self::Target {
         match *self {
@@ -886,7 +886,7 @@ impl<S: Default> Default for Resolvable<S> {
 
 impl<S> From<S> for Resolvable<S> {
     fn from(t: S) -> Self {
-        Resolvable::Raw(t.into())
+        Resolvable::Raw(Arc::new(RwLock::new(t)))
     }
 }
 
