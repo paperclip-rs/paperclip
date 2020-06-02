@@ -11,10 +11,9 @@ cargo install paperclip --features cli
 You can generate the client library for some spec using the following command:
 
 ```
-paperclip --api v2 -o pet https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+wget https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+paperclip --api v2 -o pet pet-v2.yaml
 ```
-
-> You can also pass a local path to your spec instead of an URL.
 
 This generates the client library for that spec in `./pet` directory.
 
@@ -23,7 +22,8 @@ This generates the client library for that spec in `./pet` directory.
 You can also generate a console for your API using the CLI by passing the `--cli` flag.
 
 ```
-paperclip --api v2 -o pet --cli https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+wget https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+paperclip --api v2 -o pet --cli pet-v2.yaml
 ```
 
 ### Build and run the console

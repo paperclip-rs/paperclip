@@ -5,12 +5,10 @@ use paperclip::v2::{
     models::{DefaultSchema, ResolvableApi},
 };
 use paperclip::PaperClipError;
-use reqwest::blocking::Client;
 use structopt::StructOpt;
 use url::Url;
 
 use std::fs::{self, File};
-use std::io::Cursor;
 use std::path::PathBuf;
 
 fn parse_version(s: &str) -> Result<OApiVersion, Error> {
@@ -22,16 +20,8 @@ fn parse_version(s: &str) -> Result<OApiVersion, Error> {
 }
 
 fn parse_spec(s: &str) -> Result<ResolvableApi<DefaultSchema>, Error> {
-    if Url::parse(s).is_ok() {
-        let mut bytes = vec![];
-        let client = Client::new();
-        let mut resp = client.get(s).send()?;
-        resp.copy_to(&mut bytes)?;
-        Ok(v2::from_reader(Cursor::new(bytes))?)
-    } else {
-        let fd = File::open(s)?;
-        Ok(v2::from_reader(fd)?)
-    }
+    let fd = File::open(s)?;
+    Ok(v2::from_reader(fd)?)
 }
 
 #[derive(Debug)]
