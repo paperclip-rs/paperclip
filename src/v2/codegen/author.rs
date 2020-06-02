@@ -2,7 +2,7 @@
 //!
 //! Obtained from [Cargo](https://github.com/rust-lang/cargo/blob/fa05862cd0c6b899b801fda0f256ac5b9bae69d9/src/cargo/ops/cargo_new.rs#L690-L750).
 
-use failure::Error;
+use anyhow::Error;
 use git2::Config as GitConfig;
 use git2::Repository as GitRepository;
 
@@ -39,7 +39,7 @@ pub(super) fn discover() -> Result<(String, Option<String>), Error> {
         Some(name) => name,
         None => {
             let username_var = if cfg!(windows) { "USERNAME" } else { "USER" };
-            failure::bail!(
+            anyhow::bail!(
                 "could not determine the current user, please set ${}",
                 username_var
             )

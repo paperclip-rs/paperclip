@@ -16,7 +16,7 @@ build = "build.rs"
 
 [dependencies]
 # Crates required by the generated code!
-failure = "0.1"
+thiserror = "1.0.19"
 futures = "0.1"
 parking_lot = "0.8"
 reqwest = "0.9"
@@ -63,10 +63,9 @@ fn main() {
 - Now, you can modify `src/main.rs` to make use of the generated code:
 
 ```rust
-#[macro_use] extern crate failure;
 #[macro_use] extern crate serde;
 
-use failure::Error;
+use thiserror::Error;
 use futures_preview::compat::Future01CompatExt;
 use reqwest::r#async::Client;
 

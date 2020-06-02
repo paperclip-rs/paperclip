@@ -776,7 +776,6 @@ pub mod miscellaneous {
 }
 
 pub mod client {
-    use failure::Fail;
     use futures::Stream;
     use parking_lot::Mutex;
 
@@ -785,19 +784,19 @@ pub mod client {
     use std::path::Path;
 
     /// Common API errors.
-    #[derive(Debug, Fail)]
+    #[derive(Debug, thiserror::Error)]
     pub enum ApiError<R: Debug + Send + 'static> {
-        #[fail(display = \"API request failed for path: {} (code: {})\", _0, _1)]
+        #[error(\"API request failed for path: {} (code: {})\", _0, _1)]
         Failure(String, http::status::StatusCode, Mutex<R>),
-        #[fail(display = \"Unsupported media type in response: {}\", _0)]
+        #[error(\"Unsupported media type in response: {}\", _0)]
         UnsupportedMediaType(String, Mutex<R>),
-        #[fail(display = \"An error has occurred while performing the API request: {}\", _0)]
+        #[error(\"An error has occurred while performing the API request: {}\", _0)]
         Reqwest(reqwest::Error),
-        #[fail(display = \"I/O error: {}\", _0)]
+        #[error(\"I/O error: {}\", _0)]
         Io(std::io::Error),
-        #[fail(display = \"Error en/decoding \\\"application/json\\\" data: {}\", _0)]
+        #[error(\"Error en/decoding \\\"application/json\\\" data: {}\", _0)]
         ApplicationJson(serde_json::Error),
-        #[fail(display = \"Error en/decoding \\\"application/yaml\\\" data: {}\", _0)]
+        #[error(\"Error en/decoding \\\"application/yaml\\\" data: {}\", _0)]
         ApplicationYaml(serde_yaml::Error),
     }
 
@@ -1656,7 +1655,7 @@ path = \"main.rs\"
 [dependencies]
 async-trait = \"0.1\"
 bytes = \"0.5\"
-failure = \"0.1\"
+thiserror = \"1.0.19\"
 futures = \"0.3\"
 http = \"0.2\"
 lazy_static = \"1.4\"
@@ -1670,6 +1669,7 @@ serde_yaml = \"0.8\"
 tokio-util = { version = \"0.3\", features = [\"codec\"] }
 url = \"2.1\"
 
+anyhow = \"1.0\"
 clap = { version = \"2.33\", features = [\"yaml\"] }
 env_logger = \"0.6\"
 humantime = \"1.2\"
@@ -1692,8 +1692,8 @@ fn test_cli_main() {
         "
 use self::client::{ApiClient, ApiError, Response};
 use self::util::ResponseStream;
+use anyhow::Error;
 use clap::{App, ArgMatches};
-use failure::Error;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -1702,22 +1702,22 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 #[allow(dead_code)]
 enum ClientError {
-    #[fail(display = \"Duration parse error: {}\", _0)]
+    #[error(\"Duration parse error: {}\", _0)]
     Duration(humantime::DurationError),
-    #[fail(display = \"I/O error: {}\", _0)]
+    #[error(\"I/O error: {}\", _0)]
     Io(std::io::Error),
-    #[fail(display = \"OpenSSL error: {}\", _0)]
+    #[error(\"OpenSSL error: {}\", _0)]
     OpenSsl(openssl::error::ErrorStack),
-    #[fail(display = \"Client error: {}\", _0)]
+    #[error(\"Client error: {}\", _0)]
     Reqwest(reqwest::Error),
-    #[fail(display = \"URL error: {}\", _0)]
+    #[error(\"URL error: {}\", _0)]
     Url(url::ParseError),
-    #[fail(display = \"{}\", _0)]
+    #[error(\"{}\", _0)]
     Api(self::client::ApiError<reqwest::Response>),
-    #[fail(display = \"\")]
+    #[error(\"\")]
     Empty,
 }
 
@@ -1841,7 +1841,7 @@ async fn main() {
     }
 }
 ",
-        Some(12935),
+        Some(12835),
     );
 }
 

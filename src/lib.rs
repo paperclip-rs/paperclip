@@ -4,8 +4,6 @@
 //! See the [website](https://paperclip.waffles.space) for detailed
 //! documentation and examples.
 
-#[macro_use]
-extern crate failure;
 #[cfg_attr(feature = "codegen", macro_use)]
 #[cfg(feature = "codegen")]
 extern crate log;

@@ -10,7 +10,7 @@ path = "lib.rs"
 [dependencies]
 async-trait = "0.1"
 bytes = "0.5"
-failure = "0.1"
+thiserror = "1.0.19"
 futures = "0.3"
 http = "0.2"
 lazy_static = "1.4"

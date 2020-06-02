@@ -1,8 +1,8 @@
 
 use self::client::\{ApiClient, ApiError, Response};
 use self::util::ResponseStream;
+use anyhow::Error;
 use clap::\{App, ArgMatches};
-use failure::Error;
 use openssl::pkcs12::Pkcs12;
 use openssl::pkey::PKey;
 use openssl::x509::X509;
@@ -11,22 +11,22 @@ use std::fs::File;
 use std::io::Read;
 use std::path::Path;
 
-#[derive(Debug, Fail)]
+#[derive(Debug, thiserror::Error)]
 #[allow(dead_code)]
 enum ClientError \{
-    #[fail(display = "Duration parse error: \{}", _0)]
+    #[error("Duration parse error: \{}", _0)]
     Duration(humantime::DurationError),
-    #[fail(display = "I/O error: \{}", _0)]
+    #[error("I/O error: \{}", _0)]
     Io(std::io::Error),
-    #[fail(display = "OpenSSL error: \{}", _0)]
+    #[error("OpenSSL error: \{}", _0)]
     OpenSsl(openssl::error::ErrorStack),
-    #[fail(display = "Client error: \{}", _0)]
+    #[error("Client error: \{}", _0)]
     Reqwest(reqwest::Error),
-    #[fail(display = "URL error: \{}", _0)]
+    #[error("URL error: \{}", _0)]
     Url(url::ParseError),
-    #[fail(display = "\{}", _0)]
+    #[error("\{}", _0)]
     Api(self::client::ApiError<reqwest::Response>),
-    #[fail(display = "")]
+    #[error("")]
     Empty,
 }
 
