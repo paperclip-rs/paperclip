@@ -213,17 +213,17 @@ pub mod client \{
     };
 
     impl Client \{
-        pub fn new() -> Client \{
+        pub fn new(cfg: ClientConfiguration) -> Client \{
             Client \{
                 client: reqwest::Client::new(),
-                cfg: ClientConfiguration::new()
+                cfg
             }
         }
     }
 
     impl Default for Client \{
         fn default() -> Client \{
-            Client::new()
+            Client::new(ClientConfiguration::new())
         }
     }
 
