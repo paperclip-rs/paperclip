@@ -10,7 +10,7 @@ use itertools::Itertools;
 use url::Url;
 
 use std::cell::RefCell;
-use std::collections::{HashMap, HashSet};
+use std::collections::{BTreeSet, HashMap, HashSet};
 use std::fmt::Write as _;
 #[cfg(feature = "cli")]
 use std::fs;
@@ -50,7 +50,7 @@ pub struct EmitterState {
     /// Media ranges and the corresponding decoders we've registered.
     media_coders: RefCell<Vec<MediaCoder>>,
     /// Unit types used by builders.
-    unit_types: RefCell<HashSet<String>>,
+    unit_types: RefCell<BTreeSet<String>>,
     /// Generated CLI YAML for clap.
     cli_yaml: RefCell<String>,
     /// Generated match arms for clap subcommands and matches.
@@ -535,7 +535,7 @@ impl Default for EmitterState {
             def_mods: RefCell::new(HashMap::new()),
             rel_paths: RefCell::new(HashSet::new()),
             mod_children: RefCell::new(HashMap::new()),
-            unit_types: RefCell::new(HashSet::new()),
+            unit_types: RefCell::new(BTreeSet::new()),
             cli_yaml: RefCell::new(String::new()),
             cli_match_arms: RefCell::new(String::new()),
             media_coders: RefCell::new(vec![]),
