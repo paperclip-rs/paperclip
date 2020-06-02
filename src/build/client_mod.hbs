@@ -269,9 +269,9 @@ pub mod client \{
         fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request \{
             let mut u = self.cfg.base_url.clone();
             u.push_str(rel_path.trim_start_matches('/'));
-            let builder = self.client.request(method, &u);
+            let mut builder = self.client.request(method, &u);
             if let Some(key) = &self.cfg.api_key \{
-                builder.header(key.header_name.as_str(), key.key.as_str());
+                builder = builder.header(key.header_name.as_str(), key.key.as_str());
             }
             builder
         }
