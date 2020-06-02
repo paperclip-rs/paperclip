@@ -203,7 +203,8 @@ pub mod client \{
     impl ClientConfiguration \{
         pub fn new() -> ClientConfiguration \{
             ClientConfiguration \{
-                base_url: String::from("{base_url | unescaped}")
+                base_url: String::from("{base_url | unescaped}"),
+                api_key: None,
             }
         }
 
@@ -270,7 +271,7 @@ pub mod client \{
             u.push_str(rel_path.trim_start_matches('/'));
             let builder = self.client.request(method, &u);
             if let Some(key) = self.cfg.api_key \{
-                builder.header(key.header_name, key.key);
+                builder.header(key.header_name.as_str(), key.key.as_str());
             }
             builder
         }
