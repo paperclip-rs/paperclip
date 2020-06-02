@@ -57,7 +57,6 @@ log = { version = "0.4", features = ["kv_unstable"] }
 actix = ["paperclip-macros/actix", "paperclip-actix", "v2"]
 actix-nightly = ["actix", "paperclip-actix/nightly", "v2"]
 cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
-cli-net = ["reqwest"]
 codegen = ["heck", "http", "lazy_static", "log", "regex", "tinytemplate", "paperclip-core/codegen"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
