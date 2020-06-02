@@ -196,7 +196,7 @@ pub mod client \{
             }
         }
 
-        fn base_url(&mut self, url: impl Into<String>) -> &mut Self \{
+        pub fn base_url(&mut self, url: impl Into<String>) -> &mut Self \{
             self.base_url = url.into();
             self
         }
