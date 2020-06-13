@@ -119,6 +119,18 @@ pub struct Api<P, R, S> {
     pub tags: Vec<Tag>,
     #[serde(rename = "externalDocs", skip_serializing_if = "Option::is_none")]
     pub external_docs: Option<ExternalDocs>,
+    /// Extension for custom coders to be used for decoding API objects.
+    ///
+    /// An example for JSON would be:
+    /// ```yaml
+    /// x-rust-coders:
+    ///   application/json:
+    ///     encoder_path: serde_json::to_writer
+    ///     decoder_path: serde_json::from_reader
+    ///     any_value: serde_json::Value
+    ///     error_path: serde_json::Error
+    /// ```
+    /// **NOTE:** JSON and YAML encodings are already supported.
     #[serde(
         default,
         rename = "x-rust-coders",
@@ -129,13 +141,13 @@ pub struct Api<P, R, S> {
     ///
     /// The key is the LHS of a dependency, which is the crate name.
     /// The value is the RHS of a crate's requirements as it would appear
-    /// in the manifest. Note that the caller must add proper quoting
-    /// whenever required.
+    /// in the manifest. Note that the caller must add proper escaping
+    /// wherever required.
     ///
-    /// For example, in a JSON spec, the following are all valid:
-    /// - `{"my_crate": "0.7"}`
-    /// - `{"my_crate": "{ git = \"git://foo.bar/repo\" }"}`
-    /// - `{"my_crate": "{ version = \"0.9\", features = [\"booya\"] }"}`
+    /// For example, the following are all valid:
+    /// - `my_crate: "0.7"`
+    /// - `my_crate: "{ git = \"git://foo.bar/repo\" }"`
+    /// - `my_crate: "{ version = \"0.9\", features = [\"booya\"] }"`
     #[serde(
         default,
         rename = "x-rust-dependencies",

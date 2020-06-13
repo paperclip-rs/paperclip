@@ -3,13 +3,14 @@ use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
+use std::fmt;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
 lazy_static! {
     /// Media range for JSON.
     pub static ref JSON_MIME: MediaRange =
-        MediaRange(mime::MediaRange::parse("application/json").expect("parsing mime"));
+        MediaRange("application/json".parse().expect("parsing mime"));
     /// Default coder for JSON.
     pub static ref JSON_CODER: Arc<Coder> = Arc::new(Coder {
         encoder_path: "serde_json::to_writer".into(),
@@ -21,7 +22,7 @@ lazy_static! {
     });
     /// Media range for YAML.
     pub static ref YAML_MIME: MediaRange =
-        MediaRange(mime::MediaRange::parse("application/yaml").expect("parsing mime"));
+        MediaRange("application/yaml".parse().expect("parsing mime"));
     /// Default coder for YAML.
     pub static ref YAML_CODER: Arc<Coder> = Arc::new(Coder {
         encoder_path: "serde_yaml::to_writer".into(),
@@ -35,14 +36,14 @@ lazy_static! {
 
 /// Wrapper for `mime::MediaRange` to support `BTree{Set, Map}`.
 #[derive(Debug, Clone)]
-pub struct MediaRange(pub mime::MediaRange);
+pub struct MediaRange(pub mime::Mime);
 
 #[cfg(feature = "codegen")]
 impl MediaRange {
     /// Implementation from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L155
     fn matches_params(&self, r: &Self) -> bool {
         for (name, value) in self.0.params() {
-            if name != "q" && r.0.param(name) != Some(value) {
+            if name != "q" && r.0.get_param(name) != Some(value) {
                 return false;
             }
         }
@@ -51,7 +52,7 @@ impl MediaRange {
     }
 }
 
-/// `x-coder` global extension for custom encoders and decoders.
+/// `x-rust-coders` global extension for custom encoders and decoders.
 #[derive(Debug, Default, Clone)]
 pub struct Coders(BTreeMap<MediaRange, Arc<Coder>>);
 
@@ -140,7 +141,7 @@ impl Serialize for MediaRange {
     where
         S: Serializer,
     {
-        self.0.serialize(serializer)
+        serializer.serialize_str(self.0.as_ref())
     }
 }
 
@@ -149,7 +150,24 @@ impl<'de> Deserialize<'de> for MediaRange {
     where
         D: Deserializer<'de>,
     {
-        Ok(MediaRange(mime::MediaRange::deserialize(deserializer)?))
+        struct Visitor;
+
+        impl<'de> serde::de::Visitor<'de> for Visitor {
+            type Value = MediaRange;
+
+            fn expecting(&self, f: &mut fmt::Formatter) -> fmt::Result {
+                f.write_str("a valid media range")
+            }
+
+            fn visit_str<E>(self, value: &str) -> Result<MediaRange, E>
+            where
+                E: serde::de::Error,
+            {
+                value.parse().map_err(E::custom).map(MediaRange)
+            }
+        }
+
+        deserializer.deserialize_str(Visitor)
     }
 }
 
