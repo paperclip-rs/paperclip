@@ -6,7 +6,6 @@ use paperclip::v2::{
 };
 use paperclip::PaperClipError;
 use structopt::StructOpt;
-use url::Url;
 
 use std::fs::{self, File};
 use std::path::PathBuf;

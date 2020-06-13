@@ -4,7 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## Unreleased
+### Added
+
+### Changed
+
+### Fixed
+
+## [0.4.0] - 2020-06-13
 ### Added
 - Client timeout in CLI.
 - Codegen for header parameters in operations.
@@ -113,7 +120,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Loading OpenAPI v2 schema from JSON/YAML
 - Workspace, README, LICENSE, Makefile, CI config, etc.
 
-[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.3.0...HEAD
+[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.4.0...HEAD
 [0.1.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.1.0
 [0.2.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.2.0
 [0.3.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.3.0
+[0.4.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.4.0

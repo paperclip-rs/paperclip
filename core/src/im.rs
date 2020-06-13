@@ -2,6 +2,7 @@
 
 #[cfg(feature = "v2")]
 use crate::v2::models::Resolvable;
+#[cfg(feature = "v2")]
 use serde::{Serialize, Serializer};
 
 #[cfg(feature = "v2")]

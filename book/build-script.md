@@ -27,7 +27,7 @@ runtime = "0.3.0-alpha.7"
 runtime-tokio = "0.3.0-alpha.6"
 
 [build-dependencies]
-paperclip = { git = "https://github.com/wafflespeanut/paperclip", features = ["v2", "codegen"] }
+paperclip = { version = "0.4", features = ["v2", "codegen"] }
 ```
 
 - Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml).
