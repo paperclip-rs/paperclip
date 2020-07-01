@@ -13,7 +13,7 @@ actix-web = "2.0"
 # this plugin works smoothly with the nightly compiler, it also works in stable
 # channel (remove "nightly" feature in that case). There maybe compilation errors,
 # but those can be fixed.
-paperclip = { version = "0.4", features = ["actix", "nightly"] }
+paperclip = { version = "0.4", features = ["actix-nightly"] }
 serde = "1.0"
 ```
 
