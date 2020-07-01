@@ -397,7 +397,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
         }
     }
 
-    fn quote_option(value: Option<&String>) -> proc_macro_error::proc_macro2::TokenStream {
+    fn quote_option(value: Option<&String>) -> proc_macro2::TokenStream {
         if let Some(value) = value {
             quote! { Some(#value.to_string()) }
         } else {
