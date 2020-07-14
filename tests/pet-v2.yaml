@@ -362,6 +362,14 @@ paths:
           type: array
           items:
             type: integer
+  /test/upload:
+    put:
+      requestBody:
+        content:
+          image/png:
+            schema:
+              type: string
+              format: binary
       responses:
         '200':
           $ref: '#/responses/StatusResponse'
