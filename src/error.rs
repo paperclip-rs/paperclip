@@ -40,9 +40,12 @@ pub enum PaperClipError {
     /// The given schema object is an array, but the `items` field is missing.
     #[error("Mising item schema for array: {:?}", _0)]
     MissingArrayItem(Option<String>),
-    /// The name for the given definition is missing or invalid.
-    #[error("Invalid name for definition")]
-    InvalidDefinitionName,
+    /// The name for the given definition is invalid.
+    #[error("Invalid name for definition: '{0}'")]
+    InvalidDefinitionName(String),
+    /// The name for the given definition is missing.
+    #[error("Missing name for definition")]
+    MissingDefinitionName,
     /// A valid path cannot be obtained for the given definition.
     #[error("Invalid path for definition: {:?}", _0)]
     InvalidDefinitionPath(PathBuf),

@@ -1,6 +1,4 @@
 #[macro_use]
-extern crate lazy_static;
-#[macro_use]
 extern crate serde;
 #[macro_use]
 extern crate serde_json;
@@ -10,6 +8,7 @@ use actix_service::ServiceFactory;
 use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
 use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
+use once_cell::sync::Lazy;
 use paperclip::actix::{
     api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
 };
@@ -19,10 +18,8 @@ use std::collections::{BTreeMap, HashSet};
 use std::sync::mpsc;
 use std::thread;
 
-lazy_static! {
-    static ref CLIENT: reqwest::blocking::Client = reqwest::blocking::Client::new();
-    static ref PORTS: Mutex<HashSet<u16>> = Mutex::new(HashSet::new());
-}
+static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
+static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "lowercase")]

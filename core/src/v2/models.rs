@@ -6,7 +6,7 @@ pub use super::extensions::{
 
 use super::schema::Schema;
 use crate::error::ValidationError;
-use lazy_static::lazy_static;
+use once_cell::sync::Lazy;
 use paperclip_macros::api_v2_schema_struct;
 use regex::{Captures, Regex};
 
@@ -20,10 +20,9 @@ use std::fmt::{self, Display};
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
-lazy_static! {
-    /// Regex that can be used for fetching templated path parameters.
-    static ref PATH_TEMPLATE_REGEX: Regex = Regex::new(r"\{(.*?)\}").expect("path template regex");
-}
+/// Regex that can be used for fetching templated path parameters.
+static PATH_TEMPLATE_REGEX: Lazy<Regex> =
+    Lazy::new(|| Regex::new(r"\{(.*?)\}").expect("path template regex"));
 
 // Headers that have special meaning in OpenAPI. These cannot be used in header parameter.
 // Ensure that they're all lowercase for case insensitive check.

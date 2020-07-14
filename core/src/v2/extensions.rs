@@ -1,38 +1,40 @@
-use lazy_static::lazy_static;
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
+use once_cell::sync::Lazy;
 use std::cmp::Ordering;
 use std::collections::BTreeMap;
 use std::fmt;
 use std::ops::{Deref, DerefMut};
 use std::sync::Arc;
 
-lazy_static! {
-    /// Media range for JSON.
-    pub static ref JSON_MIME: MediaRange =
-        MediaRange("application/json".parse().expect("parsing mime"));
-    /// Default coder for JSON.
-    pub static ref JSON_CODER: Arc<Coder> = Arc::new(Coder {
+/// Media range for JSON.
+pub static JSON_MIME: Lazy<MediaRange> =
+    Lazy::new(|| MediaRange("application/json".parse().expect("parsing mime")));
+/// Default coder for JSON.
+pub static JSON_CODER: Lazy<Arc<Coder>> = Lazy::new(|| {
+    Arc::new(Coder {
         encoder_path: "serde_json::to_writer".into(),
         decoder_path: "serde_json::from_reader".into(),
         any_value: "serde_json::Value".into(),
         error_path: "serde_json::Error".into(),
         prefer: false,
         builtin: true,
-    });
-    /// Media range for YAML.
-    pub static ref YAML_MIME: MediaRange =
-        MediaRange("application/yaml".parse().expect("parsing mime"));
-    /// Default coder for YAML.
-    pub static ref YAML_CODER: Arc<Coder> = Arc::new(Coder {
+    })
+});
+/// Media range for YAML.
+pub static YAML_MIME: Lazy<MediaRange> =
+    Lazy::new(|| MediaRange("application/yaml".parse().expect("parsing mime")));
+/// Default coder for YAML.
+pub static YAML_CODER: Lazy<Arc<Coder>> = Lazy::new(|| {
+    Arc::new(Coder {
         encoder_path: "serde_yaml::to_writer".into(),
         decoder_path: "serde_yaml::from_reader".into(),
         any_value: "serde_yaml::Value".into(),
         error_path: "serde_yaml::Error".into(),
         prefer: false,
         builtin: true,
-    });
-}
+    })
+});
 
 /// Wrapper for `mime::MediaRange` to support `BTree{Set, Map}`.
 #[derive(Debug, Clone)]
