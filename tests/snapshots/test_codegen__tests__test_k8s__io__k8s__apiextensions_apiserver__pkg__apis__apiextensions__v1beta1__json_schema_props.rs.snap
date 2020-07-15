@@ -1,0 +1,362 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+/// JSONSchemaProps is a JSON-Schema following Specification Draft 4 (http://json-schema.org/).
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct JsonSchemaProps<Any> {
+    #[serde(rename = "$ref")]
+    pub ref_: Option<String>,
+    #[serde(rename = "$schema")]
+    pub schema: Option<String>,
+    #[serde(rename = "additionalItems")]
+    pub additional_items: Option<Any>,
+    #[serde(rename = "additionalProperties")]
+    pub additional_properties: Option<Any>,
+    #[serde(rename = "allOf")]
+    pub all_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    #[serde(rename = "anyOf")]
+    pub any_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub default: Option<Any>,
+    pub definitions: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub dependencies: Option<std::collections::BTreeMap<String, Any>>,
+    pub description: Option<String>,
+    #[serde(rename = "enum")]
+    pub enum_: Option<Vec<Any>>,
+    pub example: Option<Any>,
+    #[serde(rename = "exclusiveMaximum")]
+    pub exclusive_maximum: Option<bool>,
+    #[serde(rename = "exclusiveMinimum")]
+    pub exclusive_minimum: Option<bool>,
+    #[serde(rename = "externalDocs")]
+    pub external_docs: Option<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::external_documentation::ExternalDocumentation>,
+    pub format: Option<String>,
+    pub id: Option<String>,
+    pub items: Option<Any>,
+    #[serde(rename = "maxItems")]
+    pub max_items: Option<i64>,
+    #[serde(rename = "maxLength")]
+    pub max_length: Option<i64>,
+    #[serde(rename = "maxProperties")]
+    pub max_properties: Option<i64>,
+    pub maximum: Option<f64>,
+    #[serde(rename = "minItems")]
+    pub min_items: Option<i64>,
+    #[serde(rename = "minLength")]
+    pub min_length: Option<i64>,
+    #[serde(rename = "minProperties")]
+    pub min_properties: Option<i64>,
+    pub minimum: Option<f64>,
+    #[serde(rename = "multipleOf")]
+    pub multiple_of: Option<f64>,
+    pub not: Option<Box<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub nullable: Option<bool>,
+    #[serde(rename = "oneOf")]
+    pub one_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub pattern: Option<String>,
+    #[serde(rename = "patternProperties")]
+    pub pattern_properties: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub properties: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub required: Option<Vec<String>>,
+    pub title: Option<String>,
+    #[serde(rename = "type")]
+    pub type_: Option<String>,
+    #[serde(rename = "uniqueItems")]
+    pub unique_items: Option<bool>,
+    /// x-kubernetes-embedded-resource defines that the value is an embedded Kubernetes runtime.Object, with TypeMeta and ObjectMeta. The type must be object. It is allowed to further restrict the embedded object. kind, apiVersion and metadata are validated automatically. x-kubernetes-preserve-unknown-fields is allowed to be true, but does not have to be if the object is fully specified (up to kind, apiVersion, metadata).
+    #[serde(rename = "x-kubernetes-embedded-resource")]
+    pub x_kubernetes_embedded_resource: Option<bool>,
+    /// x-kubernetes-int-or-string specifies that this value is either an integer or a string. If this is true, an empty type is allowed and type as child of anyOf is permitted if following one of the following patterns:
+    ///
+    /// 1) anyOf:
+    ///    - type: integer
+    ///    - type: string
+    /// 2) allOf:
+    ///    - anyOf:
+    ///      - type: integer
+    ///      - type: string
+    ///    - ... zero or more
+    #[serde(rename = "x-kubernetes-int-or-string")]
+    pub x_kubernetes_int_or_string: Option<bool>,
+    /// x-kubernetes-preserve-unknown-fields stops the API server decoding step from pruning fields which are not specified in the validation schema. This affects fields recursively, but switches back to normal pruning behaviour if nested properties or additionalProperties are specified in the schema. This can either be true or undefined. False is forbidden.
+    #[serde(rename = "x-kubernetes-preserve-unknown-fields")]
+    pub x_kubernetes_preserve_unknown_fields: Option<bool>,
+}
+
+impl<Any: Default> JsonSchemaProps<Any> {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> JsonSchemaPropsBuilder<Any> {
+        JsonSchemaPropsBuilder {
+            body: Default::default(),
+        }
+    }
+}
+
+impl<Any> Into<JsonSchemaProps<Any>> for JsonSchemaPropsBuilder<Any> {
+    fn into(self) -> JsonSchemaProps<Any> {
+        self.body
+    }
+}
+
+/// Builder for [`JsonSchemaProps`](./struct.JsonSchemaProps.html) object.
+#[derive(Debug, Clone)]
+pub struct JsonSchemaPropsBuilder<Any> {
+    body: self::JsonSchemaProps<Any>,
+}
+
+impl<Any> JsonSchemaPropsBuilder<Any> {
+    #[inline]
+    pub fn ref_(mut self, value: impl Into<String>) -> Self {
+        self.body.ref_ = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn schema(mut self, value: impl Into<String>) -> Self {
+        self.body.schema = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn additional_items(mut self, value: impl Into<Any>) -> Self {
+        self.body.additional_items = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn additional_properties(mut self, value: impl Into<Any>) -> Self {
+        self.body.additional_properties = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn all_of(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>) -> Self {
+        self.body.all_of = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn any_of(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>) -> Self {
+        self.body.any_of = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn default(mut self, value: impl Into<Any>) -> Self {
+        self.body.default = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn definitions(mut self, value: impl Iterator<Item = (String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>)>) -> Self {
+        self.body.definitions = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn dependencies(mut self, value: impl Iterator<Item = (String, impl Into<Any>)>) -> Self {
+        self.body.dependencies = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn description(mut self, value: impl Into<String>) -> Self {
+        self.body.description = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn enum_(mut self, value: impl Iterator<Item = impl Into<Any>>) -> Self {
+        self.body.enum_ = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn example(mut self, value: impl Into<Any>) -> Self {
+        self.body.example = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn exclusive_maximum(mut self, value: impl Into<bool>) -> Self {
+        self.body.exclusive_maximum = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn exclusive_minimum(mut self, value: impl Into<bool>) -> Self {
+        self.body.exclusive_minimum = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn external_docs(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::external_documentation::ExternalDocumentation) -> Self {
+        self.body.external_docs = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn format(mut self, value: impl Into<String>) -> Self {
+        self.body.format = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn id(mut self, value: impl Into<String>) -> Self {
+        self.body.id = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn items(mut self, value: impl Into<Any>) -> Self {
+        self.body.items = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn max_items(mut self, value: impl Into<i64>) -> Self {
+        self.body.max_items = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn max_length(mut self, value: impl Into<i64>) -> Self {
+        self.body.max_length = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn max_properties(mut self, value: impl Into<i64>) -> Self {
+        self.body.max_properties = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn maximum(mut self, value: impl Into<f64>) -> Self {
+        self.body.maximum = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn min_items(mut self, value: impl Into<i64>) -> Self {
+        self.body.min_items = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn min_length(mut self, value: impl Into<i64>) -> Self {
+        self.body.min_length = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn min_properties(mut self, value: impl Into<i64>) -> Self {
+        self.body.min_properties = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn minimum(mut self, value: impl Into<f64>) -> Self {
+        self.body.minimum = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn multiple_of(mut self, value: impl Into<f64>) -> Self {
+        self.body.multiple_of = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn not(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>) -> Self {
+        self.body.not = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn nullable(mut self, value: impl Into<bool>) -> Self {
+        self.body.nullable = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn one_of(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>) -> Self {
+        self.body.one_of = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn pattern(mut self, value: impl Into<String>) -> Self {
+        self.body.pattern = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn pattern_properties(mut self, value: impl Iterator<Item = (String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>)>) -> Self {
+        self.body.pattern_properties = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn properties(mut self, value: impl Iterator<Item = (String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>)>) -> Self {
+        self.body.properties = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn required(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.required = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    #[inline]
+    pub fn title(mut self, value: impl Into<String>) -> Self {
+        self.body.title = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn type_(mut self, value: impl Into<String>) -> Self {
+        self.body.type_ = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn unique_items(mut self, value: impl Into<bool>) -> Self {
+        self.body.unique_items = Some(value.into());
+        self
+    }
+
+    /// x-kubernetes-embedded-resource defines that the value is an embedded Kubernetes runtime.Object, with TypeMeta and ObjectMeta. The type must be object. It is allowed to further restrict the embedded object. kind, apiVersion and metadata are validated automatically. x-kubernetes-preserve-unknown-fields is allowed to be true, but does not have to be if the object is fully specified (up to kind, apiVersion, metadata).
+    #[inline]
+    pub fn x_kubernetes_embedded_resource(mut self, value: impl Into<bool>) -> Self {
+        self.body.x_kubernetes_embedded_resource = Some(value.into());
+        self
+    }
+
+    /// x-kubernetes-int-or-string specifies that this value is either an integer or a string. If this is true, an empty type is allowed and type as child of anyOf is permitted if following one of the following patterns:
+    ///
+    /// 1) anyOf:
+    ///    - type: integer
+    ///    - type: string
+    /// 2) allOf:
+    ///    - anyOf:
+    ///      - type: integer
+    ///      - type: string
+    ///    - ... zero or more
+    #[inline]
+    pub fn x_kubernetes_int_or_string(mut self, value: impl Into<bool>) -> Self {
+        self.body.x_kubernetes_int_or_string = Some(value.into());
+        self
+    }
+
+    /// x-kubernetes-preserve-unknown-fields stops the API server decoding step from pruning fields which are not specified in the validation schema. This affects fields recursively, but switches back to normal pruning behaviour if nested properties or additionalProperties are specified in the schema. This can either be true or undefined. False is forbidden.
+    #[inline]
+    pub fn x_kubernetes_preserve_unknown_fields(mut self, value: impl Into<bool>) -> Self {
+        self.body.x_kubernetes_preserve_unknown_fields = Some(value.into());
+        self
+    }
+}
+

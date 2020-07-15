@@ -1,0 +1,92 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+/// This information is immutable after the request is created. Only the Request and Usages fields can be set on creation, other fields are derived by Kubernetes and cannot be modified by users.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct CertificateSigningRequestSpec {
+    /// Extra information about the requesting user. See user.Info interface for details.
+    pub extra: Option<std::collections::BTreeMap<String, Vec<String>>>,
+    /// Group information about the requesting user. See user.Info interface for details.
+    pub groups: Option<Vec<String>>,
+    /// Base64-encoded PKCS#10 CSR data
+    pub request: String,
+    /// UID information about the requesting user. See user.Info interface for details.
+    pub uid: Option<String>,
+    /// allowedUsages specifies a set of usage contexts the key will be valid for. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+    ///      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+    pub usages: Option<Vec<String>>,
+    /// Information about the requesting user. See user.Info interface for details.
+    pub username: Option<String>,
+}
+
+impl CertificateSigningRequestSpec {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> CertificateSigningRequestSpecBuilder<crate::codegen::generics::MissingRequest> {
+        CertificateSigningRequestSpecBuilder {
+            body: Default::default(),
+            _request: core::marker::PhantomData,
+        }
+    }
+}
+
+impl Into<CertificateSigningRequestSpec> for CertificateSigningRequestSpecBuilder<crate::codegen::generics::RequestExists> {
+    fn into(self) -> CertificateSigningRequestSpec {
+        self.body
+    }
+}
+
+/// Builder for [`CertificateSigningRequestSpec`](./struct.CertificateSigningRequestSpec.html) object.
+#[derive(Debug, Clone)]
+pub struct CertificateSigningRequestSpecBuilder<Request> {
+    body: self::CertificateSigningRequestSpec,
+    _request: core::marker::PhantomData<Request>,
+}
+
+impl<Request> CertificateSigningRequestSpecBuilder<Request> {
+    /// Extra information about the requesting user. See user.Info interface for details.
+    #[inline]
+    pub fn extra(mut self, value: impl Iterator<Item = (String, impl Iterator<Item = impl Into<String>>)>) -> Self {
+        self.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>().into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Group information about the requesting user. See user.Info interface for details.
+    #[inline]
+    pub fn groups(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.groups = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    /// Base64-encoded PKCS#10 CSR data
+    #[inline]
+    pub fn request(mut self, value: impl Into<String>) -> CertificateSigningRequestSpecBuilder<crate::codegen::generics::RequestExists> {
+        self.body.request = value.into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// UID information about the requesting user. See user.Info interface for details.
+    #[inline]
+    pub fn uid(mut self, value: impl Into<String>) -> Self {
+        self.body.uid = Some(value.into());
+        self
+    }
+
+    /// allowedUsages specifies a set of usage contexts the key will be valid for. See: https://tools.ietf.org/html/rfc5280#section-4.2.1.3
+    ///      https://tools.ietf.org/html/rfc5280#section-4.2.1.12
+    #[inline]
+    pub fn usages(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.usages = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    /// Information about the requesting user. See user.Info interface for details.
+    #[inline]
+    pub fn username(mut self, value: impl Into<String>) -> Self {
+        self.body.username = Some(value.into());
+        self
+    }
+}
+

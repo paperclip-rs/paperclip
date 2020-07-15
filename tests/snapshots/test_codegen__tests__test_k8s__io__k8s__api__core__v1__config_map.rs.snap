@@ -1,0 +1,412 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+/// ConfigMap holds configuration data for pods to consume.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ConfigMap {
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[serde(rename = "apiVersion")]
+    pub api_version: Option<String>,
+    /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
+    #[serde(rename = "binaryData")]
+    pub binary_data: Option<std::collections::BTreeMap<String, String>>,
+    /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
+    pub data: Option<std::collections::BTreeMap<String, String>>,
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    pub kind: Option<String>,
+    /// Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+    pub metadata: Option<crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta>,
+}
+
+impl ConfigMap {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> ConfigMapBuilder {
+        ConfigMapBuilder {
+            body: Default::default(),
+        }
+    }
+
+    /// create a ConfigMap
+    #[inline]
+    pub fn create_core_v1_namespaced_config_map() -> ConfigMapPostBuilder<crate::codegen::generics::MissingNamespace> {
+        ConfigMapPostBuilder {
+            inner: Default::default(),
+            _param_namespace: core::marker::PhantomData,
+        }
+    }
+
+    /// read the specified ConfigMap
+    #[inline]
+    pub fn read_core_v1_namespaced_config_map() -> ConfigMapGetBuilder1<crate::codegen::generics::MissingName, crate::codegen::generics::MissingNamespace> {
+        ConfigMapGetBuilder1 {
+            inner: Default::default(),
+            _param_name: core::marker::PhantomData,
+            _param_namespace: core::marker::PhantomData,
+        }
+    }
+
+    /// replace the specified ConfigMap
+    #[inline]
+    pub fn replace_core_v1_namespaced_config_map() -> ConfigMapPutBuilder1<crate::codegen::generics::MissingName, crate::codegen::generics::MissingNamespace> {
+        ConfigMapPutBuilder1 {
+            inner: Default::default(),
+            _param_name: core::marker::PhantomData,
+            _param_namespace: core::marker::PhantomData,
+        }
+    }
+}
+
+impl Into<ConfigMap> for ConfigMapBuilder {
+    fn into(self) -> ConfigMap {
+        self.body
+    }
+}
+
+impl Into<ConfigMap> for ConfigMapPostBuilder<crate::codegen::generics::NamespaceExists> {
+    fn into(self) -> ConfigMap {
+        self.inner.body
+    }
+}
+
+impl Into<ConfigMap> for ConfigMapPutBuilder1<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
+    fn into(self) -> ConfigMap {
+        self.inner.body
+    }
+}
+
+/// Builder for [`ConfigMap`](./struct.ConfigMap.html) object.
+#[derive(Debug, Clone)]
+pub struct ConfigMapBuilder {
+    body: self::ConfigMap,
+}
+
+impl ConfigMapBuilder {
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.body.api_version = Some(value.into());
+        self
+    }
+
+    /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
+    #[inline]
+    pub fn binary_data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
+        self.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
+    #[inline]
+    pub fn data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
+        self.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.body.kind = Some(value.into());
+        self
+    }
+
+    /// Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.body.metadata = Some(value.into());
+        self
+    }
+}
+
+/// Builder created by [`ConfigMap::create_core_v1_namespaced_config_map`](./struct.ConfigMap.html#method.create_core_v1_namespaced_config_map) method for a `POST` operation associated with `ConfigMap`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct ConfigMapPostBuilder<Namespace> {
+    inner: ConfigMapPostBuilderContainer,
+    _param_namespace: core::marker::PhantomData<Namespace>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct ConfigMapPostBuilderContainer {
+    body: self::ConfigMap,
+    param_dry_run: Option<String>,
+    param_field_manager: Option<String>,
+    param_namespace: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Namespace> ConfigMapPostBuilder<Namespace> {
+    /// When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+    #[inline]
+    pub fn dry_run(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_dry_run = Some(value.into());
+        self
+    }
+
+    /// fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+    #[inline]
+    pub fn field_manager(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_field_manager = Some(value.into());
+        self
+    }
+
+    /// object name and auth scope, such as for teams and projects
+    #[inline]
+    pub fn namespace(mut self, value: impl Into<String>) -> ConfigMapPostBuilder<crate::codegen::generics::NamespaceExists> {
+        self.inner.param_namespace = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.api_version = Some(value.into());
+        self
+    }
+
+    /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
+    #[inline]
+    pub fn binary_data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
+        self.inner.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
+    #[inline]
+    pub fn data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
+        self.inner.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.kind = Some(value.into());
+        self
+    }
+
+    /// Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.inner.body.metadata = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for ConfigMapPostBuilder<crate::codegen::generics::NamespaceExists> {
+    type Output = crate::codegen::io::k8s::api::core::v1::config_map::ConfigMap;
+
+    const METHOD: http::Method = http::Method::POST;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/api/v1/namespaces/{namespace}/configmaps", namespace=self.inner.param_namespace.as_ref().expect("missing parameter namespace?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .json(&self.inner.body)
+        .query(&[
+            ("dryRun", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
+            ("fieldManager", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+
+/// Builder created by [`ConfigMap::read_core_v1_namespaced_config_map`](./struct.ConfigMap.html#method.read_core_v1_namespaced_config_map) method for a `GET` operation associated with `ConfigMap`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct ConfigMapGetBuilder1<Name, Namespace> {
+    inner: ConfigMapGetBuilder1Container,
+    _param_name: core::marker::PhantomData<Name>,
+    _param_namespace: core::marker::PhantomData<Namespace>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct ConfigMapGetBuilder1Container {
+    param_exact: Option<bool>,
+    param_export: Option<bool>,
+    param_name: Option<String>,
+    param_namespace: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name, Namespace> ConfigMapGetBuilder1<Name, Namespace> {
+    /// Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'. Deprecated. Planned for removal in 1.18.
+    #[inline]
+    pub fn exact(mut self, value: impl Into<bool>) -> Self {
+        self.inner.param_exact = Some(value.into());
+        self
+    }
+
+    /// Should this value be exported.  Export strips fields that a user can not specify. Deprecated. Planned for removal in 1.18.
+    #[inline]
+    pub fn export(mut self, value: impl Into<bool>) -> Self {
+        self.inner.param_export = Some(value.into());
+        self
+    }
+
+    /// name of the ConfigMap
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> ConfigMapGetBuilder1<crate::codegen::generics::NameExists, Namespace> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// object name and auth scope, such as for teams and projects
+    #[inline]
+    pub fn namespace(mut self, value: impl Into<String>) -> ConfigMapGetBuilder1<Name, crate::codegen::generics::NamespaceExists> {
+        self.inner.param_namespace = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for ConfigMapGetBuilder1<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
+    type Output = ConfigMap;
+
+    const METHOD: http::Method = http::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/api/v1/namespaces/{namespace}/configmaps/{name}", name=self.inner.param_name.as_ref().expect("missing parameter name?"), namespace=self.inner.param_namespace.as_ref().expect("missing parameter namespace?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .query(&[
+            ("exact", self.inner.param_exact.as_ref().map(std::string::ToString::to_string)),
+            ("export", self.inner.param_export.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+
+/// Builder created by [`ConfigMap::replace_core_v1_namespaced_config_map`](./struct.ConfigMap.html#method.replace_core_v1_namespaced_config_map) method for a `PUT` operation associated with `ConfigMap`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct ConfigMapPutBuilder1<Name, Namespace> {
+    inner: ConfigMapPutBuilder1Container,
+    _param_name: core::marker::PhantomData<Name>,
+    _param_namespace: core::marker::PhantomData<Namespace>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct ConfigMapPutBuilder1Container {
+    body: self::ConfigMap,
+    param_dry_run: Option<String>,
+    param_field_manager: Option<String>,
+    param_name: Option<String>,
+    param_namespace: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name, Namespace> ConfigMapPutBuilder1<Name, Namespace> {
+    /// When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+    #[inline]
+    pub fn dry_run(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_dry_run = Some(value.into());
+        self
+    }
+
+    /// fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+    #[inline]
+    pub fn field_manager(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_field_manager = Some(value.into());
+        self
+    }
+
+    /// name of the ConfigMap
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> ConfigMapPutBuilder1<crate::codegen::generics::NameExists, Namespace> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// object name and auth scope, such as for teams and projects
+    #[inline]
+    pub fn namespace(mut self, value: impl Into<String>) -> ConfigMapPutBuilder1<Name, crate::codegen::generics::NamespaceExists> {
+        self.inner.param_namespace = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.api_version = Some(value.into());
+        self
+    }
+
+    /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
+    #[inline]
+    pub fn binary_data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
+        self.inner.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
+    #[inline]
+    pub fn data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
+        self.inner.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.kind = Some(value.into());
+        self
+    }
+
+    /// Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.inner.body.metadata = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for ConfigMapPutBuilder1<crate::codegen::generics::NameExists, crate::codegen::generics::NamespaceExists> {
+    type Output = crate::codegen::io::k8s::api::core::v1::config_map::ConfigMap;
+
+    const METHOD: http::Method = http::Method::PUT;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/api/v1/namespaces/{namespace}/configmaps/{name}", name=self.inner.param_name.as_ref().expect("missing parameter name?"), namespace=self.inner.param_namespace.as_ref().expect("missing parameter namespace?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .json(&self.inner.body)
+        .query(&[
+            ("dryRun", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
+            ("fieldManager", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+

@@ -1,0 +1,81 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+pub mod admissionregistration {
+    include!("./admissionregistration/mod.rs");
+}
+
+pub mod apps {
+    include!("./apps/mod.rs");
+}
+
+pub mod auditregistration {
+    include!("./auditregistration/mod.rs");
+}
+
+pub mod authentication {
+    include!("./authentication/mod.rs");
+}
+
+pub mod authorization {
+    include!("./authorization/mod.rs");
+}
+
+pub mod autoscaling {
+    include!("./autoscaling/mod.rs");
+}
+
+pub mod batch {
+    include!("./batch/mod.rs");
+}
+
+pub mod certificates {
+    include!("./certificates/mod.rs");
+}
+
+pub mod coordination {
+    include!("./coordination/mod.rs");
+}
+
+pub mod core {
+    include!("./core/mod.rs");
+}
+
+pub mod events {
+    include!("./events/mod.rs");
+}
+
+pub mod extensions {
+    include!("./extensions/mod.rs");
+}
+
+pub mod networking {
+    include!("./networking/mod.rs");
+}
+
+pub mod node {
+    include!("./node/mod.rs");
+}
+
+pub mod policy {
+    include!("./policy/mod.rs");
+}
+
+pub mod rbac {
+    include!("./rbac/mod.rs");
+}
+
+pub mod scheduling {
+    include!("./scheduling/mod.rs");
+}
+
+pub mod settings {
+    include!("./settings/mod.rs");
+}
+
+pub mod storage {
+    include!("./storage/mod.rs");
+}
+

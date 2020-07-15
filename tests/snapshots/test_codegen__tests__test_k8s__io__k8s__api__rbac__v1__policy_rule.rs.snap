@@ -1,0 +1,84 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+/// PolicyRule holds information that describes a policy rule, but does not contain information about who the rule applies to or which namespace the rule applies to.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct PolicyRule {
+    /// APIGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed.
+    #[serde(rename = "apiGroups")]
+    pub api_groups: Option<Vec<String>>,
+    /// NonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path Since non-resource URLs are not namespaced, this field is only applicable for ClusterRoles referenced from a ClusterRoleBinding. Rules can either apply to API resources (such as "pods" or "secrets") or non-resource URL paths (such as "/api"),  but not both.
+    #[serde(rename = "nonResourceURLs")]
+    pub non_resource_ur_ls: Option<Vec<String>>,
+    /// ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
+    #[serde(rename = "resourceNames")]
+    pub resource_names: Option<Vec<String>>,
+    /// Resources is a list of resources this rule applies to.  ResourceAll represents all resources.
+    pub resources: Option<Vec<String>>,
+    /// Verbs is a list of Verbs that apply to ALL the ResourceKinds and AttributeRestrictions contained in this rule.  VerbAll represents all kinds.
+    pub verbs: Vec<String>,
+}
+
+impl PolicyRule {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> PolicyRuleBuilder<crate::codegen::generics::MissingVerbs> {
+        PolicyRuleBuilder {
+            body: Default::default(),
+            _verbs: core::marker::PhantomData,
+        }
+    }
+}
+
+impl Into<PolicyRule> for PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
+    fn into(self) -> PolicyRule {
+        self.body
+    }
+}
+
+/// Builder for [`PolicyRule`](./struct.PolicyRule.html) object.
+#[derive(Debug, Clone)]
+pub struct PolicyRuleBuilder<Verbs> {
+    body: self::PolicyRule,
+    _verbs: core::marker::PhantomData<Verbs>,
+}
+
+impl<Verbs> PolicyRuleBuilder<Verbs> {
+    /// APIGroups is the name of the APIGroup that contains the resources.  If multiple API groups are specified, any action requested against one of the enumerated resources in any API group will be allowed.
+    #[inline]
+    pub fn api_groups(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.api_groups = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    /// NonResourceURLs is a set of partial urls that a user should have access to.  *s are allowed, but only as the full, final step in the path Since non-resource URLs are not namespaced, this field is only applicable for ClusterRoles referenced from a ClusterRoleBinding. Rules can either apply to API resources (such as "pods" or "secrets") or non-resource URL paths (such as "/api"),  but not both.
+    #[inline]
+    pub fn non_resource_ur_ls(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.non_resource_ur_ls = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    /// ResourceNames is an optional white list of names that the rule applies to.  An empty set means that everything is allowed.
+    #[inline]
+    pub fn resource_names(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.resource_names = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    /// Resources is a list of resources this rule applies to.  ResourceAll represents all resources.
+    #[inline]
+    pub fn resources(mut self, value: impl Iterator<Item = impl Into<String>>) -> Self {
+        self.body.resources = Some(value.map(|value| value.into()).collect::<Vec<_>>().into());
+        self
+    }
+
+    /// Verbs is a list of Verbs that apply to ALL the ResourceKinds and AttributeRestrictions contained in this rule.  VerbAll represents all kinds.
+    #[inline]
+    pub fn verbs(mut self, value: impl Iterator<Item = impl Into<String>>) -> PolicyRuleBuilder<crate::codegen::generics::VerbsExists> {
+        self.body.verbs = value.map(|value| value.into()).collect::<Vec<_>>().into();
+        unsafe { std::mem::transmute(self) }
+    }
+}
+
