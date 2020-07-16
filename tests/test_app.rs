@@ -384,8 +384,8 @@ fn test_params() {
                   "definitions": {
                     "BadgeBody":{
                       "properties":{
-                        "json":{"description": "JSON value"},
-                        "yaml":{}
+                        "json": {"description": "JSON value", "type": "object"},
+                        "yaml": {"type": "object"}
                       }
                     }
                   },

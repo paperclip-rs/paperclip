@@ -182,6 +182,8 @@ impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(serde_json::Value, DataType::Object);
+impl_type_simple!(serde_yaml::Value, DataType::Object);
 #[cfg(feature = "actix-multipart")]
 impl_type_simple!(
     actix_multipart::Multipart,
@@ -344,9 +346,6 @@ impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
         Vec::<T>::raw_schema()
     }
 }
-
-impl Apiv2Schema for serde_json::Value {}
-impl Apiv2Schema for serde_yaml::Value {}
 
 macro_rules! impl_schema_array {
     ($ty:ty) => {
