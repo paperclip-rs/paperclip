@@ -121,8 +121,8 @@ pub trait Emitter: Sized {
         def.name()
             .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
             .ok_or_else(|| {
-                trace!("Missing name for definition: {:?}", def);
-                PaperClipError::InvalidDefinitionName.into()
+                trace!("Missing name for definition: '{:?}'", def);
+                PaperClipError::MissingDefinitionName.into()
             })
             .map(|i| Box::new(i) as Box<_>)
     }

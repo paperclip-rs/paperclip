@@ -1,0 +1,528 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+#[macro_use]
+extern crate serde;
+
+#[macro_use]
+extern crate clap;
+
+pub mod cli {
+    include!("./cli.rs");
+}
+
+pub mod io {
+    include!("./io/mod.rs");
+}
+
+pub mod miscellaneous {
+    include!("./miscellaneous.rs");
+}
+
+pub mod client {
+    use futures::Stream;
+    use parking_lot::Mutex;
+
+    use std::borrow::Cow;
+    use std::fmt::Debug;
+    use std::path::Path;
+
+    /// Common API errors.
+    #[derive(Debug, thiserror::Error)]
+    pub enum ApiError<R: Debug + Send + 'static> {
+        #[error("API request failed for path: {} (code: {})", _0, _1)]
+        Failure(String, http::status::StatusCode, Mutex<R>),
+        #[error("Unsupported media type in response: {}", _0)]
+        UnsupportedMediaType(String, Mutex<R>),
+        #[error("An error has occurred while performing the API request: {}", _0)]
+        Reqwest(reqwest::Error),
+        #[error("I/O error: {}", _0)]
+        Io(std::io::Error),
+        #[error("Error en/decoding \"application/json\" data: {}", _0)]
+        ApplicationJson(serde_json::Error),
+        #[error("Error en/decoding \"application/yaml\" data: {}", _0)]
+        ApplicationYaml(serde_yaml::Error),
+    }
+
+    /// Form object for building multipart request body.
+    pub trait Form: Sized {
+        /// Creates a new builder.
+        fn new() -> Self;
+
+        /// Adds the given key and value as text.
+        fn text<T, U>(self, key: T, value: U) -> Self
+            where T: Into<Cow<'static, str>>,
+                  U: Into<Cow<'static, str>>;
+
+        /// Adds the file from the given path for streaming.
+        fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
+            where K: Into<Cow<'static, str>>;
+    }
+
+    /// HTTP Request.
+    pub trait Request {
+        type Form: Form;
+
+        /// Sets the header with the given key and value.
+        fn header(self, name: &'static str, value: &str) -> Self;
+
+        /// Sets body using the given vector of bytes.
+        ///
+        /// **NOTE:** Appropriate `Content-Type` header must be set
+        /// after calling this method.
+        fn body_bytes(self, body: Vec<u8>) -> Self;
+
+        /// Sets JSON body based on the given value.
+        fn json<T: serde::Serialize>(self, value: &T) -> Self;
+
+        /// Sets `multipart/form-data` body using the given form.
+        fn multipart_form_data(self, form: Self::Form) -> Self;
+
+        /// Sets/adds query parameters based on the given value.
+        ///
+        /// **NOTE:** This method must be called only once. It's unspecified
+        /// as to whether this appends/replaces query parameters.
+        fn query<T: serde::Serialize>(self, params: &T) -> Self;
+    }
+
+    impl Form for reqwest::multipart::Form {
+        fn new() -> Self {
+            reqwest::multipart::Form::new()
+        }
+
+        fn text<T, U>(self, key: T, value: U) -> Self
+            where T: Into<Cow<'static, str>>,
+                  U: Into<Cow<'static, str>>
+        {
+            reqwest::multipart::Form::text(self, key, value)
+        }
+
+        fn file<K>(self, key: K, path: &Path) -> std::io::Result<Self>
+            where K: Into<Cow<'static, str>>
+        {
+            use reqwest::multipart::{Form, Part};
+            use tokio_util::codec::{BytesCodec, FramedRead};
+
+            let fd = std::fs::File::open(path)?;
+            let reader = tokio::fs::File::from_std(fd);
+            let bytes_stream = FramedRead::new(reader, BytesCodec::new());
+            let part = Part::stream(reqwest::Body::wrap_stream(bytes_stream));
+            Ok(Form::part(self, key, part))
+        }
+    }
+
+    impl Request for reqwest::RequestBuilder {
+        type Form = reqwest::multipart::Form;
+
+        fn header(self, name: &'static str, value: &str) -> Self {
+            reqwest::RequestBuilder::header(self, name, value)
+        }
+
+        fn multipart_form_data(self, form: Self::Form) -> Self {
+            self.multipart(form)
+        }
+
+        fn body_bytes(self, body: Vec<u8>) -> Self {
+            self.body(body)
+        }
+
+        fn json<T: serde::Serialize>(self, value: &T) -> Self {
+            <reqwest::RequestBuilder>::json(self, value)
+        }
+
+        fn query<T: serde::Serialize>(self, params: &T) -> Self {
+            reqwest::RequestBuilder::query(self, params)
+        }
+    }
+
+    /// HTTP Response.
+    #[async_trait::async_trait]
+    pub trait Response: Debug + Send + Sized {
+        type Bytes: AsRef<[u8]>;
+        type Error;
+
+        /// Gets the value for the given header name, if any.
+        fn header(&self, name: &'static str) -> Option<&str>;
+
+        /// Takes all headers from the response.
+        fn take_headers(&mut self) -> http::header::HeaderMap;
+
+        /// Status code for this response.
+        fn status(&self) -> http::status::StatusCode;
+
+        /// Media type for this response body (if any).
+        fn media_type(&self) -> Option<mime::MediaType>;
+
+        /// Response body as a stream.
+        fn stream(self) -> Box<dyn Stream<Item=Result<Self::Bytes, Self::Error>> + Unpin>;
+
+        /// Vector of bytes from the response body.
+        async fn body_bytes(self) -> Result<Self::Bytes, ApiError<Self>>;
+    }
+
+    #[async_trait::async_trait]
+    impl Response for reqwest::Response {
+        type Bytes = bytes::Bytes;
+        type Error = reqwest::Error;
+
+        fn header(&self, name: &'static str) -> Option<&str> {
+            self.headers().get(name).and_then(|v| v.to_str().ok())
+        }
+
+        fn take_headers(&mut self) -> http::header::HeaderMap {
+            std::mem::replace(self.headers_mut(), http::header::HeaderMap::new())
+        }
+
+        fn status(&self) -> http::status::StatusCode {
+            reqwest::Response::status(self)
+        }
+
+        fn media_type(&self) -> Option<mime::MediaType> {
+            self.header(http::header::CONTENT_TYPE.as_str())
+                .and_then(|v| v.parse().ok())
+        }
+
+        fn stream(self) -> Box<dyn Stream<Item=Result<Self::Bytes, Self::Error>> + Unpin> {
+            Box::new(self.bytes_stream()) as Box<_>
+        }
+
+        async fn body_bytes(self) -> Result<Self::Bytes, ApiError<Self>> {
+            Ok(self.bytes().await.map_err(ApiError::Reqwest)?)
+        }
+    }
+
+    /// Represents an API client.
+    #[async_trait::async_trait]
+    pub trait ApiClient {
+        type Request: Request + Send;
+        type Response: Response;
+
+        /// Consumes a method and a relative path and produces a request builder for a single API call.
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request;
+
+        /// Performs the HTTP request using the given `Request` object
+        /// and returns a `Response` future.
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>>;
+    }
+
+    #[async_trait::async_trait]
+    impl ApiClient for reqwest::Client {
+        type Request = reqwest::RequestBuilder;
+        type Response = reqwest::Response;
+
+        fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
+            let mut u = String::from("https://example.com/");
+            u.push_str(rel_path.trim_start_matches('/'));
+            self.request(method, &u)
+        }
+
+        async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
+            let req = req.build().map_err(ApiError::Reqwest)?;
+            let resp = self.execute(req).await.map_err(ApiError::Reqwest)?;
+            Ok(resp)
+        }
+    }
+
+    /// A trait for indicating that the implementor can send an API call.
+    #[async_trait::async_trait]
+    pub trait Sendable<Client>
+    where
+        Client: ApiClient + Sync + 'static,
+        Self: Sized
+    {
+        /// The output object from this API request.
+        type Output: serde::de::DeserializeOwned;
+
+        /// HTTP method used by this call.
+        const METHOD: http::Method;
+
+        /// Relative URL for this API call formatted appropriately with parameter values.
+        ///
+        /// **NOTE:** This URL **must** begin with `/`.
+        fn rel_path(&self) -> std::borrow::Cow<'static, str>;
+
+        /// Modifier for this object. Builders override this method if they
+        /// wish to add query parameters, set body, etc.
+        fn modify(&self, req: Client::Request) -> Result<Client::Request, ApiError<Client::Response>> {
+            Ok(req)
+        }
+
+        /// Sends the request and returns a future for the response object.
+        async fn send(&self, client: &Client) -> Result<ResponseWrapper<Self::Output, Self>, ApiError<Client::Response>> {
+            let resp = self.send_raw(client).await?;
+            let media = resp.media_type();
+            if let Some(ty) = media {
+                if media_types::M_0.matches(&ty) {
+                    return ResponseWrapper::wrap(resp, |r| async {
+                        let bytes = r.body_bytes().await?;
+                        serde_json::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                    }).await
+                }
+                else if media_types::M_1.matches(&ty) {
+                    return ResponseWrapper::wrap(resp, |r| async {
+                        let bytes = r.body_bytes().await?;
+                        serde_yaml::from_reader(bytes.as_ref()).map_err(ApiError::from)
+                    }).await
+                }
+            }
+
+            let ty = resp.header(http::header::CONTENT_TYPE.as_str())
+                .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
+                .unwrap_or_default();
+            Err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))
+        }
+
+        /// Convenience method for returning a raw response after sending a request.
+        async fn send_raw(&self, client: &Client) -> Result<Client::Response, ApiError<Client::Response>> {
+            let rel_path = self.rel_path();
+            let req = self.modify(client.request_builder(Self::METHOD, &rel_path))?;
+            let resp = client.make_request(req).await?;
+            if resp.status().is_success() {
+                Ok(resp)
+            } else {
+                Err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)))
+            }
+        }
+    }
+
+    /// Wrapper containing response-related information.
+    pub struct ResponseWrapper<T, B> {
+        /// Response object
+        pub object: T,
+        /// Response headers
+        pub headers: http::HeaderMap,
+        /// Response status code
+        pub status: http::status::StatusCode,
+        _builder: core::marker::PhantomData<B>,
+    }
+
+    impl<T, B> ResponseWrapper<T, B> {
+        pub(crate) async fn wrap<F, R>(mut resp: R, f: impl FnOnce(R) -> F) -> Result<Self, ApiError<R>>
+            where F: std::future::Future<Output=Result<T, ApiError<R>>>,
+                  R: Response + 'static
+        {
+            let status = resp.status();
+            let headers = resp.take_headers();
+            Ok(ResponseWrapper {
+                object: f(resp).await?,
+                headers,
+                status,
+                _builder: core::marker::PhantomData,
+            })
+        }
+    }
+
+    impl<'de, T, B> serde::de::Deserialize<'de> for ResponseWrapper<T, B> {
+        fn deserialize<D>(_: D) -> Result<Self, D::Error>
+        where
+            D: serde::de::Deserializer<'de>
+        {
+            unimplemented!("ResponseWrapper is not supposed to be deserialized.");
+        }
+    }
+
+    impl<T, B> std::ops::Deref for ResponseWrapper<T, B> {
+        type Target = T;
+
+        fn deref(&self) -> &Self::Target {
+            &self.object
+        }
+    }
+
+    impl<T, B> std::ops::DerefMut for ResponseWrapper<T, B> {
+        fn deref_mut(&mut self) -> &mut <Self as std::ops::Deref>::Target {
+            &mut self.object
+        }
+    }
+
+    pub mod media_types {
+        use lazy_static::lazy_static;
+
+        lazy_static! {
+            pub static ref M_0: mime::MediaRange =
+                mime::MediaRange::parse("application/json").expect("cannot parse \"application/json\" as media range");
+            pub static ref M_1: mime::MediaRange =
+                mime::MediaRange::parse("application/yaml").expect("cannot parse \"application/yaml\" as media range");
+        }
+    }
+
+    impl<R: Response + 'static> From<std::io::Error> for ApiError<R> {
+        fn from(e: std::io::Error) -> Self {
+            ApiError::Io(e)
+        }
+    }
+
+    impl<R: Response + 'static> From<serde_json::Error> for ApiError<R> {
+        fn from(e: serde_json::Error) -> Self {
+            ApiError::ApplicationJson(e)
+        }
+    }
+
+    impl<R: Response + 'static> From<serde_yaml::Error> for ApiError<R> {
+        fn from(e: serde_yaml::Error) -> Self {
+            ApiError::ApplicationYaml(e)
+        }
+    }
+}
+
+pub mod generics {
+    include!("./generics.rs");
+}
+
+pub mod util {
+    include!("./util.rs");
+}
+
+use self::client::{ApiClient, ApiError, Response};
+use self::util::ResponseStream;
+use anyhow::Error;
+use clap::{App, ArgMatches};
+use openssl::pkcs12::Pkcs12;
+use openssl::pkey::PKey;
+use openssl::x509::X509;
+
+use std::fs::File;
+use std::io::Read;
+use std::path::Path;
+
+#[derive(Debug, thiserror::Error)]
+#[allow(dead_code)]
+enum ClientError {
+    #[error("Duration parse error: {}", _0)]
+    Duration(humantime::DurationError),
+    #[error("I/O error: {}", _0)]
+    Io(std::io::Error),
+    #[error("OpenSSL error: {}", _0)]
+    OpenSsl(openssl::error::ErrorStack),
+    #[error("Client error: {}", _0)]
+    Reqwest(reqwest::Error),
+    #[error("URL error: {}", _0)]
+    Url(url::ParseError),
+    #[error("{}", _0)]
+    Api(self::client::ApiError<reqwest::Response>),
+    #[error("")]
+    Empty,
+}
+
+impl From<ApiError<reqwest::Response>> for ClientError {
+    fn from(e: ApiError<reqwest::Response>) -> Self {
+        ClientError::Api(e)
+    }
+}
+
+fn read_file<P: AsRef<Path>>(path: P) -> Result<Vec<u8>, Error> {
+    let mut data = vec![];
+    let mut fd = File::open(path.as_ref()).map_err(ClientError::Io)?;
+    fd.read_to_end(&mut data).map_err(ClientError::Io)?;
+    Ok(data)
+}
+
+#[derive(Clone)]
+struct WrappedClient {
+    verbose: bool,
+    inner: reqwest::Client,
+    url: reqwest::Url,
+}
+
+#[async_trait::async_trait]
+impl ApiClient for WrappedClient {
+    type Request = reqwest::RequestBuilder;
+    type Response = reqwest::Response;
+
+    async fn make_request(&self, req: Self::Request) -> Result<Self::Response, ApiError<Self::Response>> {
+        let req = req.build().map_err(ApiError::Reqwest)?;
+        if self.verbose {
+            println!("{} {}", req.method(), req.url());
+        }
+
+        Ok(self.inner.execute(req).await.map_err(ApiError::Reqwest)?)
+    }
+
+    fn request_builder(&self, method: http::Method, rel_path: &str) -> Self::Request {
+        let mut u = self.url.clone();
+        let mut path = u.path().trim_matches('/').to_owned();
+        if !path.is_empty() {
+            path = String::from("/") + &path;
+        }
+
+        path.push_str(rel_path);
+        u.set_path(&path);
+        self.inner.request(method, u)
+    }
+}
+
+fn make_client<'a>(matches: &'a ArgMatches<'a>) -> Result<WrappedClient, Error> {
+    let mut client = reqwest::Client::builder();
+
+    if let Some(p) = matches.value_of("ca-cert") {
+        let ca_cert = X509::from_pem(&read_file(p)?)
+            .map_err(ClientError::OpenSsl)?;
+        let ca_der = ca_cert.to_der().map_err(ClientError::OpenSsl)?;
+        client = client.add_root_certificate(
+            reqwest::Certificate::from_der(&ca_der)
+                .map_err(ClientError::Reqwest)?
+        );
+    }
+
+    // FIXME: Is this the only way?
+    if let (Some(p1), Some(p2)) = (matches.value_of("client-key"), matches.value_of("client-cert")) {
+        let cert = X509::from_pem(&read_file(p2)?).map_err(ClientError::OpenSsl)?;
+        let key = PKey::private_key_from_pem(&read_file(p1)?)
+            .map_err(ClientError::OpenSsl)?;
+        let builder = Pkcs12::builder();
+        let pkcs12 = builder.build("foobar", "my-client", &key, &cert)
+            .map_err(ClientError::OpenSsl)?;
+        let identity = reqwest::Identity::from_pkcs12_der(
+            &pkcs12.to_der().map_err(ClientError::OpenSsl)?,
+            "foobar"
+        ).map_err(ClientError::Reqwest)?;
+        client = client.identity(identity);
+    }
+
+    if let Some(timeout) = matches.value_of("timeout") {
+        let d = timeout.parse::<humantime::Duration>()?;
+        client = client.timeout(d.into());
+    }
+
+    let is_verbose = matches.is_present("verbose");
+    let url = matches.value_of("url").expect("required arg URL?");
+    Ok(WrappedClient {
+        inner: client.build().map_err(ClientError::Reqwest)?,
+        url: reqwest::Url::parse(url).map_err(ClientError::Url)?,
+        verbose: is_verbose,
+    })
+}
+
+async fn run_app() -> Result<(), Error> {
+    let yml = load_yaml!("app.yaml");
+    let app = App::from_yaml(yml);
+    let matches = app.get_matches();
+    let (sub_cmd, sub_matches) = matches.subcommand();
+
+    let client = make_client(&matches)?;
+    let response = self::cli::fetch_response(&client, &matches, sub_cmd, sub_matches).await?;
+
+    let status = response.status();
+    if client.verbose {
+        println!("{}", status);
+    }
+
+    let mut stdout = tokio::io::stdout();
+    ResponseStream(response.stream()).to_writer(&mut stdout).await?;
+    if !status.is_success() {
+        Err(ClientError::Empty)?
+    }
+
+    Ok(())
+}
+
+#[tokio::main]
+async fn main() {
+    env_logger::init();
+    if let Err(e) = run_app().await {
+        println!("{}", e);
+    }
+}
+

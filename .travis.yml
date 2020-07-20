@@ -1,6 +1,5 @@
 language: rust
 rust: stable
-cache: cargo
 node_js: "12"
 install: "npm install -g gitbook-cli"
 

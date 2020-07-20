@@ -1,0 +1,564 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+/// CustomResourceDefinition represents a resource that should be exposed on the API server.  Its name MUST be in the format <.spec.name>.<.spec.group>.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct CustomResourceDefinition<Any> {
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[serde(rename = "apiVersion")]
+    pub api_version: Option<String>,
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    pub kind: Option<String>,
+    pub metadata: Option<crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta>,
+    /// Spec describes how the user wants the resources to appear
+    pub spec: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_spec::CustomResourceDefinitionSpec<Any>,
+    /// Status indicates the actual state of the CustomResourceDefinition
+    pub status: Option<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_status::CustomResourceDefinitionStatus>,
+}
+
+impl<Any: Default> CustomResourceDefinition<Any> {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> CustomResourceDefinitionBuilder<crate::codegen::generics::MissingSpec, Any> {
+        CustomResourceDefinitionBuilder {
+            body: Default::default(),
+            _spec: core::marker::PhantomData,
+        }
+    }
+
+    /// create a CustomResourceDefinition
+    #[inline]
+    pub fn create_apiextensions_v1beta1_custom_resource_definition() -> CustomResourceDefinitionPostBuilder<crate::codegen::generics::MissingSpec, Any> {
+        CustomResourceDefinitionPostBuilder {
+            inner: Default::default(),
+            _spec: core::marker::PhantomData,
+        }
+    }
+
+    /// read the specified CustomResourceDefinition
+    #[inline]
+    pub fn read_apiextensions_v1beta1_custom_resource_definition() -> CustomResourceDefinitionGetBuilder1<crate::codegen::generics::MissingName> {
+        CustomResourceDefinitionGetBuilder1 {
+            inner: Default::default(),
+            _param_name: core::marker::PhantomData,
+        }
+    }
+
+    /// replace the specified CustomResourceDefinition
+    #[inline]
+    pub fn replace_apiextensions_v1beta1_custom_resource_definition() -> CustomResourceDefinitionPutBuilder1<crate::codegen::generics::MissingName, crate::codegen::generics::MissingSpec, Any> {
+        CustomResourceDefinitionPutBuilder1 {
+            inner: Default::default(),
+            _param_name: core::marker::PhantomData,
+            _spec: core::marker::PhantomData,
+        }
+    }
+
+    /// read status of the specified CustomResourceDefinition
+    #[inline]
+    pub fn read_apiextensions_v1beta1_custom_resource_definition_status() -> CustomResourceDefinitionGetBuilder2<crate::codegen::generics::MissingName> {
+        CustomResourceDefinitionGetBuilder2 {
+            inner: Default::default(),
+            _param_name: core::marker::PhantomData,
+        }
+    }
+
+    /// replace status of the specified CustomResourceDefinition
+    #[inline]
+    pub fn replace_apiextensions_v1beta1_custom_resource_definition_status() -> CustomResourceDefinitionPutBuilder2<crate::codegen::generics::MissingName, crate::codegen::generics::MissingSpec, Any> {
+        CustomResourceDefinitionPutBuilder2 {
+            inner: Default::default(),
+            _param_name: core::marker::PhantomData,
+            _spec: core::marker::PhantomData,
+        }
+    }
+}
+
+impl<Any> Into<CustomResourceDefinition<Any>> for CustomResourceDefinitionBuilder<crate::codegen::generics::SpecExists, Any> {
+    fn into(self) -> CustomResourceDefinition<Any> {
+        self.body
+    }
+}
+
+impl<Any> Into<CustomResourceDefinition<Any>> for CustomResourceDefinitionPostBuilder<crate::codegen::generics::SpecExists, Any> {
+    fn into(self) -> CustomResourceDefinition<Any> {
+        self.inner.body
+    }
+}
+
+impl<Any> Into<CustomResourceDefinition<Any>> for CustomResourceDefinitionPutBuilder1<crate::codegen::generics::NameExists, crate::codegen::generics::SpecExists, Any> {
+    fn into(self) -> CustomResourceDefinition<Any> {
+        self.inner.body
+    }
+}
+
+impl<Any> Into<CustomResourceDefinition<Any>> for CustomResourceDefinitionPutBuilder2<crate::codegen::generics::NameExists, crate::codegen::generics::SpecExists, Any> {
+    fn into(self) -> CustomResourceDefinition<Any> {
+        self.inner.body
+    }
+}
+
+/// Builder for [`CustomResourceDefinition`](./struct.CustomResourceDefinition.html) object.
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionBuilder<Spec, Any> {
+    body: self::CustomResourceDefinition<Any>,
+    _spec: core::marker::PhantomData<Spec>,
+}
+
+impl<Spec, Any> CustomResourceDefinitionBuilder<Spec, Any> {
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.body.api_version = Some(value.into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.body.kind = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.body.metadata = Some(value.into());
+        self
+    }
+
+    /// Spec describes how the user wants the resources to appear
+    #[inline]
+    pub fn spec(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_spec::CustomResourceDefinitionSpecBuilder<crate::codegen::generics::GroupExists, crate::codegen::generics::NamesExists, crate::codegen::generics::ScopeExists, Any>) -> CustomResourceDefinitionBuilder<crate::codegen::generics::SpecExists, Any> {
+        self.body.spec = value.into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// Status indicates the actual state of the CustomResourceDefinition
+    #[inline]
+    pub fn status(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_status::CustomResourceDefinitionStatusBuilder<crate::codegen::generics::AcceptedNamesExists, crate::codegen::generics::ConditionsExists, crate::codegen::generics::StoredVersionsExists>) -> Self {
+        self.body.status = Some(value.into());
+        self
+    }
+}
+
+/// Builder created by [`CustomResourceDefinition::create_apiextensions_v1beta1_custom_resource_definition`](./struct.CustomResourceDefinition.html#method.create_apiextensions_v1beta1_custom_resource_definition) method for a `POST` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionPostBuilder<Spec, Any> {
+    inner: CustomResourceDefinitionPostBuilderContainer<Any>,
+    _spec: core::marker::PhantomData<Spec>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionPostBuilderContainer<Any> {
+    body: self::CustomResourceDefinition<Any>,
+    param_dry_run: Option<String>,
+    param_field_manager: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Spec, Any> CustomResourceDefinitionPostBuilder<Spec, Any> {
+    /// When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+    #[inline]
+    pub fn dry_run(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_dry_run = Some(value.into());
+        self
+    }
+
+    /// fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+    #[inline]
+    pub fn field_manager(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_field_manager = Some(value.into());
+        self
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.api_version = Some(value.into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.kind = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.inner.body.metadata = Some(value.into());
+        self
+    }
+
+    /// Spec describes how the user wants the resources to appear
+    #[inline]
+    pub fn spec(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_spec::CustomResourceDefinitionSpecBuilder<crate::codegen::generics::GroupExists, crate::codegen::generics::NamesExists, crate::codegen::generics::ScopeExists, Any>) -> CustomResourceDefinitionPostBuilder<crate::codegen::generics::SpecExists, Any> {
+        self.inner.body.spec = value.into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// Status indicates the actual state of the CustomResourceDefinition
+    #[inline]
+    pub fn status(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_status::CustomResourceDefinitionStatusBuilder<crate::codegen::generics::AcceptedNamesExists, crate::codegen::generics::ConditionsExists, crate::codegen::generics::StoredVersionsExists>) -> Self {
+        self.inner.body.status = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static, Any: serde::Serialize> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionPostBuilder<crate::codegen::generics::SpecExists, Any> {
+    type Output = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: http::Method = http::Method::POST;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        "/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions".into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .json(&self.inner.body)
+        .header(http::header::ACCEPT.as_str(), "application/json")
+        .query(&[
+            ("dryRun", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
+            ("fieldManager", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+
+/// Builder created by [`CustomResourceDefinition::read_apiextensions_v1beta1_custom_resource_definition`](./struct.CustomResourceDefinition.html#method.read_apiextensions_v1beta1_custom_resource_definition) method for a `GET` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionGetBuilder1<Name> {
+    inner: CustomResourceDefinitionGetBuilder1Container,
+    _param_name: core::marker::PhantomData<Name>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionGetBuilder1Container {
+    param_exact: Option<bool>,
+    param_export: Option<bool>,
+    param_name: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name> CustomResourceDefinitionGetBuilder1<Name> {
+    /// Should the export be exact.  Exact export maintains cluster-specific fields like 'Namespace'. Deprecated. Planned for removal in 1.18.
+    #[inline]
+    pub fn exact(mut self, value: impl Into<bool>) -> Self {
+        self.inner.param_exact = Some(value.into());
+        self
+    }
+
+    /// Should this value be exported.  Export strips fields that a user can not specify. Deprecated. Planned for removal in 1.18.
+    #[inline]
+    pub fn export(mut self, value: impl Into<bool>) -> Self {
+        self.inner.param_export = Some(value.into());
+        self
+    }
+
+    /// name of the CustomResourceDefinition
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> CustomResourceDefinitionGetBuilder1<crate::codegen::generics::NameExists> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionGetBuilder1<crate::codegen::generics::NameExists> {
+    type Output = CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: http::Method = http::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}", name=self.inner.param_name.as_ref().expect("missing parameter name?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .header(http::header::ACCEPT.as_str(), "application/json")
+        .query(&[
+            ("exact", self.inner.param_exact.as_ref().map(std::string::ToString::to_string)),
+            ("export", self.inner.param_export.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+
+/// Builder created by [`CustomResourceDefinition::replace_apiextensions_v1beta1_custom_resource_definition`](./struct.CustomResourceDefinition.html#method.replace_apiextensions_v1beta1_custom_resource_definition) method for a `PUT` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionPutBuilder1<Name, Spec, Any> {
+    inner: CustomResourceDefinitionPutBuilder1Container<Any>,
+    _param_name: core::marker::PhantomData<Name>,
+    _spec: core::marker::PhantomData<Spec>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionPutBuilder1Container<Any> {
+    body: self::CustomResourceDefinition<Any>,
+    param_dry_run: Option<String>,
+    param_field_manager: Option<String>,
+    param_name: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name, Spec, Any> CustomResourceDefinitionPutBuilder1<Name, Spec, Any> {
+    /// When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+    #[inline]
+    pub fn dry_run(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_dry_run = Some(value.into());
+        self
+    }
+
+    /// fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+    #[inline]
+    pub fn field_manager(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_field_manager = Some(value.into());
+        self
+    }
+
+    /// name of the CustomResourceDefinition
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> CustomResourceDefinitionPutBuilder1<crate::codegen::generics::NameExists, Spec, Any> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.api_version = Some(value.into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.kind = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.inner.body.metadata = Some(value.into());
+        self
+    }
+
+    /// Spec describes how the user wants the resources to appear
+    #[inline]
+    pub fn spec(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_spec::CustomResourceDefinitionSpecBuilder<crate::codegen::generics::GroupExists, crate::codegen::generics::NamesExists, crate::codegen::generics::ScopeExists, Any>) -> CustomResourceDefinitionPutBuilder1<Name, crate::codegen::generics::SpecExists, Any> {
+        self.inner.body.spec = value.into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// Status indicates the actual state of the CustomResourceDefinition
+    #[inline]
+    pub fn status(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_status::CustomResourceDefinitionStatusBuilder<crate::codegen::generics::AcceptedNamesExists, crate::codegen::generics::ConditionsExists, crate::codegen::generics::StoredVersionsExists>) -> Self {
+        self.inner.body.status = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static, Any: serde::Serialize> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionPutBuilder1<crate::codegen::generics::NameExists, crate::codegen::generics::SpecExists, Any> {
+    type Output = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: http::Method = http::Method::PUT;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}", name=self.inner.param_name.as_ref().expect("missing parameter name?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .json(&self.inner.body)
+        .header(http::header::ACCEPT.as_str(), "application/json")
+        .query(&[
+            ("dryRun", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
+            ("fieldManager", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+
+/// Builder created by [`CustomResourceDefinition::read_apiextensions_v1beta1_custom_resource_definition_status`](./struct.CustomResourceDefinition.html#method.read_apiextensions_v1beta1_custom_resource_definition_status) method for a `GET` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionGetBuilder2<Name> {
+    inner: CustomResourceDefinitionGetBuilder2Container,
+    _param_name: core::marker::PhantomData<Name>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionGetBuilder2Container {
+    param_name: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name> CustomResourceDefinitionGetBuilder2<Name> {
+    /// name of the CustomResourceDefinition
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> CustomResourceDefinitionGetBuilder2<crate::codegen::generics::NameExists> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionGetBuilder2<crate::codegen::generics::NameExists> {
+    type Output = CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: http::Method = http::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}/status", name=self.inner.param_name.as_ref().expect("missing parameter name?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .header(http::header::ACCEPT.as_str(), "application/json")
+        .query(&[
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+
+/// Builder created by [`CustomResourceDefinition::replace_apiextensions_v1beta1_custom_resource_definition_status`](./struct.CustomResourceDefinition.html#method.replace_apiextensions_v1beta1_custom_resource_definition_status) method for a `PUT` operation associated with `CustomResourceDefinition`.
+#[repr(transparent)]
+#[derive(Debug, Clone)]
+pub struct CustomResourceDefinitionPutBuilder2<Name, Spec, Any> {
+    inner: CustomResourceDefinitionPutBuilder2Container<Any>,
+    _param_name: core::marker::PhantomData<Name>,
+    _spec: core::marker::PhantomData<Spec>,
+}
+
+#[derive(Debug, Default, Clone)]
+struct CustomResourceDefinitionPutBuilder2Container<Any> {
+    body: self::CustomResourceDefinition<Any>,
+    param_dry_run: Option<String>,
+    param_field_manager: Option<String>,
+    param_name: Option<String>,
+    param_pretty: Option<String>,
+}
+
+impl<Name, Spec, Any> CustomResourceDefinitionPutBuilder2<Name, Spec, Any> {
+    /// When present, indicates that modifications should not be persisted. An invalid or unrecognized dryRun directive will result in an error response and no further processing of the request. Valid values are: - All: all dry run stages will be processed
+    #[inline]
+    pub fn dry_run(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_dry_run = Some(value.into());
+        self
+    }
+
+    /// fieldManager is a name associated with the actor or entity that is making these changes. The value must be less than or 128 characters long, and only contain printable characters, as defined by https://golang.org/pkg/unicode/#IsPrint.
+    #[inline]
+    pub fn field_manager(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_field_manager = Some(value.into());
+        self
+    }
+
+    /// name of the CustomResourceDefinition
+    #[inline]
+    pub fn name(mut self, value: impl Into<String>) -> CustomResourceDefinitionPutBuilder2<crate::codegen::generics::NameExists, Spec, Any> {
+        self.inner.param_name = Some(value.into());
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// If 'true', then the output is pretty printed.
+    #[inline]
+    pub fn pretty(mut self, value: impl Into<String>) -> Self {
+        self.inner.param_pretty = Some(value.into());
+        self
+    }
+
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.api_version = Some(value.into());
+        self
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.inner.body.kind = Some(value.into());
+        self
+    }
+
+    #[inline]
+    pub fn metadata(mut self, value: crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::object_meta::ObjectMeta) -> Self {
+        self.inner.body.metadata = Some(value.into());
+        self
+    }
+
+    /// Spec describes how the user wants the resources to appear
+    #[inline]
+    pub fn spec(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_spec::CustomResourceDefinitionSpecBuilder<crate::codegen::generics::GroupExists, crate::codegen::generics::NamesExists, crate::codegen::generics::ScopeExists, Any>) -> CustomResourceDefinitionPutBuilder2<Name, crate::codegen::generics::SpecExists, Any> {
+        self.inner.body.spec = value.into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// Status indicates the actual state of the CustomResourceDefinition
+    #[inline]
+    pub fn status(mut self, value: crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition_status::CustomResourceDefinitionStatusBuilder<crate::codegen::generics::AcceptedNamesExists, crate::codegen::generics::ConditionsExists, crate::codegen::generics::StoredVersionsExists>) -> Self {
+        self.inner.body.status = Some(value.into());
+        self
+    }
+}
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static, Any: serde::Serialize> crate::codegen::client::Sendable<Client> for CustomResourceDefinitionPutBuilder2<crate::codegen::generics::NameExists, crate::codegen::generics::SpecExists, Any> {
+    type Output = crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::custom_resource_definition::CustomResourceDefinition<serde_json::Value>;
+
+    const METHOD: http::Method = http::Method::PUT;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        format!("/apis/apiextensions.k8s.io/v1beta1/customresourcedefinitions/{name}/status", name=self.inner.param_name.as_ref().expect("missing parameter name?")).into()
+    }
+
+    fn modify(&self, req: Client::Request) -> Result<Client::Request, crate::codegen::client::ApiError<Client::Response>> {
+        use crate::codegen::client::Request;
+        Ok(req
+        .json(&self.inner.body)
+        .header(http::header::ACCEPT.as_str(), "application/json")
+        .query(&[
+            ("dryRun", self.inner.param_dry_run.as_ref().map(std::string::ToString::to_string)),
+            ("fieldManager", self.inner.param_field_manager.as_ref().map(std::string::ToString::to_string)),
+            ("pretty", self.inner.param_pretty.as_ref().map(std::string::ToString::to_string))
+        ]))
+    }
+}
+

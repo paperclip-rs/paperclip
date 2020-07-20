@@ -1,0 +1,85 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+/// APIGroupList is a list of APIGroup, to allow clients to discover the API at /apis.
+#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+pub struct ApiGroupList {
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[serde(rename = "apiVersion")]
+    pub api_version: Option<String>,
+    /// groups is a list of APIGroup.
+    pub groups: Vec<crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::api_group::ApiGroup>,
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    pub kind: Option<String>,
+}
+
+impl ApiGroupList {
+    /// Create a builder for this object.
+    #[inline]
+    pub fn builder() -> ApiGroupListBuilder<crate::codegen::generics::MissingGroups> {
+        ApiGroupListBuilder {
+            body: Default::default(),
+            _groups: core::marker::PhantomData,
+        }
+    }
+
+    /// get available API versions
+    #[inline]
+    pub fn get_api_versions() -> ApiGroupListGetBuilder {
+        ApiGroupListGetBuilder
+    }
+}
+
+impl Into<ApiGroupList> for ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
+    fn into(self) -> ApiGroupList {
+        self.body
+    }
+}
+
+/// Builder for [`ApiGroupList`](./struct.ApiGroupList.html) object.
+#[derive(Debug, Clone)]
+pub struct ApiGroupListBuilder<Groups> {
+    body: self::ApiGroupList,
+    _groups: core::marker::PhantomData<Groups>,
+}
+
+impl<Groups> ApiGroupListBuilder<Groups> {
+    /// APIVersion defines the versioned schema of this representation of an object. Servers should convert recognized schemas to the latest internal value, and may reject unrecognized values. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#resources
+    #[inline]
+    pub fn api_version(mut self, value: impl Into<String>) -> Self {
+        self.body.api_version = Some(value.into());
+        self
+    }
+
+    /// groups is a list of APIGroup.
+    #[inline]
+    pub fn groups(mut self, value: impl Iterator<Item = crate::codegen::io::k8s::apimachinery::pkg::apis::meta::v1::api_group::ApiGroupBuilder<crate::codegen::generics::NameExists, crate::codegen::generics::VersionsExists>>) -> ApiGroupListBuilder<crate::codegen::generics::GroupsExists> {
+        self.body.groups = value.map(|value| value.into()).collect::<Vec<_>>().into();
+        unsafe { std::mem::transmute(self) }
+    }
+
+    /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
+    #[inline]
+    pub fn kind(mut self, value: impl Into<String>) -> Self {
+        self.body.kind = Some(value.into());
+        self
+    }
+}
+
+/// Builder created by [`ApiGroupList::get_api_versions`](./struct.ApiGroupList.html#method.get_api_versions) method for a `GET` operation associated with `ApiGroupList`.
+#[derive(Debug, Clone)]
+pub struct ApiGroupListGetBuilder;
+
+
+impl<Client: crate::codegen::client::ApiClient + Sync + 'static> crate::codegen::client::Sendable<Client> for ApiGroupListGetBuilder {
+    type Output = ApiGroupList;
+
+    const METHOD: http::Method = http::Method::GET;
+
+    fn rel_path(&self) -> std::borrow::Cow<'static, str> {
+        "/apis/".into()
+    }
+}
+

@@ -1,0 +1,96 @@
+---
+source: tests/test_codegen.rs
+expression: data
+---
+
+name: cli
+version: "0.1.0"
+
+settings:
+- SubcommandRequiredElseHelp
+
+args:
+    - ca-cert:
+        long: ca-cert
+        help: Path to CA certificate to be added to trust store.
+        takes_value: true
+    - client-cert:
+        long: client-cert
+        help: Path to certificate for TLS client verification.
+        takes_value: true
+        requires:
+            - client-key
+    - client-key:
+        long: client-key
+        help: Path to private key for TLS client verification.
+        takes_value: true
+        requires:
+            - client-cert
+    - url:
+        long: url
+        help: Base URL for your API.
+        takes_value: true
+        required: true
+    - verbose:
+        short: v
+        long: verbose
+        help: Enable verbose mode.
+    - timeout:
+        short: t
+        long: timeout
+        help: Set the request timeout.
+        takes_value: true
+
+subcommands:
+
+
+  - get-shipment:
+      about: "Fetch shipment by ID"
+      args:
+        - id:
+            long: id
+            required: true
+            takes_value: true
+
+
+
+
+
+
+
+
+  - list-pets:
+      about: "Fetch list of pets"
+  - add-pet:
+      about: "Add a new pet to the store"
+      args:
+        - payload:
+            long: payload
+            help: "Path to payload (schema: Pet) or pass '-' for stdin"
+            takes_value: true
+            required: true
+        - x-auth:
+            long: x-auth
+            required: true
+            takes_value: true
+        - x-pet-id:
+            long: x-pet-id
+            takes_value: true
+  - get-pet-by-id:
+      about: "Find pet by ID"
+      args:
+        - pet-id:
+            long: pet-id
+            required: true
+            help: "ID of the pet."
+            takes_value: true
+
+
+
+
+
+
+
+
+
+

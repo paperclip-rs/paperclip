@@ -10,7 +10,7 @@ use itertools::Itertools;
 use url::Url;
 
 use std::cell::RefCell;
-use std::collections::{BTreeSet, HashMap, HashSet};
+use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
 use std::fmt::Write as _;
 #[cfg(feature = "cli")]
 use std::fs;
@@ -44,7 +44,7 @@ pub struct EmitterState {
     /// Maps parent mod to immediate children. Used for declaring modules.
     pub(super) mod_children: RefCell<HashMap<PathBuf, HashSet<ChildModule>>>,
     /// Holds generated struct definitions for leaf modules.
-    pub(super) def_mods: RefCell<HashMap<PathBuf, Vec<ApiObject>>>,
+    pub(super) def_mods: RefCell<BTreeMap<PathBuf, Vec<ApiObject>>>,
     /// Relative paths
     pub(super) rel_paths: RefCell<HashSet<String>>,
     /// Media ranges and the corresponding decoders we've registered.
@@ -532,7 +532,7 @@ impl Default for EmitterState {
             #[cfg(feature = "cli")]
             crate_meta: Rc::new(RefCell::new(None)),
             base_url: RefCell::new("https://example.com".parse().expect("invalid URL?")),
-            def_mods: RefCell::new(HashMap::new()),
+            def_mods: RefCell::new(BTreeMap::new()),
             rel_paths: RefCell::new(HashSet::new()),
             mod_children: RefCell::new(HashMap::new()),
             unit_types: RefCell::new(BTreeSet::new()),
