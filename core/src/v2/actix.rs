@@ -295,6 +295,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     data_type: v.data_type,
                     format: v.format,
                     enum_: v.enum_,
+                    description: v.description,
                     ..Default::default()
                 }));
             }

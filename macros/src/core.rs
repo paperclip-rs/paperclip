@@ -285,6 +285,10 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
         #[serde(skip_serializing_if = "Option::is_none")]
         pub format: Option<paperclip::v2::models::DataTypeFormat>,
     ));
+    gen.extend(quote!(
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub example: Option<String>,
+    ));
 
     gen.extend(quote!(
         #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
