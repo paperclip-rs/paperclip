@@ -71,6 +71,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             );
         }
         ReturnType::Type(_, ty) => {
+            ret = Some(ty.clone());
             let t = quote!(#ty).to_string();
             if let Type::ImplTrait(_) = &**ty {
                 is_impl_trait = true;

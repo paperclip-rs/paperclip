@@ -451,6 +451,52 @@ where
     }
 }
 
+use std::marker::PhantomData;
+
+#[derive(Clone)]
+pub struct OperationWrapper<F, I, R, U>
+where
+F: Apiv2Operation<I, U> + actix_web::dev::Factory<I, R, U>,
+R: Future<Output = U> + 'static,
+U: Responder + 'static,
+{
+    pub inner: F,
+    operation: DefaultOperationRaw,
+    _p: PhantomData<(I, R, U)>,
+}
+
+impl<F, I, R, U> OperationWrapper<F, I, R, U>
+where
+    F: Apiv2Operation<I, U> + actix_web::dev::Factory<I, R, U>,
+//    F: Apiv2Operation<I, U> + actix_web::dev::Factory<I, R, U> + Clone + 'static,
+    I: actix_web::FromRequest + 'static,
+    U: Responder + 'static,
+    R: Future<Output = U> + 'static,
+{
+    pub fn new(operation: DefaultOperationRaw, inner: F) -> Self {
+        Self { inner, operation, _p: PhantomData }
+    }
+
+    /// Returns the definition for this operation.
+    pub fn operation(&self) -> DefaultOperationRaw {
+        let mut operation = F::operation();
+        if self.operation.summary.is_some() {
+            operation.summary = self.operation.summary.clone();
+        }
+        operation
+    }
+
+    /// Returns a map of security definitions that will be merged globally.
+    pub fn security_definitions(&self) -> BTreeMap<String, SecurityScheme> {
+        F::security_definitions()
+    }
+
+    /// Returns the definitions used by this operation.
+    pub fn definitions(&self) -> BTreeMap<String, DefaultSchemaRaw> {
+        F::definitions()
+    }
+}
+
 /// Given the schema type, recursively update the map of definitions.
 fn update_definitions_from_schema_type<T>(map: &mut BTreeMap<String, DefaultSchemaRaw>)
 where
