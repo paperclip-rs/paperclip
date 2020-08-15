@@ -2,7 +2,6 @@ use paperclip::actix::web;
 use paperclip::actix::{OpenApiExt, Apiv2Schema};
 use paperclip::actix::api_v2_operation;
 use actix_web::{App, Error, test};
-use std::future::Future;
 use serde::{Serialize, Deserialize};
 
 
