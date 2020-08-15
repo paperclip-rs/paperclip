@@ -9,5 +9,6 @@ edition = "2018"
 [dependencies]
 actix-rt = "1.1.1"
 actix-web = "2.0.0"
-paperclip = { version = "0.4.1", path = "../..", features = ["actix-nightly", "uuid", "chrono"] }
+paperclip = { version = "0.4.1", path = "../..", features = ["actix-nightly", "uuid", "chrono", "actix-operation"] }
 serde = "1"
+serde_json = "1"

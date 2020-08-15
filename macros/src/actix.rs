@@ -137,6 +137,19 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         .expect("parsing wrapped block"),
     );
 
+    let docs = extract_documentation(&item_ast.attrs);
+    let mut lines = docs.lines();
+    let summary = lines
+        .next()
+        .map(|line| quote!(Some(#line.to_string())))
+        .unwrap_or(quote!(None));
+    let description = lines.collect::<String>().trim().to_string();
+    let description = if !description.is_empty() {
+        quote!(Some(#description.to_string()))
+    } else {
+        quote!(None)
+    };
+
     // panic!("{}",
     quote!(
         struct #unit_struct;
@@ -147,6 +160,8 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
                 let mut op = Default::default();
+                operation.summary = #summary;
+                operation.description = #description;
                 #(
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
@@ -177,6 +192,75 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         }
     )
     // );
+    .into()
+}
+
+/// Actual parser and emitter for `api_v2_operation` macro.
+///
+/// **NOTE:** This is a no-op right now. It's only reserved for
+/// future use to avoid introducing breaking changes.
+#[cfg(not(feature = "actix-operation"))]
+pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
+    let mut item_ast: ItemFn = match syn::parse(input) {
+        Ok(s) => s,
+        Err(e) => {
+            emit_error!(e.span().unwrap(), "operation must be a function.");
+            return quote!().into();
+        }
+    };
+
+    let mut wrapper = None;
+    match &mut item_ast.sig.output {
+        ReturnType::Default => {
+            emit_warning!(
+                item_ast.span().unwrap(),
+                "operation doesn't seem to return a response."
+            );
+        }
+        ReturnType::Type(_, ty) => {
+            let t = quote!(#ty).to_string();
+            // FIXME: This is a hack for functions returning known
+            // `impl Trait`. Need a better way!
+            if t.contains("Responder") {
+                wrapper = Some(quote!(paperclip::actix::ResponderWrapper));
+            }
+
+            if let (Type::ImplTrait(_), Some(ref w)) = (&**ty, wrapper.as_ref()) {
+                if item_ast.sig.asyncness.is_some() {
+                    *ty = Box::new(syn::parse2(quote!(#w<#ty>)).expect("parsing wrapper type"));
+                } else {
+                    *ty = Box::new(
+                        syn::parse2(quote!(impl Future<Output=#w<#ty>>))
+                            .expect("parsing wrapper type"),
+                    );
+                }
+            }
+        }
+    }
+
+    if let Some(w) = wrapper {
+        let block = item_ast.block;
+        let wrapped_value = if item_ast.sig.asyncness.is_some() {
+            quote!(#w(f))
+        } else {
+            quote!(futures::future::ready(#w(f)))
+        };
+        item_ast.block = Box::new(
+            syn::parse2(quote!(
+                {
+                    let f = (|| {
+                        #block
+                    })();
+                    #wrapped_value
+                }
+            ))
+            .expect("parsing wrapped block"),
+        );
+    }
+
+    quote!(
+        #item_ast
+    )
     .into()
 }
 
@@ -650,12 +734,13 @@ fn extract_documentation(attrs: &[Attribute]) -> String {
         .iter()
         .filter_map(|a| match a.parse_meta() {
             Ok(Meta::NameValue(mnv)) if mnv.path.is_ident("doc") => match &mnv.lit {
-                Lit::Str(s) => Some(s.value()),
+                Lit::Str(s) => Some(s.value().trim().to_string()),
                 _ => None,
             },
             _ => None,
         })
-        .collect()
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 /// Checks if an empty schema has been requested and generate if needed.

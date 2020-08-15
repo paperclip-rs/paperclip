@@ -62,6 +62,8 @@ cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
 codegen = ["heck", "http", "log", "regex", "tinytemplate", "paperclip-core/codegen"]
 # codegen-fmt = ["codegen", "rustfmt-nightly"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
+# Extend operation attributes in api_v2_operation macros
+actix-operation = ["paperclip-macros/actix-operation", "paperclip-actix/actix-operation", "paperclip-core/actix-operation"]
 
 # Features for implementing traits for dependencies.
 actix-multipart = ["paperclip-core/actix-multipart"]

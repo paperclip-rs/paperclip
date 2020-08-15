@@ -453,6 +453,7 @@ where
 
 use std::marker::PhantomData;
 
+#[cfg(feature = "actix-operation")]
 #[derive(Clone)]
 pub struct OperationWrapper<F, I, R, U>
 where
@@ -465,6 +466,7 @@ U: Responder + 'static,
     _p: PhantomData<(I, R, U)>,
 }
 
+#[cfg(feature = "actix-operation")]
 impl<F, I, R, U> OperationWrapper<F, I, R, U>
 where
     F: Apiv2Operation<I, U> + actix_web::dev::Factory<I, R, U>,
@@ -482,6 +484,9 @@ where
         let mut operation = F::operation();
         if self.operation.summary.is_some() {
             operation.summary = self.operation.summary.clone();
+        }
+        if self.operation.description.is_some() {
+            operation.description = self.operation.description.clone();
         }
         operation
     }

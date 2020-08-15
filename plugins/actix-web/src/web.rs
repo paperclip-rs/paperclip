@@ -15,7 +15,7 @@ use actix_web::{http::Method, Error, FromRequest, Responder};
 use paperclip_core::v2::models::{
     DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod, SecurityScheme,
 };
-use paperclip_core::v2::{OperationWrapper, schema::Apiv2Operation};
+use paperclip_core::v2::schema::Apiv2Operation;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
@@ -576,23 +576,6 @@ impl Route {
         self.definitions = R::definitions();
         self.security = R::security_definitions();
         self.inner = self.inner.to(handler);
-        self
-    }
-
-    /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
-    pub fn operation<W, F, I, R, U>(mut self, wrapper: W) -> Self
-    where
-        W: Fn() -> OperationWrapper<F, I, R, U>,
-        F: Apiv2Operation<I, U> + Factory<I, R, U>,
-        I: FromRequest + 'static,
-        R: Future<Output = U> + 'static,
-        U: Responder + 'static,
-    {
-        let operation = wrapper();
-        self.operation = Some(operation.operation());
-        self.definitions = operation.definitions();
-        self.security = operation.security_definitions();
-        self.inner = self.inner.to(operation.inner);
         self
     }
 }

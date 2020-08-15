@@ -27,3 +27,4 @@ strum_macros = { version = "0.18", optional = true }
 actix = ["heck", "http", "lazy_static", "strum", "strum_macros"]
 v2 = []
 nightly = []
+actix-operation = ["actix"]
