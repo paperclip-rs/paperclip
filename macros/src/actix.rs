@@ -734,7 +734,7 @@ fn extract_documentation(attrs: &[Attribute]) -> String {
         .iter()
         .filter_map(|a| match a.parse_meta() {
             Ok(Meta::NameValue(mnv)) if mnv.path.is_ident("doc") => match &mnv.lit {
-                Lit::Str(s) => Some(s.value().trim().to_string()),
+                Lit::Str(s) => Some(s.value()),
                 _ => None,
             },
             _ => None,
