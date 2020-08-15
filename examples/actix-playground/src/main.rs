@@ -4,13 +4,21 @@ use paperclip::actix::api_v2_operation;
 use actix_web::{App, Error, test};
 use serde::{Serialize, Deserialize};
 
-
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "camelCase")]
 /// Pets are awesome!
 pub struct Pet {
     /// Pick a good one.
     name: String,
+    id: Option<u64>,
+}
+
+#[derive(Deserialize, Serialize, Apiv2Schema)]
+#[serde(rename_all = "camelCase")]
+/// Pets are awesome!
+pub struct AbstractPet<P> {
+    /// Kind of a pet.
+    kind: P,
     id: Option<u64>,
 }
 
@@ -24,7 +32,9 @@ async fn some_pet(_data: web::Data<String>, _pet: web::Json<Pet>) -> Result<web:
 
 /// Any kind of a pet
 #[api_v2_operation]
-async fn abstract_pet<T: 'static>(_data: web::Data<T>, _pet: web::Json<Pet>) -> Result<web::Json<Pet>, Error> {
+async fn abstract_pet<P, T: 'static>(_data: web::Data<T>, _pet: web::Json<AbstractPet<P>>) -> Result<web::Json<Pet>, Error>
+where P: Serialize + for <'de> Deserialize< 'de> + 'static
+{
     Ok(web::Json(Pet { name: "my super puppy".to_string(), id: Some(1) }))
 }
 
@@ -36,7 +46,7 @@ async fn main() {
         .wrap_api()
         .service(web::resource("/random")
             .route(web::post().to(some_pet))
-            .route(web::get().to(abstract_pet::<String>))
+            .route(web::get().to(abstract_pet::<String, u16>))
         )
         .with_json_spec_at("/api/spec")
         .build()
