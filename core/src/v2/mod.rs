@@ -10,7 +10,7 @@ mod resolver;
 pub mod schema;
 
 #[cfg(feature = "actix")]
-pub use self::actix::{OperationModifier, ResponderWrapper};
+pub use self::actix::{OperationModifier, ResponderWrapper, ResponseWrapper};
 
 pub use self::models::{DefaultSchema, ResolvableApi};
 pub use self::schema::Schema;

@@ -13,6 +13,7 @@ mod error;
 pub mod v2;
 
 pub use error::{PaperClipError, PaperClipResult};
+pub use paperclip_core::util;
 #[cfg(feature = "v2")]
 pub use paperclip_macros::api_v2_schema_struct as api_v2_schema;
 
@@ -22,5 +23,5 @@ pub mod actix {
 
     pub use paperclip_actix::{api_v2_errors, api_v2_operation, Apiv2Schema, Apiv2Security};
     pub use paperclip_actix::{web, App, Mountable, OpenApiExt};
-    pub use paperclip_core::v2::{OperationModifier, ResponderWrapper};
+    pub use paperclip_core::v2::{OperationModifier, ResponderWrapper, ResponseWrapper};
 }

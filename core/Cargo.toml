@@ -20,6 +20,7 @@ log = { version = "0.4", optional = true }
 mime = "0.3"
 paperclip-macros = { path = "../macros", version = "0.3.1" }
 parking_lot = { version = ">=0.10,<0.12", features = ["serde"] }
+pin-project = { version = "0.4", optional = true }
 rust_decimal = { version = "1", optional = true }
 regex = "1.1"
 serde = { version = "1.0", features = ["derive", "rc"] }
@@ -29,7 +30,7 @@ uuid = { version = "0", optional = true }
 thiserror = "1.0.19"
 
 [features]
-actix = ["v2", "actix-http", "actix-web"]
+actix = ["v2", "actix-http", "actix-web", "pin-project"]
 codegen = ["v2", "heck", "log"]
 nightly = ["paperclip-macros/nightly"]
 v2 = ["paperclip-macros/v2"]

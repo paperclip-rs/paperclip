@@ -160,12 +160,12 @@ where
     /// Wrapper for [`actix_web::Resource::to`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.to).
     pub fn to<F, I, R, U>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation<I, U> + Factory<I, R, U> + 'static,
+        F: Factory<I, R, U> + 'static,
         I: FromRequest + 'static,
-        R: Future<Output = U> + 'static,
+        R: Apiv2Operation + Future<Output = U> + 'static,
         U: Responder + 'static,
     {
-        self.update_from_handler::<F, I, R, U>();
+        self.update_from_handler::<R>();
         self.inner = self.inner.to(handler);
         self
     }
@@ -255,18 +255,18 @@ where
     }
 
     /// Updates this resource using the given handler.
-    fn update_from_handler<F, I, R, U>(&mut self)
+    fn update_from_handler<U>(&mut self)
     where
-        F: Apiv2Operation<I, U>,
+        U: Apiv2Operation,
     {
-        let mut op = F::operation();
+        let mut op = U::operation();
         op.set_parameter_names_from_path_template(&self.path);
         for method in METHODS {
             self.operations.insert(method.into(), op.clone());
         }
 
-        self.definitions.extend(F::definitions().into_iter());
-        SecurityScheme::append_map(F::security_definitions(), &mut self.security);
+        self.definitions.extend(U::definitions().into_iter());
+        SecurityScheme::append_map(U::security_definitions(), &mut self.security);
     }
 }
 
@@ -567,14 +567,14 @@ impl Route {
     /// Wrapper for [`actix_web::Route::to`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.to)
     pub fn to<F, I, R, U>(mut self, handler: F) -> Self
     where
-        F: Apiv2Operation<I, U> + Factory<I, R, U>,
+        F: Factory<I, R, U>,
         I: FromRequest + 'static,
-        R: Future<Output = U> + 'static,
+        R: Apiv2Operation + Future<Output = U> + 'static,
         U: Responder + 'static,
     {
-        self.operation = Some(F::operation());
-        self.definitions = F::definitions();
-        self.security = F::security_definitions();
+        self.operation = Some(R::operation());
+        self.definitions = R::definitions();
+        self.security = R::security_definitions();
         self.inner = self.inner.to(handler);
         self
     }

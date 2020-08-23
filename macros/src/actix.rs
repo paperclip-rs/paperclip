@@ -6,14 +6,15 @@ use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
-use std::collections::HashMap;
 use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
     punctuated::Punctuated, Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed,
-    FieldsUnnamed, Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, ReturnType,
-    Token, TraitBound, Type,
+    FieldsUnnamed, FnArg, Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments,
+    ReturnType, Token, TraitBound, Type, TypeTraitObject,
 };
+
+use std::collections::HashMap;
 
 const SCHEMA_MACRO_ATTR: &str = "openapi";
 
@@ -25,10 +26,8 @@ lazy_static! {
 }
 
 /// Actual parser and emitter for `api_v2_operation` macro.
-///
-/// **NOTE:** This is a no-op right now. It's only reserved for
-/// future use to avoid introducing breaking changes.
-pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
+pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream {
+    let default_span = proc_macro2::Span::call_site();
     let mut item_ast: ItemFn = match syn::parse(input) {
         Ok(s) => s,
         Err(e) => {
@@ -37,58 +36,146 @@ pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
         }
     };
 
-    let mut wrapper = None;
+    let _attrs = crate::parse_input_attrs(attrs);
+    // TODO: summary and description
+
+    // Unit struct
+    let s_name = format!("paperclip_{}", item_ast.sig.ident);
+    let unit_struct = Ident::new(&s_name, default_span);
+
+    let modifiers = item_ast
+        .sig
+        .inputs
+        .iter()
+        .filter_map(|inp| match inp {
+            FnArg::Receiver(_) => None,
+            FnArg::Typed(ref t) => Some(&t.ty),
+        })
+        .collect::<Vec<_>>();
+
+    // Get rid of async prefix. In the end, we'll have them all as `impl Future` thingies.
+    if item_ast.sig.asyncness.is_some() {
+        item_ast.sig.asyncness = None;
+    }
+
+    let mut wrapper =
+        quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct>);
+    let mut is_impl_trait = false;
+    let mut is_responder = false;
     match &mut item_ast.sig.output {
-        ReturnType::Default => {
-            emit_warning!(
-                item_ast.span().unwrap(),
-                "operation doesn't seem to return a response."
+        rt @ ReturnType::Default => {
+            // Not particularly useful, but let's deal with it anyway
+            *rt = ReturnType::Type(
+                Token![->](default_span),
+                Box::new(syn::parse2(wrapper.clone()).expect("parsing empty type")),
             );
         }
         ReturnType::Type(_, ty) => {
             let t = quote!(#ty).to_string();
-            // FIXME: This is a hack for functions returning known
-            // `impl Trait`. Need a better way!
-            if t.contains("Responder") {
-                wrapper = Some(quote!(paperclip::actix::ResponderWrapper));
+            if let Type::ImplTrait(_) = &**ty {
+                is_impl_trait = true;
             }
 
-            if let (Type::ImplTrait(_), Some(ref w)) = (&**ty, wrapper.as_ref()) {
-                if item_ast.sig.asyncness.is_some() {
-                    *ty = Box::new(syn::parse2(quote!(#w<#ty>)).expect("parsing wrapper type"));
-                } else {
-                    *ty = Box::new(
-                        syn::parse2(quote!(impl Future<Output=#w<#ty>>))
-                            .expect("parsing wrapper type"),
-                    );
+            if t == "impl Responder" {
+                // `impl Responder` is a special case because we have to add another wrapper.
+                // FIXME: Better way to deal with this?
+                is_responder = true;
+                *ty = Box::new(
+                    syn::parse2(quote!(
+                        impl std::future::Future<Output=paperclip::actix::ResponderWrapper<#ty>>
+                    ))
+                    .expect("parsing impl trait"),
+                );
+            } else if !is_impl_trait {
+                // Any handler that's not returning an impl trait should return an `impl Future`
+                *ty = Box::new(
+                    syn::parse2(quote!(impl std::future::Future<Output=#ty>))
+                        .expect("parsing impl trait"),
+                );
+            }
+
+            if let Type::ImplTrait(imp) = &**ty {
+                let obj = TypeTraitObject {
+                    dyn_token: Some(Token![dyn](default_span)),
+                    bounds: imp.bounds.clone(),
+                };
+                *ty = Box::new(
+                    syn::parse2(quote!(#ty + paperclip::v2::schema::Apiv2Operation))
+                        .expect("parsing impl trait"),
+                );
+
+                if !is_responder {
+                    // NOTE: We're only using the box "type" to generate the operation data, we're not boxing
+                    // the handlers at runtime.
+                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct>);
                 }
             }
         }
     }
 
-    if let Some(w) = wrapper {
-        let block = item_ast.block;
-        let wrapped_value = if item_ast.sig.asyncness.is_some() {
-            quote!(#w(f))
-        } else {
-            quote!(futures::future::ready(#w(f)))
-        };
-        item_ast.block = Box::new(
-            syn::parse2(quote!(
-                {
-                    let f = (|| {
-                        #block
-                    })();
-                    #wrapped_value
-                }
-            ))
-            .expect("parsing wrapped block"),
-        );
-    }
+    let block = item_ast.block;
+    // We need a function because devs should be able to use "return" keyword along the way.
+    let wrapped_fn_call = if is_responder {
+        quote!(paperclip::util::ready(paperclip::actix::ResponderWrapper((|| #block)())))
+    } else if is_impl_trait {
+        quote!((|| #block)())
+    } else {
+        quote!((|| async #block)())
+    };
 
+    item_ast.block = Box::new(
+        syn::parse2(quote!(
+            {
+                let f = #wrapped_fn_call;
+                paperclip::actix::ResponseWrapper {
+                    0: f,
+                    1: #unit_struct,
+                }
+            }
+        ))
+        .expect("parsing wrapped block"),
+    );
+
+    // panic!("{}",
     quote!(
+        struct #unit_struct;
+
         #item_ast
+
+        impl paperclip::v2::schema::Apiv2Operation for #unit_struct {
+            fn operation() -> paperclip::v2::models::DefaultOperationRaw {
+                use paperclip::actix::OperationModifier;
+                let mut op = Default::default();
+                #(
+                    <#modifiers>::update_parameter(&mut op);
+                    <#modifiers>::update_security(&mut op);
+                )*
+                <<#wrapper as std::future::Future>::Output>::update_response(&mut op);
+                op
+            }
+
+            #[allow(unused_mut)]
+            fn security_definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::SecurityScheme> {
+                use paperclip::actix::OperationModifier;
+                let mut map = Default::default();
+                #(
+                    <#modifiers>::update_security_definitions(&mut map);
+                )*
+                map
+            }
+
+            fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
+                use paperclip::actix::OperationModifier;
+                let mut map = BTreeMap::new();
+                #(
+                    <#modifiers>::update_definitions(&mut map);
+                )*
+                <<#wrapper as std::future::Future>::Output>::update_definitions(&mut map);
+                map
+            }
+        }
     )
+    // );
     .into()
 }
 

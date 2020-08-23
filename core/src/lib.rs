@@ -6,6 +6,7 @@ extern crate serde;
 
 mod error;
 pub mod im;
+pub mod util;
 #[cfg(feature = "v2")]
 pub mod v2;
 

@@ -38,8 +38,8 @@ pub fn api_v2_schema_struct(_attr: TokenStream, input: TokenStream) -> TokenStre
 #[cfg(feature = "actix")]
 #[proc_macro_error]
 #[proc_macro_attribute]
-pub fn api_v2_operation(_attr: TokenStream, input: TokenStream) -> TokenStream {
-    self::actix::emit_v2_operation(input)
+pub fn api_v2_operation(attr: TokenStream, input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_operation(attr, input)
 }
 
 /// Derive attribute for indicating that a type is an OpenAPI v2 compatible definition.
