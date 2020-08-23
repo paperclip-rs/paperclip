@@ -9,9 +9,9 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 
 [dependencies]
 actix-web = "2.0"
-# The "nightly" feature can be specified if you're using nightly compiler. Even though
+# The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
-# channel (remove "nightly" feature in that case). There maybe compilation errors,
+# channel (remove "actix-nightly" feature in that case). There maybe compilation errors,
 # but those can be fixed.
 paperclip = { version = "0.4", features = ["actix-nightly"] }
 serde = "1.0"
@@ -212,7 +212,7 @@ pub struct AccessToken;
 impl FromRequest for Accesstoken { /*...*/ }
 
 #[api_v2_operation]
-async fn my_handler(access_token: AccessToken) -> Result {
+async fn my_handler(access_token: AccessToken) -> Result<String, MyError> {
     /*...*/
 }
 ```
@@ -254,6 +254,6 @@ Affected entity | Missing feature(s)
 
 #### Performance implications?
 
-Even though we use some wrappers and generate schema structs for building the spec, we do this only once i.e., until the `.build()` function call. At runtime, it's basically an [`Arc`](https://doc.rust-lang.org/std/sync/struct.Arc.html) deref and [`RwLock`](https://docs.rs/parking_lot/*/parking_lot/type.RwLock.html) read, which is quite fast!
+Even though we use some wrappers and generate schema structs for building the spec, we do this only once i.e., until the `.build()` function call. At runtime, it's basically a pointer read, which is quite fast!
 
-We also add a wrapper to blocks in functions tagged with `#[api_v2_operation]`, but those wrappers are unit structs and the code eventually gets optimized away anyway.
+We also add wrappers to blocks in functions tagged with `#[api_v2_operation]`, but those wrappers follow the [Newtype pattern](https://doc.rust-lang.org/stable/book/ch19-03-advanced-traits.html#using-the-newtype-pattern-to-implement-external-traits-on-external-types) and the code eventually gets optimized away anyway.
