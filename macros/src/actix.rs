@@ -71,7 +71,6 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             );
         }
         ReturnType::Type(_, ty) => {
-            ret = Some(ty.clone());
             let t = quote!(#ty).to_string();
             if let Type::ImplTrait(_) = &**ty {
                 is_impl_trait = true;
@@ -159,9 +158,9 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         impl paperclip::v2::schema::Apiv2Operation for #unit_struct {
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
-                let mut op = Default::default();
-                operation.summary = #summary;
-                operation.description = #description;
+                let mut op = paperclip::v2::models::DefaultOperationRaw::default();
+                op.summary = #summary;
+                op.description = #description;
                 #(
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
@@ -182,7 +181,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
 
             fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
                 use paperclip::actix::OperationModifier;
-                let mut map = BTreeMap::new();
+                let mut map = std::collections::BTreeMap::new();
                 #(
                     <#modifiers>::update_definitions(&mut map);
                 )*
@@ -192,75 +191,6 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         }
     )
     // );
-    .into()
-}
-
-/// Actual parser and emitter for `api_v2_operation` macro.
-///
-/// **NOTE:** This is a no-op right now. It's only reserved for
-/// future use to avoid introducing breaking changes.
-#[cfg(not(feature = "actix-operation"))]
-pub fn emit_v2_operation(input: TokenStream) -> TokenStream {
-    let mut item_ast: ItemFn = match syn::parse(input) {
-        Ok(s) => s,
-        Err(e) => {
-            emit_error!(e.span().unwrap(), "operation must be a function.");
-            return quote!().into();
-        }
-    };
-
-    let mut wrapper = None;
-    match &mut item_ast.sig.output {
-        ReturnType::Default => {
-            emit_warning!(
-                item_ast.span().unwrap(),
-                "operation doesn't seem to return a response."
-            );
-        }
-        ReturnType::Type(_, ty) => {
-            let t = quote!(#ty).to_string();
-            // FIXME: This is a hack for functions returning known
-            // `impl Trait`. Need a better way!
-            if t.contains("Responder") {
-                wrapper = Some(quote!(paperclip::actix::ResponderWrapper));
-            }
-
-            if let (Type::ImplTrait(_), Some(ref w)) = (&**ty, wrapper.as_ref()) {
-                if item_ast.sig.asyncness.is_some() {
-                    *ty = Box::new(syn::parse2(quote!(#w<#ty>)).expect("parsing wrapper type"));
-                } else {
-                    *ty = Box::new(
-                        syn::parse2(quote!(impl Future<Output=#w<#ty>>))
-                            .expect("parsing wrapper type"),
-                    );
-                }
-            }
-        }
-    }
-
-    if let Some(w) = wrapper {
-        let block = item_ast.block;
-        let wrapped_value = if item_ast.sig.asyncness.is_some() {
-            quote!(#w(f))
-        } else {
-            quote!(futures::future::ready(#w(f)))
-        };
-        item_ast.block = Box::new(
-            syn::parse2(quote!(
-                {
-                    let f = (|| {
-                        #block
-                    })();
-                    #wrapped_value
-                }
-            ))
-            .expect("parsing wrapped block"),
-        );
-    }
-
-    quote!(
-        #item_ast
-    )
     .into()
 }
 
