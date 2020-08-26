@@ -4,6 +4,8 @@ pub use actix_web::web::{
     block, service, to, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest, HttpResponse, Json,
     JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
 };
+#[cfg(feature = "qs")]
+pub use serde_qs::actix::QsQuery;
 
 use crate::Mountable;
 use actix_service::{IntoServiceFactory, ServiceFactory};

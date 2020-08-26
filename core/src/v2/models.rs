@@ -572,6 +572,7 @@ where
 #[serde(rename_all = "camelCase")]
 pub enum ParameterIn {
     Query,
+    QsQuery,
     Header,
     Path,
     FormData,
