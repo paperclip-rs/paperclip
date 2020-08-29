@@ -75,7 +75,6 @@ members = [
     "core",
     "macros",
     "plugins/actix-web",
-    "examples/actix-playground",
 ]
 
 [[test]]

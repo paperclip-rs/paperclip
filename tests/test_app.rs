@@ -55,6 +55,20 @@ impl Default for Pet {
     }
 }
 
+impl Responder for Pet {
+    type Error = Error;
+    type Future = Ready<Result<actix_web::HttpResponse, Error>>;
+
+    fn respond_to(self, _req: &HttpRequest) -> Self::Future {
+        let body = serde_json::to_string(&self).unwrap();
+
+        // Create response and set content type
+        ready(Ok(actix_web::HttpResponse::Ok()
+            .content_type("application/json")
+            .body(body)))
+    }
+}
+
 #[test]
 fn test_simple_app() {
     #[api_v2_operation]
@@ -696,20 +710,6 @@ fn test_impl_traits() {
         futures::future::err(())
     }
 
-    impl Responder for Pet {
-        type Error = Error;
-        type Future = Ready<Result<actix_web::HttpResponse, Error>>;
-
-        fn respond_to(self, _req: &HttpRequest) -> Self::Future {
-            let body = serde_json::to_string(&self).unwrap();
-
-            // Create response and set content type
-            ready(Ok(actix_web::HttpResponse::Ok()
-                .content_type("application/json")
-                .body(body)))
-        }
-    }
-
     #[api_v2_operation]
     async fn get_pet_async() -> impl Responder {
         Pet::default()
@@ -804,6 +804,281 @@ fn test_impl_traits() {
                     "/pet_async": {
                       "get": {
                         "responses": {}
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+#[allow(unreachable_code)]
+fn test_operation_with_generics() {
+    #[api_v2_operation]
+    fn get_pet_by_id<I: paperclip::v2::schema::Apiv2Schema>(
+        _path: web::Path<I>,
+    ) -> impl Future<Output = Result<web::Json<Vec<Pet>>, ()>> {
+        futures::future::ok(web::Json(vec![Pet::default()]))
+    }
+
+    #[api_v2_operation]
+    async fn get_pet_by_name<S: paperclip::v2::schema::Apiv2Schema + ToString>(
+        _path: web::Path<S>,
+    ) -> Result<web::Json<Vec<Pet>>, ()> {
+        Ok(web::Json(vec![Pet::default()]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/pet/id/{id}").route(web::get().to(get_pet_by_id::<u64>)))
+                .service(
+                    web::resource("/pet/name/{name}")
+                        .route(web::get().to(get_pet_by_name::<String>)),
+                )
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions":{
+                        "Pet":{
+                           "description":"Pets are awesome!",
+                           "properties":{
+                              "class":{
+                                 "enum":[
+                                    "dog",
+                                    "cat",
+                                    "other"
+                                 ],
+                                 "type":"string"
+                              },
+                              "id":{
+                                 "format":"int64",
+                                 "type":"integer"
+                              },
+                              "name":{
+                                 "description":"Pick a good one.",
+                                 "type":"string"
+                              },
+                              "updatedOn":{
+                                 "format":"date-time",
+                                 "type":"string"
+                              },
+                              "uuid":{
+                                 "format":"uuid",
+                                 "type":"string"
+                              }
+                           },
+                           "required":[
+                              "class",
+                              "name"
+                           ]
+                        }
+                     },
+                     "info":{
+                        "title":"",
+                        "version":""
+                     },
+                     "paths":{
+                        "/pet/id/{id}":{
+                           "get":{
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "items":{
+                                          "$ref":"#/definitions/Pet"
+                                       },
+                                       "type":"array"
+                                    }
+                                 }
+                              }
+                           },
+                           "parameters":[
+                              {
+                                 "format":"int64",
+                                 "in":"path",
+                                 "name":"id",
+                                 "required":true,
+                                 "type":"integer"
+                              }
+                           ]
+                        },
+                        "/pet/name/{name}":{
+                           "get":{
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "items":{
+                                          "$ref":"#/definitions/Pet"
+                                       },
+                                       "type":"array"
+                                    }
+                                 }
+                              }
+                           },
+                           "parameters":[
+                              {
+                                 "in":"path",
+                                 "name":"name",
+                                 "required":true,
+                                 "type":"string"
+                              }
+                           ]
+                        }
+                     },
+                     "swagger":"2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+#[allow(unreachable_code)]
+fn test_operations_documentation() {
+    /// Index call
+    #[api_v2_operation]
+    fn index() -> impl Responder {
+        ""
+    }
+
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    struct Params {
+        limit: Option<u16>,
+    }
+
+    /// List all pets
+    /// Will provide list of all pets available for sale
+    #[api_v2_operation]
+    fn get_pets(
+        _data: web::Data<String>,
+        _q: web::Query<Params>,
+    ) -> impl Future<Output = Result<web::Json<Vec<Pet>>, ()>> {
+        if true {
+            // test for return in wrapper blocks (#75)
+            return futures::future::err(());
+        }
+
+        futures::future::err(())
+    }
+
+    /// Get pet info
+    /// Will provide details on a pet
+    #[api_v2_operation]
+    async fn get_pet_async() -> impl Responder {
+        Pet::default()
+    }
+
+    /// Get pet info
+    #[api_v2_operation]
+    fn get_pet() -> impl Responder {
+        Pet::default()
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/").route(web::get().to(index)))
+                .service(web::resource("/pets").route(web::get().to(get_pets)))
+                .service(web::resource("/pet").route(web::get().to(get_pet)))
+                .service(web::resource("/pet_async").route(web::get().to(get_pet_async)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "info":{"title":"","version":""},
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "class": {
+                          "enum": ["dog", "cat", "other"],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "required":["class", "name"]
+                    }
+                  },
+                  "paths": {
+                    "/": {
+                      "get": {
+                        "responses": {},
+                        "summary":" Index call"
+                      }
+                    },
+                    "/pets": {
+                      "get": {
+                        "description":"Will provide list of all pets available for sale",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "type": "array",
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              }
+                            }
+                          }
+                        },
+                        "summary":" List all pets"
+                      },
+                      "parameters": [{
+                        "format": "int32",
+                        "in": "query",
+                        "name": "limit",
+                        "type": "integer"
+                      }]
+                    },
+                    "/pet": {
+                      "get": {
+                        "responses": {},
+                        "summary":" Get pet info"
+                      }
+                    },
+                    "/pet_async": {
+                      "get": {
+                        "responses": {},
+                        "description":"Will provide details on a pet",
+                        "summary":" Get pet info"
                       }
                     }
                   },
