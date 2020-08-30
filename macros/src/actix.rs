@@ -157,17 +157,23 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     );
 
     let docs = extract_documentation(&item_ast.attrs);
-    let mut lines = docs.lines();
-    let summary = lines
-        .next()
-        .map(|line| quote!(Some(#line.to_string())))
-        .unwrap_or(quote!(None));
-    let description = lines.collect::<String>().trim().to_string();
-    let description = if !description.is_empty() {
-        quote!(Some(#description.to_string()))
-    } else {
-        quote!(None)
+    let lines = docs.lines();
+    let mut before_empty = true;
+    let (summary, description): (Vec<_>, Vec<_>) = lines.partition(|line| {
+        if line.trim().is_empty() {
+            before_empty = false
+        };
+        before_empty
+    });
+    let none_if_empty = |text: &str| {
+        if text.is_empty() {
+            quote!(None)
+        } else {
+            quote!(Some(#text.to_string()))
+        }
     };
+    let summary = none_if_empty(summary.into_iter().collect::<String>().trim());
+    let description = none_if_empty(description.into_iter().collect::<String>().trim());
 
     quote!(
         #struct_definition

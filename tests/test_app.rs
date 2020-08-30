@@ -962,6 +962,7 @@ fn test_operations_documentation() {
     }
 
     /// List all pets
+    ///
     /// Will provide list of all pets available for sale
     #[api_v2_operation]
     fn get_pets(
@@ -977,6 +978,7 @@ fn test_operations_documentation() {
     }
 
     /// Get pet info
+    ///
     /// Will provide details on a pet
     #[api_v2_operation]
     async fn get_pet_async() -> impl Responder {
@@ -984,6 +986,7 @@ fn test_operations_documentation() {
     }
 
     /// Get pet info
+    /// sync version
     #[api_v2_operation]
     fn get_pet() -> impl Responder {
         Pet::default()
@@ -1042,7 +1045,7 @@ fn test_operations_documentation() {
                     "/": {
                       "get": {
                         "responses": {},
-                        "summary":" Index call"
+                        "summary":"Index call"
                       }
                     },
                     "/pets": {
@@ -1059,7 +1062,7 @@ fn test_operations_documentation() {
                             }
                           }
                         },
-                        "summary":" List all pets"
+                        "summary":"List all pets"
                       },
                       "parameters": [{
                         "format": "int32",
@@ -1071,14 +1074,14 @@ fn test_operations_documentation() {
                     "/pet": {
                       "get": {
                         "responses": {},
-                        "summary":" Get pet info"
+                        "summary":"Get pet info sync version"
                       }
                     },
                     "/pet_async": {
                       "get": {
                         "responses": {},
                         "description":"Will provide details on a pet",
-                        "summary":" Get pet info"
+                        "summary":"Get pet info"
                       }
                     }
                   },
