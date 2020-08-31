@@ -9,9 +9,10 @@ use quote::quote;
 use strum_macros::EnumString;
 use syn::spanned::Spanned;
 use syn::{
-    punctuated::Punctuated, Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed,
-    FieldsUnnamed, FnArg, Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments,
-    ReturnType, Token, TraitBound, Type, TypeTraitObject,
+    punctuated::{Pair, Punctuated},
+    Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
+    Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, ReturnType, Token, TraitBound,
+    Type, TypeTraitObject,
 };
 
 use std::collections::HashMap;
@@ -42,6 +43,26 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     // Unit struct
     let s_name = format!("paperclip_{}", item_ast.sig.ident);
     let unit_struct = Ident::new(&s_name, default_span);
+    let generics = &item_ast.sig.generics;
+    let (mut struct_generics, mut generics_call) = (quote!(), quote!());
+    let mut struct_definition = quote!(struct #unit_struct;);
+    if !generics.params.is_empty() {
+        let params: Punctuated<Ident, _> = generics
+            .params
+            .pairs()
+            .filter_map(|pair| match pair {
+                Pair::Punctuated(syn::GenericParam::Type(gen), punct) => {
+                    Some(Pair::new(gen.ident.clone(), Some(*punct)))
+                }
+                Pair::End(syn::GenericParam::Type(gen)) => Some(Pair::new(gen.ident.clone(), None)),
+                _ => None,
+            })
+            .collect();
+        generics_call = quote!(::<#params> { p: std::marker::PhantomData });
+        struct_generics = quote!(<#params>);
+        struct_definition =
+            quote!(struct #unit_struct <#params> { p: std::marker::PhantomData<(#params)> } )
+    }
 
     let modifiers = item_ast
         .sig
@@ -58,8 +79,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         item_ast.sig.asyncness = None;
     }
 
-    let mut wrapper =
-        quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct>);
+    let mut wrapper = quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct #struct_generics>);
     let mut is_impl_trait = false;
     let mut is_responder = false;
     match &mut item_ast.sig.output {
@@ -107,7 +127,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 if !is_responder {
                     // NOTE: We're only using the box "type" to generate the operation data, we're not boxing
                     // the handlers at runtime.
-                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct>);
+                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct #struct_generics>);
                 }
             }
         }
@@ -129,23 +149,43 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 let f = #wrapped_fn_call;
                 paperclip::actix::ResponseWrapper {
                     0: f,
-                    1: #unit_struct,
+                    1: #unit_struct #generics_call,
                 }
             }
         ))
         .expect("parsing wrapped block"),
     );
 
-    // panic!("{}",
+    let docs = extract_documentation(&item_ast.attrs);
+    let lines = docs.lines();
+    let mut before_empty = true;
+    let (summary, description): (Vec<_>, Vec<_>) = lines.partition(|line| {
+        if line.trim().is_empty() {
+            before_empty = false
+        };
+        before_empty
+    });
+    let none_if_empty = |text: &str| {
+        if text.is_empty() {
+            quote!(None)
+        } else {
+            quote!(Some(#text.to_string()))
+        }
+    };
+    let summary = none_if_empty(summary.into_iter().collect::<String>().trim());
+    let description = none_if_empty(description.into_iter().collect::<String>().trim());
+
     quote!(
-        struct #unit_struct;
+        #struct_definition
 
         #item_ast
 
-        impl paperclip::v2::schema::Apiv2Operation for #unit_struct {
+        impl #generics paperclip::v2::schema::Apiv2Operation for #unit_struct #struct_generics {
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
-                let mut op = Default::default();
+                let mut op = paperclip::v2::models::DefaultOperationRaw::default();
+                op.summary = #summary;
+                op.description = #description;
                 #(
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
@@ -166,7 +206,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
 
             fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
                 use paperclip::actix::OperationModifier;
-                let mut map = BTreeMap::new();
+                let mut map = std::collections::BTreeMap::new();
                 #(
                     <#modifiers>::update_definitions(&mut map);
                 )*
@@ -654,7 +694,8 @@ fn extract_documentation(attrs: &[Attribute]) -> String {
             },
             _ => None,
         })
-        .collect()
+        .collect::<Vec<String>>()
+        .join("\n")
 }
 
 /// Checks if an empty schema has been requested and generate if needed.

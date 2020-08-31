@@ -604,6 +604,8 @@ pub struct Operation<P, R> {
     #[serde(skip_serializing_if = "Option::is_none")]
     pub operation_id: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub summary: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
     // *NOTE:* `consumes` and `produces` are optional, because
     // local media ranges can be used to override global media ranges
