@@ -346,12 +346,21 @@ impl<S> PathItem<Parameter<S>, Response<S>> {
         // We're using `Option<BTreeSet>` over `BTreeSet` because we need to
         // differentiate between the first operation that we use for initial
         // value of the set and  an operation that doesn't have any parameters.
+        if self.methods.len() < 2 {
+            return;
+        }
         let mut shared_params = None;
         for op in self.methods.values() {
             let params = op
                 .parameters
                 .iter()
-                .map(|p| p.name.clone())
+                .filter_map(|p| {
+                    if p.name != "body" {
+                        Some(p.name.clone())
+                    } else {
+                        None
+                    }
+                })
                 .collect::<BTreeSet<_>>();
             if let Some(p) = shared_params.take() {
                 shared_params = Some(&p & &params); // set intersection

@@ -151,15 +151,15 @@ fn test_simple_app() {
                   },
                   "paths": {
                     "/api/echo": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -171,15 +171,15 @@ fn test_simple_app() {
                       }
                     },
                     "/api/async_echo": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -191,15 +191,15 @@ fn test_simple_app() {
                       }
                     },
                     "/api/async_echo_2": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -355,6 +355,14 @@ fn test_params() {
         ready("")
     }
 
+    #[api_v2_operation]
+    fn patch_badge_2(
+        _p: web::Path<(u32, String)>,
+        _b: web::Json<BadgeBody>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -373,7 +381,8 @@ fn test_params() {
                                 .service(
                                     web::resource("/v/{name}")
                                         .route(web::get().to(get_known_badge_2))
-                                        .route(web::post().to(post_badge_2)),
+                                        .route(web::post().to(post_badge_2))
+                                        .route(web::patch().to(patch_badge_2)),
                                 )
                                 .service(
                                     web::resource("/foo").route(web::get().to(get_resource_2)),
@@ -453,15 +462,15 @@ fn test_params() {
                     },
                     "/api/v2/{resource}/foo": {
                       "get": {
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "path",
+                            "name": "resource",
+                            "required": true,
+                            "type": "integer"
+                          }],
                         "responses": {}
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "path",
-                        "name": "resource",
-                        "required": true,
-                        "type": "integer"
-                      }]
                     },
                     "/api/v2/{resource}/v/{name}": {
                       "get": {
@@ -491,6 +500,17 @@ fn test_params() {
                         "type": "integer"
                       }],
                       "post": {
+                        "parameters": [{
+                          "in": "body",
+                          "name": "body",
+                          "required": true,
+                          "schema": {
+                            "$ref": "#/definitions/BadgeBody"
+                          }
+                        }],
+                        "responses": {}
+                      },
+                      "patch": {
                         "parameters": [{
                           "in": "body",
                           "name": "body",
@@ -652,6 +672,17 @@ fn test_list_in_out() {
                   "paths": {
                     "/pets": {
                       "get": {
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }, {
+                            "enum": ["Asc", "Desc"],
+                            "in": "query",
+                            "name": "sort",
+                            "type": "string"
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -664,17 +695,6 @@ fn test_list_in_out() {
                           }
                         }
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "query",
-                        "name": "limit",
-                        "type": "integer"
-                      }, {
-                        "enum": ["Asc", "Desc"],
-                        "in": "query",
-                        "name": "sort",
-                        "type": "string"
-                      }],
                     }
                   },
                   "swagger": "2.0"
@@ -777,6 +797,12 @@ fn test_impl_traits() {
                     },
                     "/pets": {
                       "get": {
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -789,12 +815,6 @@ fn test_impl_traits() {
                           }
                         }
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "query",
-                        "name": "limit",
-                        "type": "integer"
-                      }]
                     },
                     "/pet": {
                       "get": {
@@ -894,7 +914,16 @@ fn test_operation_with_generics() {
                      "paths":{
                         "/pet/id/{id}":{
                            "get":{
-                              "responses":{
+                            "parameters":[
+                                {
+                                   "format":"int64",
+                                   "in":"path",
+                                   "name":"id",
+                                   "required":true,
+                                   "type":"integer"
+                                }
+                            ],
+                            "responses":{
                                  "200":{
                                     "description":"OK",
                                     "schema":{
@@ -906,19 +935,18 @@ fn test_operation_with_generics() {
                                  }
                               }
                            },
-                           "parameters":[
-                              {
-                                 "format":"int64",
-                                 "in":"path",
-                                 "name":"id",
-                                 "required":true,
-                                 "type":"integer"
-                              }
-                           ]
                         },
                         "/pet/name/{name}":{
                            "get":{
-                              "responses":{
+                            "parameters":[
+                                {
+                                   "in":"path",
+                                   "name":"name",
+                                   "required":true,
+                                   "type":"string"
+                                }
+                            ],
+                            "responses":{
                                  "200":{
                                     "description":"OK",
                                     "schema":{
@@ -930,14 +958,6 @@ fn test_operation_with_generics() {
                                  }
                               }
                            },
-                           "parameters":[
-                              {
-                                 "in":"path",
-                                 "name":"name",
-                                 "required":true,
-                                 "type":"string"
-                              }
-                           ]
                         }
                      },
                      "swagger":"2.0"
@@ -1051,6 +1071,12 @@ fn test_operations_documentation() {
                     "/pets": {
                       "get": {
                         "description":"Will provide list of all pets available for sale",
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -1064,12 +1090,6 @@ fn test_operations_documentation() {
                         },
                         "summary":"List all pets"
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "query",
-                        "name": "limit",
-                        "type": "integer"
-                      }]
                     },
                     "/pet": {
                       "get": {
@@ -1347,15 +1367,15 @@ fn test_errors_app() {
                   },
                   "paths": {
                     "/api/echo": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -1504,15 +1524,15 @@ fn test_security_app() {
                   },
                   "paths": {
                     "/api/echo1": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -1529,15 +1549,15 @@ fn test_security_app() {
                       }
                     },
                     "/api/echo2": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
