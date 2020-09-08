@@ -279,8 +279,10 @@ where
             &mut api.security_definitions,
         );
         factory.update_operations(&mut api.paths);
-        for map in api.paths.values_mut() {
-            map.normalize();
+        if cfg!(feature = "normalize") {
+            for map in api.paths.values_mut() {
+                map.normalize();
+            }
         }
     }
 }
