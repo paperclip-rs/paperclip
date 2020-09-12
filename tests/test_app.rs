@@ -151,15 +151,15 @@ fn test_simple_app() {
                   },
                   "paths": {
                     "/api/echo": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
-                      "post": {
+                    "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                            "$ref": "#/definitions/Pet"
+                            }
+                        }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -171,15 +171,15 @@ fn test_simple_app() {
                       }
                     },
                     "/api/async_echo": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -191,15 +191,15 @@ fn test_simple_app() {
                       }
                     },
                     "/api/async_echo_2": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -313,6 +313,12 @@ fn test_params() {
     }
 
     #[derive(Deserialize, Apiv2Schema)]
+    struct BadgeBodyPatch {
+        /// JSON value
+        json: Option<serde_json::Value>,
+    }
+
+    #[derive(Deserialize, Apiv2Schema)]
     struct BadgeForm {
         data: String,
     }
@@ -355,6 +361,22 @@ fn test_params() {
         ready("")
     }
 
+    #[api_v2_operation]
+    fn post_badge_3(
+        _p: web::Path<u32>,
+        _b: web::Json<BadgeBody>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[api_v2_operation]
+    fn patch_badge_3(
+        _p: web::Path<u32>,
+        _b: web::Json<BadgeBodyPatch>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -376,6 +398,11 @@ fn test_params() {
                                         .route(web::post().to(post_badge_2)),
                                 )
                                 .service(
+                                    web::resource("/v")
+                                        .route(web::post().to(post_badge_3))
+                                        .route(web::patch().to(patch_badge_3)),
+                                )
+                                .service(
                                     web::resource("/foo").route(web::get().to(get_resource_2)),
                                 ),
                         ),
@@ -391,119 +418,371 @@ fn test_params() {
             check_json(
                 resp,
                 json!({
-                  "info":{"title":"","version":""},
-                  "definitions": {
-                    "BadgeBody":{
-                      "properties":{
-                        "json": {"description": "JSON value", "type": "object"},
-                        "yaml": {"type": "object"}
-                      }
-                    }
-                  },
-                  "paths": {
-                    "/api/v1/{resource}/v/{name}": {
-                      "delete": {
-                        "responses": {}
-                      },
-                      "get": {
-                        "responses": {}
-                      },
-                      "head": {
-                        "responses": {}
-                      },
-                      "options": {
-                        "responses": {}
-                      },
-                      "parameters": [{
-                        "in": "query",
-                        "name": "color",
-                        "required": true,
-                        "type": "string"
-                      }, {
-                        "in": "path",
-                        "name": "name",
-                        "required": true,
-                        "type": "string"
-                      }, {
-                        "format": "int32",
-                        "in": "query",
-                        "name": "res",
-                        "type": "integer"
-                      }, {
-                        "in": "path",
-                        "name": "resource",
-                        "required": true,
-                        "type": "string"
-                      }],
-                      "patch": {
-                        "responses": {}
-                      },
-                      "post": {
-                        "parameters": [{
-                          "in": "formData",
-                          "name": "data",
-                          "required": true,
-                          "type": "string"
-                        }],
-                        "responses": {}
-                      },
-                      "put": {
-                        "responses": {}
-                      }
+                    "definitions": {
+                        "BadgeBody": {
+                            "properties": {
+                                "json": {
+                                    "description": "JSON value",
+                                    "type": "object"
+                                },
+                                "yaml": {
+                                    "type": "object"
+                                }
+                            }
+                        },
+                        "BadgeBodyPatch": {
+                            "properties": {
+                                "json": {
+                                    "description": "JSON value",
+                                    "type": "object"
+                                }
+                            }
+                        }
                     },
-                    "/api/v2/{resource}/foo": {
-                      "get": {
-                        "responses": {}
-                      },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "path",
-                        "name": "resource",
-                        "required": true,
-                        "type": "integer"
-                      }]
+                    "info": {
+                        "title": "",
+                        "version": ""
                     },
-                    "/api/v2/{resource}/v/{name}": {
-                      "get": {
-                        "parameters": [{
-                          "in": "query",
-                          "name": "color",
-                          "required": true,
-                          "type": "string"
-                        }, {
-                          "format": "int32",
-                          "in": "query",
-                          "name": "res",
-                          "type": "integer"
-                        }],
-                        "responses": {}
-                      },
-                      "parameters": [{
-                        "in": "path",
-                        "name": "name",
-                        "required": true,
-                        "type": "string"
-                      }, {
-                        "format": "int32",
-                        "in": "path",
-                        "name": "resource",
-                        "required": true,
-                        "type": "integer"
-                      }],
-                      "post": {
-                        "parameters": [{
-                          "in": "body",
-                          "name": "body",
-                          "required": true,
-                          "schema": {
-                            "$ref": "#/definitions/BadgeBody"
-                          }
-                        }],
-                        "responses": {}
-                      }
-                    }
-                  },
-                  "swagger": "2.0"
+                    "paths": {
+                        "/api/v1/{resource}/v/{name}": {
+                            "delete": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "head": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "options": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "patch": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "formData",
+                                        "name": "data",
+                                        "required": true,
+                                        "type": "string"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "put": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/foo": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "format": "int32",
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/v": {
+                            "patch": {
+                                "parameters": [
+                                    {
+                                        "format": "int32",
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/BadgeBodyPatch"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "format": "int32",
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/BadgeBody"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/v/{name}": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "format": "int32",
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "color",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "format": "int32",
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/BadgeBody"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
                 }),
             );
         },
@@ -662,19 +941,19 @@ fn test_list_in_out() {
                               }
                             }
                           }
-                        }
+                        },
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }, {
+                            "enum": ["Asc", "Desc"],
+                            "in": "query",
+                            "name": "sort",
+                            "type": "string"
+                        }],
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "query",
-                        "name": "limit",
-                        "type": "integer"
-                      }, {
-                        "enum": ["Asc", "Desc"],
-                        "in": "query",
-                        "name": "sort",
-                        "type": "string"
-                      }],
                     }
                   },
                   "swagger": "2.0"
@@ -787,14 +1066,14 @@ fn test_impl_traits() {
                               }
                             }
                           }
-                        }
+                        },
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                        }]
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "query",
-                        "name": "limit",
-                        "type": "integer"
-                      }]
                     },
                     "/pet": {
                       "get": {
@@ -904,17 +1183,17 @@ fn test_operation_with_generics() {
                                        "type":"array"
                                     }
                                  }
-                              }
-                           },
-                           "parameters":[
-                              {
-                                 "format":"int64",
-                                 "in":"path",
-                                 "name":"id",
-                                 "required":true,
-                                 "type":"integer"
-                              }
-                           ]
+                              },
+                              "parameters":[
+                                {
+                                   "format":"int64",
+                                   "in":"path",
+                                   "name":"id",
+                                   "required":true,
+                                   "type":"integer"
+                                }
+                             ]
+                          },
                         },
                         "/pet/name/{name}":{
                            "get":{
@@ -928,16 +1207,16 @@ fn test_operation_with_generics() {
                                        "type":"array"
                                     }
                                  }
-                              }
-                           },
-                           "parameters":[
-                              {
-                                 "in":"path",
-                                 "name":"name",
-                                 "required":true,
-                                 "type":"string"
-                              }
-                           ]
+                              },
+                              "parameters":[
+                                {
+                                   "in":"path",
+                                   "name":"name",
+                                   "required":true,
+                                   "type":"string"
+                                }
+                             ]
+                          },
                         }
                      },
                      "swagger":"2.0"
@@ -1062,14 +1341,14 @@ fn test_operations_documentation() {
                             }
                           }
                         },
-                        "summary":"List all pets"
+                        "summary":"List all pets",
+                        "parameters": [{
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                        }]
                       },
-                      "parameters": [{
-                        "format": "int32",
-                        "in": "query",
-                        "name": "limit",
-                        "type": "integer"
-                      }]
                     },
                     "/pet": {
                       "get": {
@@ -1347,15 +1626,15 @@ fn test_errors_app() {
                   },
                   "paths": {
                     "/api/echo": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -1504,15 +1783,15 @@ fn test_security_app() {
                   },
                   "paths": {
                     "/api/echo1": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -1529,15 +1808,15 @@ fn test_security_app() {
                       }
                     },
                     "/api/echo2": {
-                      "parameters": [{
-                        "in": "body",
-                        "name": "body",
-                        "required": true,
-                        "schema": {
-                          "$ref": "#/definitions/Pet"
-                        }
-                      }],
                       "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
                         "responses": {
                           "200": {
                             "description": "OK",
