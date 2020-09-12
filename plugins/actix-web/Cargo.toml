@@ -12,7 +12,7 @@ repository = "https://github.com/wafflespeanut/paperclip"
 [dependencies]
 futures = "0.3"
 actix-service = "1.0"
-actix-web = "2.0"
+actix-web = ">=2.0,<4"
 paperclip-core = { path = "../../core", version = "0.3.0", features = ["actix"] }
 paperclip-macros = { path = "../../macros", version = "0.4.0", features = ["actix"] }
 parking_lot = ">=0.10,<0.12"
