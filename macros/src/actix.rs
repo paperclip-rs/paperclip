@@ -277,6 +277,22 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                             )
                         }
                     }
+                    "tags" => {
+                        if let Lit::Str(tags) = lit {
+                            let tags = tags.value();
+                            let tags: Vec<_> = tags.split(',').collect();
+                            if !tags.is_empty() {
+                                params.push(ident.clone());
+                                values.push(quote!(vec![#( #tags.to_string() ),*]));
+                            }
+                        } else {
+                            emit_error!(
+                                lit.span(),
+                                "Expected comma separated list of tags in string literal: {:?}",
+                                lit
+                            )
+                        }
+                    }
                     x => emit_error!(ident.span(), "Unknown attribute {}", x),
                 }
             } else {

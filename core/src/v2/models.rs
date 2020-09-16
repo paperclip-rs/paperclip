@@ -624,6 +624,8 @@ pub struct Operation<P, R> {
     pub parameters: Vec<Either<Reference, P>>,
     #[serde(default, skip_serializing_if = "is_false")]
     pub deprecated: bool,
+    #[serde(default, skip_serializing_if = "Vec::is_empty")]
+    pub tags: Vec<String>,
 }
 
 impl<S> Operation<Parameter<S>, Response<S>> {

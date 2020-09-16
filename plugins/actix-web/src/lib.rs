@@ -10,7 +10,7 @@ use actix_web::{web::HttpResponse, Error};
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{
     DefaultApiRaw, DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
-    SecurityScheme,
+    SecurityScheme, Tag,
 };
 use parking_lot::RwLock;
 
@@ -284,6 +284,13 @@ where
                 map.normalize();
             }
         }
+    }
+
+    /// Updates list of tags in specification
+    /// Tags might be referenced from Operation::tags by name
+    pub fn set_tags(self, tags: Vec<Tag>) -> Self {
+        self.spec.write().tags = tags;
+        self
     }
 }
 

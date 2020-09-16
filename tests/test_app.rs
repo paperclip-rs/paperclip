@@ -12,6 +12,7 @@ use once_cell::sync::Lazy;
 use paperclip::actix::{
     api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
 };
+use paperclip::v2::models::Tag;
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashSet};
@@ -988,6 +989,116 @@ fn test_list_in_out() {
                     }
                   },
                   "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_tags() {
+    #[derive(Serialize, Apiv2Schema)]
+    struct Image {
+        data: String,
+        id: u64,
+    }
+
+    #[api_v2_operation(tags = "cats,dogs")]
+    fn some_pets_images() -> impl Future<Output = web::Json<Vec<Image>>> {
+        ready(web::Json(Vec::new()))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .set_tags(vec![
+                    Tag {
+                        name: "dogs".to_string(),
+                        description: Some("Images of dogs".to_string()),
+                        external_docs: None,
+                    },
+                    Tag {
+                        name: "cats".to_string(),
+                        description: Some("Images of cats".to_string()),
+                        external_docs: None,
+                    },
+                    Tag {
+                        name: "cars".to_string(),
+                        description: Some("Images of nice cars".to_string()),
+                        external_docs: None,
+                    },
+                ])
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions":{
+                        "Image":{
+                            "properties":{
+                                "data":{
+                                "type":"string"
+                                },
+                                "id":{
+                                "format":"int64",
+                                "type":"integer"
+                                }
+                            },
+                            "required":[
+                                "data",
+                                "id"
+                            ]
+                        }
+                    },
+                    "info":{
+                        "title":"",
+                        "version":""
+                    },
+                    "paths":{
+                        "/images/pets":{
+                            "get":{
+                                "responses":{
+                                "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                        "items":{
+                                            "$ref":"#/definitions/Image"
+                                        },
+                                        "type":"array"
+                                    }
+                                }
+                                },
+                                "tags":[
+                                "cats",
+                                "dogs"
+                                ]
+                            }
+                        }
+                    },
+                    "swagger":"2.0",
+                    "tags":[
+                        {
+                            "description":"Images of dogs",
+                            "name":"dogs"
+                        },
+                        {
+                            "description":"Images of cats",
+                            "name":"cats"
+                        },
+                        {
+                            "description":"Images of nice cars",
+                            "name":"cars"
+                        }
+                    ]
                 }),
             );
         },
