@@ -227,6 +227,8 @@ fn extract_fn_arguments_types(item_ast: &ItemFn) -> Vec<Type> {
 
 /// Parse macro attrs, matching to Operation fields
 /// Returning operation attribute identifier and value initialization arrays
+/// Note: Array likes initialized from string "val1, val2, val3", where "val1"
+/// would parse into destination item
 fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::TokenStream>) {
     let attrs = crate::parse_input_attrs(attrs);
     let mut params = Vec::new();
@@ -241,6 +243,39 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                             values.push(quote!(#val.to_string()));
                         } else {
                             emit_error!(lit.span(), "Expected string literal: {:?}", lit)
+                        }
+                    }
+                    "consumes" | "produces" => {
+                        if let Lit::Str(mimes) = lit {
+                            let mut mime_types = Vec::new();
+                            for val in mimes.value().split(',') {
+                                if let Err(err) = val.parse::<mime::Mime>() {
+                                    emit_error!(
+                                        lit.span(),
+                                        "Value {} does not parse as mime type: {}",
+                                        val,
+                                        err
+                                    );
+                                } else {
+                                    mime_types.push(quote!(paperclip::v2::models::MediaRange(#val.parse().unwrap())));
+                                }
+                            }
+                            if !mime_types.is_empty() {
+                                params.push(ident.clone());
+                                values.push(quote!({
+                                    let tmp = std::collections::BTreeSet::new();
+                                    #(
+                                        tmp.insert(#mime_types);
+                                    )*
+                                    tmp
+                                }));
+                            }
+                        } else {
+                            emit_error!(
+                                lit.span(),
+                                "Expected comma separated values in string literal: {:?}",
+                                lit
+                            )
                         }
                     }
                     x => emit_error!(ident.span(), "Unknown attribute {}", x),
