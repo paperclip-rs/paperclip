@@ -116,7 +116,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     } else if is_impl_trait {
         quote!((|| #block)())
     } else {
-        quote!((|| async #block)())
+        quote!(async move #block)
     };
 
     item_ast.block = Box::new(

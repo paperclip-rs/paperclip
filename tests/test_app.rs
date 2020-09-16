@@ -323,6 +323,21 @@ fn test_params() {
         data: String,
     }
 
+    #[derive(Deserialize, Apiv2Schema)]
+    struct AppState {
+        data: String,
+    }
+
+    async fn is_data_empty(p: &AppState) -> bool {
+        p.data.is_empty()
+    }
+
+    // issue: https://github.com/wafflespeanut/paperclip/issues/216
+    #[api_v2_operation]
+    async fn check_data_ref_async(app: web::Data<AppState>) -> web::Json<bool> {
+        web::Json(is_data_empty(app.get_ref()).await)
+    }
+
     #[api_v2_operation]
     fn get_resource_2(_p: web::Path<u32>) -> impl Future<Output = &'static str> {
         ready("")
@@ -405,6 +420,10 @@ fn test_params() {
                                 .service(
                                     web::resource("/foo").route(web::get().to(get_resource_2)),
                                 ),
+                        )
+                        .service(
+                            web::resource("/v2/check_data")
+                                .route(web::get().to(check_data_ref_async)),
                         ),
                 )
                 .build()
@@ -780,7 +799,19 @@ fn test_params() {
                                 "responses": {
                                 }
                             }
-                        }
+                        },
+                        "/api/v2/check_data": {
+                            "get": {
+                                "responses": {
+                                    "200":{
+                                        "description": "OK",
+                                        "schema":{
+                                           "type": "boolean"
+                                        }
+                                     }
+                                }
+                            }
+                        },
                     },
                     "swagger": "2.0"
                 }),
