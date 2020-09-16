@@ -191,11 +191,10 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             }
         }
     )
-    // );
     .into()
 }
 
-// Extract punctuated generic parameters from fn definition
+/// Extract punctuated generic parameters from fn definition
 fn extract_generics_params(item_ast: &ItemFn) -> Punctuated<Ident, syn::token::Comma> {
     item_ast
         .sig
@@ -240,7 +239,7 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                     "summary" | "description" | "operation_id" => {
                         if let Lit::Str(val) = lit {
                             params.push(ident.clone());
-                            values.push(quote!(#val.to_string()));
+                            values.push(quote!(Some(#val.to_string())));
                         } else {
                             emit_error!(lit.span(), "Expected string literal: {:?}", lit)
                         }
@@ -263,11 +262,11 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                             if !mime_types.is_empty() {
                                 params.push(ident.clone());
                                 values.push(quote!({
-                                    let tmp = std::collections::BTreeSet::new();
+                                    let mut tmp = std::collections::BTreeSet::new();
                                     #(
                                         tmp.insert(#mime_types);
                                     )*
-                                    tmp
+                                    Some(tmp)
                                 }));
                             }
                         } else {
