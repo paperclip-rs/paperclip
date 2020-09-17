@@ -12,7 +12,7 @@ use once_cell::sync::Lazy;
 use paperclip::actix::{
     api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
 };
-use paperclip::v2::models::Tag;
+use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashSet};
@@ -1010,25 +1010,32 @@ fn test_tags() {
 
     run_and_check_app(
         || {
+            let mut spec = DefaultApiRaw::default();
+            spec.tags = vec![
+                Tag {
+                    name: "dogs".to_string(),
+                    description: Some("Images of dogs".to_string()),
+                    external_docs: None,
+                },
+                Tag {
+                    name: "cats".to_string(),
+                    description: Some("Images of cats".to_string()),
+                    external_docs: None,
+                },
+                Tag {
+                    name: "cars".to_string(),
+                    description: Some("Images of nice cars".to_string()),
+                    external_docs: None,
+                },
+            ];
+            spec.info = Info {
+                version: "0.1".into(),
+                title: "Image server".into(),
+                ..Default::default()
+            };
+
             App::new()
-                .wrap_api()
-                .set_tags(vec![
-                    Tag {
-                        name: "dogs".to_string(),
-                        description: Some("Images of dogs".to_string()),
-                        external_docs: None,
-                    },
-                    Tag {
-                        name: "cats".to_string(),
-                        description: Some("Images of cats".to_string()),
-                        external_docs: None,
-                    },
-                    Tag {
-                        name: "cars".to_string(),
-                        description: Some("Images of nice cars".to_string()),
-                        external_docs: None,
-                    },
-                ])
+                .wrap_api_with_spec(spec)
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
                 .build()
@@ -1060,8 +1067,8 @@ fn test_tags() {
                         }
                     },
                     "info":{
-                        "title":"",
-                        "version":""
+                        "title":"Image server",
+                        "version":"0.1"
                     },
                     "paths":{
                         "/images/pets":{
