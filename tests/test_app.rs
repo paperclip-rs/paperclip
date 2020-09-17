@@ -14,9 +14,10 @@ use paperclip::actix::{
 };
 use parking_lot::Mutex;
 
-use std::collections::{BTreeMap, HashSet};
+use std::collections::{BTreeMap, HashMap, HashSet};
 use std::sync::mpsc;
 use std::thread;
+use uuid_dev::Uuid;
 
 static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
 static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
@@ -800,8 +801,24 @@ fn test_map_in_out() {
         id: ImageId,
     }
 
+    #[derive(Deserialize, Apiv2Schema)]
+    struct Filter {
+        folders: HashMap<String, Vec<ImageId>>,
+    }
+
+    #[derive(Serialize, Apiv2Schema)]
+    struct Catalogue {
+        pub folders: HashMap<Uuid, Vec<Image>>,
+    }
+
     #[api_v2_operation]
     fn some_images() -> impl Future<Output = web::Json<BTreeMap<String, Image>>> {
+        #[allow(unreachable_code)]
+        ready(unimplemented!())
+    }
+
+    #[api_v2_operation]
+    fn catalogue(_filter: web::Json<Filter>) -> impl Future<Output = web::Json<Catalogue>> {
         #[allow(unreachable_code)]
         ready(unimplemented!())
     }
@@ -812,6 +829,7 @@ fn test_map_in_out() {
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/images").route(web::get().to(some_images)))
+                .service(web::resource("/catalogue").route(web::post().to(catalogue)))
                 .build()
         },
         |addr| {
@@ -823,39 +841,112 @@ fn test_map_in_out() {
             check_json(
                 resp,
                 json!({
-                  "info":{"title":"","version":""},
-                  "definitions": {
-                    "Image": {
-                      "properties": {
-                        "data": {
-                          "type": "string"
+                    "definitions":{
+                        "Catalogue":{
+                           "properties":{
+                              "folders":{
+                                 "additionalProperties":{
+                                    "items":{
+                                       "properties":{
+                                          "data":{
+                                             "type":"string"
+                                          },
+                                          "id":{
+                                             "format":"int64",
+                                             "type":"integer"
+                                          }
+                                       },
+                                       "required":[
+                                          "data",
+                                          "id"
+                                       ]
+                                    },
+                                    "type":"array"
+                                 },
+                                 "type":"object"
+                              }
+                           },
+                           "required":[
+                              "folders"
+                           ]
                         },
-                        "id":{
-                          "format":"int64",
-                          "type":"integer"
-                        }
-                      },
-                      "required": ["data", "id"]
-                    }
-                  },
-                  "paths": {
-                    "/images": {
-                      "get": {
-                        "responses": {
-                          "200": {
-                            "description": "OK",
-                            "schema": {
-                              "additionalProperties": {
-                                "$ref": "#/definitions/Image"
+                        "Filter":{
+                           "properties":{
+                              "folders":{
+                                 "additionalProperties":{
+                                    "items":{
+                                       "format":"int64",
+                                       "type":"integer"
+                                    },
+                                    "type":"array"
+                                 },
+                                 "type":"object"
+                              }
+                           },
+                           "required":[
+                              "folders"
+                           ]
+                        },
+                        "Image":{
+                           "properties":{
+                              "data":{
+                                 "type":"string"
                               },
-                              "type": "object"
-                            }
-                          }
+                              "id":{
+                                 "format":"int64",
+                                 "type":"integer"
+                              }
+                           },
+                           "required":[
+                              "data",
+                              "id"
+                           ]
                         }
-                      }
-                    }
-                  },
-                  "swagger": "2.0"
+                     },
+                     "info":{
+                        "title":"",
+                        "version":""
+                     },
+                     "paths":{
+                        "/catalogue":{
+                           "post":{
+                              "parameters":[
+                                 {
+                                    "in":"body",
+                                    "name":"body",
+                                    "required":true,
+                                    "schema":{
+                                       "$ref":"#/definitions/Filter"
+                                    }
+                                 }
+                              ],
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "$ref":"#/definitions/Catalogue"
+                                    }
+                                 }
+                              }
+                           }
+                        },
+                        "/images":{
+                           "get":{
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "additionalProperties":{
+                                          "$ref":"#/definitions/Image"
+                                       },
+                                       "type":"object"
+                                    }
+                                 }
+                              }
+                           }
+                        }
+                     },
+                     "swagger":"2.0"
                 }),
             );
         },

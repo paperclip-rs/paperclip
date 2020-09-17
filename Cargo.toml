@@ -79,7 +79,7 @@ members = [
 
 [[test]]
 name = "test_app"
-required-features = ["actix"]
+required-features = ["actix", "uuid"]
 
 [[test]]
 name = "test_codegen"

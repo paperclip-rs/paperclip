@@ -362,7 +362,7 @@ macro_rules! impl_schema_array {
 
 macro_rules! impl_schema_map {
     ($ty:ty) => {
-        impl<K: AsRef<str>, V: Apiv2Schema> Apiv2Schema for $ty {
+        impl<K: ToString, V: Apiv2Schema> Apiv2Schema for $ty {
             fn raw_schema() -> DefaultSchemaRaw {
                 let mut schema = DefaultSchemaRaw::default();
                 schema.data_type = Some(DataType::Object);
