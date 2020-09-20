@@ -11,8 +11,8 @@ use syn::spanned::Spanned;
 use syn::{
     punctuated::{Pair, Punctuated},
     Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
-    Generics, Ident, ItemFn, Lit, Meta, NestedMeta, PathArguments, ReturnType, Token, TraitBound,
-    Type, TypeTraitObject,
+    Generics, Ident, ItemFn, Lit, Meta, MetaNameValue, NestedMeta, PathArguments, ReturnType,
+    Token, TraitBound, Type, TypeTraitObject,
 };
 
 use std::collections::HashMap;
@@ -37,42 +37,18 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         }
     };
 
-    let _attrs = crate::parse_input_attrs(attrs);
-    // TODO: summary and description
-
     // Unit struct
     let s_name = format!("paperclip_{}", item_ast.sig.ident);
     let unit_struct = Ident::new(&s_name, default_span);
     let generics = &item_ast.sig.generics;
     let (mut struct_generics, mut generics_call) = (quote!(), quote!());
     let mut struct_definition = quote!(struct #unit_struct;);
-    if !generics.params.is_empty() {
-        let params: Punctuated<Ident, _> = generics
-            .params
-            .pairs()
-            .filter_map(|pair| match pair {
-                Pair::Punctuated(syn::GenericParam::Type(gen), punct) => {
-                    Some(Pair::new(gen.ident.clone(), Some(*punct)))
-                }
-                Pair::End(syn::GenericParam::Type(gen)) => Some(Pair::new(gen.ident.clone(), None)),
-                _ => None,
-            })
-            .collect();
-        generics_call = quote!(::<#params> { p: std::marker::PhantomData });
-        struct_generics = quote!(<#params>);
-        struct_definition =
-            quote!(struct #unit_struct <#params> { p: std::marker::PhantomData<(#params)> } )
+    let generics_params = extract_generics_params(&item_ast);
+    if !generics_params.is_empty() {
+        generics_call = quote!(::<#generics_params> { p: std::marker::PhantomData });
+        struct_generics = quote!(<#generics_params>);
+        struct_definition = quote!(struct #unit_struct <#generics_params> { p: std::marker::PhantomData<(#generics_params)> } )
     }
-
-    let modifiers = item_ast
-        .sig
-        .inputs
-        .iter()
-        .filter_map(|inp| match inp {
-            FnArg::Receiver(_) => None,
-            FnArg::Typed(ref t) => Some(&t.ty),
-        })
-        .collect::<Vec<_>>();
 
     // Get rid of async prefix. In the end, we'll have them all as `impl Future` thingies.
     if item_ast.sig.asyncness.is_some() {
@@ -136,11 +112,11 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     let block = item_ast.block;
     // We need a function because devs should be able to use "return" keyword along the way.
     let wrapped_fn_call = if is_responder {
-        quote!(paperclip::util::ready(paperclip::actix::ResponderWrapper((|| #block)())))
+        quote!(paperclip::util::ready(paperclip::actix::ResponderWrapper((move || #block)())))
     } else if is_impl_trait {
-        quote!((|| #block)())
+        quote!((move || #block)())
     } else {
-        quote!((|| async #block)())
+        quote!((move || async move #block)())
     };
 
     item_ast.block = Box::new(
@@ -156,24 +132,23 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         .expect("parsing wrapped block"),
     );
 
-    let docs = extract_documentation(&item_ast.attrs);
-    let lines = docs.lines();
-    let mut before_empty = true;
-    let (summary, description): (Vec<_>, Vec<_>) = lines.partition(|line| {
-        if line.trim().is_empty() {
-            before_empty = false
-        };
-        before_empty
-    });
-    let none_if_empty = |text: &str| {
-        if text.is_empty() {
-            quote!(None)
-        } else {
-            quote!(Some(#text.to_string()))
+    // Initialize operation parameters from macro attributes
+    let (mut op_params, mut op_values) = parse_operation_attrs(attrs);
+
+    // Optionally extract summary and description from doc comments
+    if op_params.iter().find(|i| *i == "summary").is_none() {
+        let (summary, description) = extract_fn_documentation(&item_ast);
+        if let Some(summary) = summary {
+            op_params.push(Ident::new("summary", item_ast.span()));
+            op_values.push(summary)
         }
-    };
-    let summary = none_if_empty(summary.into_iter().collect::<String>().trim());
-    let description = none_if_empty(description.into_iter().collect::<String>().trim());
+        if let Some(description) = description {
+            op_params.push(Ident::new("description", item_ast.span()));
+            op_values.push(description)
+        }
+    }
+
+    let modifiers = extract_fn_arguments_types(&item_ast);
 
     quote!(
         #struct_definition
@@ -184,8 +159,9 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
                 let mut op = paperclip::v2::models::DefaultOperationRaw::default();
-                op.summary = #summary;
-                op.description = #description;
+                #(
+                    op.#op_params = #op_values;
+                )*
                 #(
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
@@ -215,8 +191,135 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             }
         }
     )
-    // );
     .into()
+}
+
+/// Extract punctuated generic parameters from fn definition
+fn extract_generics_params(item_ast: &ItemFn) -> Punctuated<Ident, syn::token::Comma> {
+    item_ast
+        .sig
+        .generics
+        .params
+        .pairs()
+        .filter_map(|pair| match pair {
+            Pair::Punctuated(syn::GenericParam::Type(gen), punct) => {
+                Some(Pair::new(gen.ident.clone(), Some(*punct)))
+            }
+            Pair::End(syn::GenericParam::Type(gen)) => Some(Pair::new(gen.ident.clone(), None)),
+            _ => None,
+        })
+        .collect()
+}
+
+/// Extract function arguments
+fn extract_fn_arguments_types(item_ast: &ItemFn) -> Vec<Type> {
+    item_ast
+        .sig
+        .inputs
+        .iter()
+        .filter_map(|inp| match inp {
+            FnArg::Receiver(_) => None,
+            FnArg::Typed(ref t) => Some(*t.ty.clone()),
+        })
+        .collect()
+}
+
+/// Parse macro attrs, matching to Operation fields
+/// Returning operation attribute identifier and value initialization arrays
+/// Note: Array likes initialized from string "val1, val2, val3", where "val1"
+/// would parse into destination item
+fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::TokenStream>) {
+    let attrs = crate::parse_input_attrs(attrs);
+    let mut params = Vec::new();
+    let mut values = Vec::new();
+    for attr in attrs.0 {
+        if let NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. })) = &attr {
+            if let Some(ident) = path.get_ident() {
+                match ident.to_string().as_str() {
+                    "summary" | "description" | "operation_id" => {
+                        if let Lit::Str(val) = lit {
+                            params.push(ident.clone());
+                            values.push(quote!(Some(#val.to_string())));
+                        } else {
+                            emit_error!(lit.span(), "Expected string literal: {:?}", lit)
+                        }
+                    }
+                    "consumes" | "produces" => {
+                        if let Lit::Str(mimes) = lit {
+                            let mut mime_types = Vec::new();
+                            for val in mimes.value().split(',') {
+                                let val = val.trim();
+                                if let Err(err) = val.parse::<mime::Mime>() {
+                                    emit_error!(
+                                        lit.span(),
+                                        "Value {} does not parse as mime type: {}",
+                                        val,
+                                        err
+                                    );
+                                } else {
+                                    mime_types.push(quote!(paperclip::v2::models::MediaRange(#val.parse().unwrap())));
+                                }
+                            }
+                            if !mime_types.is_empty() {
+                                params.push(ident.clone());
+                                values.push(quote!({
+                                    let mut tmp = std::collections::BTreeSet::new();
+                                    #(
+                                        tmp.insert(#mime_types);
+                                    )*
+                                    Some(tmp)
+                                }));
+                            }
+                        } else {
+                            emit_error!(
+                                lit.span(),
+                                "Expected comma separated values in string literal: {:?}",
+                                lit
+                            )
+                        }
+                    }
+                    x => emit_error!(ident.span(), "Unknown attribute {}", x),
+                }
+            } else {
+                emit_error!(
+                    path.span(),
+                    "Expected single identifier, got path {:?}",
+                    path
+                )
+            }
+        } else {
+            emit_error!(attr.span(), "Not supported attribute type {:?}", attr)
+        }
+    }
+    (params, values)
+}
+
+/// Extracts summary from top line doc comment and description from the rest
+fn extract_fn_documentation(
+    item_ast: &ItemFn,
+) -> (
+    Option<proc_macro2::TokenStream>,
+    Option<proc_macro2::TokenStream>,
+) {
+    let docs = extract_documentation(&item_ast.attrs);
+    let lines = docs.lines();
+    let mut before_empty = true;
+    let (summary, description): (Vec<_>, Vec<_>) = lines.partition(|line| {
+        if line.trim().is_empty() {
+            before_empty = false
+        };
+        before_empty
+    });
+    let none_if_empty = |text: &str| {
+        if text.is_empty() {
+            None
+        } else {
+            Some(quote!(Some(#text.to_string())))
+        }
+    };
+    let summary = none_if_empty(summary.into_iter().collect::<String>().trim());
+    let description = none_if_empty(description.into_iter().collect::<String>().trim());
+    (summary, description)
 }
 
 /// Actual parser and emitter for `api_v2_errors` macro.

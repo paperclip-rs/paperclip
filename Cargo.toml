@@ -1,6 +1,6 @@
 [package]
 name = "paperclip"
-version = "0.5.0"
+version = "0.4.2"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
@@ -24,9 +24,9 @@ heck = { version = "0.3", optional = true }
 http = { version = "0.2", optional = true }
 itertools = "0.9"
 log = { version = "0.4", optional = true }
-paperclip-actix = { path = "plugins/actix-web", version = "0.3.0", optional = true }
-paperclip-core = { path = "core", version = "0.3.0" }
-paperclip-macros = { path = "macros", version = "0.4.0", optional = true }
+paperclip-actix = { path = "plugins/actix-web", version = "0.2.2", optional = true }
+paperclip-core = { path = "core", version = "0.2.2" }
+paperclip-macros = { path = "macros", version = "0.3.2", optional = true }
 parking_lot = { version = ">=0.10,<0.12" }
 regex = { version = "1.1", optional = true }
 reqwest = { version = "0.10", features = ["blocking"], optional = true }
@@ -79,7 +79,7 @@ members = [
 
 [[test]]
 name = "test_app"
-required-features = ["actix"]
+required-features = ["actix", "uuid"]
 
 [[test]]
 name = "test_codegen"
