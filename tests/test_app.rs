@@ -834,7 +834,7 @@ fn test_map_in_out() {
 
     #[derive(Deserialize, Apiv2Schema)]
     struct Filter {
-        folders: HashMap<String, Vec<ImageId>>,
+        pub folders: HashMap<String, Vec<ImageId>>,
     }
 
     #[derive(Serialize, Apiv2Schema)]
@@ -1503,7 +1503,7 @@ fn test_operations_macro_attributes() {
         summary = "Root",
         description = "Provides an empty value in response",
         operation_id = "getIndex",
-        consumes = "application/json,text/plain",
+        consumes = "application/json, text/plain",
         produces = "text/plain"
     )]
     fn index() -> impl Responder {

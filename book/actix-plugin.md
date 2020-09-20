@@ -167,6 +167,36 @@ curl http://localhost:8080/api/spec
 
 Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T>` or `web::Path`, the plugin will emit the corresponding specification as expected.
 
+#### Operation metadata
+
+By default, the first doc comment (if any) is taken for the `summary` field and the rest of the following doc comments
+(if any) will be taken as `description` for that operation.
+
+```rust
+/// Default
+/// multiline
+/// summary
+///
+/// Default
+/// multiline
+/// description
+async fn my_handler() -> Json<Foo> { /* */ }
+```
+
+This can be overridden by explicitly specifying `summary` and `description` in the proc-macro attribute like so:
+
+```rust
+#[api_v2_operation(
+  summary = "My awesome handler",
+  description = "It creates a pretty JSON object",
+  /// A few other parameters are also supported
+  operation_id = "my_handler",
+  consumes = "application/yaml, application/json",
+  produces = "application/yaml, application/json",
+)]
+async fn my_handler() -> Json<Foo> { /* */ }
+```
+
 #### Manually defining additional response codes
 
 There is a macro `api_v2_errors` which helps to manually add error (non-2xx) response codes.
