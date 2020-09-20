@@ -324,6 +324,21 @@ fn test_params() {
         data: String,
     }
 
+    #[derive(Deserialize, Apiv2Schema)]
+    struct AppState {
+        data: String,
+    }
+
+    async fn is_data_empty(p: &AppState) -> bool {
+        p.data.is_empty()
+    }
+
+    // issue: https://github.com/wafflespeanut/paperclip/issues/216
+    #[api_v2_operation]
+    async fn check_data_ref_async(app: web::Data<AppState>) -> web::Json<bool> {
+        web::Json(is_data_empty(app.get_ref()).await)
+    }
+
     #[api_v2_operation]
     fn get_resource_2(_p: web::Path<u32>) -> impl Future<Output = &'static str> {
         ready("")
@@ -406,6 +421,10 @@ fn test_params() {
                                 .service(
                                     web::resource("/foo").route(web::get().to(get_resource_2)),
                                 ),
+                        )
+                        .service(
+                            web::resource("/v2/check_data")
+                                .route(web::get().to(check_data_ref_async)),
                         ),
                 )
                 .build()
@@ -781,7 +800,19 @@ fn test_params() {
                                 "responses": {
                                 }
                             }
-                        }
+                        },
+                        "/api/v2/check_data": {
+                            "get": {
+                                "responses": {
+                                    "200":{
+                                        "description": "OK",
+                                        "schema":{
+                                           "type": "boolean"
+                                        }
+                                     }
+                                }
+                            }
+                        },
                     },
                     "swagger": "2.0"
                 }),
@@ -1456,6 +1487,143 @@ fn test_operations_documentation() {
                     }
                   },
                   "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+#[allow(unreachable_code)]
+fn test_operations_macro_attributes() {
+    /// Index operation
+    ///
+    /// This doc comment will be overriden by macro attrs
+    #[api_v2_operation(
+        summary = "Root",
+        description = "Provides an empty value in response",
+        operation_id = "getIndex",
+        consumes = "application/json,text/plain",
+        produces = "text/plain"
+    )]
+    fn index() -> impl Responder {
+        ""
+    }
+
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    struct Params {
+        limit: Option<u16>,
+    }
+
+    /// List all pets (in summary)
+    ///
+    /// This doc comment will be used in description
+    #[api_v2_operation(operation_id = "getPets")]
+    fn get_pets(
+        _data: web::Data<String>,
+        _q: web::Query<Params>,
+    ) -> impl Future<Output = Result<web::Json<Vec<Pet>>, ()>> {
+        if true {
+            // test for return in wrapper blocks (#75)
+            return futures::future::err(());
+        }
+
+        futures::future::err(())
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/").route(web::get().to(index)))
+                .service(web::resource("/pets").route(web::get().to(get_pets)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet": {
+                            "description": "Pets are awesome!",
+                            "properties": {
+                                "class": {
+                                "enum": ["dog", "cat", "other"],
+                                    "type":"string"
+                                },
+                                "id": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "description": "Pick a good one.",
+                                    "type": "string"
+                                },
+                                "updatedOn": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                },
+                                "uuid":{
+                                    "format": "uuid",
+                                    "type": "string"
+                                }
+                            },
+                            "required":[
+                                "class",
+                                "name"
+                            ]
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/": {
+                            "get": {
+                                "consumes": [
+                                    "application/json",
+                                    "text/plain"
+                                ],
+                                "description": "Provides an empty value in response",
+                                "operationId": "getIndex",
+                                "produces": [ "text/plain" ],
+                                "responses": {},
+                                "summary": "Root"
+                            }
+                        },
+                        "/pets": {
+                            "get": {
+                                "description": "This doc comment will be used in description",
+                                "operationId": "getPets",
+                                "parameters":[{
+                                    "format":"int32",
+                                    "in":"query",
+                                    "name":"limit",
+                                    "type":"integer"
+                                }],
+                                "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "items": {
+                                            "$ref": "#/definitions/Pet"
+                                        },
+                                        "type": "array"
+                                    }
+                                }
+                                },
+                                "summary": "List all pets (in summary)"
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
                 }),
             );
         },
