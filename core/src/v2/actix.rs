@@ -341,7 +341,7 @@ impl_param_extractor!(Path<T> => Path);
 impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
 #[cfg(feature = "serde_qs")]
-impl_param_extractor!(QsQuery<T> => QsQuery);
+impl_param_extractor!(QsQuery<T> => Query);
 
 macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
     #[cfg(feature = "nightly")]
