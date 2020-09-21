@@ -122,7 +122,7 @@ Note that we never touched the service, resources, routes or anything else! This
 Now you can check the API with the following **cURL** command:
 
 ```
-curl -X POST http://127.0.0.1:8080/pets -H "Content-Type: application/json" -d '{"id":1,"name":"Felix"}'
+curl -X POST http://localhost:8080/pets -H "Content-Type: application/json" -d '{"id":1,"name":"Felix"}'
 ```
 
 And see the specs with this:
