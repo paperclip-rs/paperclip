@@ -32,7 +32,7 @@ struct Pet {
 async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
     let new_pet = Pet {
         name: format!("The New {}", body.name),
-        id: None
+        id: body.id
     };
     
     Ok(Json(new_pet))
