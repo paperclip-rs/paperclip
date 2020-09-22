@@ -8,6 +8,7 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
+# You can also use actix-web v2, in that case at least you need to add actix-rt dependency and also change the runtime to #[actix_rt::main]
 actix-web = "3.0"
 # The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
