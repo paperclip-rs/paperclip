@@ -68,6 +68,7 @@ actix-multipart = ["paperclip-core/actix-multipart"]
 chrono = ["paperclip-core/chrono"]
 rust_decimal = ["paperclip-core/rust_decimal"]
 uuid = ["paperclip-core/uuid"]
+serde_qs = ["paperclip-actix/serde_qs", "paperclip-core/serde_qs"]
 
 [workspace]
 members = [

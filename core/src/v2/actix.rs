@@ -11,6 +11,9 @@ use actix_web::{
 };
 use pin_project::pin_project;
 
+#[cfg(feature = "serde_qs")]
+use serde_qs::actix::QsQuery;
+
 use std::collections::BTreeMap;
 use std::future::Future;
 use std::pin::Pin;
@@ -337,6 +340,8 @@ impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
 impl_param_extractor!(Path<T> => Path);
 impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
+#[cfg(feature = "serde_qs")]
+impl_param_extractor!(QsQuery<T> => Query);
 
 macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
     #[cfg(feature = "nightly")]
