@@ -8,7 +8,7 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
-# You can also use actix-web v2, in that case at least you need to add actix-rt dependency and also change the runtime to #[actix_rt::main]
+# actix-web 2.0 is also supported
 actix-web = "3.0"
 # The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
@@ -31,12 +31,7 @@ struct Pet {
 }
 
 async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
-    let new_pet = Pet {
-        name: format!("The New {}", body.name),
-        id: body.id
-    };
-    
-    Ok(Json(new_pet))
+    Ok(body)
 }
 
 #[actix_web::main]
@@ -73,12 +68,7 @@ struct Pet {
 // Mark operations like so...
 #[api_v2_operation]
 async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
-    let new_pet = Pet {
-        name: format!("The New {}", body.name),
-        id: body.id
-    };
-
-    Ok(Json(new_pet))
+    Ok(body)
 }
 
 #[actix_web::main]
