@@ -102,7 +102,7 @@ fn test_simple_app() {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
             .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
             .service(web::resource("/async_echo_2").route(web::post().to(echo_pet_async_2)))
-            .service(web::resource("/random").to(some_pet));
+            .service(web::resource("/random".to_string()).to(some_pet));
     }
 
     run_and_check_app(

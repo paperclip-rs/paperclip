@@ -271,8 +271,8 @@ where
 }
 
 /// Wrapper for [`actix_web::web::resource`](https://docs.rs/actix-web/*/actix_web/web/fn.resource.html).
-pub fn resource(path: &str) -> Resource {
-    Resource::new(path)
+pub fn resource<S: AsRef<str>>(path: S) -> Resource {
+    Resource::new(path.as_ref())
 }
 
 /* Scope */
