@@ -31,7 +31,7 @@ parking_lot = { version = ">=0.10,<0.12" }
 regex = { version = "1.1", optional = true }
 reqwest = { version = "0.10", features = ["blocking"], optional = true }
 # rustfmt-nightly = { version = "1.2.2", optional = true }
-semver = ">=0.9,<0.11"
+semver = ">=0.9, <0.12"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
