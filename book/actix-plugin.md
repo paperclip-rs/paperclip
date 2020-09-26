@@ -8,10 +8,11 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
-actix-web = "2.0"
+# actix-web 2.0 is also supported
+actix-web = "3.0"
 # The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
-# channel (remove "actix-nightly" feature in that case). There maybe compilation errors,
+# channel (replace "actix-nightly" feature with "actix" in that case). There maybe compilation errors,
 # but those can be fixed.
 paperclip = { version = "0.4", features = ["actix-nightly"] }
 serde = "1.0"
@@ -33,7 +34,7 @@ async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
     Ok(body)
 }
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         .service(
@@ -51,15 +52,14 @@ Now, let's modify it to use the plugin!
 use actix_web::{App, HttpServer};
 use paperclip::actix::{
     // extension trait for actix_web::App and proc-macro attributes
-    OpenApiExt, api_v2_schema, api_v2_operation,
+    OpenApiExt, Apiv2Schema, api_v2_operation,
     // use this instead of actix_web::web
     web::{self, Json},
 };
 use serde::{Serialize, Deserialize};
 
 // Mark containers (body, query, parameter, etc.) like so...
-#[api_v2_schema]
-#[derive(Serialize, Deserialize)]
+#[derive(Serialize, Deserialize, Apiv2Schema)]
 struct Pet {
     name: String,
     id: Option<i64>,
@@ -71,7 +71,7 @@ async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
     Ok(body)
 }
 
-#[actix_rt::main]
+#[actix_web::main]
 async fn main() -> std::io::Result<()> {
     HttpServer::new(|| App::new()
         // Record services and routes from this line.
@@ -101,7 +101,7 @@ async fn main() -> std::io::Result<()> {
 
 We have:
 
- - Imported `OpenApiExt` extension trait for `actix_web::App` along with `api_v2_schema` and `api_v2_operation` proc macro attributes.
+ - Imported `OpenApiExt` extension trait for `actix_web::App` along with `Apiv2Schema` derive macro and `api_v2_operation` proc macro attributes.
  - Switched from `actix_web::web` to `paperclip::actix::web`.
  - Marked our `Pet` struct and `add_pet` function as OpenAPI-compatible schema and operation using proc macro attributes.
  - Transformed our `actix_web::App` to a wrapper using `.wrap_api()`.
@@ -110,7 +110,13 @@ We have:
 
 Note that we never touched the service, resources, routes or anything else! This means that our original actix-web flow is unchanged.
 
-Now, testing with **cURL**:
+Now you can check the API with the following **cURL** command:
+
+```
+curl -X POST http://localhost:8080/pets -H "Content-Type: application/json" -d '{"id":1,"name":"Felix"}'
+```
+
+And see the specs with this:
 
 ```
 curl http://localhost:8080/api/spec
@@ -166,6 +172,36 @@ curl http://localhost:8080/api/spec
 ```
 
 Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T>` or `web::Path`, the plugin will emit the corresponding specification as expected.
+
+#### Operation metadata
+
+By default, the first doc comment (if any) is taken for the `summary` field and the rest of the following doc comments
+(if any) will be taken as `description` for that operation.
+
+```rust
+/// Default
+/// multiline
+/// summary
+///
+/// Default
+/// multiline
+/// description
+async fn my_handler() -> Json<Foo> { /* */ }
+```
+
+This can be overridden by explicitly specifying `summary` and `description` in the proc-macro attribute like so:
+
+```rust
+#[api_v2_operation(
+  summary = "My awesome handler",
+  description = "It creates a pretty JSON object",
+  /// A few other parameters are also supported
+  operation_id = "my_handler",
+  consumes = "application/yaml, application/json",
+  produces = "application/yaml, application/json",
+)]
+async fn my_handler() -> Json<Foo> { /* */ }
+```
 
 #### Manually defining additional response codes
 
