@@ -57,6 +57,7 @@ env_logger = "0.7.1"
 
 [features]
 actix = ["paperclip-macros/actix", "paperclip-actix", "v2"]
+swagger-ui = ["paperclip-actix/swagger-ui"]
 actix-nightly = ["actix", "paperclip-actix/nightly", "v2"]
 cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
 codegen = ["heck", "http", "log", "regex", "tinytemplate", "paperclip-core/codegen"]

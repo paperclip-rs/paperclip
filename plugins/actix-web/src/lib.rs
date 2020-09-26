@@ -14,6 +14,9 @@ use paperclip_core::v2::models::{
 };
 use parking_lot::RwLock;
 
+#[cfg(feature = "swagger-ui")]
+use askama::Template;
+
 use std::collections::BTreeMap;
 use std::fmt::Debug;
 use std::future::Future;
@@ -248,6 +251,24 @@ where
         self
     }
 
+    /// Mounts the specification for all operations and definitions
+    /// recorded by the wrapper and serves them in the given path
+    /// as a JSON with Swagger UI.
+    #[cfg(feature = "swagger-ui")]
+    pub fn with_swagger_ui_at(mut self, path: &str) -> Self {
+        self.inner = self.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource(path)
+                    .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
+            )
+            .service(
+                actix_web::web::resource(path.to_owned() + "/swagger-ui.html")
+                    .route(actix_web::web::get().to(SwaggerUIHandler(path.to_string()))),
+            )
+        });
+        self
+    }
+
     /// Calls the given function with `App` and JSON `Value` representing your API
     /// specification **built until now**.
     ///
@@ -295,5 +316,30 @@ impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<Http
 {
     fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
         fut_ok(HttpResponse::Ok().json(&*self.0.read()))
+    }
+}
+
+#[cfg(feature = "swagger-ui")]
+#[derive(Clone)]
+struct SwaggerUIHandler(String);
+
+#[cfg(feature = "swagger-ui")]
+#[derive(Template)]
+#[template(path = "swagger-ui.html")]
+struct SwaggerUITemplate<'a> {
+    api_spec_url: &'a str,
+}
+
+#[cfg(feature = "swagger-ui")]
+impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>>
+    for SwaggerUIHandler
+{
+    fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
+        let s = SwaggerUITemplate {
+            api_spec_url: &*self.0.as_str(),
+        }
+        .render()
+        .unwrap();
+        fut_ok(HttpResponse::Ok().content_type("text/html").body(s))
     }
 }
