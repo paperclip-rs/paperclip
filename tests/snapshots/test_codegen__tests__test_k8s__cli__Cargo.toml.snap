@@ -15,14 +15,14 @@ path = "main.rs"
 [dependencies]
 async-trait = "0.1"
 bytes = "0.5"
-thiserror = "1.0.19"
+thiserror = "1.0"
 futures = "0.3"
 http = "0.2"
 lazy_static = "1.4"
 log = "0.4"
 mime = { git = "https://github.com/hyperium/mime" }
 mime_guess = "2.0"
-parking_lot = "0.8"
+parking_lot = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
@@ -31,8 +31,8 @@ url = "2.1"
 
 anyhow = "1.0"
 clap = { version = "2.33", features = ["yaml"] }
-env_logger = "0.6"
-humantime = "1.2"
+env_logger = "0.7"
+humantime = "2.0"
 openssl = { version = "0.10", features = ["vendored"] }
 tokio = { version = "0.2", features = ["fs", "io-util", "io-std", "macros", "rt-threaded"] }
 reqwest = { version = "0.10", features = ["stream", "json", "native-tls"] }

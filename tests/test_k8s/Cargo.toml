@@ -10,14 +10,14 @@ path = "lib.rs"
 [dependencies]
 async-trait = "0.1"
 bytes = "0.5"
-thiserror = "1.0.19"
+thiserror = "1.0"
 futures = "0.3"
 http = "0.2"
 lazy_static = "1.4"
 log = "0.4"
 mime = { git = "https://github.com/hyperium/mime" }
 mime_guess = "2.0"
-parking_lot = "0.8"
+parking_lot = "0.11"
 reqwest = { version = "0.10", features = ["stream", "json"] }
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
