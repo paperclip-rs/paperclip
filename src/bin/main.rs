@@ -32,10 +32,10 @@ enum OApiVersion {
 #[derive(Debug, StructOpt)]
 struct Opt {
     /// Path to OpenAPI spec in JSON/YAML format (also supports publicly accessible URLs).
-    #[structopt(parse(try_from_str = "parse_spec"))]
+    #[structopt(parse(try_from_str = parse_spec))]
     spec: ResolvableApi<DefaultSchema>,
     /// OpenAPI version (e.g., v2).
-    #[structopt(long = "api", parse(try_from_str = "parse_version"))]
+    #[structopt(long = "api", parse(try_from_str = parse_version))]
     api: OApiVersion,
     /// Output directory to write code (default: current working directory).
     #[structopt(short = "o", long = "out", parse(from_os_str))]
