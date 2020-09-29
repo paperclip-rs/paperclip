@@ -1,6 +1,6 @@
 [package]
 name = "paperclip"
-version = "0.5.0"
+version = "0.4.2"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
@@ -24,43 +24,41 @@ heck = { version = "0.3", optional = true }
 http = { version = "0.2", optional = true }
 itertools = "0.9"
 log = { version = "0.4", optional = true }
-paperclip-actix = { path = "plugins/actix-web", version = "0.3.0", optional = true }
-paperclip-core = { path = "core", version = "0.3.0" }
-paperclip-macros = { path = "macros", version = "0.4.0", optional = true }
+paperclip-actix = { path = "plugins/actix-web", version = "0.2.2", optional = true }
+paperclip-core = { path = "core", version = "0.2.2" }
+paperclip-macros = { path = "macros", version = "0.3.2", optional = true }
 parking_lot = { version = ">=0.10,<0.12" }
-regex = { version = "1.1", optional = true }
+regex = { version = "1.3", optional = true }
 reqwest = { version = "0.10", features = ["blocking"], optional = true }
-# rustfmt-nightly = { version = "1.2.2", optional = true }
-semver = ">=0.9,<0.11"
+semver = ">=0.9, <0.12"
 serde = "1.0"
 serde_derive = "1.0"
 serde_json = "1.0"
 serde_yaml = "0.8"
-structopt = { version = "0.2", optional = true }
-tinytemplate = { version = "1.0", optional = true }
+structopt = { version = "0.3", optional = true }
+tinytemplate = { version = "1.1", optional = true }
 url = ">=1.7,<3"
-thiserror = "1.0.19"
-anyhow = "1.0.31"
-once_cell = "1.4.0"
+thiserror = "1.0"
+anyhow = "1.0"
+once_cell = "1.4"
 
 [dev-dependencies]
-actix-rt = "1.0"
+actix-rt = "1"
 actix-service = "1.0"
-actix-web = "2.0"
+actix-web = { version = ">=2.0,<4", default-features = false }
 chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
 futures = "0.3"
 uuid_dev = { version = "0.8", features = ["serde"], package = "uuid" }
 reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
-insta = "0.16.1"
-env_logger = "0.7.1"
+insta = "0.16"
+env_logger = "0.7"
 
 [features]
 actix = ["paperclip-macros/actix", "paperclip-actix", "v2"]
 actix-nightly = ["actix", "paperclip-actix/nightly", "v2"]
 cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
 codegen = ["heck", "http", "log", "regex", "tinytemplate", "paperclip-core/codegen"]
-# codegen-fmt = ["codegen", "rustfmt-nightly"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 
 # Features for implementing traits for dependencies.
@@ -68,6 +66,7 @@ actix-multipart = ["paperclip-core/actix-multipart"]
 chrono = ["paperclip-core/chrono"]
 rust_decimal = ["paperclip-core/rust_decimal"]
 uuid = ["paperclip-core/uuid"]
+serde_qs = ["paperclip-core/serde_qs"]
 
 [workspace]
 members = [
@@ -76,10 +75,6 @@ members = [
     "macros",
     "plugins/actix-web",
 ]
-
-[[test]]
-name = "test_app"
-required-features = ["actix"]
 
 [[test]]
 name = "test_codegen"

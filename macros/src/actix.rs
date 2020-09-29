@@ -112,11 +112,11 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     let block = item_ast.block;
     // We need a function because devs should be able to use "return" keyword along the way.
     let wrapped_fn_call = if is_responder {
-        quote!(paperclip::util::ready(paperclip::actix::ResponderWrapper((|| #block)())))
+        quote!(paperclip::util::ready(paperclip::actix::ResponderWrapper((move || #block)())))
     } else if is_impl_trait {
-        quote!((|| #block)())
+        quote!((move || #block)())
     } else {
-        quote!(async move #block)
+        quote!((move || async move #block)())
     };
 
     item_ast.block = Box::new(
@@ -248,6 +248,7 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                         if let Lit::Str(mimes) = lit {
                             let mut mime_types = Vec::new();
                             for val in mimes.value().split(',') {
+                                let val = val.trim();
                                 if let Err(err) = val.parse::<mime::Mime>() {
                                     emit_error!(
                                         lit.span(),
