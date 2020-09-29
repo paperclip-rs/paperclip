@@ -845,20 +845,27 @@ fn handle_field_struct(
             field_name = prop.rename(&field_name);
         }
 
+        let flatten = SerdeFlatten::from_field_attrs(&field.attrs);
+
         let (ty_ref, is_required) = get_field_type(&field);
 
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
 
-        let mut gen = quote!(
-            {
+        let mut gen = if !flatten {
+            quote!({
                 let mut s = #ty_ref::raw_schema();
                 if !#docs.is_empty() {
                     s.description = Some(#docs.to_string());
                 }
                 schema.properties.insert(#field_name.into(), s.into());
-            }
-        );
+            })
+        } else {
+            quote!({
+                let s = #ty_ref::raw_schema();
+                schema.properties.extend(s.properties);
+            })
+        };
 
         if is_required {
             gen.extend(quote! {
@@ -1055,5 +1062,39 @@ impl SerdeProps {
         }
 
         props
+    }
+}
+
+/// Supported flattening of embedded struct (https://serde.rs/variant-attrs.html).
+struct SerdeFlatten;
+
+impl SerdeFlatten {
+    /// Traverses the field attributes and returns the renamed value from the first matching
+    /// `#[serde(rename = "...")]` pattern.
+    fn from_field_attrs(field_attrs: &[Attribute]) -> bool {
+        for meta in field_attrs.iter().filter_map(|a| a.parse_meta().ok()) {
+            let inner_meta = match meta {
+                Meta::List(ref l)
+                    if l.path
+                        .segments
+                        .last()
+                        .map(|p| p.ident == "serde")
+                        .unwrap_or(false) =>
+                {
+                    &l.nested
+                }
+                _ => continue,
+            };
+
+            for meta in inner_meta {
+                if let NestedMeta::Meta(Meta::Path(syn::Path { segments, .. })) = meta {
+                    if segments.iter().any(|p| p.ident.to_string() == "flatten") {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
     }
 }
