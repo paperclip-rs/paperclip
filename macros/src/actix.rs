@@ -1088,7 +1088,7 @@ impl SerdeFlatten {
 
             for meta in inner_meta {
                 if let NestedMeta::Meta(Meta::Path(syn::Path { segments, .. })) = meta {
-                    if segments.iter().any(|p| p.ident.to_string() == "flatten") {
+                    if segments.iter().any(|p| p.ident == "flatten") {
                         return true;
                     }
                 }
