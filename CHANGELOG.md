@@ -6,9 +6,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Actix plugin: `#[api_v2_operation]` macro now supports specifying `consumes`, `produces`, `summary`, `description`
+- Actix plugin: `#[api_v2_operation]` macro now supports specifying `consumes`, `produces`, `summary`, `description`, `tags`
 and `operation_id` in macro.
 - Actix plugin: Support for actix-web 3.0.
+- Actix plugin: `App::wrap_api_with_spec` allows to provide default specification with `info` and other custom settings
 
 ### Changed
 - Actix plugin: Internals of `#[api_v2_operation]` proc macro (long-outstanding technical debt). This now generates operation metadata (on the fly) for each handler, which enables us to tie custom changes to operations easily.
