@@ -190,6 +190,12 @@ impl_type_simple!(
     DataType::File,
     DataTypeFormat::Binary
 );
+#[cfg(feature = "actix-session")]
+impl_type_simple!(
+    actix_session::Session,
+    DataType::File,
+    DataTypeFormat::Binary
+);
 #[cfg(feature = "chrono")]
 impl_type_simple!(
     chrono::NaiveDateTime,
