@@ -182,8 +182,7 @@ impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
-impl_type_simple!(serde_json::Value, DataType::Object);
-impl_type_simple!(serde_yaml::Value, DataType::Object);
+
 #[cfg(feature = "actix-multipart")]
 impl_type_simple!(
     actix_multipart::Multipart,
@@ -269,6 +268,8 @@ pub trait Apiv2Schema {
 }
 
 impl Apiv2Schema for () {}
+impl Apiv2Schema for serde_json::Value {}
+impl Apiv2Schema for serde_yaml::Value {}
 
 impl<T: TypedData> Apiv2Schema for T {
     fn raw_schema() -> DefaultSchemaRaw {
