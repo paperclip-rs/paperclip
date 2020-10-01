@@ -196,6 +196,8 @@ impl_type_simple!(
     DataType::String,
     DataTypeFormat::DateTime
 );
+#[cfg(feature = "chrono")]
+impl_type_simple!(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
 #[cfg(feature = "rust_decimal")]
 impl_type_simple!(
     rust_decimal::Decimal,
@@ -213,6 +215,16 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
     }
     fn format() -> Option<DataTypeFormat> {
         Some(DataTypeFormat::DateTime)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl<T: chrono::offset::TimeZone> TypedData for chrono::Date<T> {
+    fn data_type() -> DataType {
+        DataType::String
+    }
+    fn format() -> Option<DataTypeFormat> {
+        Some(DataTypeFormat::Date)
     }
 }
 
