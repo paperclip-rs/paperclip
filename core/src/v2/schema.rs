@@ -254,6 +254,8 @@ pub trait Apiv2Schema {
         let mut def = Self::raw_schema();
         if let Some(n) = Self::NAME {
             def.reference = Some(String::from("#/definitions/") + n);
+        } else if let Some(n) = def.name.as_ref() {
+            def.reference = Some(String::from("#/definitions/") + n);
         }
         if !Self::DESCRIPTION.is_empty() {
             def.description = Some(Self::DESCRIPTION.to_owned());
