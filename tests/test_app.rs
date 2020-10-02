@@ -39,6 +39,7 @@ struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
+    birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
     #[serde(rename = "uuid")]
     uid: Option<uuid_dev::Uuid>,
@@ -49,6 +50,7 @@ impl Default for Pet {
         Self {
             name: "".to_string(),
             class: PetClass::EverythingElse,
+            birthday: chrono_dev::NaiveDate::from_ymd(2012, 3, 10),
             id: None,
             updated_on: None,
             uid: None,
@@ -138,6 +140,10 @@ fn test_simple_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -147,7 +153,7 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1038,6 +1044,10 @@ fn test_list_in_out() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1047,7 +1057,7 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1158,6 +1168,10 @@ fn test_impl_traits() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1167,7 +1181,7 @@ fn test_impl_traits() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1273,6 +1287,10 @@ fn test_operation_with_generics() {
                                  "description":"Pick a good one.",
                                  "type":"string"
                               },
+                              "birthday": {
+                                "format": "date",
+                                "type": "string"
+                              },
                               "updatedOn":{
                                  "format":"date-time",
                                  "type":"string"
@@ -1283,6 +1301,7 @@ fn test_operation_with_generics() {
                               }
                            },
                            "required":[
+                             "birthday",
                               "class",
                               "name"
                            ]
@@ -1430,6 +1449,10 @@ fn test_operations_documentation() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1439,7 +1462,7 @@ fn test_operations_documentation() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1565,6 +1588,10 @@ fn test_operations_macro_attributes() {
                                     "description": "Pick a good one.",
                                     "type": "string"
                                 },
+                                "birthday": {
+                                  "format": "date",
+                                  "type": "string"
+                                },
                                 "updatedOn": {
                                     "format": "date-time",
                                     "type": "string"
@@ -1575,6 +1602,7 @@ fn test_operations_macro_attributes() {
                                 }
                             },
                             "required":[
+                                "birthday",
                                 "class",
                                 "name"
                             ]
@@ -1871,6 +1899,10 @@ fn test_errors_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1880,7 +1912,7 @@ fn test_errors_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -2028,6 +2060,10 @@ fn test_security_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -2037,7 +2073,7 @@ fn test_security_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
