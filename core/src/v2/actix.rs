@@ -278,9 +278,7 @@ impl OperationModifier for actix_multipart::Multipart {
 }
 
 #[cfg(feature = "actix-session")]
-impl OperationModifier for actix_session::Session {
-    fn update_parameter(_op: &mut DefaultOperationRaw) {}
-}
+impl OperationModifier for actix_session::Session {}
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     #[cfg(feature = "nightly")]

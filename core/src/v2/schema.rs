@@ -130,6 +130,9 @@ pub trait TypedData {
 }
 
 macro_rules! impl_type_simple {
+    ($ty:ty) => {
+        impl TypedData for $ty {}
+    };
     ($ty:ty, $dt:expr) => {
         impl TypedData for $ty {
             fn data_type() -> DataType {
@@ -191,11 +194,7 @@ impl_type_simple!(
     DataTypeFormat::Binary
 );
 #[cfg(feature = "actix-session")]
-impl_type_simple!(
-    actix_session::Session,
-    DataType::File,
-    DataTypeFormat::Binary
-);
+impl_type_simple!(actix_session::Session);
 #[cfg(feature = "chrono")]
 impl_type_simple!(
     chrono::NaiveDateTime,
