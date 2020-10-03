@@ -38,7 +38,7 @@ pub trait OperationModifier: Apiv2Schema + Sized {
         update_security::<Self>(op);
     }
 
-    /// Update the security defition map (if needed).
+    /// Update the security definition map (if needed).
     fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
         update_security_definitions::<Self>(map);
     }
@@ -275,6 +275,11 @@ impl OperationModifier for actix_multipart::Multipart {
             ..Default::default()
         }));
     }
+}
+
+#[cfg(feature = "actix-session")]
+impl OperationModifier for actix_session::Session {
+    fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
 }
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
