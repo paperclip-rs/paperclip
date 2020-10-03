@@ -256,9 +256,9 @@ where
         self
     }
 
-    /// Mounts the specification for all operations and definitions
-    /// recorded by the wrapper and serves them in the given path
-    /// as a JSON with Swagger UI.
+    /// Exposes the previously built JSON specification with Swagger UI at the given path
+    ///
+    /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
     #[cfg(feature = "swagger-ui")]
     pub fn with_swagger_ui_at(mut self, path: &str) -> Self {
         self.inner = match self.spec_path.clone() {
