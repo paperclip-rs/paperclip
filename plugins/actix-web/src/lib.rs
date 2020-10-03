@@ -25,6 +25,7 @@ use std::sync::Arc;
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
+    spec_path: Option<String>,
     inner: Option<actix_web::App<T, B>>,
 }
 
@@ -43,6 +44,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
     fn wrap_api(self) -> Self::Wrapper {
         App {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
+            spec_path: None,
             inner: Some(self),
         }
     }
@@ -207,6 +209,7 @@ where
     {
         App {
             spec: self.spec,
+            spec_path: self.spec_path,
             inner: self.inner.take().map(|a| a.wrap(mw)),
         }
     }
@@ -234,6 +237,7 @@ where
     {
         App {
             spec: self.spec,
+            spec_path: self.spec_path,
             inner: self.inner.take().map(|a| a.wrap_fn(mw)),
         }
     }
@@ -242,6 +246,7 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_at(mut self, path: &str) -> Self {
+        self.spec_path = Some(path.to_owned());
         self.inner = self.inner.take().map(|a| {
             a.service(
                 actix_web::web::resource(path)
@@ -256,16 +261,23 @@ where
     /// as a JSON with Swagger UI.
     #[cfg(feature = "swagger-ui")]
     pub fn with_swagger_ui_at(mut self, path: &str) -> Self {
-        self.inner = self.inner.take().map(|a| {
-            a.service(
-                actix_web::web::resource(path)
-                    .route(actix_web::web::get().to(SpecHandler(self.spec.clone()))),
-            )
-            .service(
-                actix_web::web::resource(path.to_owned() + "/swagger-ui.html")
-                    .route(actix_web::web::get().to(SwaggerUIHandler(path.to_string()))),
-            )
-        });
+        self.inner = match self.spec_path.clone() {
+            Some(spec_path) => self.inner.take().map(|a| {
+                a.service(
+                    actix_web::web::resource(path.to_owned())
+                        .route(actix_web::web::get().to(SwaggerUIHandler(spec_path))),
+                )
+            }),
+            None => self.inner.take().map(|a| {
+                a.service(actix_web::web::resource(path.to_owned()).route(
+                    actix_web::web::get().to(|| {
+                        HttpResponse::NotFound().body(
+                            "JSON specification not found.\nYou have to run with_json_spec_at(path) first.",
+                        )
+                    }),
+                ))
+            }),
+        };
         self
     }
 
