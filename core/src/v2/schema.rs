@@ -449,5 +449,5 @@ pub trait Apiv2Errors {
 }
 
 impl Apiv2Errors for () {}
-#[cfg(feature = "actix")]
+#[cfg(feature = "actix-base")]
 impl Apiv2Errors for actix_web::Error {}

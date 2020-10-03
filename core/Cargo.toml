@@ -10,8 +10,8 @@ homepage = "https://github.com/wafflespeanut/paperclip"
 repository = "https://github.com/wafflespeanut/paperclip"
 
 [dependencies]
-actix-web = { version = ">=2.0,<4", optional = true, default-features = false }
-actix-http = { version = ">=1.0,<3", optional = true }
+actix-web2 = { version = "2", optional = true, default-features = false, package = "actix-web" }
+actix-web3 = { version = "3", optional = true, default-features = false, package = "actix-web" }
 actix-multipart = { version = "0", optional = true }
 actix-session = { version = "0", optional = true }
 chrono = { version = "0", optional = true }
@@ -32,7 +32,15 @@ thiserror = "1.0"
 serde_qs = { version = "0", optional = true }
 
 [features]
-actix = ["v2", "actix-http", "actix-web", "pin-project"]
-codegen = ["v2", "heck", "log"]
+# actix-web support
+actix = ["actix3"]
+actix2 = ["actix-base", "actix-web2"]
+actix3 = ["actix-base", "actix-web3"]
+actix-base = ["v2", "pin-project"]
+
+# Enable nightly if nightly compiler can be allowed
 nightly = ["paperclip-macros/nightly"]
+
+# OpenAPI support (v2 and codegen)
 v2 = ["paperclip-macros/v2"]
+codegen = ["v2", "heck", "log"]

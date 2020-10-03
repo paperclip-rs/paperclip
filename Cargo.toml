@@ -44,8 +44,8 @@ once_cell = "1.4"
 
 [dev-dependencies]
 actix-rt = "1"
-actix-service = "1.0"
-actix-web = { version = ">=2.0,<4", default-features = false }
+actix-service = "1"
+actix-web = { version = "3", default-features = false }
 chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
 futures = "0.3"
 uuid_dev = { version = "0.8", features = ["serde"], package = "uuid" }
@@ -55,8 +55,16 @@ insta = "1.0"
 env_logger = "0.7"
 
 [features]
-actix = ["paperclip-macros/actix", "paperclip-actix", "v2"]
-actix-nightly = ["actix", "paperclip-actix/nightly", "v2"]
+# actix-web support
+actix = ["actix3"]
+actix-nightly = ["actix3-nightly"]
+actix3-nightly = ["actix3", "paperclip-actix/nightly"]
+actix2-nightly = ["actix2", "paperclip-actix/nightly"]
+actix2 = ["actix-base", "paperclip-actix/actix2"]
+actix3 = ["actix-base", "paperclip-actix/actix3"]
+actix-base = ["v2", "paperclip-macros/actix"]
+
+# OpenAPI support (v2 and codegen)
 cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
 codegen = ["heck", "http", "log", "regex", "tinytemplate", "paperclip-core/codegen"]
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]

@@ -1,7 +1,7 @@
 //! Core types and traits associated with the
 //! [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
 
-#[cfg(feature = "actix")]
+#[cfg(feature = "actix-base")]
 mod actix;
 mod extensions;
 pub mod models;
@@ -9,7 +9,7 @@ pub mod models;
 mod resolver;
 pub mod schema;
 
-#[cfg(feature = "actix")]
+#[cfg(feature = "actix-base")]
 pub use self::actix::{OperationModifier, ResponderWrapper, ResponseWrapper};
 
 pub use self::models::{DefaultSchema, ResolvableApi};

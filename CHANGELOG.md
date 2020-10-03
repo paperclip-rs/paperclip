@@ -14,6 +14,7 @@ and `operation_id` in macro.
 ### Changed
 - Actix plugin: Internals of `#[api_v2_operation]` proc macro (long-outstanding technical debt). This now generates operation metadata (on the fly) for each handler, which enables us to tie custom changes to operations easily.
 - Actix plugin: Grouping of parameters across handlers have been disabled as a result of major bugs (it's now under `normalize` feature).
+- Actix plugin: actix-web `2.x` is supported through `actix2` and `actix2-nightly` features.
 
 ### Fixed
 - `Apiv2Schema` supports `HashMap<Uuid, Foo>`.

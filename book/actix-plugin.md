@@ -8,7 +8,7 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
-# actix-web 2.0 is also supported
+# actix-web 2.0 is supported through "actix2" and "actix2-nightly" features
 actix-web = "3.0"
 # The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
