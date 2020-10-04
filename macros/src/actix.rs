@@ -845,14 +845,12 @@ fn handle_field_struct(
             field_name = prop.rename(&field_name);
         }
 
-        let flatten = SerdeFlatten::from_field_attrs(&field.attrs);
-
         let (ty_ref, is_required) = get_field_type(&field);
 
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
 
-        let mut gen = if !flatten {
+        let mut gen = if !SerdeFlatten::exists(&field.attrs) {
             quote!({
                 let mut s = #ty_ref::raw_schema();
                 if !#docs.is_empty() {
@@ -1069,9 +1067,8 @@ impl SerdeProps {
 struct SerdeFlatten;
 
 impl SerdeFlatten {
-    /// Traverses the field attributes and returns the renamed value from the first matching
-    /// `#[serde(rename = "...")]` pattern.
-    fn from_field_attrs(field_attrs: &[Attribute]) -> bool {
+    /// Traverses the field attributes and returns true if there is `#[serde(flatten)]`.
+    fn exists(field_attrs: &[Attribute]) -> bool {
         for meta in field_attrs.iter().filter_map(|a| a.parse_meta().ok()) {
             let inner_meta = match meta {
                 Meta::List(ref l)
