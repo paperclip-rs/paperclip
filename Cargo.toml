@@ -92,3 +92,7 @@ required-features = ["v2", "codegen"]
 [[test]]
 name = "test_errors"
 required-features = ["v2", "codegen"]
+
+[[test]]
+name = "test_app"
+required-features = ["cli", "actix", "uuid", "chrono"]

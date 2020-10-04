@@ -988,6 +988,169 @@ fn test_map_in_out() {
 }
 
 #[test]
+fn test_serde_flatten() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct PagedQuery {
+        /// First image number to return
+        offset: Option<i32>,
+        /// Return number of images
+        size: Option<i32>,
+    };
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct Paging {
+        /// Starting image number
+        offset: i32,
+        /// Total images found
+        total: i32,
+        /// Page size
+        size: i32,
+    };
+
+    #[derive(Serialize, Apiv2Schema)]
+    struct Image {
+        data: String,
+        id: Uuid,
+        time: chrono_dev::DateTime<chrono_dev::Utc>,
+    }
+
+    /// Images response with paging information embedded
+    #[derive(Serialize, Apiv2Schema)]
+    struct Images {
+        data: Vec<Image>,
+        #[serde(flatten)]
+        paging: Paging,
+    }
+
+    /// Query images from library by name
+    #[derive(Deserialize, Apiv2Schema)]
+    struct ImagesQuery {
+        #[serde(flatten)]
+        paging: PagedQuery,
+        name: Option<String>,
+    }
+
+    #[api_v2_operation]
+    async fn some_images(_filter: web::Query<ImagesQuery>) -> Result<web::Json<Images>, ()> {
+        #[allow(unreachable_code)]
+        if _filter.paging.offset.is_some() && _filter.name.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images").route(web::get().to(some_images)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Images": {
+                          "properties": {
+                            "data": {
+                              "items": {
+                                "properties": {
+                                  "data": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "format": "uuid",
+                                    "type": "string"
+                                  },
+                                  "time": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "data",
+                                  "id",
+                                  "time"
+                                ]
+                              },
+                              "type": "array"
+                            },
+                            "offset": {
+                              "description": "Starting image number",
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "size": {
+                              "description": "Page size",
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "total": {
+                              "description": "Total images found",
+                              "format": "int32",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "data",
+                            "paging"
+                          ]
+                        }
+                      },
+                      "info": {
+                        "title": "",
+                        "version": ""
+                      },
+                      "paths": {
+                        "/images": {
+                          "get": {
+                            "parameters": [
+                              {
+                                "in": "query",
+                                "name": "name",
+                                "type": "string"
+                              },
+                              {
+                                "description": "First image number to return",
+                                "format": "int32",
+                                "in": "query",
+                                "name": "offset",
+                                "type": "integer"
+                              },
+                              {
+                                "description": "Return number of images",
+                                "format": "int32",
+                                "in": "query",
+                                "name": "size",
+                                "type": "integer"
+                              }
+                            ],
+                            "responses": {
+                              "200": {
+                                "description": "OK",
+                                "schema": {
+                                  "$ref": "#/definitions/Images"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
 fn test_list_in_out() {
     #[derive(Serialize, Deserialize, Apiv2Schema)]
     enum Sort {
