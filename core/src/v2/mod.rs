@@ -10,7 +10,9 @@ mod resolver;
 pub mod schema;
 
 #[cfg(feature = "actix-base")]
-pub use self::actix::{OperationModifier, ResponderWrapper, ResponseWrapper};
+pub use self::actix::{
+    AcceptedJson, CreatedJson, NoContent, OperationModifier, ResponderWrapper, ResponseWrapper,
+};
 
 pub use self::models::{DefaultSchema, ResolvableApi};
 pub use self::schema::Schema;

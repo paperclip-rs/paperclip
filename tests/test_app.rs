@@ -10,7 +10,8 @@ use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::actix::{
-    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
+    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
+    OpenApiExt,
 };
 use parking_lot::Mutex;
 
@@ -100,10 +101,23 @@ fn test_simple_app() {
         fut_ok(unimplemented!())
     }
 
+    #[api_v2_operation]
+    async fn adopt_pet() -> Result<CreatedJson<Pet>, ()> {
+        let pet: Pet = Pet::default();
+        Ok(CreatedJson(pet))
+    }
+
+    #[api_v2_operation]
+    async fn nothing() -> NoContent {
+        NoContent
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
             .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
             .service(web::resource("/async_echo_2").route(web::post().to(echo_pet_async_2)))
+            .service(web::resource("/adopt").route(web::post().to(adopt_pet)))
+            .service(web::resource("/nothing").route(web::get().to(nothing)))
             .service(web::resource("/random").to(some_pet));
     }
 
@@ -288,7 +302,28 @@ fn test_simple_app() {
                           }
                         }
                       }
-                    }
+                    },
+                    "/api/adopt": {
+                      "post": {
+                        "responses": {
+                          "201": {
+                            "description": "Created",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/api/nothing": {
+                      "get": {
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
+                          }
+                        }
+                      }
+                    },
                   },
                   "swagger": "2.0"
                 }),
