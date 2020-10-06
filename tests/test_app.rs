@@ -354,7 +354,7 @@ fn test_params() {
     #[derive(Deserialize, Apiv2Schema)]
     struct BadgeParams {
         res: Option<u16>,
-        color: String,
+        colors: Vec<String>,
     }
 
     #[derive(Deserialize, Apiv2Schema)]
@@ -531,9 +531,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -561,9 +564,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -591,9 +597,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -621,9 +630,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -651,9 +663,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -681,9 +696,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -717,9 +735,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -809,9 +830,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",

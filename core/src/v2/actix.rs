@@ -2,8 +2,8 @@
 use super::schema::TypedData;
 use super::{
     models::{
-        DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
-        Response, SecurityScheme,
+        DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Items, Parameter,
+        ParameterIn, Response, SecurityScheme,
     },
     schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema},
 };
@@ -324,11 +324,20 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                 op.parameters.push(Either::Right(Parameter {
                     in_: ParameterIn::$container,
                     required: def.required.contains(&k),
-                    name: k,
                     data_type: v.data_type,
                     format: v.format,
                     enum_: v.enum_,
                     description: v.description,
+                    items: v.items.as_ref().map(|schema| {
+                        Items {
+                            data_type: schema.data_type.clone(),
+                            format: schema.format.clone(),
+                            // collection_format, // this defaults to csv
+                            enum_: schema.enum_.clone(),
+                            ..Default::default() // range fields are not emitted
+                        }
+                    }),
+                    name: k,
                     ..Default::default()
                 }));
             }
