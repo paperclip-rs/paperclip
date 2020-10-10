@@ -1299,7 +1299,7 @@ fn test_tags() {
         id: u64,
     }
 
-    #[api_v2_operation(tags = "cats,dogs")]
+    #[api_v2_operation(tags(Cats, Dogs))]
     fn some_pets_images() -> impl Future<Output = web::Json<Vec<Image>>> {
         ready(web::Json(Vec::new()))
     }
@@ -1309,17 +1309,17 @@ fn test_tags() {
             let mut spec = DefaultApiRaw::default();
             spec.tags = vec![
                 Tag {
-                    name: "dogs".to_string(),
+                    name: "Dogs".to_string(),
                     description: Some("Images of dogs".to_string()),
                     external_docs: None,
                 },
                 Tag {
-                    name: "cats".to_string(),
+                    name: "Cats".to_string(),
                     description: Some("Images of cats".to_string()),
                     external_docs: None,
                 },
                 Tag {
-                    name: "cars".to_string(),
+                    name: "Cars".to_string(),
                     description: Some("Images of nice cars".to_string()),
                     external_docs: None,
                 },
@@ -1380,10 +1380,7 @@ fn test_tags() {
                                     }
                                 }
                                 },
-                                "tags":[
-                                "cats",
-                                "dogs"
-                                ]
+                                "tags":[ "Cats", "Dogs" ]
                             }
                         }
                     },
@@ -1391,15 +1388,15 @@ fn test_tags() {
                     "tags":[
                         {
                             "description":"Images of dogs",
-                            "name":"dogs"
+                            "name":"Dogs"
                         },
                         {
                             "description":"Images of cats",
-                            "name":"cats"
+                            "name":"Cats"
                         },
                         {
                             "description":"Images of nice cars",
-                            "name":"cars"
+                            "name":"Cars"
                         }
                     ]
                 }),

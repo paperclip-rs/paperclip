@@ -11,8 +11,8 @@ use syn::spanned::Spanned;
 use syn::{
     punctuated::{Pair, Punctuated},
     Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
-    Generics, Ident, ItemFn, Lit, Meta, MetaNameValue, NestedMeta, PathArguments, ReturnType,
-    Token, TraitBound, Type, TypeTraitObject,
+    Generics, Ident, ItemFn, Lit, Meta, MetaList, MetaNameValue, NestedMeta, Path, PathArguments,
+    ReturnType, Token, TraitBound, Type, TypeTraitObject,
 };
 
 use std::collections::HashMap;
@@ -278,22 +278,6 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                             )
                         }
                     }
-                    "tags" => {
-                        if let Lit::Str(tags) = lit {
-                            let tags = tags.value();
-                            let tags: Vec<_> = tags.split(',').collect();
-                            if !tags.is_empty() {
-                                params.push(ident.clone());
-                                values.push(quote!(vec![#( #tags.to_string() ),*]));
-                            }
-                        } else {
-                            emit_error!(
-                                lit.span(),
-                                "Expected comma separated list of tags in string literal: {:?}",
-                                lit
-                            )
-                        }
-                    }
                     x => emit_error!(ident.span(), "Unknown attribute {}", x),
                 }
             } else {
@@ -302,6 +286,30 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                     "Expected single identifier, got path {:?}",
                     path
                 )
+            }
+        } else if let NestedMeta::Meta(Meta::List(MetaList { path, nested, .. })) = &attr {
+            if let Some(ident) = path.get_ident() {
+                match ident.to_string().as_str() {
+                    "tags" => {
+                        let mut tags = Vec::new();
+                        for meta in nested.pairs().map(|pair| pair.into_value()) {
+                            if let NestedMeta::Meta(Meta::Path(Path { segments, .. })) = meta {
+                                tags.push(segments[0].ident.to_string());
+                            } else {
+                                emit_error!(
+                                    meta.span(),
+                                    "Expected comma separated list of tags idents: {:?}",
+                                    meta
+                                )
+                            }
+                        }
+                        if !tags.is_empty() {
+                            params.push(ident.clone());
+                            values.push(quote!(vec![ #( #tags.to_string() ),* ]));
+                        }
+                    }
+                    x => emit_error!(ident.span(), "Unknown list ident {}", x),
+                }
             }
         } else {
             emit_error!(attr.span(), "Not supported attribute type {:?}", attr)
