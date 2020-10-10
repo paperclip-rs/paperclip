@@ -10,7 +10,8 @@ use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::actix::{
-    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
+    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
+    OpenApiExt,
 };
 use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use parking_lot::Mutex;
@@ -40,6 +41,7 @@ struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
+    birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
     #[serde(rename = "uuid")]
     uid: Option<uuid_dev::Uuid>,
@@ -50,6 +52,7 @@ impl Default for Pet {
         Self {
             name: "".to_string(),
             class: PetClass::EverythingElse,
+            birthday: chrono_dev::NaiveDate::from_ymd(2012, 3, 10),
             id: None,
             updated_on: None,
             uid: None,
@@ -99,10 +102,23 @@ fn test_simple_app() {
         fut_ok(unimplemented!())
     }
 
+    #[api_v2_operation]
+    async fn adopt_pet() -> Result<CreatedJson<Pet>, ()> {
+        let pet: Pet = Pet::default();
+        Ok(CreatedJson(pet))
+    }
+
+    #[api_v2_operation]
+    async fn nothing() -> NoContent {
+        NoContent
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
             .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
             .service(web::resource("/async_echo_2").route(web::post().to(echo_pet_async_2)))
+            .service(web::resource("/adopt").route(web::post().to(adopt_pet)))
+            .service(web::resource("/nothing").route(web::get().to(nothing)))
             .service(web::resource("/random").to(some_pet));
     }
 
@@ -139,6 +155,10 @@ fn test_simple_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -148,7 +168,7 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -283,7 +303,28 @@ fn test_simple_app() {
                           }
                         }
                       }
-                    }
+                    },
+                    "/api/adopt": {
+                      "post": {
+                        "responses": {
+                          "201": {
+                            "description": "Created",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/api/nothing": {
+                      "get": {
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
+                          }
+                        }
+                      }
+                    },
                   },
                   "swagger": "2.0"
                 }),
@@ -444,10 +485,8 @@ fn test_params() {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
-                                    "type": "object"
                                 },
                                 "yaml": {
-                                    "type": "object"
                                 }
                             }
                         },
@@ -455,7 +494,6 @@ fn test_params() {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
-                                    "type": "object"
                                 }
                             }
                         }
@@ -986,6 +1024,169 @@ fn test_map_in_out() {
 }
 
 #[test]
+fn test_serde_flatten() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct PagedQuery {
+        /// First image number to return
+        offset: Option<i32>,
+        /// Return number of images
+        size: Option<i32>,
+    };
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct Paging {
+        /// Starting image number
+        offset: i32,
+        /// Total images found
+        total: i32,
+        /// Page size
+        size: i32,
+    };
+
+    #[derive(Serialize, Apiv2Schema)]
+    struct Image {
+        data: String,
+        id: Uuid,
+        time: chrono_dev::DateTime<chrono_dev::Utc>,
+    }
+
+    /// Images response with paging information embedded
+    #[derive(Serialize, Apiv2Schema)]
+    struct Images {
+        data: Vec<Image>,
+        #[serde(flatten)]
+        paging: Paging,
+    }
+
+    /// Query images from library by name
+    #[derive(Deserialize, Apiv2Schema)]
+    struct ImagesQuery {
+        #[serde(flatten)]
+        paging: PagedQuery,
+        name: Option<String>,
+    }
+
+    #[api_v2_operation]
+    async fn some_images(_filter: web::Query<ImagesQuery>) -> Result<web::Json<Images>, ()> {
+        #[allow(unreachable_code)]
+        if _filter.paging.offset.is_some() && _filter.name.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images").route(web::get().to(some_images)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Images": {
+                          "properties": {
+                            "data": {
+                              "items": {
+                                "properties": {
+                                  "data": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "format": "uuid",
+                                    "type": "string"
+                                  },
+                                  "time": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "data",
+                                  "id",
+                                  "time"
+                                ]
+                              },
+                              "type": "array"
+                            },
+                            "offset": {
+                              "description": "Starting image number",
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "size": {
+                              "description": "Page size",
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "total": {
+                              "description": "Total images found",
+                              "format": "int32",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "data",
+                            "paging"
+                          ]
+                        }
+                      },
+                      "info": {
+                        "title": "",
+                        "version": ""
+                      },
+                      "paths": {
+                        "/images": {
+                          "get": {
+                            "parameters": [
+                              {
+                                "in": "query",
+                                "name": "name",
+                                "type": "string"
+                              },
+                              {
+                                "description": "First image number to return",
+                                "format": "int32",
+                                "in": "query",
+                                "name": "offset",
+                                "type": "integer"
+                              },
+                              {
+                                "description": "Return number of images",
+                                "format": "int32",
+                                "in": "query",
+                                "name": "size",
+                                "type": "integer"
+                              }
+                            ],
+                            "responses": {
+                              "200": {
+                                "description": "OK",
+                                "schema": {
+                                  "$ref": "#/definitions/Images"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
 fn test_list_in_out() {
     #[derive(Serialize, Deserialize, Apiv2Schema)]
     enum Sort {
@@ -1039,6 +1240,10 @@ fn test_list_in_out() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1048,7 +1253,7 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1276,6 +1481,10 @@ fn test_impl_traits() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1285,7 +1494,7 @@ fn test_impl_traits() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1391,6 +1600,10 @@ fn test_operation_with_generics() {
                                  "description":"Pick a good one.",
                                  "type":"string"
                               },
+                              "birthday": {
+                                "format": "date",
+                                "type": "string"
+                              },
                               "updatedOn":{
                                  "format":"date-time",
                                  "type":"string"
@@ -1401,6 +1614,7 @@ fn test_operation_with_generics() {
                               }
                            },
                            "required":[
+                             "birthday",
                               "class",
                               "name"
                            ]
@@ -1548,6 +1762,10 @@ fn test_operations_documentation() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1557,7 +1775,7 @@ fn test_operations_documentation() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -1683,6 +1901,10 @@ fn test_operations_macro_attributes() {
                                     "description": "Pick a good one.",
                                     "type": "string"
                                 },
+                                "birthday": {
+                                  "format": "date",
+                                  "type": "string"
+                                },
                                 "updatedOn": {
                                     "format": "date-time",
                                     "type": "string"
@@ -1693,6 +1915,7 @@ fn test_operations_macro_attributes() {
                                 }
                             },
                             "required":[
+                                "birthday",
                                 "class",
                                 "name"
                             ]
@@ -1989,6 +2212,10 @@ fn test_errors_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1998,7 +2225,7 @@ fn test_errors_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {
@@ -2146,6 +2373,10 @@ fn test_security_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -2155,7 +2386,7 @@ fn test_security_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"]
                     }
                   },
                   "paths": {

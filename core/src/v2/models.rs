@@ -10,8 +10,8 @@ use once_cell::sync::Lazy;
 use paperclip_macros::api_v2_schema_struct;
 use regex::{Captures, Regex};
 
-#[cfg(feature = "actix")]
-use actix_http::http::Method;
+#[cfg(feature = "actix-base")]
+use actix_web::http::Method;
 
 use parking_lot::RwLock;
 use std::borrow::Cow;
@@ -50,11 +50,12 @@ pub enum DataType {
 
 impl DataType {
     /// Checks if this is a primitive type.
+    #[inline]
     pub fn is_primitive(self) -> bool {
-        match self {
-            DataType::Integer | DataType::Number | DataType::String | DataType::Boolean => true,
-            _ => false,
-        }
+        std::matches!(
+            self,
+            DataType::Integer | DataType::Number | DataType::String | DataType::Boolean
+        )
     }
 }
 
@@ -750,10 +751,7 @@ pub enum HttpMethod {
 impl HttpMethod {
     /// Whether this method allows body in requests.
     pub fn allows_body(self) -> bool {
-        match self {
-            HttpMethod::Post | HttpMethod::Put | HttpMethod::Patch => true,
-            _ => false,
-        }
+        std::matches!(self, HttpMethod::Post | HttpMethod::Put | HttpMethod::Patch)
     }
 }
 
@@ -838,7 +836,7 @@ impl Default for SpecFormat {
     }
 }
 
-#[cfg(feature = "actix")]
+#[cfg(feature = "actix-base")]
 impl From<&Method> for HttpMethod {
     fn from(method: &Method) -> HttpMethod {
         match method.as_str() {

@@ -5,16 +5,20 @@ use super::models::{
 #[cfg(feature = "actix-multipart")]
 use super::schema::TypedData;
 use super::schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema};
+use crate::util::{ready, Ready};
 use actix_web::{
+    http::StatusCode,
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
-    HttpRequest, HttpResponse, Responder,
+    Error, HttpRequest, HttpResponse, Responder,
 };
 use pin_project::pin_project;
 
+use serde::Serialize;
 #[cfg(feature = "serde_qs")]
 use serde_qs::actix::QsQuery;
 
 use std::collections::BTreeMap;
+use std::fmt;
 use std::future::Future;
 use std::pin::Pin;
 use std::task::{Context, Poll};
@@ -38,7 +42,7 @@ pub trait OperationModifier: Apiv2Schema + Sized {
         update_security::<Self>(op);
     }
 
-    /// Update the security defition map (if needed).
+    /// Update the security definition map (if needed).
     fn update_security_definitions(map: &mut BTreeMap<String, SecurityScheme>) {
         update_security_definitions::<Self>(map);
     }
@@ -275,6 +279,11 @@ impl OperationModifier for actix_multipart::Multipart {
             ..Default::default()
         }));
     }
+}
+
+#[cfg(feature = "actix-session")]
+impl OperationModifier for actix_session::Session {
+    fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
 }
 
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
@@ -514,5 +523,122 @@ where
 {
     if let (Some(name), Some(new)) = (T::NAME, T::security_scheme()) {
         new.update_definitions(name, map);
+    }
+}
+
+macro_rules! json_with_status {
+    ($name:ident => $status:expr) => {
+        pub struct $name<T: Serialize + Apiv2Schema>(pub T);
+
+        impl<T> fmt::Debug for $name<T>
+        where
+            T: fmt::Debug + Serialize + Apiv2Schema,
+        {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                let status: StatusCode = $status;
+                let status_str = status.canonical_reason().unwrap_or(status.as_str());
+                write!(f, "{} Json: {:?}", status_str, self.0)
+            }
+        }
+
+        impl<T> fmt::Display for $name<T>
+        where
+            T: fmt::Display + Serialize + Apiv2Schema,
+        {
+            fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+                fmt::Display::fmt(&self.0, f)
+            }
+        }
+
+        impl<T> Responder for $name<T>
+        where
+            T: Serialize + Apiv2Schema,
+        {
+            type Error = Error;
+            type Future = Ready<Result<HttpResponse, Error>>;
+
+            fn respond_to(self, _: &HttpRequest) -> Self::Future {
+                let status: StatusCode = $status;
+                let body = match serde_json::to_string(&self.0) {
+                    Ok(body) => body,
+                    Err(e) => return ready(Err(e.into())),
+                };
+
+                ready(Ok(HttpResponse::build(status)
+                    .content_type("application/json")
+                    .body(body)))
+            }
+        }
+
+        impl<T> Apiv2Schema for $name<T>
+        where
+            T: Serialize + Apiv2Schema,
+        {
+            const NAME: Option<&'static str> = T::NAME;
+
+            fn raw_schema() -> DefaultSchemaRaw {
+                T::raw_schema()
+            }
+        }
+
+        impl<T> OperationModifier for $name<T>
+        where
+            T: Serialize + Apiv2Schema,
+        {
+            fn update_response(op: &mut DefaultOperationRaw) {
+                let status: StatusCode = $status;
+                op.responses.insert(
+                    status.as_str().into(),
+                    Either::Right(Response {
+                        description: status.canonical_reason().map(ToString::to_string),
+                        schema: Some({
+                            let mut def = T::schema_with_ref();
+                            def.retain_ref();
+                            def
+                        }),
+                        ..Default::default()
+                    }),
+                );
+            }
+        }
+    };
+}
+
+json_with_status!(CreatedJson => StatusCode::CREATED);
+json_with_status!(AcceptedJson => StatusCode::ACCEPTED);
+
+#[derive(Debug)]
+pub struct NoContent;
+
+impl fmt::Display for NoContent {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        f.write_str("No Content")
+    }
+}
+
+impl Responder for NoContent {
+    type Error = Error;
+    type Future = Ready<Result<HttpResponse, Error>>;
+
+    fn respond_to(self, _: &HttpRequest) -> Self::Future {
+        ready(Ok(HttpResponse::build(StatusCode::NO_CONTENT)
+            .content_type("application/json")
+            .finish()))
+    }
+}
+
+impl Apiv2Schema for NoContent {}
+
+impl OperationModifier for NoContent {
+    fn update_response(op: &mut DefaultOperationRaw) {
+        let status = StatusCode::NO_CONTENT;
+        op.responses.insert(
+            status.as_str().into(),
+            Either::Right(Response {
+                description: status.canonical_reason().map(ToString::to_string),
+                schema: None,
+                ..Default::default()
+            }),
+        );
     }
 }

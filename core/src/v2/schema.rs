@@ -130,6 +130,9 @@ pub trait TypedData {
 }
 
 macro_rules! impl_type_simple {
+    ($ty:ty) => {
+        impl TypedData for $ty {}
+    };
     ($ty:ty, $dt:expr) => {
         impl TypedData for $ty {
             fn data_type() -> DataType {
@@ -182,20 +185,23 @@ impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
-impl_type_simple!(serde_json::Value, DataType::Object);
-impl_type_simple!(serde_yaml::Value, DataType::Object);
+
 #[cfg(feature = "actix-multipart")]
 impl_type_simple!(
     actix_multipart::Multipart,
     DataType::File,
     DataTypeFormat::Binary
 );
+#[cfg(feature = "actix-session")]
+impl_type_simple!(actix_session::Session);
 #[cfg(feature = "chrono")]
 impl_type_simple!(
     chrono::NaiveDateTime,
     DataType::String,
     DataTypeFormat::DateTime
 );
+#[cfg(feature = "chrono")]
+impl_type_simple!(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
 #[cfg(feature = "rust_decimal")]
 impl_type_simple!(
     rust_decimal::Decimal,
@@ -213,6 +219,16 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
     }
     fn format() -> Option<DataTypeFormat> {
         Some(DataTypeFormat::DateTime)
+    }
+}
+
+#[cfg(feature = "chrono")]
+impl<T: chrono::offset::TimeZone> TypedData for chrono::Date<T> {
+    fn data_type() -> DataType {
+        DataType::String
+    }
+    fn format() -> Option<DataTypeFormat> {
+        Some(DataTypeFormat::Date)
     }
 }
 
@@ -254,6 +270,8 @@ pub trait Apiv2Schema {
         let mut def = Self::raw_schema();
         if let Some(n) = Self::NAME {
             def.reference = Some(String::from("#/definitions/") + n);
+        } else if let Some(n) = def.name.as_ref() {
+            def.reference = Some(String::from("#/definitions/") + n);
         }
         if !Self::DESCRIPTION.is_empty() {
             def.description = Some(Self::DESCRIPTION.to_owned());
@@ -269,6 +287,8 @@ pub trait Apiv2Schema {
 }
 
 impl Apiv2Schema for () {}
+impl Apiv2Schema for serde_json::Value {}
+impl Apiv2Schema for serde_yaml::Value {}
 
 impl<T: TypedData> Apiv2Schema for T {
     fn raw_schema() -> DefaultSchemaRaw {
@@ -429,5 +449,5 @@ pub trait Apiv2Errors {
 }
 
 impl Apiv2Errors for () {}
-#[cfg(feature = "actix")]
+#[cfg(feature = "actix-base")]
 impl Apiv2Errors for actix_web::Error {}

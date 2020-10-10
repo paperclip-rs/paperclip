@@ -8,7 +8,7 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
-# actix-web 2.0 is also supported
+# actix-web 2.0 is supported through "actix2" and "actix2-nightly" features
 actix-web = "3.0"
 # The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
@@ -203,7 +203,29 @@ This can be overridden by explicitly specifying `summary` and `description` in t
 async fn my_handler() -> Json<Foo> { /* */ }
 ```
 
-#### Manually defining additional response codes
+#### Using other (non-200) response codes
+
+Paperclip finds out the schema of your api using macros which read the types of the handlers and parameter structs at compile time, so in order for paperclip to know what response code the api sends, it needs type information about it, it is not sufficient to store the code in the response. There are newtypes encoding this information for the most common 2xx codes (OK, created, accepted) for Json responses and no content.
+
+```rust
+use paperclip::actix::web::Json;
+use paperclip::actix::{CreatedJson, AcceptedJson, NoContent};
+
+// 201 Created 
+#[api_v2_operation]
+async fn adopt_pet(body: Json<Pet>) -> Result<CreatedJson<Pet>, ()> {
+    let pet: Pet = body.into_inner();
+    // bring the pet home
+    Ok(CreatedJson(pet))
+}
+// 204 No Content
+#[api_v2_operation]
+async fn acknowledge_pet(body: Json<Pet>) -> NoContent {
+    NoContent
+}
+```
+
+#### Manually defining error response codes
 
 There is a macro `api_v2_errors` which helps to manually add error (non-2xx) response codes.
 
