@@ -13,6 +13,7 @@ use paperclip::actix::{
     api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
     OpenApiExt,
 };
+use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -1284,6 +1285,120 @@ fn test_list_in_out() {
                     }
                   },
                   "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_tags() {
+    #[derive(Serialize, Apiv2Schema)]
+    struct Image {
+        data: String,
+        id: u64,
+    }
+
+    #[api_v2_operation(tags(Cats, Dogs))]
+    fn some_pets_images() -> impl Future<Output = web::Json<Vec<Image>>> {
+        ready(web::Json(Vec::new()))
+    }
+
+    run_and_check_app(
+        || {
+            let mut spec = DefaultApiRaw::default();
+            spec.tags = vec![
+                Tag {
+                    name: "Dogs".to_string(),
+                    description: Some("Images of dogs".to_string()),
+                    external_docs: None,
+                },
+                Tag {
+                    name: "Cats".to_string(),
+                    description: Some("Images of cats".to_string()),
+                    external_docs: None,
+                },
+                Tag {
+                    name: "Cars".to_string(),
+                    description: Some("Images of nice cars".to_string()),
+                    external_docs: None,
+                },
+            ];
+            spec.info = Info {
+                version: "0.1".into(),
+                title: "Image server".into(),
+                ..Default::default()
+            };
+
+            App::new()
+                .wrap_api_with_spec(spec)
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions":{
+                        "Image":{
+                            "properties":{
+                                "data":{
+                                "type":"string"
+                                },
+                                "id":{
+                                "format":"int64",
+                                "type":"integer"
+                                }
+                            },
+                            "required":[
+                                "data",
+                                "id"
+                            ]
+                        }
+                    },
+                    "info":{
+                        "title":"Image server",
+                        "version":"0.1"
+                    },
+                    "paths":{
+                        "/images/pets":{
+                            "get":{
+                                "responses":{
+                                "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                        "items":{
+                                            "$ref":"#/definitions/Image"
+                                        },
+                                        "type":"array"
+                                    }
+                                }
+                                },
+                                "tags":[ "Cats", "Dogs" ]
+                            }
+                        }
+                    },
+                    "swagger":"2.0",
+                    "tags":[
+                        {
+                            "description":"Images of dogs",
+                            "name":"Dogs"
+                        },
+                        {
+                            "description":"Images of cats",
+                            "name":"Cats"
+                        },
+                        {
+                            "description":"Images of nice cars",
+                            "name":"Cars"
+                        }
+                    ]
                 }),
             );
         },

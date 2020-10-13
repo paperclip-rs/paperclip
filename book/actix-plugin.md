@@ -199,6 +199,7 @@ This can be overridden by explicitly specifying `summary` and `description` in t
   operation_id = "my_handler",
   consumes = "application/yaml, application/json",
   produces = "application/yaml, application/json",
+  tags(Cats, Dogs),
 )]
 async fn my_handler() -> Json<Foo> { /* */ }
 ```
@@ -295,6 +296,43 @@ struct OAuth2Access;
 #[openapi(parent = "OAuth2Access", scopes("pets.read", "pets.write"))]
 struct PetScopeAccess;
 ```
+
+#### Defining application level schema defaults
+
+It is possible to define default initial values for the schema, which might be useful to define "info",
+"schemes", "tags" and other top level schema fields which are not inherited from handlers.
+
+```rust
+let mut spec = DefaultApiRaw::default();
+spec.tags = vec![
+    Tag {
+        name: "Dogs".to_string(),
+        description: Some("Images of dogs".to_string()),
+        external_docs: None,
+    },
+    Tag {
+        name: "Cats".to_string(),
+        description: Some("Images of cats".to_string()),
+        external_docs: None,
+    },
+    Tag {
+        name: "Cars".to_string(),
+        description: Some("Images of nice cars".to_string()),
+        external_docs: None,
+    },
+];
+spec.info = Info {
+    version: "0.1".into(),
+    title: "Image server".into(),
+    ..Default::default()
+};
+App::new()
+    .wrap_api_with_spec(spec)
+    .with_json_spec_at("/api/spec")
+    .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
+    .build()
+```
+
 
 #### Known limitations
 
