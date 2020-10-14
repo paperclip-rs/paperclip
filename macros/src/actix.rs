@@ -481,27 +481,32 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let mut props_gen = quote! {};
 
     match &item_ast.data {
-        Data::Struct(ref s) => match &s.fields {
-            Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
-            Fields::Unnamed(ref f) => {
-                if f.unnamed.len() == 1 {
-                    handle_unnamed_field_struct(f, &mut props_gen)
-                } else {
+        Data::Struct(ref s) => {
+            props_gen.extend(quote!(
+                schema.data_type = Some(DataType::Object);
+            ));
+            match &s.fields {
+                Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
+                Fields::Unnamed(ref f) => {
+                    if f.unnamed.len() == 1 {
+                        handle_unnamed_field_struct(f, &mut props_gen)
+                    } else {
+                        emit_warning!(
+                            f.span().unwrap(),
+                            "tuple structs do not have named fields and hence will have empty schema.";
+                            help = "{}", &*EMPTY_SCHEMA_HELP;
+                        );
+                    }
+                }
+                Fields::Unit => {
                     emit_warning!(
-                        f.span().unwrap(),
-                        "tuple structs do not have named fields and hence will have empty schema.";
+                        s.struct_token.span().unwrap(),
+                        "unit structs do not have any fields and hence will have empty schema.";
                         help = "{}", &*EMPTY_SCHEMA_HELP;
                     );
                 }
             }
-            Fields::Unit => {
-                emit_warning!(
-                    s.struct_token.span().unwrap(),
-                    "unit structs do not have any fields and hence will have empty schema.";
-                    help = "{}", &*EMPTY_SCHEMA_HELP;
-                );
-            }
-        },
+        }
         Data::Enum(ref e) => handle_enum(e, &props, &mut props_gen),
         Data::Union(ref u) => emit_error!(
             u.union_token.span().unwrap(),

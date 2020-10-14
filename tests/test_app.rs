@@ -168,7 +168,8 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -488,14 +489,16 @@ fn test_params() {
                                 },
                                 "yaml": {
                                 }
-                            }
+                            },
+                            "type":"object"
                         },
                         "BadgeBodyPatch": {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
                                 }
-                            }
+                            },
+                            "type":"object"
                         }
                     },
                     "info": {
@@ -929,7 +932,8 @@ fn test_map_in_out() {
                                        "required":[
                                           "data",
                                           "id"
-                                       ]
+                                       ],
+                                       "type":"object"
                                     },
                                     "type":"array"
                                  },
@@ -938,7 +942,8 @@ fn test_map_in_out() {
                            },
                            "required":[
                               "folders"
-                           ]
+                           ],
+                           "type":"object"
                         },
                         "Filter":{
                            "properties":{
@@ -955,7 +960,8 @@ fn test_map_in_out() {
                            },
                            "required":[
                               "folders"
-                           ]
+                           ],
+                           "type":"object"
                         },
                         "Image":{
                            "properties":{
@@ -970,7 +976,8 @@ fn test_map_in_out() {
                            "required":[
                               "data",
                               "id"
-                           ]
+                           ],
+                           "type":"object"
                         }
                      },
                      "info":{
@@ -1114,7 +1121,8 @@ fn test_serde_flatten() {
                                   "data",
                                   "id",
                                   "time"
-                                ]
+                                ],
+                                 "type":"object"
                               },
                               "type": "array"
                             },
@@ -1137,7 +1145,8 @@ fn test_serde_flatten() {
                           "required": [
                             "data",
                             "paging"
-                          ]
+                          ],
+                          "type":"object"
                         }
                       },
                       "info": {
@@ -1253,7 +1262,8 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1359,7 +1369,8 @@ fn test_tags() {
                             "required":[
                                 "data",
                                 "id"
-                            ]
+                            ],
+                            "type":"object"
                         }
                     },
                     "info":{
@@ -1491,7 +1502,8 @@ fn test_impl_traits() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1614,7 +1626,8 @@ fn test_operation_with_generics() {
                              "birthday",
                               "class",
                               "name"
-                           ]
+                           ],
+                           "type":"object"
                         }
                      },
                      "info":{
@@ -1772,7 +1785,8 @@ fn test_operations_documentation() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1915,7 +1929,8 @@ fn test_operations_macro_attributes() {
                                 "birthday",
                                 "class",
                                 "name"
-                            ]
+                            ],
+                            "type":"object"
                         }
                     },
                     "info": {
@@ -2222,7 +2237,8 @@ fn test_errors_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -2383,7 +2399,8 @@ fn test_security_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
