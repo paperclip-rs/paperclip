@@ -1556,6 +1556,14 @@ fn test_operation_with_generics() {
         Ok(web::Json(vec![Pet::default()]))
     }
 
+    #[api_v2_operation]
+    async fn get_pet_by_type<S>(_path: web::Path<S>) -> Result<web::Json<Vec<Pet>>, ()>
+    where
+        S: paperclip::v2::schema::Apiv2Schema + ToString,
+    {
+        Ok(web::Json(vec![Pet::default()]))
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -1565,6 +1573,10 @@ fn test_operation_with_generics() {
                 .service(
                     web::resource("/pet/name/{name}")
                         .route(web::get().to(get_pet_by_name::<String>)),
+                )
+                .service(
+                    web::resource("/pet/type/{type}")
+                        .route(web::get().to(get_pet_by_type::<String>)),
                 )
                 .build()
         },
@@ -1663,6 +1675,29 @@ fn test_operation_with_generics() {
                                 {
                                    "in":"path",
                                    "name":"name",
+                                   "required":true,
+                                   "type":"string"
+                                }
+                             ]
+                          },
+                        },
+                        "/pet/type/{type}":{
+                           "get":{
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "items":{
+                                          "$ref":"#/definitions/Pet"
+                                       },
+                                       "type":"array"
+                                    }
+                                 }
+                              },
+                              "parameters":[
+                                {
+                                   "in":"path",
+                                   "name":"type",
                                    "required":true,
                                    "type":"string"
                                 }
