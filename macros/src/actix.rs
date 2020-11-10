@@ -295,6 +295,8 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                         for meta in nested.pairs().map(|pair| pair.into_value()) {
                             if let NestedMeta::Meta(Meta::Path(Path { segments, .. })) = meta {
                                 tags.push(segments[0].ident.to_string());
+                            } else if let NestedMeta::Lit(Lit::Str(lit)) = meta {
+                                tags.push(lit.value());
                             } else {
                                 emit_error!(
                                     meta.span(),
