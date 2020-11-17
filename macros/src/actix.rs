@@ -41,13 +41,14 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     let s_name = format!("paperclip_{}", item_ast.sig.ident);
     let unit_struct = Ident::new(&s_name, default_span);
     let generics = &item_ast.sig.generics;
-    let (mut struct_generics, mut generics_call) = (quote!(), quote!());
+    let mut generics_call = quote!();
     let mut struct_definition = quote!(struct #unit_struct;);
-    let generics_params = extract_generics_params(&item_ast);
-    if !generics_params.is_empty() {
-        generics_call = quote!(::<#generics_params> { p: std::marker::PhantomData });
-        struct_generics = quote!(<#generics_params>);
-        struct_definition = quote!(struct #unit_struct <#generics_params> { p: std::marker::PhantomData<(#generics_params)> } )
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    if !generics.params.is_empty() {
+        let turbofish = ty_generics.as_turbofish();
+        let generics_params = extract_generics_params(&item_ast);
+        generics_call = quote!(#turbofish { p: std::marker::PhantomData });
+        struct_definition = quote!(struct #unit_struct #ty_generics { p: std::marker::PhantomData<(#generics_params)> } )
     }
 
     // Get rid of async prefix. In the end, we'll have them all as `impl Future` thingies.
@@ -55,7 +56,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         item_ast.sig.asyncness = None;
     }
 
-    let mut wrapper = quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct #struct_generics>);
+    let mut wrapper = quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct #ty_generics>);
     let mut is_impl_trait = false;
     let mut is_responder = false;
     match &mut item_ast.sig.output {
@@ -103,7 +104,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 if !is_responder {
                     // NOTE: We're only using the box "type" to generate the operation data, we're not boxing
                     // the handlers at runtime.
-                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct #struct_generics>);
+                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct #ty_generics>);
                 }
             }
         }
@@ -155,7 +156,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
 
         #item_ast
 
-        impl #generics paperclip::v2::schema::Apiv2Operation for #unit_struct #struct_generics {
+        impl #impl_generics paperclip::v2::schema::Apiv2Operation for #unit_struct #ty_generics #where_clause {
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
                 let mut op = paperclip::v2::models::DefaultOperationRaw::default();
