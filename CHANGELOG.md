@@ -6,13 +6,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Actix plugin: `#[api_v2_operation]` macro now supports specifying `consumes`, `produces`, `summary`, `description`
+- Actix plugin: `#[api_v2_operation]` macro now supports specifying `consumes`, `produces`, `summary`, `description`, `tags`
 and `operation_id` in macro.
-- Actix plugin: Support for actix-web 3.0.
+- Actix plugin: Support for actix-web 3.0 (default).
+- Actix plugin: Support for `actix-session` types in handlers.
+- Actix plugin: `App::wrap_api_with_spec` allows to provide default specification with `info` and other custom settings
+- Actix plugin: support tags in api_v2_operation macros
 
 ### Changed
 - Actix plugin: Internals of `#[api_v2_operation]` proc macro (long-outstanding technical debt). This now generates operation metadata (on the fly) for each handler, which enables us to tie custom changes to operations easily.
 - Actix plugin: Grouping of parameters across handlers have been disabled as a result of major bugs (it's now under `normalize` feature).
+- Actix plugin: actix-web `2.x` is supported through `actix2` and `actix2-nightly` features.
 
 ### Fixed
 - `Apiv2Schema` supports `HashMap<Uuid, Foo>`.

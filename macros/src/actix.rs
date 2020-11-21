@@ -11,8 +11,8 @@ use syn::spanned::Spanned;
 use syn::{
     punctuated::{Pair, Punctuated},
     Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
-    Generics, Ident, ItemFn, Lit, Meta, MetaNameValue, NestedMeta, PathArguments, ReturnType,
-    Token, TraitBound, Type, TypeTraitObject,
+    Generics, Ident, ItemFn, Lit, Meta, MetaList, MetaNameValue, NestedMeta, Path, PathArguments,
+    ReturnType, Token, TraitBound, Type, TypeTraitObject,
 };
 
 use std::collections::HashMap;
@@ -41,13 +41,14 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     let s_name = format!("paperclip_{}", item_ast.sig.ident);
     let unit_struct = Ident::new(&s_name, default_span);
     let generics = &item_ast.sig.generics;
-    let (mut struct_generics, mut generics_call) = (quote!(), quote!());
+    let mut generics_call = quote!();
     let mut struct_definition = quote!(struct #unit_struct;);
-    let generics_params = extract_generics_params(&item_ast);
-    if !generics_params.is_empty() {
-        generics_call = quote!(::<#generics_params> { p: std::marker::PhantomData });
-        struct_generics = quote!(<#generics_params>);
-        struct_definition = quote!(struct #unit_struct <#generics_params> { p: std::marker::PhantomData<(#generics_params)> } )
+    let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    if !generics.params.is_empty() {
+        let turbofish = ty_generics.as_turbofish();
+        let generics_params = extract_generics_params(&item_ast);
+        generics_call = quote!(#turbofish { p: std::marker::PhantomData });
+        struct_definition = quote!(struct #unit_struct #ty_generics { p: std::marker::PhantomData<(#generics_params)> } )
     }
 
     // Get rid of async prefix. In the end, we'll have them all as `impl Future` thingies.
@@ -55,7 +56,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         item_ast.sig.asyncness = None;
     }
 
-    let mut wrapper = quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct #struct_generics>);
+    let mut wrapper = quote!(paperclip::actix::ResponseWrapper<actix_web::HttpResponse, #unit_struct #ty_generics>);
     let mut is_impl_trait = false;
     let mut is_responder = false;
     match &mut item_ast.sig.output {
@@ -103,7 +104,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 if !is_responder {
                     // NOTE: We're only using the box "type" to generate the operation data, we're not boxing
                     // the handlers at runtime.
-                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct #struct_generics>);
+                    wrapper = quote!(paperclip::actix::ResponseWrapper<Box<#obj + std::marker::Unpin>, #unit_struct #ty_generics>);
                 }
             }
         }
@@ -155,7 +156,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
 
         #item_ast
 
-        impl #generics paperclip::v2::schema::Apiv2Operation for #unit_struct #struct_generics {
+        impl #impl_generics paperclip::v2::schema::Apiv2Operation for #unit_struct #ty_generics #where_clause {
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
                 let mut op = paperclip::v2::models::DefaultOperationRaw::default();
@@ -286,6 +287,30 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                     "Expected single identifier, got path {:?}",
                     path
                 )
+            }
+        } else if let NestedMeta::Meta(Meta::List(MetaList { path, nested, .. })) = &attr {
+            if let Some(ident) = path.get_ident() {
+                match ident.to_string().as_str() {
+                    "tags" => {
+                        let mut tags = Vec::new();
+                        for meta in nested.pairs().map(|pair| pair.into_value()) {
+                            if let NestedMeta::Meta(Meta::Path(Path { segments, .. })) = meta {
+                                tags.push(segments[0].ident.to_string());
+                            } else {
+                                emit_error!(
+                                    meta.span(),
+                                    "Expected comma separated list of tags idents: {:?}",
+                                    meta
+                                )
+                            }
+                        }
+                        if !tags.is_empty() {
+                            params.push(ident.clone());
+                            values.push(quote!(vec![ #( #tags.to_string() ),* ]));
+                        }
+                    }
+                    x => emit_error!(ident.span(), "Unknown list ident {}", x),
+                }
             }
         } else {
             emit_error!(attr.span(), "Not supported attribute type {:?}", attr)
@@ -457,27 +482,32 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let mut props_gen = quote! {};
 
     match &item_ast.data {
-        Data::Struct(ref s) => match &s.fields {
-            Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
-            Fields::Unnamed(ref f) => {
-                if f.unnamed.len() == 1 {
-                    handle_unnamed_field_struct(f, &mut props_gen)
-                } else {
+        Data::Struct(ref s) => {
+            props_gen.extend(quote!(
+                schema.data_type = Some(DataType::Object);
+            ));
+            match &s.fields {
+                Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
+                Fields::Unnamed(ref f) => {
+                    if f.unnamed.len() == 1 {
+                        handle_unnamed_field_struct(f, &mut props_gen)
+                    } else {
+                        emit_warning!(
+                            f.span().unwrap(),
+                            "tuple structs do not have named fields and hence will have empty schema.";
+                            help = "{}", &*EMPTY_SCHEMA_HELP;
+                        );
+                    }
+                }
+                Fields::Unit => {
                     emit_warning!(
-                        f.span().unwrap(),
-                        "tuple structs do not have named fields and hence will have empty schema.";
+                        s.struct_token.span().unwrap(),
+                        "unit structs do not have any fields and hence will have empty schema.";
                         help = "{}", &*EMPTY_SCHEMA_HELP;
                     );
                 }
             }
-            Fields::Unit => {
-                emit_warning!(
-                    s.struct_token.span().unwrap(),
-                    "unit structs do not have any fields and hence will have empty schema.";
-                    help = "{}", &*EMPTY_SCHEMA_HELP;
-                );
-            }
-        },
+        }
         Data::Enum(ref e) => handle_enum(e, &props, &mut props_gen),
         Data::Union(ref u) => emit_error!(
             u.union_token.span().unwrap(),
@@ -649,7 +679,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
         security_attrs.get("parent"),
     ) {
         (Some(type_), None) => {
-            let alias = security_attrs.get("alias").unwrap_or_else(|| type_);
+            let alias = security_attrs.get("alias").unwrap_or(type_);
             let quoted_description = quote_option(security_attrs.get("description"));
             let quoted_name = quote_option(security_attrs.get("name"));
             let quoted_in = quote_option(security_attrs.get("in"));
@@ -850,15 +880,20 @@ fn handle_field_struct(
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
 
-        let mut gen = quote!(
-            {
+        let mut gen = if !SerdeFlatten::exists(&field.attrs) {
+            quote!({
                 let mut s = #ty_ref::raw_schema();
                 if !#docs.is_empty() {
                     s.description = Some(#docs.to_string());
                 }
                 schema.properties.insert(#field_name.into(), s.into());
-            }
-        );
+            })
+        } else {
+            quote!({
+                let s = #ty_ref::raw_schema();
+                schema.properties.extend(s.properties);
+            })
+        };
 
         if is_required {
             gen.extend(quote! {
@@ -1055,5 +1090,38 @@ impl SerdeProps {
         }
 
         props
+    }
+}
+
+/// Supported flattening of embedded struct (https://serde.rs/variant-attrs.html).
+struct SerdeFlatten;
+
+impl SerdeFlatten {
+    /// Traverses the field attributes and returns true if there is `#[serde(flatten)]`.
+    fn exists(field_attrs: &[Attribute]) -> bool {
+        for meta in field_attrs.iter().filter_map(|a| a.parse_meta().ok()) {
+            let inner_meta = match meta {
+                Meta::List(ref l)
+                    if l.path
+                        .segments
+                        .last()
+                        .map(|p| p.ident == "serde")
+                        .unwrap_or(false) =>
+                {
+                    &l.nested
+                }
+                _ => continue,
+            };
+
+            for meta in inner_meta {
+                if let NestedMeta::Meta(Meta::Path(syn::Path { segments, .. })) = meta {
+                    if segments.iter().any(|p| p.ident == "flatten") {
+                        return true;
+                    }
+                }
+            }
+        }
+
+        false
     }
 }

@@ -25,7 +25,7 @@ build:
 	cargo build --features cli
 
 test:
-	cargo clippy --all -- -D clippy::all
+	cargo clippy --all --features "actix" -- -D clippy::all
 	cargo test --all --features "actix cli chrono uuid"
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check

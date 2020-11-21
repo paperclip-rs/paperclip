@@ -1,3 +1,8 @@
+#[cfg(feature = "actix2")]
+extern crate actix_web2 as actix_web;
+#[cfg(feature = "actix3")]
+extern crate actix_web3 as actix_web;
+
 pub mod web;
 
 pub use self::web::{Resource, Route, Scope};
@@ -39,6 +44,11 @@ pub trait OpenApiExt<T, B> {
     /// Consumes this app and produces its wrapper to start tracking
     /// paths and their corresponding operations.
     fn wrap_api(self) -> Self::Wrapper;
+
+    /// Same as `wrap_api` initializing with provided specification
+    /// defaults. Useful for defining Api properties outside of definitions and
+    /// paths.
+    fn wrap_api_with_spec(self, spec: DefaultApiRaw) -> Self::Wrapper;
 }
 
 impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
@@ -47,6 +57,14 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
     fn wrap_api(self) -> Self::Wrapper {
         App {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
+            spec_path: None,
+            inner: Some(self),
+        }
+    }
+
+    fn wrap_api_with_spec(self, spec: DefaultApiRaw) -> Self::Wrapper {
+        App {
+            spec: Arc::new(RwLock::new(spec)),
             spec_path: None,
             inner: Some(self),
         }

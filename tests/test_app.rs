@@ -10,8 +10,10 @@ use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::actix::{
-    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, OpenApiExt,
+    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
+    OpenApiExt,
 };
+use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use parking_lot::Mutex;
 
 use std::collections::{BTreeMap, HashMap, HashSet};
@@ -39,6 +41,7 @@ struct Pet {
     name: String,
     class: PetClass,
     id: Option<u64>,
+    birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
     #[serde(rename = "uuid")]
     uid: Option<uuid_dev::Uuid>,
@@ -49,6 +52,7 @@ impl Default for Pet {
         Self {
             name: "".to_string(),
             class: PetClass::EverythingElse,
+            birthday: chrono_dev::NaiveDate::from_ymd(2012, 3, 10),
             id: None,
             updated_on: None,
             uid: None,
@@ -98,10 +102,23 @@ fn test_simple_app() {
         fut_ok(unimplemented!())
     }
 
+    #[api_v2_operation]
+    async fn adopt_pet() -> Result<CreatedJson<Pet>, ()> {
+        let pet: Pet = Pet::default();
+        Ok(CreatedJson(pet))
+    }
+
+    #[api_v2_operation]
+    async fn nothing() -> NoContent {
+        NoContent
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
             .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
             .service(web::resource("/async_echo_2").route(web::post().to(echo_pet_async_2)))
+            .service(web::resource("/adopt").route(web::post().to(adopt_pet)))
+            .service(web::resource("/nothing").route(web::get().to(nothing)))
             .service(web::resource("/random").to(some_pet));
     }
 
@@ -138,6 +155,10 @@ fn test_simple_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -147,7 +168,8 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -282,7 +304,28 @@ fn test_simple_app() {
                           }
                         }
                       }
-                    }
+                    },
+                    "/api/adopt": {
+                      "post": {
+                        "responses": {
+                          "201": {
+                            "description": "Created",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/api/nothing": {
+                      "get": {
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
+                          }
+                        }
+                      }
+                    },
                   },
                   "swagger": "2.0"
                 }),
@@ -443,20 +486,19 @@ fn test_params() {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
-                                    "type": "object"
                                 },
                                 "yaml": {
-                                    "type": "object"
                                 }
-                            }
+                            },
+                            "type":"object"
                         },
                         "BadgeBodyPatch": {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
-                                    "type": "object"
                                 }
-                            }
+                            },
+                            "type":"object"
                         }
                     },
                     "info": {
@@ -890,7 +932,8 @@ fn test_map_in_out() {
                                        "required":[
                                           "data",
                                           "id"
-                                       ]
+                                       ],
+                                       "type":"object"
                                     },
                                     "type":"array"
                                  },
@@ -899,7 +942,8 @@ fn test_map_in_out() {
                            },
                            "required":[
                               "folders"
-                           ]
+                           ],
+                           "type":"object"
                         },
                         "Filter":{
                            "properties":{
@@ -916,7 +960,8 @@ fn test_map_in_out() {
                            },
                            "required":[
                               "folders"
-                           ]
+                           ],
+                           "type":"object"
                         },
                         "Image":{
                            "properties":{
@@ -931,7 +976,8 @@ fn test_map_in_out() {
                            "required":[
                               "data",
                               "id"
-                           ]
+                           ],
+                           "type":"object"
                         }
                      },
                      "info":{
@@ -978,6 +1024,171 @@ fn test_map_in_out() {
                         }
                      },
                      "swagger":"2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_serde_flatten() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct PagedQuery {
+        /// First image number to return
+        offset: Option<i32>,
+        /// Return number of images
+        size: Option<i32>,
+    };
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct Paging {
+        /// Starting image number
+        offset: i32,
+        /// Total images found
+        total: i32,
+        /// Page size
+        size: i32,
+    };
+
+    #[derive(Serialize, Apiv2Schema)]
+    struct Image {
+        data: String,
+        id: Uuid,
+        time: chrono_dev::DateTime<chrono_dev::Utc>,
+    }
+
+    /// Images response with paging information embedded
+    #[derive(Serialize, Apiv2Schema)]
+    struct Images {
+        data: Vec<Image>,
+        #[serde(flatten)]
+        paging: Paging,
+    }
+
+    /// Query images from library by name
+    #[derive(Deserialize, Apiv2Schema)]
+    struct ImagesQuery {
+        #[serde(flatten)]
+        paging: PagedQuery,
+        name: Option<String>,
+    }
+
+    #[api_v2_operation]
+    async fn some_images(_filter: web::Query<ImagesQuery>) -> Result<web::Json<Images>, ()> {
+        #[allow(unreachable_code)]
+        if _filter.paging.offset.is_some() && _filter.name.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images").route(web::get().to(some_images)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Images": {
+                          "properties": {
+                            "data": {
+                              "items": {
+                                "properties": {
+                                  "data": {
+                                    "type": "string"
+                                  },
+                                  "id": {
+                                    "format": "uuid",
+                                    "type": "string"
+                                  },
+                                  "time": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "data",
+                                  "id",
+                                  "time"
+                                ],
+                                 "type":"object"
+                              },
+                              "type": "array"
+                            },
+                            "offset": {
+                              "description": "Starting image number",
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "size": {
+                              "description": "Page size",
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "total": {
+                              "description": "Total images found",
+                              "format": "int32",
+                              "type": "integer"
+                            }
+                          },
+                          "required": [
+                            "data",
+                            "paging"
+                          ],
+                          "type":"object"
+                        }
+                      },
+                      "info": {
+                        "title": "",
+                        "version": ""
+                      },
+                      "paths": {
+                        "/images": {
+                          "get": {
+                            "parameters": [
+                              {
+                                "in": "query",
+                                "name": "name",
+                                "type": "string"
+                              },
+                              {
+                                "description": "First image number to return",
+                                "format": "int32",
+                                "in": "query",
+                                "name": "offset",
+                                "type": "integer"
+                              },
+                              {
+                                "description": "Return number of images",
+                                "format": "int32",
+                                "in": "query",
+                                "name": "size",
+                                "type": "integer"
+                              }
+                            ],
+                            "responses": {
+                              "200": {
+                                "description": "OK",
+                                "schema": {
+                                  "$ref": "#/definitions/Images"
+                                }
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "swagger": "2.0"
                 }),
             );
         },
@@ -1038,6 +1249,10 @@ fn test_list_in_out() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1047,7 +1262,8 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1079,6 +1295,121 @@ fn test_list_in_out() {
                     }
                   },
                   "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_tags() {
+    #[derive(Serialize, Apiv2Schema)]
+    struct Image {
+        data: String,
+        id: u64,
+    }
+
+    #[api_v2_operation(tags(Cats, Dogs))]
+    fn some_pets_images() -> impl Future<Output = web::Json<Vec<Image>>> {
+        ready(web::Json(Vec::new()))
+    }
+
+    run_and_check_app(
+        || {
+            let mut spec = DefaultApiRaw::default();
+            spec.tags = vec![
+                Tag {
+                    name: "Dogs".to_string(),
+                    description: Some("Images of dogs".to_string()),
+                    external_docs: None,
+                },
+                Tag {
+                    name: "Cats".to_string(),
+                    description: Some("Images of cats".to_string()),
+                    external_docs: None,
+                },
+                Tag {
+                    name: "Cars".to_string(),
+                    description: Some("Images of nice cars".to_string()),
+                    external_docs: None,
+                },
+            ];
+            spec.info = Info {
+                version: "0.1".into(),
+                title: "Image server".into(),
+                ..Default::default()
+            };
+
+            App::new()
+                .wrap_api_with_spec(spec)
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions":{
+                        "Image":{
+                            "properties":{
+                                "data":{
+                                "type":"string"
+                                },
+                                "id":{
+                                "format":"int64",
+                                "type":"integer"
+                                }
+                            },
+                            "required":[
+                                "data",
+                                "id"
+                            ],
+                            "type":"object"
+                        }
+                    },
+                    "info":{
+                        "title":"Image server",
+                        "version":"0.1"
+                    },
+                    "paths":{
+                        "/images/pets":{
+                            "get":{
+                                "responses":{
+                                "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                        "items":{
+                                            "$ref":"#/definitions/Image"
+                                        },
+                                        "type":"array"
+                                    }
+                                }
+                                },
+                                "tags":[ "Cats", "Dogs" ]
+                            }
+                        }
+                    },
+                    "swagger":"2.0",
+                    "tags":[
+                        {
+                            "description":"Images of dogs",
+                            "name":"Dogs"
+                        },
+                        {
+                            "description":"Images of cats",
+                            "name":"Cats"
+                        },
+                        {
+                            "description":"Images of nice cars",
+                            "name":"Cars"
+                        }
+                    ]
                 }),
             );
         },
@@ -1158,6 +1489,10 @@ fn test_impl_traits() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1167,7 +1502,8 @@ fn test_impl_traits() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1232,6 +1568,14 @@ fn test_operation_with_generics() {
         Ok(web::Json(vec![Pet::default()]))
     }
 
+    #[api_v2_operation]
+    async fn get_pet_by_type<S>(_path: web::Path<S>) -> Result<web::Json<Vec<Pet>>, ()>
+    where
+        S: paperclip::v2::schema::Apiv2Schema + ToString,
+    {
+        Ok(web::Json(vec![Pet::default()]))
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -1241,6 +1585,10 @@ fn test_operation_with_generics() {
                 .service(
                     web::resource("/pet/name/{name}")
                         .route(web::get().to(get_pet_by_name::<String>)),
+                )
+                .service(
+                    web::resource("/pet/type/{type}")
+                        .route(web::get().to(get_pet_by_type::<String>)),
                 )
                 .build()
         },
@@ -1273,6 +1621,10 @@ fn test_operation_with_generics() {
                                  "description":"Pick a good one.",
                                  "type":"string"
                               },
+                              "birthday": {
+                                "format": "date",
+                                "type": "string"
+                              },
                               "updatedOn":{
                                  "format":"date-time",
                                  "type":"string"
@@ -1283,9 +1635,11 @@ fn test_operation_with_generics() {
                               }
                            },
                            "required":[
+                             "birthday",
                               "class",
                               "name"
-                           ]
+                           ],
+                           "type":"object"
                         }
                      },
                      "info":{
@@ -1334,6 +1688,29 @@ fn test_operation_with_generics() {
                                 {
                                    "in":"path",
                                    "name":"name",
+                                   "required":true,
+                                   "type":"string"
+                                }
+                             ]
+                          },
+                        },
+                        "/pet/type/{type}":{
+                           "get":{
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "items":{
+                                          "$ref":"#/definitions/Pet"
+                                       },
+                                       "type":"array"
+                                    }
+                                 }
+                              },
+                              "parameters":[
+                                {
+                                   "in":"path",
+                                   "name":"type",
                                    "required":true,
                                    "type":"string"
                                 }
@@ -1430,6 +1807,10 @@ fn test_operations_documentation() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1439,7 +1820,8 @@ fn test_operations_documentation() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1565,6 +1947,10 @@ fn test_operations_macro_attributes() {
                                     "description": "Pick a good one.",
                                     "type": "string"
                                 },
+                                "birthday": {
+                                  "format": "date",
+                                  "type": "string"
+                                },
                                 "updatedOn": {
                                     "format": "date-time",
                                     "type": "string"
@@ -1575,9 +1961,11 @@ fn test_operations_macro_attributes() {
                                 }
                             },
                             "required":[
+                                "birthday",
                                 "class",
                                 "name"
-                            ]
+                            ],
+                            "type":"object"
                         }
                     },
                     "info": {
@@ -1871,6 +2259,10 @@ fn test_errors_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -1880,7 +2272,8 @@ fn test_errors_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -2028,6 +2421,10 @@ fn test_security_app() {
                           "description": "Pick a good one.",
                           "type": "string"
                         },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "updatedOn": {
                           "format": "date-time",
                           "type": "string"
@@ -2037,7 +2434,8 @@ fn test_security_app() {
                           "type": "string"
                         }
                       },
-                      "required":["class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {

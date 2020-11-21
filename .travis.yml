@@ -36,7 +36,7 @@ matrix:
     - rustup component add rustfmt clippy
     script:
     - cargo fmt --all -- --check
-    - cargo clippy --all -- -D clippy::all
+    - cargo clippy --all --features "actix" -- -D clippy::all
 
 deploy:
   provider: pages

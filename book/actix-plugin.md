@@ -8,7 +8,7 @@ Let's start with a simple actix-web application. It has `actix-web` and `serde` 
 # [package] ignored for brevity
 
 [dependencies]
-# actix-web 2.0 is also supported
+# actix-web 2.0 is supported through "actix2" and "actix2-nightly" features
 actix-web = "3.0"
 # The "actix-nightly" feature can be specified if you're using nightly compiler. Even though
 # this plugin works smoothly with the nightly compiler, it also works in stable
@@ -199,11 +199,34 @@ This can be overridden by explicitly specifying `summary` and `description` in t
   operation_id = "my_handler",
   consumes = "application/yaml, application/json",
   produces = "application/yaml, application/json",
+  tags(Cats, Dogs),
 )]
 async fn my_handler() -> Json<Foo> { /* */ }
 ```
 
-#### Manually defining additional response codes
+#### Using other (non-200) response codes
+
+Paperclip finds out the schema of your api using macros which read the types of the handlers and parameter structs at compile time, so in order for paperclip to know what response code the api sends, it needs type information about it, it is not sufficient to store the code in the response. There are newtypes encoding this information for the most common 2xx codes (OK, created, accepted) for Json responses and no content.
+
+```rust
+use paperclip::actix::web::Json;
+use paperclip::actix::{CreatedJson, AcceptedJson, NoContent};
+
+// 201 Created 
+#[api_v2_operation]
+async fn adopt_pet(body: Json<Pet>) -> Result<CreatedJson<Pet>, ()> {
+    let pet: Pet = body.into_inner();
+    // bring the pet home
+    Ok(CreatedJson(pet))
+}
+// 204 No Content
+#[api_v2_operation]
+async fn acknowledge_pet(body: Json<Pet>) -> NoContent {
+    NoContent
+}
+```
+
+#### Manually defining error response codes
 
 There is a macro `api_v2_errors` which helps to manually add error (non-2xx) response codes.
 
@@ -273,6 +296,43 @@ struct OAuth2Access;
 #[openapi(parent = "OAuth2Access", scopes("pets.read", "pets.write"))]
 struct PetScopeAccess;
 ```
+
+#### Defining application level schema defaults
+
+It is possible to define default initial values for the schema, which might be useful to define "info",
+"schemes", "tags" and other top level schema fields which are not inherited from handlers.
+
+```rust
+let mut spec = DefaultApiRaw::default();
+spec.tags = vec![
+    Tag {
+        name: "Dogs".to_string(),
+        description: Some("Images of dogs".to_string()),
+        external_docs: None,
+    },
+    Tag {
+        name: "Cats".to_string(),
+        description: Some("Images of cats".to_string()),
+        external_docs: None,
+    },
+    Tag {
+        name: "Cars".to_string(),
+        description: Some("Images of nice cars".to_string()),
+        external_docs: None,
+    },
+];
+spec.info = Info {
+    version: "0.1".into(),
+    title: "Image server".into(),
+    ..Default::default()
+};
+App::new()
+    .wrap_api_with_spec(spec)
+    .with_json_spec_at("/api/spec")
+    .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
+    .build()
+```
+
 
 #### Known limitations
 
