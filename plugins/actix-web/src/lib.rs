@@ -15,7 +15,10 @@ use paperclip_core::v2::models::{
 use parking_lot::RwLock;
 
 #[cfg(feature = "swagger-ui")]
-use askama::Template;
+use tinytemplate::TinyTemplate;
+
+#[cfg(feature = "swagger-ui")]
+use serde::Serialize;
 
 use std::collections::BTreeMap;
 use std::fmt::Debug;
@@ -336,22 +339,33 @@ impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<Http
 struct SwaggerUIHandler(String);
 
 #[cfg(feature = "swagger-ui")]
-#[derive(Template)]
-#[template(path = "swagger-ui.html")]
-struct SwaggerUITemplate<'a> {
-    api_spec_url: &'a str,
+#[derive(Serialize)]
+struct SwaggerUIContext {
+    api_spec_url: String,
 }
+
+static TEMPLATE: &'static str = include_str!("../templates/swagger-ui.html");
 
 #[cfg(feature = "swagger-ui")]
 impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>>
     for SwaggerUIHandler
 {
     fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
-        let s = SwaggerUITemplate {
-            api_spec_url: &*self.0.as_str(),
+        let mut tt = TinyTemplate::new();
+        let context = SwaggerUIContext {
+            api_spec_url: self.0.to_owned(),
+        };
+        // This is safe as we are using a given file as input so no errors can occur
+        let _ = tt.add_template("swagger-ui", TEMPLATE);
+
+        let rendered = tt.render("swagger-ui", &context);
+        match rendered {
+            Ok(r) => fut_ok(HttpResponse::Ok().content_type("text/html").body(r)),
+            Err(_) => fut_ok(
+                HttpResponse::InternalServerError()
+                    .content_type("text/html")
+                    .body("An error occurred while rendering Swagger-UI"),
+            ),
         }
-        .render()
-        .unwrap();
-        fut_ok(HttpResponse::Ok().content_type("text/html").body(s))
     }
 }
