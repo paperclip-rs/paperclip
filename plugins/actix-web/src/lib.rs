@@ -362,7 +362,8 @@ struct SwaggerUIContext {
     api_spec_url: String,
 }
 
-static TEMPLATE: &'static str = include_str!("../templates/swagger-ui.html");
+#[cfg(feature = "swagger-ui")]
+static TEMPLATE: &str = include_str!("../templates/swagger-ui.html");
 
 #[cfg(feature = "swagger-ui")]
 impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>>
