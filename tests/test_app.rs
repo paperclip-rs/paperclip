@@ -1309,7 +1309,6 @@ fn test_tags() {
         ready(web::Json(Vec::new()))
     }
 
-
     run_and_check_app(
         || {
             let mut spec = DefaultApiRaw::default();
@@ -1340,7 +1339,9 @@ fn test_tags() {
                 .wrap_api_with_spec(spec)
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
-                .service(web::resource("/images/cats/cars").route(web::get().to(some_cats_cars_images)))
+                .service(
+                    web::resource("/images/cats/cars").route(web::get().to(some_cats_cars_images)),
+                )
                 .build()
         },
         |addr| {
