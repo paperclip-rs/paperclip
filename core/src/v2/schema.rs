@@ -202,6 +202,8 @@ impl_type_simple!(
 );
 #[cfg(feature = "chrono")]
 impl_type_simple!(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
+#[cfg(feature = "chrono")]
+impl_type_simple!(chrono::NaiveTime, DataType::String);
 #[cfg(feature = "rust_decimal")]
 impl_type_simple!(
     rust_decimal::Decimal,

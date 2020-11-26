@@ -39,7 +39,7 @@ mod template {
         ",
         );
         contents.push_str(&name);
-        contents.push_str(",");
+        contents.push(',');
     }
 
     contents.push_str(
