@@ -486,8 +486,10 @@ fn test_params() {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
+                                    "type":"string"
                                 },
                                 "yaml": {
+                                    "type":"string"
                                 }
                             },
                             "type":"object"
@@ -496,6 +498,7 @@ fn test_params() {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
+                                    "type":"string"
                                 }
                             },
                             "type":"object"
