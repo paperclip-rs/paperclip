@@ -168,7 +168,8 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -488,14 +489,16 @@ fn test_params() {
                                 },
                                 "yaml": {
                                 }
-                            }
+                            },
+                            "type":"object"
                         },
                         "BadgeBodyPatch": {
                             "properties": {
                                 "json": {
                                     "description": "JSON value",
                                 }
-                            }
+                            },
+                            "type":"object"
                         }
                     },
                     "info": {
@@ -929,7 +932,8 @@ fn test_map_in_out() {
                                        "required":[
                                           "data",
                                           "id"
-                                       ]
+                                       ],
+                                       "type":"object"
                                     },
                                     "type":"array"
                                  },
@@ -938,7 +942,8 @@ fn test_map_in_out() {
                            },
                            "required":[
                               "folders"
-                           ]
+                           ],
+                           "type":"object"
                         },
                         "Filter":{
                            "properties":{
@@ -955,7 +960,8 @@ fn test_map_in_out() {
                            },
                            "required":[
                               "folders"
-                           ]
+                           ],
+                           "type":"object"
                         },
                         "Image":{
                            "properties":{
@@ -970,7 +976,8 @@ fn test_map_in_out() {
                            "required":[
                               "data",
                               "id"
-                           ]
+                           ],
+                           "type":"object"
                         }
                      },
                      "info":{
@@ -1114,7 +1121,8 @@ fn test_serde_flatten() {
                                   "data",
                                   "id",
                                   "time"
-                                ]
+                                ],
+                                 "type":"object"
                               },
                               "type": "array"
                             },
@@ -1137,7 +1145,8 @@ fn test_serde_flatten() {
                           "required": [
                             "data",
                             "paging"
-                          ]
+                          ],
+                          "type":"object"
                         }
                       },
                       "info": {
@@ -1253,7 +1262,8 @@ fn test_list_in_out() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1367,7 +1377,8 @@ fn test_tags() {
                             "required":[
                                 "data",
                                 "id"
-                            ]
+                            ],
+                            "type":"object"
                         }
                     },
                     "info":{
@@ -1515,7 +1526,8 @@ fn test_impl_traits() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1580,6 +1592,14 @@ fn test_operation_with_generics() {
         Ok(web::Json(vec![Pet::default()]))
     }
 
+    #[api_v2_operation]
+    async fn get_pet_by_type<S>(_path: web::Path<S>) -> Result<web::Json<Vec<Pet>>, ()>
+    where
+        S: paperclip::v2::schema::Apiv2Schema + ToString,
+    {
+        Ok(web::Json(vec![Pet::default()]))
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -1589,6 +1609,10 @@ fn test_operation_with_generics() {
                 .service(
                     web::resource("/pet/name/{name}")
                         .route(web::get().to(get_pet_by_name::<String>)),
+                )
+                .service(
+                    web::resource("/pet/type/{type}")
+                        .route(web::get().to(get_pet_by_type::<String>)),
                 )
                 .build()
         },
@@ -1638,7 +1662,8 @@ fn test_operation_with_generics() {
                              "birthday",
                               "class",
                               "name"
-                           ]
+                           ],
+                           "type":"object"
                         }
                      },
                      "info":{
@@ -1687,6 +1712,29 @@ fn test_operation_with_generics() {
                                 {
                                    "in":"path",
                                    "name":"name",
+                                   "required":true,
+                                   "type":"string"
+                                }
+                             ]
+                          },
+                        },
+                        "/pet/type/{type}":{
+                           "get":{
+                              "responses":{
+                                 "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                       "items":{
+                                          "$ref":"#/definitions/Pet"
+                                       },
+                                       "type":"array"
+                                    }
+                                 }
+                              },
+                              "parameters":[
+                                {
+                                   "in":"path",
+                                   "name":"type",
                                    "required":true,
                                    "type":"string"
                                 }
@@ -1796,7 +1844,8 @@ fn test_operations_documentation() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -1939,7 +1988,8 @@ fn test_operations_macro_attributes() {
                                 "birthday",
                                 "class",
                                 "name"
-                            ]
+                            ],
+                            "type":"object"
                         }
                     },
                     "info": {
@@ -2246,7 +2296,8 @@ fn test_errors_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
@@ -2407,7 +2458,8 @@ fn test_security_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"]
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
                     }
                   },
                   "paths": {
