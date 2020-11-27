@@ -30,6 +30,9 @@ use std::fmt::Debug;
 use std::future::Future;
 use std::sync::Arc;
 
+#[cfg(feature = "swagger-ui")]
+static TEMPLATE: &str = include_str!("../../templates/swagger-ui.html");
+
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
@@ -284,10 +287,32 @@ where
     pub fn with_swagger_ui_at(mut self, path: &str) -> Self {
         self.inner = match self.spec_path.clone() {
             Some(spec_path) => self.inner.take().map(|a| {
-                a.service(
-                    actix_web::web::resource(path.to_owned())
-                        .route(actix_web::web::get().to(SwaggerUIHandler(spec_path))),
-                )
+                let mut tt = TinyTemplate::new();
+                let context = SwaggerUIContext {
+                    api_spec_url: spec_path,
+                };
+                // This is safe as we are using a given file as input so no errors can occur
+                let _ = tt.add_template("swagger-ui", TEMPLATE);
+                let rendered = tt.render("swagger-ui", &context);
+                match rendered {
+                    Ok(r) => {
+                        a.service(
+                            actix_web::web::resource(path.to_owned())
+                                .route(actix_web::web::get().to(SwaggerUIHandler(r))),
+                        )
+                    },
+                    Err(_) => {
+                        a.service(
+                            actix_web::web::resource(path.to_owned()).route(
+                            actix_web::web::get().to(|| {
+                                HttpResponse::InternalServerError().body(
+                                    "An error occurred while rendering Swagger-UI",
+                                )
+                            }),
+                        ))
+                    }
+                }
+
             }),
             None => self.inner.take().map(|a| {
                 a.service(actix_web::web::resource(path.to_owned()).route(
@@ -363,28 +388,14 @@ struct SwaggerUIContext {
 }
 
 #[cfg(feature = "swagger-ui")]
-static TEMPLATE: &str = include_str!("../templates/swagger-ui.html");
-
-#[cfg(feature = "swagger-ui")]
 impl actix_web::dev::Factory<(), Ready<Result<HttpResponse, Error>>, Result<HttpResponse, Error>>
     for SwaggerUIHandler
 {
     fn call(&self, _: ()) -> Ready<Result<HttpResponse, Error>> {
-        let mut tt = TinyTemplate::new();
-        let context = SwaggerUIContext {
-            api_spec_url: self.0.to_owned(),
-        };
-        // This is safe as we are using a given file as input so no errors can occur
-        let _ = tt.add_template("swagger-ui", TEMPLATE);
-
-        let rendered = tt.render("swagger-ui", &context);
-        match rendered {
-            Ok(r) => fut_ok(HttpResponse::Ok().content_type("text/html").body(r)),
-            Err(_) => fut_ok(
-                HttpResponse::InternalServerError()
-                    .content_type("text/html")
-                    .body("An error occurred while rendering Swagger-UI"),
-            ),
-        }
+        fut_ok(
+            HttpResponse::Ok()
+                .content_type("text/html")
+                .body(self.0.to_owned()),
+        )
     }
 }
