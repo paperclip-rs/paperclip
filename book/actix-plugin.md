@@ -199,7 +199,7 @@ This can be overridden by explicitly specifying `summary` and `description` in t
   operation_id = "my_handler",
   consumes = "application/yaml, application/json",
   produces = "application/yaml, application/json",
-  tags(Cats, Dogs),
+  tags(Cats, Dogs, "Api reference"),
 )]
 async fn my_handler() -> Json<Foo> { /* */ }
 ```
@@ -316,8 +316,8 @@ spec.tags = vec![
         external_docs: None,
     },
     Tag {
-        name: "Cars".to_string(),
-        description: Some("Images of nice cars".to_string()),
+        name: "Api reference".to_string(),
+        description: Some("List of all api endpoints".to_string()),
         external_docs: None,
     },
 ];
