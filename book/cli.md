@@ -96,7 +96,7 @@ Passing `-v` flag enables verbose mode which prints additional information about
 
 ### Request body
 
-Finally, let's `POST` something with a body. Here, `addPet` requires a payload, so `--payload` argument is required. This argument is special in that it could be either a path to a file or `-` (when input is obtained from stdin). Either way, the input is parsed to the actual schema before making the API call.
+Finally, let's `POST` something with a body. Here, `add-pet` requires a payload, so `--payload` argument is required. This argument is special in that it could be either a path to a file or `-` (when input is obtained from stdin). Either way, the input is parsed to the actual schema before making the API call.
 
 ```
 ./target/debug/pet -v --url http://localhost:8000 add-pet --payload - << EOF
