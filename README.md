@@ -14,8 +14,7 @@ It's currently under active development and may not be ready for production use 
 
 You may be interested in:
 
- - [An overview](https://paperclip.waffles.space/).
- - [Examples](https://paperclip.waffles.space/examples.html).
+ - [Examples and Usage](https://paperclip.waffles.space/).
  - [Features being worked on](https://github.com/wafflespeanut/paperclip/projects).
  - [API documentation](https://paperclip.waffles.space/paperclip).
 

@@ -6,21 +6,33 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Actix plugin: `#[api_v2_operation]` macro now supports specifying `consumes`, `produces`, `summary`, `description`, `tags`
-and `operation_id` in macro.
-- Actix plugin: Support for actix-web 3.0 (default).
-- Actix plugin: Support for `actix-session` types in handlers.
-- Actix plugin: `App::wrap_api_with_spec` allows to provide default specification with `info` and other custom settings
-- Actix plugin: support tags in api_v2_operation macros
 
 ### Changed
-- Actix plugin: Internals of `#[api_v2_operation]` proc macro (long-outstanding technical debt). This now generates operation metadata (on the fly) for each handler, which enables us to tie custom changes to operations easily.
+
+### Fixed
+
+## [0.5.0] - 2020-11-28
+### Added
+- Actix plugin: Support for actix-web 3.0 (is now default).
+- Arrays up to length 32 are supported (in codegen and actix-web plugin).
+- Actix plugin: `#[api_v2_operation]` macro now supports specifying `consumes`, `produces`, `summary`, `description`, `tags`
+and `operation_id` in macro.
+- Actix plugin: Support for `actix-session`, `serde_qs` and `chrono` types in handlers.
+- Actix plugin: `App::wrap_api_with_spec` allows to provide default specification with `info` and other custom settings
+- Actix plugin: Support tags in api_v2_operation macros.
+- Actix plugin: `#[serde(flatten)]` support in `Apiv2Schema` derive.
+- Actix plugin: Added wrapper types for some 2xx status codes.
+
+### Changed
+- Actix plugin: Refactored internals of `#[api_v2_operation]` proc macro (long-outstanding technical debt). This now generates operation metadata (on the fly) for each handler, which enables us to tie custom changes to operations easily.
 - Actix plugin: Grouping of parameters across handlers have been disabled as a result of major bugs (it's now under `normalize` feature).
 - Actix plugin: actix-web `2.x` is supported through `actix2` and `actix2-nightly` features.
 
 ### Fixed
 - `Apiv2Schema` supports `HashMap<Uuid, Foo>`.
-- `#[api_v2_operation]` supports referencing inside handlers.
+- Actix plugin: `#[api_v2_operation]` supports referencing inside handlers.
+- Actix plugin: Fixed a bug on using `where` clause in handlers marked with `#[api_v2_operation]`.
+- Actix plugin: API objects have `object` type specified in their schemas.
 
 ## [0.4.1] - 2020-07-01
 ### Fixed
@@ -135,7 +147,8 @@ and `operation_id` in macro.
 - Loading OpenAPI v2 schema from JSON/YAML
 - Workspace, README, LICENSE, Makefile, CI config, etc.
 
-[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.4.1...HEAD
+[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/wafflespeanut/paperclip/compare/v0.4.1...v0.5.0
 [0.4.1]: https://github.com/wafflespeanut/paperclip/compare/v0.4.0...v0.4.1
 [0.4.0]: https://github.com/wafflespeanut/paperclip/compare/v0.3.0...v0.4.0
 [0.3.0]: https://github.com/wafflespeanut/paperclip/compare/v0.2.0...v0.3.0
