@@ -26,7 +26,7 @@ parking_lot = "0.11"
 serde = { version = "1.0", features = ["derive"] }
 serde_json = "1.0"
 serde_yaml = "0.8"
-tokio-util = { version = "0.3", features = ["codec"] }
+tokio-util = { version = "0.4", features = ["codec"] }
 url = "2.1"
 
 anyhow = "1.0"
@@ -34,7 +34,7 @@ clap = { version = "2.33", features = ["yaml"] }
 env_logger = "0.7"
 humantime = "2.0"
 openssl = { version = "0.10", features = ["vendored"] }
-tokio = { version = "0.2", features = ["fs", "io-util", "io-std", "macros", "rt-threaded"] }
+tokio = { version = "0.3", features = ["fs", "io-util", "io-std", "macros", "rt-multi-thread"] }
 reqwest = { version = "0.10", features = ["stream", "json", "native-tls"] }
 
 [workspace]

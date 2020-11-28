@@ -1052,11 +1052,13 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         }
 
         if !self.form.is_empty() && self.is_multipart {
-            f.write_str(
+            write!(
+                f,
                 "
-        .multipart_form_data({
-            use crate::client::Form;
+        .multipart_form_data({{
+            use {prefix}client::Form;
             let mut form = <Client::Request as Request>::Form::new();",
+                prefix = self.builder.helper_module_prefix
             )?;
             f.write_str(&self.form)?;
             f.write_str(
