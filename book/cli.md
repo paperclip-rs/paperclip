@@ -94,7 +94,7 @@ GET http://echo.jsontest.com/pets/25
 
 Passing `-v` flag enables verbose mode which prints additional information about the request we've made. Also note that the body of the response is piped to stdout directly.
 
-### Request body
+#### Request body
 
 Finally, let's `POST` something with a body. Here, `add-pet` requires a payload, so `--payload` argument is required. This argument is special in that it could be either a path to a file or `-` (when input is obtained from stdin). Either way, the input is parsed to the actual schema before making the API call.
 

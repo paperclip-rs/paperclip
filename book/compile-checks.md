@@ -5,7 +5,7 @@ API calls often *require* some parameters. Should we miss those parameters when 
 For example, in the [previous example](build-script.md), in order to fetch a pet, [`petId` parameter](https://github.com/wafflespeanut/paperclip/blob/fa95b023aaf8b6e396c899a93a9eda6fd791505c/openapi/tests/pet-v2.yaml#L42-L47) is required. Let's change the main function in the above example to fetch a pet without its ID.
 
 ```rust
-let pet = Pet::get_pet_by_id().send(&client).compat().await?;
+let pet = Pet::get_pet_by_id().send(&client).await?;
 ```
 
 If we try and compile the program, then we'll get the following error:
@@ -24,7 +24,7 @@ Hence the fix would be to set the required parameter using the relevant method c
 let pet = Pet::get_pet_by_id()
     .id(25)
     .send(&client)
-    .compat().await?;
+    .await?;
 ```
 
 ... and the code will compile.
@@ -34,7 +34,7 @@ The same applies to using API objects (with required fields). For example, the [
 So, if we did this:
 
 ```rust
-let pet = Pet::add_pet().send(&client).compat().await?;
+let pet = Pet::add_pet().send(&client).await?;
 ```
 
 ... we'd get an error during compilation:
@@ -55,9 +55,9 @@ let pet = Pet::add_pet()
     .id(25)
     .name("Milo")
     .send(&client)
-    .compat().await?;
+    .await?;
 ```
 
 ... and the code will compile.
 
-> **NOTE:** The types of arguments are also enforced.
+Similarly, the types of arguments are also enforced.

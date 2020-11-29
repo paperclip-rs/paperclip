@@ -130,6 +130,7 @@ curl http://localhost:8080/api/spec
   "swagger": "2.0",
   "definitions": {
     "Pet": {
+      "type": "object",
       "properties": {
         "id": {
           "type": "integer",

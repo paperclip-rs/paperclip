@@ -1,9 +1,10 @@
+## Setting defaults in API schema
 
 It is possible to define default initial values for the schema, which might be useful to define "info",
 "schemes", "tags" and other top level schema fields which are not inherited from handlers.
 
 ```rust
-use paperclip::v2::models::DefaultApiRaw;
+use paperclip::v2::models::{DefaultApiRaw, Tag};
 
 let mut spec = DefaultApiRaw::default();
 spec.tags = vec![

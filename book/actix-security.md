@@ -1,3 +1,5 @@
+## Defining security schemes for your API
+
 You can use `Apiv2Security` derive macro for structs which can then be used as handler parameters to have those handlers marked as requiring authorization.
 
 ```rust

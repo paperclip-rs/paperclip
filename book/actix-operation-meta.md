@@ -1,3 +1,5 @@
+## Adding additional metadata to operations
+
 By default, the first doc comment (if any) is taken for the `summary` field and the rest of the following doc comments
 (if any) will be taken as `description` for that operation.
 

@@ -1,3 +1,4 @@
+## Adding additional response status codes to operations
 
 Paperclip deduces your API schema using macros (which read the types of handlers and parameter structs at compile time), so in order for paperclip to know what response code sent by the API, it needs type information about it at compile time. It cannot be inferred from response at runtime.
 
