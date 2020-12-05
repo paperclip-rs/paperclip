@@ -286,6 +286,10 @@ pub trait Apiv2Schema {
     fn security_scheme() -> Option<SecurityScheme> {
         None
     }
+
+    fn is_required() -> bool {
+        true
+    }
 }
 
 impl Apiv2Schema for () {}
@@ -312,6 +316,10 @@ impl<T> Apiv2Schema for Option<T> {
     default fn security_scheme() -> Option<SecurityScheme> {
         None
     }
+
+    fn is_required() -> bool {
+        false
+    }
 }
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
@@ -323,6 +331,10 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
 
     fn security_scheme() -> Option<SecurityScheme> {
         T::security_scheme()
+    }
+
+    fn is_required() -> bool {
+        false
     }
 }
 
