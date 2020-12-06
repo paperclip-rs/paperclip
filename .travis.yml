@@ -33,8 +33,7 @@ matrix:
     - cp -r book/_book/* target/doc/
   - name: check
     before_script:
-    - rustup toolchain install nightly
-    - rustup component add rustfmt --toolchain nightly
+    - rustup toolchain install nightly --allow-downgrade -c rustfmt
     - rustup component add clippy
     script:
     - cargo +nightly fmt --all -- --check
