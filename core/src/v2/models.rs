@@ -14,11 +14,13 @@ use regex::{Captures, Regex};
 use actix_web::http::Method;
 
 use parking_lot::RwLock;
-use std::borrow::Cow;
-use std::collections::{BTreeMap, BTreeSet};
-use std::fmt::{self, Display};
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
+use std::{
+    borrow::Cow,
+    collections::{BTreeMap, BTreeSet},
+    fmt::{self, Display},
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 /// Regex that can be used for fetching templated path parameters.
 static PATH_TEMPLATE_REGEX: Lazy<Regex> =

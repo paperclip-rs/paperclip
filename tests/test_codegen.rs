@@ -5,8 +5,7 @@ use paperclip::v2::{
 };
 
 use once_cell::sync::Lazy;
-use std::fs::File;
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 
 static ROOT: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")));
 static PET_SCHEMA: Lazy<ResolvableApi<DefaultSchema>> = Lazy::new(|| {

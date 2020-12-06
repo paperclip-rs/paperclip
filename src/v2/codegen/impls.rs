@@ -1,12 +1,16 @@
-use super::emitter::ANY_GENERIC_PARAMETER;
-use super::object::{ApiObject, ApiObjectBuilder, Response, StructField, TypeParameters};
-use super::RUST_KEYWORDS;
+use super::{
+    emitter::ANY_GENERIC_PARAMETER,
+    object::{ApiObject, ApiObjectBuilder, Response, StructField, TypeParameters},
+    RUST_KEYWORDS,
+};
 use crate::v2::models::{CollectionFormat, ParameterIn, JSON_CODER, JSON_MIME};
 use heck::{CamelCase, KebabCase, SnekCase};
 
-use std::fmt::{self, Display, Write};
-use std::iter;
-use std::rc::Rc;
+use std::{
+    fmt::{self, Display, Write},
+    iter,
+    rc::Rc,
+};
 
 /// Represents the API object impl.
 pub struct ApiObjectImpl<'a> {

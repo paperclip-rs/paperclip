@@ -1,5 +1,4 @@
-use std::collections::HashSet;
-use std::path::PathBuf;
+use std::{collections::HashSet, path::PathBuf};
 
 macro_rules! impl_err_from {
     ($err:ident :: $type:ty > $variant:ident) => {

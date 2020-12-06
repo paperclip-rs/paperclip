@@ -1,7 +1,12 @@
-use super::template::{self, TEMPLATE};
-use super::{object::ApiObject, CrateMeta, EmitMode};
-use crate::error::PaperClipError;
-use crate::v2::models::{Coders, SpecFormat};
+use super::{
+    object::ApiObject,
+    template::{self, TEMPLATE},
+    CrateMeta, EmitMode,
+};
+use crate::{
+    error::PaperClipError,
+    v2::models::{Coders, SpecFormat},
+};
 use anyhow::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
@@ -9,16 +14,18 @@ use heck::SnekCase;
 use itertools::Itertools;
 use url::Url;
 
-use std::cell::RefCell;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::fmt::Write as _;
 #[cfg(feature = "cli")]
 use std::fs;
-use std::fs::OpenOptions;
-use std::hash::{Hash, Hasher};
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    fmt::Write as _,
+    fs::OpenOptions,
+    hash::{Hash, Hasher},
+    io::Write,
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 
 /// Holds the state for your schema emitter.
 #[derive(Debug)]

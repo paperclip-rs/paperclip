@@ -7,9 +7,9 @@ use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::quote;
 use strum_macros::EnumString;
-use syn::spanned::Spanned;
 use syn::{
     punctuated::{Pair, Punctuated},
+    spanned::Spanned,
     Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
     Generics, Ident, ItemFn, Lit, Meta, MetaList, MetaNameValue, NestedMeta, Path, PathArguments,
     ReturnType, Token, TraitBound, Type, TypeTraitObject,
@@ -809,9 +809,9 @@ fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macr
 }
 
 /// Checks for `api_v2_empty` attributes and removes them.
-fn extract_openapi_attrs<'a>(
-    field_attrs: &'a [Attribute],
-) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + 'a {
+fn extract_openapi_attrs(
+    field_attrs: &'_ [Attribute],
+) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + '_ {
     field_attrs.iter().filter_map(|a| match a.parse_meta() {
         Ok(Meta::List(list)) if list.path.is_ident("openapi") => Some(list.nested),
         _ => None,

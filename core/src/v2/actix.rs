@@ -1,10 +1,12 @@
-use super::models::{
-    DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
-    Response, SecurityScheme,
-};
 #[cfg(feature = "actix-multipart")]
 use super::schema::TypedData;
-use super::schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema};
+use super::{
+    models::{
+        DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
+        Response, SecurityScheme,
+    },
+    schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema},
+};
 use crate::util::{ready, Ready};
 use actix_web::{
     http::StatusCode,
@@ -17,11 +19,13 @@ use serde::Serialize;
 #[cfg(feature = "serde_qs")]
 use serde_qs::actix::QsQuery;
 
-use std::collections::BTreeMap;
-use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::{
+    collections::BTreeMap,
+    fmt,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.

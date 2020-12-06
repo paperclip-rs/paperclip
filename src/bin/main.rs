@@ -1,14 +1,18 @@
 use anyhow::Error;
-use paperclip::v2::{
-    self,
-    codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
-    models::{DefaultSchema, ResolvableApi},
+use paperclip::{
+    v2::{
+        self,
+        codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
+        models::{DefaultSchema, ResolvableApi},
+    },
+    PaperClipError,
 };
-use paperclip::PaperClipError;
 use structopt::StructOpt;
 
-use std::fs::{self, File};
-use std::path::PathBuf;
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 fn parse_version(s: &str) -> Result<OApiVersion, Error> {
     match s {
