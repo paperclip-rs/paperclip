@@ -9,9 +9,10 @@ clean:
 
 prepare:
 	rustup override set stable
-	rustup component add rustfmt
-	rustup component add clippy
 	rustup toolchain install nightly
+	rustup component add rustfmt --toolchain=nightly
+	rustup component add clippy
+	rustup component add clippy --toolchain=nightly
 
 check:
 	cargo +nightly fmt --all
