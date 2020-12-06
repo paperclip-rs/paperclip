@@ -24,6 +24,8 @@ use uuid_dev::Uuid;
 static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
 static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
+type OptionalUuid = Option<uuid_dev::Uuid>;
+
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "lowercase")]
 enum PetClass {
@@ -44,7 +46,7 @@ struct Pet {
     birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
     #[serde(rename = "uuid")]
-    uid: Option<uuid_dev::Uuid>,
+    uid: OptionalUuid,
 }
 
 impl Default for Pet {
