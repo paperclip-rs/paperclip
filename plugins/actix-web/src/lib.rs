@@ -10,8 +10,11 @@ pub use paperclip_macros::{api_v2_errors, api_v2_operation, Apiv2Schema, Apiv2Se
 
 use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;
-use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform};
-use actix_web::{web::HttpResponse, Error};
+use actix_web::{
+    dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform},
+    web::HttpResponse,
+    Error,
+};
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{
     DefaultApiRaw, DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
@@ -19,10 +22,7 @@ use paperclip_core::v2::models::{
 };
 use parking_lot::RwLock;
 
-use std::collections::BTreeMap;
-use std::fmt::Debug;
-use std::future::Future;
-use std::sync::Arc;
+use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {

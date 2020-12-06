@@ -297,10 +297,11 @@ impl Apiv2Schema for serde_yaml::Value {}
 
 impl<T: TypedData> Apiv2Schema for T {
     fn raw_schema() -> DefaultSchemaRaw {
-        let mut schema = DefaultSchemaRaw::default();
-        schema.data_type = Some(T::data_type());
-        schema.format = T::format();
-        schema
+        DefaultSchemaRaw {
+            data_type: Some(T::data_type()),
+            format: T::format(),
+            ..Default::default()
+        }
     }
 }
 
@@ -378,10 +379,11 @@ macro_rules! impl_schema_array {
     ($ty:ty) => {
         impl<T: Apiv2Schema> Apiv2Schema for $ty {
             fn raw_schema() -> DefaultSchemaRaw {
-                let mut schema = DefaultSchemaRaw::default();
-                schema.data_type = Some(DataType::Array);
-                schema.items = Some(T::schema_with_ref().into());
-                schema
+                DefaultSchemaRaw {
+                    data_type: Some(DataType::Array),
+                    items: Some(T::schema_with_ref().into()),
+                    ..Default::default()
+                }
             }
         }
     };
@@ -391,10 +393,11 @@ macro_rules! impl_schema_map {
     ($ty:ty) => {
         impl<K: ToString, V: Apiv2Schema> Apiv2Schema for $ty {
             fn raw_schema() -> DefaultSchemaRaw {
-                let mut schema = DefaultSchemaRaw::default();
-                schema.data_type = Some(DataType::Object);
-                schema.extra_props = Some(Either::Right(V::schema_with_ref().into()));
-                schema
+                DefaultSchemaRaw {
+                    data_type: Some(DataType::Object),
+                    extra_props: Some(Either::Right(V::schema_with_ref().into())),
+                    ..Default::default()
+                }
             }
         }
     };

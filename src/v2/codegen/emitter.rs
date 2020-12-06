@@ -1,28 +1,35 @@
-use super::object::{
-    ApiObject, ObjectContainer, ObjectField, ObjectVariant, OpRequirement, Parameter, Response,
-};
-use super::state::{ChildModule, EmitterState};
-use super::CrateMeta;
-use crate::error::PaperClipError;
-use crate::v2::{
-    models::{
-        Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items, MediaRange,
-        ParameterIn, Reference, ResolvableApi, ResolvableOperation, ResolvableParameter,
-        ResolvablePathItem, ResolvableResponse, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
+use super::{
+    object::{
+        ApiObject, ObjectContainer, ObjectField, ObjectVariant, OpRequirement, Parameter, Response,
     },
-    Schema,
+    state::{ChildModule, EmitterState},
+    CrateMeta,
+};
+use crate::{
+    error::PaperClipError,
+    v2::{
+        models::{
+            Coder, CollectionFormat, DataType, DataTypeFormat, Either, HttpMethod, Items,
+            MediaRange, ParameterIn, Reference, ResolvableApi, ResolvableOperation,
+            ResolvableParameter, ResolvablePathItem, ResolvableResponse, JSON_CODER, JSON_MIME,
+            YAML_CODER, YAML_MIME,
+        },
+        Schema,
+    },
 };
 use anyhow::Error;
 use heck::{CamelCase, SnekCase};
 use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;
 use parking_lot::RwLock;
-use std::collections::{BTreeMap, BTreeSet, HashSet};
-use std::fmt::Debug;
-use std::fs;
-use std::ops::Deref;
-use std::path::{Path, PathBuf};
-use std::sync::Arc;
+use std::{
+    collections::{BTreeMap, BTreeSet, HashSet},
+    fmt::Debug,
+    fs,
+    ops::Deref,
+    path::{Path, PathBuf},
+    sync::Arc,
+};
 use url::Host;
 
 /// Identifier used for `Any` generic parameters in struct definitions.

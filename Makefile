@@ -1,5 +1,4 @@
-
-all: fmt build test
+all: check build test
 
 clean:
 	rm -rf Cargo.lock
@@ -12,9 +11,15 @@ prepare:
 	rustup override set stable
 	rustup component add rustfmt
 	rustup component add clippy
+	rustup toolchain install nightly --allow-downgrade -c rustfmt clippy
 
-fmt:
-	cargo fmt --all
+check:
+	cargo +nightly fmt --all
+	cargo clippy --all --features "actix" -- -D clippy::all
+
+check_nightly:
+	cargo +nightly fmt --all
+	cargo +nightly clippy --all --features "actix" -- -D clippy::all
 
 doc:
 	cargo doc --all --all-features --no-deps
@@ -25,7 +30,6 @@ build:
 	cargo build --features cli
 
 test:
-	cargo clippy --all --features "actix" -- -D clippy::all
 	cargo test --all --features "actix cli chrono uuid"
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check

@@ -7,20 +7,20 @@ pub use actix_web::web::{
 
 use crate::Mountable;
 use actix_service::{IntoServiceFactory, ServiceFactory};
-use actix_web::dev::{
-    AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse, Transform,
+use actix_web::{
+    dev::{AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse, Transform},
+    guard::Guard,
+    http::Method,
+    Error, FromRequest, Responder,
 };
-use actix_web::guard::Guard;
-use actix_web::{http::Method, Error, FromRequest, Responder};
-use paperclip_core::v2::models::{
-    DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod, SecurityScheme,
+use paperclip_core::v2::{
+    models::{
+        DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod, SecurityScheme,
+    },
+    schema::Apiv2Operation,
 };
-use paperclip_core::v2::schema::Apiv2Operation;
 
-use std::collections::BTreeMap;
-use std::fmt::Debug;
-use std::future::Future;
-use std::mem;
+use std::{collections::BTreeMap, fmt::Debug, future::Future, mem};
 
 const METHODS: &[Method] = &[
     Method::GET,

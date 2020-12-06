@@ -5,20 +5,26 @@ extern crate serde_json;
 
 use actix_rt::System;
 use actix_service::ServiceFactory;
-use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
-use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
+use actix_web::{
+    dev::{MessageBody, Payload, ServiceRequest, ServiceResponse},
+    App, Error, FromRequest, HttpRequest, HttpServer, Responder,
+};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
-use paperclip::actix::{
-    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
-    OpenApiExt,
+use paperclip::{
+    actix::{
+        api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
+        OpenApiExt,
+    },
+    v2::models::{DefaultApiRaw, Info, Tag},
 };
-use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use parking_lot::Mutex;
 
-use std::collections::{BTreeMap, HashMap, HashSet};
-use std::sync::mpsc;
-use std::thread;
+use std::{
+    collections::{BTreeMap, HashMap, HashSet},
+    sync::mpsc,
+    thread,
+};
 use uuid_dev::Uuid;
 
 static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());

@@ -2,8 +2,7 @@
 
 use proc_macro::TokenStream;
 use quote::quote;
-use syn::spanned::Spanned;
-use syn::{Data, DeriveInput, Fields, FieldsNamed, Ident};
+use syn::{spanned::Spanned, Data, DeriveInput, Fields, FieldsNamed, Ident};
 
 /// Actual parser and emitter for `api_v2_schema_struct` macro.
 pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {

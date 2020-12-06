@@ -33,9 +33,10 @@ matrix:
     - cp -r book/_book/* target/doc/
   - name: check
     before_script:
-    - rustup component add rustfmt clippy
+    - rustup toolchain install nightly --allow-downgrade -c rustfmt
+    - rustup component add clippy
     script:
-    - cargo fmt --all -- --check
+    - cargo +nightly fmt --all -- --check
     - cargo clippy --all --features "actix" -- -D clippy::all
 
 deploy:

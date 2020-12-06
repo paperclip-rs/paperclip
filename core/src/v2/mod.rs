@@ -14,8 +14,10 @@ pub use self::actix::{
     AcceptedJson, CreatedJson, NoContent, OperationModifier, ResponderWrapper, ResponseWrapper,
 };
 
-pub use self::models::{DefaultSchema, ResolvableApi};
-pub use self::schema::Schema;
+pub use self::{
+    models::{DefaultSchema, ResolvableApi},
+    schema::Schema,
+};
 pub use paperclip_macros::*;
 
 #[cfg(feature = "codegen")]
