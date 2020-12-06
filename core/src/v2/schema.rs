@@ -250,6 +250,9 @@ pub trait Apiv2Schema {
     /// Description of this schema. In case the trait is derived, uses the documentation on the type.
     const DESCRIPTION: &'static str = "";
 
+    /// Indicates the requirement of this schema.
+    const REQUIRED: bool = true;
+
     /// Returns the raw schema for this object.
     fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -304,6 +307,7 @@ impl<T: TypedData> Apiv2Schema for T {
 #[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Option<T> {
     default const NAME: Option<&'static str> = None;
+    default const REQUIRED: bool = false;
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -316,6 +320,7 @@ impl<T> Apiv2Schema for Option<T> {
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     const NAME: Option<&'static str> = T::NAME;
+    const REQUIRED: bool = false;
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()

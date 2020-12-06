@@ -769,29 +769,15 @@ fn add_optional_impl(name: &Ident, generics: &Generics) -> proc_macro2::TokenStr
     }
 }
 
-fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
-    let mut is_required = true;
+fn get_field_type(field: &Field) -> Option<proc_macro2::TokenStream> {
     match field.ty {
-        Type::Path(ref p) => {
-            let ty = p
-                .path
-                .segments
-                .last()
-                .expect("expected type for struct field");
-
-            if p.path.segments.len() == 1 && &ty.ident == "Option" {
-                is_required = false;
-            }
-
-            (Some(address_type_for_fn_call(&field.ty)), is_required)
-        }
-        Type::Reference(_) => (Some(address_type_for_fn_call(&field.ty)), is_required),
+        Type::Path(_) | Type::Reference(_) => Some(address_type_for_fn_call(&field.ty)),
         _ => {
             emit_warning!(
                 field.ty.span().unwrap(),
                 "unsupported field type will be ignored."
             );
-            (None, is_required)
+            None
         }
     }
 }
@@ -799,9 +785,8 @@ fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
 /// Generates code for a tuple struct with fields.
 fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macro2::TokenStream) {
     let field = fields.unnamed.iter().next().unwrap();
-    let (ty_ref, _) = get_field_type(&field);
 
-    if let Some(ty_ref) = ty_ref {
+    if let Some(ty_ref) = get_field_type(&field) {
         props_gen.extend(quote!({
             schema = #ty_ref::raw_schema();
         }));
@@ -877,7 +862,7 @@ fn handle_field_struct(
             field_name = prop.rename(&field_name);
         }
 
-        let (ty_ref, is_required) = get_field_type(&field);
+        let ty_ref = get_field_type(&field);
 
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
@@ -897,11 +882,11 @@ fn handle_field_struct(
             })
         };
 
-        if is_required {
-            gen.extend(quote! {
+        gen.extend(quote! {
+            if #ty_ref::REQUIRED {
                 schema.required.insert(#field_name.into());
-            });
-        }
+            }
+        });
 
         props_gen.extend(gen);
     }
