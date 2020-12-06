@@ -884,7 +884,7 @@ fn handle_field_struct(
         };
 
         gen.extend(quote! {
-            if #ty_ref::is_required() {
+            if #ty_ref::REQUIRED {
                 schema.required.insert(#field_name.into());
             }
         });

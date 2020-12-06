@@ -250,6 +250,9 @@ pub trait Apiv2Schema {
     /// Description of this schema. In case the trait is derived, uses the documentation on the type.
     const DESCRIPTION: &'static str = "";
 
+    /// Indicates the requirement of this schema.
+    const REQUIRED: bool = true;
+
     /// Returns the raw schema for this object.
     fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -286,10 +289,6 @@ pub trait Apiv2Schema {
     fn security_scheme() -> Option<SecurityScheme> {
         None
     }
-
-    fn is_required() -> bool {
-        true
-    }
 }
 
 impl Apiv2Schema for () {}
@@ -308,6 +307,7 @@ impl<T: TypedData> Apiv2Schema for T {
 #[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Option<T> {
     default const NAME: Option<&'static str> = None;
+    default const REQUIRED: bool = false;
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -316,14 +316,11 @@ impl<T> Apiv2Schema for Option<T> {
     default fn security_scheme() -> Option<SecurityScheme> {
         None
     }
-
-    fn is_required() -> bool {
-        false
-    }
 }
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     const NAME: Option<&'static str> = T::NAME;
+    const REQUIRED: bool = false;
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
@@ -331,10 +328,6 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
 
     fn security_scheme() -> Option<SecurityScheme> {
         T::security_scheme()
-    }
-
-    fn is_required() -> bool {
-        false
     }
 }
 
