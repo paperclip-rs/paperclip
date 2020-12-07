@@ -53,6 +53,7 @@ reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
 insta = "1.0"
 env_logger = "0.8"
+serde_qs_test = { package = "serde_qs", version = "0.8.1", features = ["actix"] }
 
 [features]
 # actix-web support

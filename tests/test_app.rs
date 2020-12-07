@@ -2571,6 +2571,112 @@ fn test_security_app() {
     );
 }
 
+#[test]
+#[allow(dead_code)]
+fn test_serde_qs_app() {
+    use serde_qs_test::actix::QsQuery;
+    /// For testing serde_qs query params
+    #[derive(Deserialize, Apiv2Schema)]
+    struct QueryParams {
+        id: u8,
+        name: String,
+        address: Address,
+        phone: u32,
+        user_ids: Vec<u8>,
+    }
+
+    #[derive(Deserialize, Apiv2Schema)]
+    struct Address {
+        city: String,
+        postcode: String,
+    }
+
+    #[api_v2_operation]
+    async fn serde_qs_endpoint(_: QsQuery<QueryParams>) -> NoContent {
+        NoContent
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::resource("/qs").route(web::get().to(serde_qs_endpoint)))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                    },
+                    "info": {
+                        "title": "",
+                        "version": ""
+                    },
+                    "paths": {
+                        "/qs": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "in": "query",
+                                        "name": "address[city]",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "address[postcode]",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "id",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "phone",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "items": {
+                                            "collectionFormat": "multi",
+                                            "format": "int32",
+                                            "type": "integer"
+                                        },
+                                        "name": "user_ids[]",
+                                        "type": "array"
+                                    }
+                                ],
+                                "responses": {"204":{"description":"No Content"}}
+                            },
+                        },
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
 fn run_and_check_app<F, G, T, B, U>(factory: F, check: G) -> U
 where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,

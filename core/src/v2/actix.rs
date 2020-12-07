@@ -15,9 +15,13 @@ use actix_web::{
 };
 use pin_project::pin_project;
 
+#[cfg(feature = "serde_qs")]
+use super::models::{CollectionFormat, DataType};
 use serde::Serialize;
 #[cfg(feature = "serde_qs")]
 use serde_qs::actix::QsQuery;
+#[cfg(feature = "serde_qs")]
+use std::iter;
 
 use std::{
     collections::BTreeMap,
@@ -332,7 +336,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                         Items {
                             data_type: schema.data_type.clone(),
                             format: schema.format.clone(),
-                            // collection_format, // this defaults to csv
+                            collection_format: None, // this defaults to csv
                             enum_: schema.enum_.clone(),
                             ..Default::default() // range fields are not emitted
                         }
@@ -362,8 +366,100 @@ impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
 impl_param_extractor!(Path<T> => Path);
 impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
+
 #[cfg(feature = "serde_qs")]
-impl_param_extractor!(QsQuery<T> => Query);
+#[cfg(feature = "nightly")]
+impl<T> Apiv2Schema for QsQuery<T> {
+    default const NAME: Option<&'static str> = None;
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
+}
+
+#[cfg(feature = "serde_qs")]
+#[cfg(not(feature = "nightly"))]
+/// OpenApiv2 can't specify `serde_qs`'s array index format ie. `parameter[n]`, and because `n` is generally unbounded we can't just duplicate the parameter definition for all `n`. Therefore this implmentation will allow any nesting of objects but arrays can only contain primitive types.
+impl<T: Apiv2Schema> Apiv2Schema for QsQuery<T> {}
+
+#[cfg(feature = "serde_qs")]
+impl<T: Apiv2Schema> OperationModifier for QsQuery<T> {
+    fn update_parameter(op: &mut DefaultOperationRaw) {
+        let def = T::raw_schema();
+
+        for param in serde_qs_params(Box::new(def), String::new(), None) {
+            op.parameters.push(Either::Right(param));
+        }
+    }
+
+    // These don't require updating definitions, as we use them only
+    // to get their properties.
+    fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
+}
+
+#[cfg(feature = "serde_qs")]
+fn serde_qs_params(
+    def: Box<DefaultSchemaRaw>,
+    name_base: String,
+    description: Option<String>,
+) -> Box<dyn Iterator<Item = Parameter<DefaultSchemaRaw>>> {
+    let required = def.required;
+    Box::new(def.properties.into_iter().flat_map(move |(k, v)| {
+        let name = if name_base.is_empty() {
+            k.clone()
+        } else {
+            format!("{}[{}]", name_base, k)
+        };
+        let description: Option<String> = if let Some(description) = &description {
+            Some(format!(
+                "{}; {}",
+                description,
+                v.description.as_deref().unwrap_or("?").to_owned()
+            ))
+        } else {
+            v.description.clone()
+        };
+        match v.data_type {
+            Some(DataType::Object) => serde_qs_params(v, name, description),
+            Some(DataType::Array) => {
+                let items = v.items.as_ref().cloned().unwrap_or_default();
+                Box::new(iter::once(Parameter {
+                    name: format!("{}[]", name),
+                    in_: ParameterIn::Query,
+                    data_type: Some(DataType::Array),
+                    required: false,
+                    description,
+                    items: Some(Items {
+                        data_type: items.data_type,
+                        format: items.format,
+                        enum_: items.enum_,
+                        collection_format: Some(CollectionFormat::Multi),
+                        ..Default::default() // range fields are not emitted
+                    }),
+                    ..Default::default() // range fields are not emitted
+                }))
+            }
+            None
+            | Some(DataType::Integer)
+            | Some(DataType::Number)
+            | Some(DataType::String)
+            | Some(DataType::Boolean) => Box::new(iter::once(Parameter {
+                in_: ParameterIn::Query,
+                required: required.contains(&k),
+                data_type: v.data_type,
+                format: v.format,
+                enum_: v.enum_,
+                description,
+                name,
+                ..Default::default()
+            })),
+            Some(DataType::File) => panic!(
+                "Unsupported data type, '{:?}' in qs parameter",
+                &v.data_type
+            ),
+        }
+    }))
+}
 
 macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
     #[cfg(feature = "nightly")]
