@@ -332,15 +332,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     format: v.format,
                     enum_: v.enum_,
                     description: v.description,
-                    items: v.items.as_ref().map(|schema| {
-                        Items {
-                            data_type: schema.data_type.clone(),
-                            format: schema.format.clone(),
-                            collection_format: None, // this defaults to csv
-                            enum_: schema.enum_.clone(),
-                            ..Default::default() // range fields are not emitted
-                        }
-                    }),
+                    items: v.items.as_deref().map(map_schema_to_items),
                     name: k,
                     ..Default::default()
                 }));
@@ -352,6 +344,17 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
         fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
     }
 });
+
+fn map_schema_to_items(schema: &DefaultSchemaRaw) -> Items {
+    Items {
+        data_type: schema.data_type.clone(),
+        format: schema.format.clone(),
+        collection_format: None, // this defaults to csv
+        enum_: schema.enum_.clone(),
+        items: schema.items.as_deref().map(|schema| Box::new(map_schema_to_items(schema))),
+        ..Default::default() // range fields are not emitted
+    }
+}
 
 /// `formData` can refer to the global definitions.
 #[cfg(feature = "nightly")]
