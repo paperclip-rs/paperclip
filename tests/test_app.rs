@@ -2573,6 +2573,7 @@ fn test_security_app() {
 
 #[test]
 #[allow(dead_code)]
+#[cfg(serde_qs)]
 fn test_serde_qs_app() {
     use serde_qs_test::actix::QsQuery;
     /// For testing serde_qs query params

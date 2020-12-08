@@ -347,11 +347,14 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
 
 fn map_schema_to_items(schema: &DefaultSchemaRaw) -> Items {
     Items {
-        data_type: schema.data_type.clone(),
+        data_type: schema.data_type,
         format: schema.format.clone(),
         collection_format: None, // this defaults to csv
         enum_: schema.enum_.clone(),
-        items: schema.items.as_deref().map(|schema| Box::new(map_schema_to_items(schema))),
+        items: schema
+            .items
+            .as_deref()
+            .map(|schema| Box::new(map_schema_to_items(schema))),
         ..Default::default() // range fields are not emitted
     }
 }
