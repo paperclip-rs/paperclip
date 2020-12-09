@@ -59,12 +59,12 @@ impl Resource {
 impl<T> HttpServiceFactory for Resource<actix_web::Resource<T>>
 where
     T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse,
+        Error = Error,
+        InitError = (),
+    > + 'static,
 {
     fn register(self, config: &mut AppService) {
         self.inner.register(config)
@@ -74,12 +74,12 @@ where
 impl<T> IntoServiceFactory<T> for Resource<actix_web::Resource<T>>
 where
     T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse,
+        Error = Error,
+        InitError = (),
+    > + 'static,
 {
     fn into_factory(self) -> T {
         self.inner.into_factory()
@@ -242,12 +242,12 @@ where
     where
         F: actix_service::IntoServiceFactory<U>,
         U: ServiceFactory<
-                Config = (),
-                Request = ServiceRequest,
-                Response = ServiceResponse,
-                Error = Error,
-                InitError = (),
-            > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        > + 'static,
         U::InitError: Debug,
     {
         self.inner = self.inner.default_service(f);
@@ -302,12 +302,12 @@ impl Scope {
 impl<T> HttpServiceFactory for Scope<actix_web::Scope<T>>
 where
     T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse,
+        Error = Error,
+        InitError = (),
+    > + 'static,
 {
     fn register(self, config: &mut AppService) {
         if let Some(s) = self.inner {
@@ -382,12 +382,12 @@ where
     where
         F: actix_service::IntoServiceFactory<U>,
         U: ServiceFactory<
-                Config = (),
-                Request = ServiceRequest,
-                Response = ServiceResponse,
-                Error = Error,
-                InitError = (),
-            > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        > + 'static,
         U::InitError: Debug,
     {
         self.inner = self.inner.map(|s| s.default_service(f));

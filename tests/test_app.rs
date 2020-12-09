@@ -2091,12 +2091,12 @@ fn test_multiple_method_routes() {
         F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
         B: MessageBody + 'static,
         T: ServiceFactory<
-                Config = (),
-                Request = ServiceRequest,
-                Response = ServiceResponse<B>,
-                Error = Error,
-                InitError = (),
-            > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse<B>,
+            Error = Error,
+            InitError = (),
+        > + 'static,
     {
         run_and_check_app(f, |addr| {
             let resp = CLIENT
@@ -2683,12 +2683,12 @@ where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
     B: MessageBody + 'static,
     T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse<B>,
+        Error = Error,
+        InitError = (),
+    > + 'static,
     G: Fn(String) -> U,
 {
     let (tx, rx) = mpsc::channel();
