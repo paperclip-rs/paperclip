@@ -332,6 +332,7 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     format: v.format,
                     enum_: v.enum_,
                     description: v.description,
+                    collection_format: None, // this defaults to csv
                     items: v.items.as_deref().map(map_schema_to_items),
                     name: k,
                     ..Default::default()
@@ -442,6 +443,7 @@ fn serde_qs_params(
                         collection_format: Some(CollectionFormat::Multi),
                         ..Default::default() // range fields are not emitted
                     }),
+                    collection_format: Some(CollectionFormat::Multi),
                     ..Default::default() // range fields are not emitted
                 }))
             }

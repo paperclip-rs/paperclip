@@ -2658,12 +2658,13 @@ fn test_serde_qs_app() {
                                         "type": "integer"
                                     },
                                     {
+                                        "collectionFormat": "multi",
                                         "in": "query",
                                         "items": {
                                             "collectionFormat": "multi",
                                             "format": "int32",
                                             "type": "integer"
-                                        },
+                                          },
                                         "name": "user_ids[]",
                                         "type": "array"
                                     }
