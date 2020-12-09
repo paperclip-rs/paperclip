@@ -53,7 +53,7 @@ reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
 insta = "1.0"
 env_logger = "0.8"
-serde_qs_test = { package = "serde_qs", version = "0.8.1", features = ["actix"] }
+serde_qs_dev = { version = "0.8", package = "serde_qs", features = ["actix"] }
 
 [features]
 # actix-web support
@@ -96,4 +96,4 @@ required-features = ["v2", "codegen"]
 
 [[test]]
 name = "test_app"
-required-features = ["cli", "actix", "uuid", "chrono"]
+required-features = ["cli", "actix3", "uuid", "chrono"]

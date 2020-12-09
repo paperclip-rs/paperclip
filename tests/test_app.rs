@@ -2571,12 +2571,12 @@ fn test_security_app() {
     );
 }
 
+#[cfg(feature = "serde_qs")]
 #[test]
-#[allow(dead_code)]
-#[cfg(serde_qs)]
 fn test_serde_qs_app() {
-    use serde_qs_test::actix::QsQuery;
+    use serde_qs_dev::actix::QsQuery;
     /// For testing serde_qs query params
+    #[allow(dead_code)]
     #[derive(Deserialize, Apiv2Schema)]
     struct QueryParams {
         id: u8,
@@ -2586,6 +2586,7 @@ fn test_serde_qs_app() {
         user_ids: Vec<u8>,
     }
 
+    #[allow(dead_code)]
     #[derive(Deserialize, Apiv2Schema)]
     struct Address {
         city: String,
