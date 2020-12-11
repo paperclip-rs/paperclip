@@ -159,10 +159,12 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         impl #impl_generics paperclip::v2::schema::Apiv2Operation for #unit_struct #ty_generics #where_clause {
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
-                let mut op = paperclip::v2::models::DefaultOperationRaw::default();
-                #(
-                    op.#op_params = #op_values;
-                )*
+                let mut op = paperclip::v2::models::DefaultOperationRaw {
+                    #(
+                        #op_params: #op_values,
+                    )*
+                    .. Default::default()
+                };
                 #(
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
@@ -528,9 +530,11 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw};
                 use paperclip::v2::schema::TypedData;
 
-                let mut schema = DefaultSchemaRaw::default();
+                let mut schema = DefaultSchemaRaw {
+                    name: Some(#schema_name.into()), // Add name for later use.
+                    .. Default::default()
+                };
                 #props_gen
-                schema.name = Some(#schema_name.into()); // Add name for later use.
                 schema
             }
         }
