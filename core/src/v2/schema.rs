@@ -194,6 +194,12 @@ impl_type_simple!(
 );
 #[cfg(feature = "actix-session")]
 impl_type_simple!(actix_session::Session);
+#[cfg(feature = "actix-files")]
+impl_type_simple!(
+    actix_files::NamedFile,
+    DataType::File,
+    DataTypeFormat::Binary
+);
 #[cfg(feature = "chrono")]
 impl_type_simple!(
     chrono::NaiveDateTime,

@@ -290,6 +290,11 @@ impl OperationModifier for actix_session::Session {
     fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
 }
 
+#[cfg(feature = "actix-files")]
+impl OperationModifier for actix_files::NamedFile {
+    fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
+}
+
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     #[cfg(feature = "nightly")]
     impl<T> Apiv2Schema for $ty {
