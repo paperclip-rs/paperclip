@@ -169,12 +169,12 @@ where
     where
         F: actix_service::IntoServiceFactory<U>,
         U: ServiceFactory<
-                Config = (),
-                Request = ServiceRequest,
-                Response = ServiceResponse,
-                Error = Error,
-                InitError = (),
-            > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse,
+            Error = Error,
+            InitError = (),
+        > + 'static,
         U::InitError: Debug,
     {
         self.inner = self.inner.take().map(|a| a.default_service(f));

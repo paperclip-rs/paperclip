@@ -2,8 +2,8 @@
 use super::schema::TypedData;
 use super::{
     models::{
-        DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
-        Response, SecurityScheme,
+        DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Items, Parameter,
+        ParameterIn, Response, SecurityScheme,
     },
     schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema},
 };
@@ -329,11 +329,13 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                 op.parameters.push(Either::Right(Parameter {
                     in_: ParameterIn::$container,
                     required: def.required.contains(&k),
-                    name: k,
                     data_type: v.data_type,
                     format: v.format,
                     enum_: v.enum_,
                     description: v.description,
+                    collection_format: None, // this defaults to csv
+                    items: v.items.as_deref().map(map_schema_to_items),
+                    name: k,
                     ..Default::default()
                 }));
             }
@@ -344,6 +346,20 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
         fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
     }
 });
+
+fn map_schema_to_items(schema: &DefaultSchemaRaw) -> Items {
+    Items {
+        data_type: schema.data_type,
+        format: schema.format.clone(),
+        collection_format: None, // this defaults to csv
+        enum_: schema.enum_.clone(),
+        items: schema
+            .items
+            .as_deref()
+            .map(|schema| Box::new(map_schema_to_items(schema))),
+        ..Default::default() // range fields are not emitted
+    }
+}
 
 /// `formData` can refer to the global definitions.
 #[cfg(feature = "nightly")]

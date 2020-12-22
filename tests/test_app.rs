@@ -354,7 +354,7 @@ fn test_params() {
     #[derive(Deserialize, Apiv2Schema)]
     struct BadgeParams {
         res: Option<u16>,
-        color: String,
+        colors: Vec<String>,
     }
 
     #[derive(Deserialize, Apiv2Schema)]
@@ -531,9 +531,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -561,9 +564,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -591,9 +597,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -621,9 +630,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -651,9 +663,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -681,9 +696,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -717,9 +735,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -809,9 +830,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -2067,12 +2091,12 @@ fn test_multiple_method_routes() {
         F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
         B: MessageBody + 'static,
         T: ServiceFactory<
-                Config = (),
-                Request = ServiceRequest,
-                Response = ServiceResponse<B>,
-                Error = Error,
-                InitError = (),
-            > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse<B>,
+            Error = Error,
+            InitError = (),
+        > + 'static,
     {
         run_and_check_app(f, |addr| {
             let resp = CLIENT
@@ -2552,12 +2576,12 @@ where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
     B: MessageBody + 'static,
     T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+        Config = (),
+        Request = ServiceRequest,
+        Response = ServiceResponse<B>,
+        Error = Error,
+        InitError = (),
+    > + 'static,
     G: Fn(String) -> U,
 {
     let (tx, rx) = mpsc::channel();
