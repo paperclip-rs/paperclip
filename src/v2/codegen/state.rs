@@ -374,6 +374,15 @@ pub mod util {
             .unwrap_or(false))
     }
 
+    fn root(&self) -> Result<bool, Error> {
+        Ok(self
+            .infer_crate_meta()?
+            .borrow()
+            .as_ref()
+            .map(|m| m.root)
+            .unwrap_or(true))
+    }
+
     /// Normalized module prefix used by codegen.
     fn normalized_mod_prefix(&self) -> String {
         format!("{}::", self.mod_prefix.trim_matches(':'))
@@ -420,6 +429,7 @@ impl EmitterState {
     fn create_manifest(&self) -> Result<(), Error> {
         let mut man_path = self.root_module_path();
         let is_cli = self.is_cli()?;
+        let root = self.root()?;
         man_path.set_file_name("Cargo.toml");
 
         let cm = self.infer_crate_meta()?;
@@ -437,6 +447,7 @@ impl EmitterState {
                     version: &format!("{:?}", meta.version.as_ref().unwrap()),
                     authors: &format!("{:?}", meta.authors.as_ref().unwrap()),
                     is_cli,
+                    root,
                 },
             )?;
 
@@ -572,6 +583,7 @@ struct ManifestContext<'a> {
     version: &'a str,
     authors: &'a str,
     is_cli: bool,
+    root: bool,
 }
 
 #[derive(serde::Serialize)]
