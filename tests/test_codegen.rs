@@ -25,7 +25,6 @@ static CODEGEN_PET_LIB: Lazy<()> = Lazy::new(|| {
     let mut meta = CrateMeta::default();
     meta.authors = Some(vec!["Me <me@example.com>".into()]);
     meta.mode = EmitMode::Crate;
-    meta.root = true;
     state.set_meta(meta);
 
     let emitter = DefaultEmitter::from(state);
@@ -38,7 +37,7 @@ static CODEGEN_PET_LIB_NO_ROOT: Lazy<()> = Lazy::new(|| {
     let mut meta = CrateMeta::default();
     meta.authors = Some(vec!["Me <me@example.com>".into()]);
     meta.mode = EmitMode::Crate;
-    meta.root = false;
+    meta.no_root = true;
     state.set_meta(meta);
 
     let emitter = DefaultEmitter::from(state);
@@ -51,7 +50,6 @@ static CODEGEN_PET_CLI: Lazy<()> = Lazy::new(|| {
     let mut meta = CrateMeta::default();
     meta.authors = Some(vec!["Me <me@example.com>".into()]);
     meta.mode = EmitMode::App;
-    meta.root = true;
     state.set_meta(meta);
 
     let emitter = DefaultEmitter::from(state);
@@ -78,7 +76,6 @@ static CODEGEN_K8S_CLI: Lazy<()> = Lazy::new(|| {
     meta.version = Some("0.0.0".into());
     meta.authors = Some(vec!["Me <me@example.com>".into()]);
     meta.mode = EmitMode::App;
-    meta.root = true;
     state.set_meta(meta);
 
     let emitter = DefaultEmitter::from(state);

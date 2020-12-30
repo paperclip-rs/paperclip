@@ -86,7 +86,7 @@ fn parse_args_and_run() -> Result<(), Error> {
         meta.version = opt.version;
     }
 
-    meta.root = !opt.no_root;
+    meta.no_root = opt.no_root;
 
     state.set_meta(meta);
     let emitter = DefaultEmitter::from(state);

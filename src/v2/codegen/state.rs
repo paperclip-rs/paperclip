@@ -374,12 +374,12 @@ pub mod util {
             .unwrap_or(false))
     }
 
-    fn root(&self) -> Result<bool, Error> {
+    fn no_root(&self) -> Result<bool, Error> {
         Ok(self
             .infer_crate_meta()?
             .borrow()
             .as_ref()
-            .map(|m| m.root)
+            .map(|m| m.no_root)
             .unwrap_or(true))
     }
 
@@ -429,7 +429,7 @@ impl EmitterState {
     fn create_manifest(&self) -> Result<(), Error> {
         let mut man_path = self.root_module_path();
         let is_cli = self.is_cli()?;
-        let root = self.root()?;
+        let no_root = self.no_root()?;
         man_path.set_file_name("Cargo.toml");
 
         let cm = self.infer_crate_meta()?;
@@ -447,7 +447,7 @@ impl EmitterState {
                     version: &format!("{:?}", meta.version.as_ref().unwrap()),
                     authors: &format!("{:?}", meta.authors.as_ref().unwrap()),
                     is_cli,
-                    root,
+                    no_root,
                 },
             )?;
 
@@ -583,7 +583,7 @@ struct ManifestContext<'a> {
     version: &'a str,
     authors: &'a str,
     is_cli: bool,
-    root: bool,
+    no_root: bool,
 }
 
 #[derive(serde::Serialize)]
