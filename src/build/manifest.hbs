@@ -39,4 +39,6 @@ reqwest = \{ version = "0.10", features = ["stream", "json", "native-tls"] }
 tokio = \{ version = "0.3", features = ["fs", "io-util"] }
 reqwest = \{ version = "0.10", features = ["stream", "json"] }
 {{ endif }}
+{{ if not no_root -}}
 [workspace]
+{{- endif }}

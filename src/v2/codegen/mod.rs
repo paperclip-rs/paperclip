@@ -64,6 +64,8 @@ pub struct CrateMeta {
     pub authors: Option<Vec<String>>,
     /// Whether we're planning to emit a lib, app or module.
     pub mode: EmitMode,
+    /// Whether or not to make this a root crate.
+    pub no_root: bool,
     // Marker to avoid potential breakage when more public fields come in.
     _marker: (),
 }
