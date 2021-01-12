@@ -104,6 +104,25 @@ impl<T> Mountable for Resource<T> {
     }
 }
 
+#[cfg(feature = "actix-files")]
+impl Mountable for actix_files::Files {
+    fn path(&self) -> &str {
+        ""
+    }
+
+    fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
+        BTreeMap::new()
+    }
+
+    fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
+        BTreeMap::new()
+    }
+
+    fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
+        BTreeMap::new()
+    }
+}
+
 impl<T> Resource<actix_web::Resource<T>>
 where
     T: ServiceFactory<
