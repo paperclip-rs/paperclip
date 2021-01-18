@@ -351,6 +351,23 @@ fn test_params() {
         name: String,
     }
 
+    /// KnownBadge Id Doc
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    struct KnownBadgeId(String);
+
+    /// KnownBadge Id2 Doc
+    #[derive(Deserialize, Apiv2Schema)]
+    struct KnownBadgeId2(u64);
+
+    /// KnownBadge Id3 Doc
+    #[derive(Deserialize, Apiv2Schema)]
+    struct KnownBadgeId3(
+        /// Number Doc
+        pub u64,
+        /// String Doc
+        pub String,
+    );
+
     #[derive(Deserialize, Apiv2Schema)]
     struct BadgeParams {
         res: Option<u16>,
@@ -412,6 +429,21 @@ fn test_params() {
     }
 
     #[api_v2_operation]
+    fn get_known_badge_3(
+        _p: web::Path<KnownBadgeId>,
+    ) -> impl Future<Output = Result<web::Json<KnownBadgeId>, ()>> {
+        futures::future::ok(web::Json(KnownBadgeId("id".into())))
+    }
+
+    #[api_v2_operation]
+    fn get_known_badge_4(
+        _p1: web::Path<KnownBadgeId>,
+        _p2: web::Path<(KnownBadgeId2, KnownBadgeId3)>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[api_v2_operation]
     fn post_badge_1(
         _p: web::Path<KnownResourceBadge>,
         _q: web::Query<BadgeParams>,
@@ -465,6 +497,14 @@ fn test_params() {
                                         .route(web::post().to(post_badge_2)),
                                 )
                                 .service(
+                                    web::resource("/v/{id}")
+                                        .route(web::get().to(get_known_badge_3)),
+                                )
+                                .service(
+                                    web::resource("/v/{id}/{id2}/{id3}/{id4}")
+                                        .route(web::get().to(get_known_badge_4)),
+                                )
+                                .service(
                                     web::resource("/v")
                                         .route(web::post().to(post_badge_3))
                                         .route(web::patch().to(patch_badge_3)),
@@ -507,7 +547,11 @@ fn test_params() {
                                 }
                             },
                             "type":"object"
-                        }
+                        },
+                        "KnownBadgeId": {
+                            "description": "KnownBadge Id Doc",
+                            "type": "string"
+                        },
                     },
                     "info": {
                         "title": "",
@@ -807,6 +851,65 @@ fn test_params() {
                                             "$ref": "#/definitions/BadgeBody"
                                         }
                                     }
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/v/{id}": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "description": "KnownBadge Id Doc",
+                                        "in": "path",
+                                        "name": "id",
+                                        "required": true,
+                                        "type": "string"
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/KnownBadgeId"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/v/{id}/{id2}/{id3}/{id4}": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "description": "KnownBadge Id Doc",
+                                        "in": "path",
+                                        "name": "id",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "description": "KnownBadge Id2 Doc",
+                                        "format": "int64",
+                                        "in": "path",
+                                        "name": "id2",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "description": "Number Doc",
+                                        "format": "int64",
+                                        "in": "path",
+                                        "name": "id3",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "description": "String Doc",
+                                        "in": "path",
+                                        "name": "id4",
+                                        "required": true,
+                                        "type": "string"
+                                    },
                                 ],
                                 "responses": {
                                 }
@@ -2091,12 +2194,12 @@ fn test_multiple_method_routes() {
         F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
         B: MessageBody + 'static,
         T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse<B>,
+                Error = Error,
+                InitError = (),
+            > + 'static,
     {
         run_and_check_app(f, |addr| {
             let resp = CLIENT
@@ -2576,12 +2679,12 @@ where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
     B: MessageBody + 'static,
     T: ServiceFactory<
-        Config = (),
-        Request = ServiceRequest,
-        Response = ServiceResponse<B>,
-        Error = Error,
-        InitError = (),
-    > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse<B>,
+            Error = Error,
+            InitError = (),
+        > + 'static,
     G: Fn(String) -> U,
 {
     let (tx, rx) = mpsc::channel();

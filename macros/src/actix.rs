@@ -493,15 +493,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
             match &s.fields {
                 Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
                 Fields::Unnamed(ref f) => {
-                    if f.unnamed.len() == 1 {
-                        handle_unnamed_field_struct(f, &mut props_gen)
-                    } else {
-                        emit_warning!(
-                            f.span().unwrap(),
-                            "tuple structs do not have named fields and hence will have empty schema.";
-                            help = "{}", &*EMPTY_SCHEMA_HELP;
-                        );
-                    }
+                    handle_unnamed_field_struct(f, &item_ast.attrs, &mut props_gen)
                 }
                 Fields::Unit => {
                     emit_warning!(
@@ -520,6 +512,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     let schema_name = name.to_string();
+    let props_gen_empty = props_gen.is_empty();
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             const NAME: Option<&'static str> = Some(#schema_name);
@@ -535,6 +528,12 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                     .. Default::default()
                 };
                 #props_gen
+                // props_gen may override the schema for unnamed structs with 1 element
+                // as it replaces the struct type with inner type.
+                // make sure we set the name properly if props_gen is not empty
+                if !#props_gen_empty {
+                    schema.name = Some(#schema_name.into());
+                }
                 schema
             }
         }
@@ -787,13 +786,59 @@ fn get_field_type(field: &Field) -> Option<proc_macro2::TokenStream> {
 }
 
 /// Generates code for a tuple struct with fields.
-fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macro2::TokenStream) {
-    let field = fields.unnamed.iter().next().unwrap();
+fn handle_unnamed_field_struct(
+    fields: &FieldsUnnamed,
+    struct_attr: &[Attribute],
+    props_gen: &mut proc_macro2::TokenStream,
+) {
+    if fields.unnamed.len() == 1 {
+        let field = fields.unnamed.iter().next().unwrap();
 
-    if let Some(ty_ref) = get_field_type(&field) {
-        props_gen.extend(quote!({
-            schema = #ty_ref::raw_schema();
-        }));
+        if let Some(ty_ref) = get_field_type(&field) {
+            let docs = extract_documentation(struct_attr);
+            let docs = docs.trim();
+
+            props_gen.extend(quote!({
+                let mut s = #ty_ref::raw_schema();
+                if !#docs.is_empty() {
+                    s.description = Some(#docs.to_string());
+                }
+                schema = s;
+            }));
+        }
+    } else {
+        for (inner_field_id, field) in (&fields.unnamed).into_iter().enumerate() {
+            let ty_ref = get_field_type(&field);
+
+            let docs = extract_documentation(&field.attrs);
+            let docs = docs.trim();
+
+            let mut gen = if !SerdeFlatten::exists(&field.attrs) {
+                // this is really not what we'd want to do because that's not how the
+                // deserialized struct will be like, ideally we want an actual tuple
+                // this type should therefore not be used for anything else than `Path`
+                quote!({
+                    let mut s = #ty_ref::raw_schema();
+                    if !#docs.is_empty() {
+                        s.description = Some(#docs.to_string());
+                    }
+                    schema.properties.insert(#inner_field_id.to_string(), s.into());
+                })
+            } else {
+                quote!({
+                    let s = #ty_ref::raw_schema();
+                    schema.properties.extend(s.properties);
+                })
+            };
+
+            gen.extend(quote! {
+                if #ty_ref::REQUIRED {
+                    schema.required.insert(#inner_field_id.to_string());
+                }
+            });
+
+            props_gen.extend(gen);
+        }
     }
 }
 
