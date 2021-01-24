@@ -13,8 +13,8 @@ use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::{
     actix::{
-        api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
-        OpenApiExt,
+        api_v2_errors, api_v2_operation, delete, get, post, put, web, Apiv2Schema, Apiv2Security,
+        CreatedJson, NoContent, OpenApiExt,
     },
     v2::models::{DefaultApiRaw, Info, Tag},
 };
@@ -2091,12 +2091,12 @@ fn test_multiple_method_routes() {
         F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
         B: MessageBody + 'static,
         T: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse<B>,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse<B>,
+                Error = Error,
+                InitError = (),
+            > + 'static,
     {
         run_and_check_app(f, |addr| {
             let resp = CLIENT
@@ -2571,17 +2571,192 @@ fn test_security_app() {
     );
 }
 
+#[test]
+fn test_method_macro() {
+    #[get("/v0/pets")]
+    #[api_v2_operation]
+    fn get_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, ()>> {
+        futures::future::ready(Ok(web::Json(Default::default())))
+    }
+    #[put("/v0/pets/{name}")]
+    #[api_v2_operation]
+    fn put_pet(
+        _name: web::Path<String>,
+        pet: web::Json<Pet>,
+    ) -> impl Future<Output = Result<web::Json<Pet>, ()>> {
+        futures::future::ready(Ok(pet))
+    }
+    #[post("/v0/pets")]
+    #[api_v2_operation]
+    fn post_pet(pet: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, ()>> {
+        futures::future::ready(Ok(pet))
+    }
+    #[delete("/v0/pets/{name}")]
+    #[api_v2_operation]
+    fn delete_pet(_name: web::Path<String>) -> impl Future<Output = Result<web::Json<()>, ()>> {
+        futures::future::ready(Ok(web::Json(())))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(get_pets)
+                .service(put_pet)
+                .service(post_pet)
+                .service(delete_pet)
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet": {
+                            "properties": {
+                                "class": {
+                                "enum": ["dog", "cat", "other"],
+                                    "type":"string"
+                                },
+                                "id": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "description": "Pick a good one.",
+                                    "type": "string"
+                                },
+                                "birthday": {
+                                  "format": "date",
+                                  "type": "string"
+                                },
+                                "updatedOn": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                },
+                                "uuid":{
+                                    "format": "uuid",
+                                    "type": "string"
+                                }
+                            },
+                            "required":[
+                                "birthday",
+                                "class",
+                                "name"
+                            ],
+                            "type":"object"
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/v0/pets": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "items": {
+                                                "$ref": "#/definitions/Pet"
+                                            },
+                                            "type": "array"
+                                        }
+                                    }
+                                },
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                        "/v0/pets/{name}": {
+                            "delete": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                        }
+                                    }
+                                },
+                            },
+                            "put": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
 fn run_and_check_app<F, G, T, B, U>(factory: F, check: G) -> U
 where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
     B: MessageBody + 'static,
     T: ServiceFactory<
-        Config = (),
-        Request = ServiceRequest,
-        Response = ServiceResponse<B>,
-        Error = Error,
-        InitError = (),
-    > + 'static,
+            Config = (),
+            Request = ServiceRequest,
+            Response = ServiceResponse<B>,
+            Error = Error,
+            InitError = (),
+        > + 'static,
     G: Fn(String) -> U,
 {
     let (tx, rx) = mpsc::channel();
@@ -2613,6 +2788,7 @@ where
 
     let (_server, addr) = rx.recv().unwrap();
     let ret = check(addr);
+    let _ = _server.stop(true);
     ret
 }
 

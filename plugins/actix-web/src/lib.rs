@@ -6,7 +6,9 @@ extern crate actix_web3 as actix_web;
 pub mod web;
 
 pub use self::web::{Resource, Route, Scope};
-pub use paperclip_macros::{api_v2_errors, api_v2_operation, Apiv2Schema, Apiv2Security};
+pub use paperclip_macros::{
+    api_v2_errors, api_v2_operation, delete, get, post, put, Apiv2Schema, Apiv2Security,
+};
 
 use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;
@@ -169,12 +171,12 @@ where
     where
         F: actix_service::IntoServiceFactory<U>,
         U: ServiceFactory<
-            Config = (),
-            Request = ServiceRequest,
-            Response = ServiceResponse,
-            Error = Error,
-            InitError = (),
-        > + 'static,
+                Config = (),
+                Request = ServiceRequest,
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            > + 'static,
         U::InitError: Debug,
     {
         self.inner = self.inner.take().map(|a| a.default_service(f));

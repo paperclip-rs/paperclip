@@ -10,6 +10,7 @@ extern crate proc_macro;
 extern crate proc_macro_error;
 
 #[cfg(feature = "actix")]
+#[macro_use]
 mod actix;
 #[cfg(feature = "v2")]
 mod core;
@@ -107,4 +108,12 @@ fn parse_input_attrs(ts: TokenStream) -> MacroAttribute {
         })
         .ok()
         .unwrap_or_default()
+}
+
+#[cfg(feature = "actix")]
+rest_methods! {
+    Get,    get,
+    Post,   post,
+    Put,    put,
+    Delete, delete,
 }
