@@ -321,10 +321,10 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     data_type: def.data_type,
                     format: def.format,
                     enum_: def.enum_,
+                    description: def.description,
                     ..Default::default()
                 }));
             }
-
             for (k, v) in def.properties {
                 op.parameters.push(Either::Right(Parameter {
                     in_: ParameterIn::$container,
@@ -388,19 +388,36 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
         where $($ty: Apiv2Schema,)+
     {
         fn update_parameter(op: &mut DefaultOperationRaw) {
-            // NOTE: We're setting empty name, because we don't know
-            // the name in this context. We'll get it when we add services.
             $(
                 let def = $ty::raw_schema();
-                op.parameters.push(Either::Right(Parameter {
-                    name: String::new(),
-                    in_: ParameterIn::Path,
-                    required: true,
-                    data_type: def.data_type,
-                    format: def.format,
-                    enum_: def.enum_,
-                    ..Default::default()
-                }));
+                if def.properties.is_empty() {
+                    op.parameters.push(Either::Right(Parameter {
+                        // NOTE: We're setting empty name, because we don't know
+                        // the name in this context. We'll get it when we add services.
+                        name: String::new(),
+                        in_: ParameterIn::Path,
+                        required: true,
+                        data_type: def.data_type,
+                        format: def.format,
+                        enum_: def.enum_,
+                        description: def.description,
+                        ..Default::default()
+                    }));
+                }
+                for (k, v) in def.properties {
+                    op.parameters.push(Either::Right(Parameter {
+                        in_: ParameterIn::Path,
+                        required: def.required.contains(&k),
+                        data_type: v.data_type,
+                        format: v.format,
+                        enum_: v.enum_,
+                        description: v.description,
+                        collection_format: None, // this defaults to csv
+                        items: v.items.as_deref().map(map_schema_to_items),
+                        name: k,
+                        ..Default::default()
+                    }));
+                }
             )+
         }
     }
