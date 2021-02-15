@@ -2726,6 +2726,7 @@ fn test_method_macro() {
                 json!({
                     "definitions": {
                         "Pet": {
+                            "description": "Pets are awesome!",
                             "properties": {
                                 "class": {
                                 "enum": ["dog", "cat", "other"],
