@@ -150,6 +150,7 @@ fn test_simple_app() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description":"Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -1236,6 +1237,7 @@ fn test_serde_flatten() {
                 json!({
                     "definitions": {
                         "Images": {
+                          "description": "Images response with paging information embedded",
                           "properties": {
                             "data": {
                               "items": {
@@ -2405,6 +2407,7 @@ fn test_errors_app() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -2567,6 +2570,7 @@ fn test_security_app() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],

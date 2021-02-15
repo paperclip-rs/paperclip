@@ -491,7 +491,9 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 schema.data_type = Some(DataType::Object);
             ));
             match &s.fields {
-                Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
+                Fields::Named(ref f) => {
+                    handle_field_struct(f, &item_ast.attrs, &props, &mut props_gen)
+                }
                 Fields::Unnamed(ref f) => {
                     handle_unnamed_field_struct(f, &item_ast.attrs, &mut props_gen)
                 }
@@ -895,9 +897,18 @@ fn check_empty_schema(item_ast: &DeriveInput) -> Option<TokenStream> {
 /// Generates code for a struct with fields.
 fn handle_field_struct(
     fields: &FieldsNamed,
+    struct_attr: &[Attribute],
     serde: &SerdeProps,
     props_gen: &mut proc_macro2::TokenStream,
 ) {
+    let docs = extract_documentation(struct_attr);
+    let docs = docs.trim();
+
+    props_gen.extend(quote!({
+        if !#docs.is_empty() {
+            schema.description = Some(#docs.to_string());
+        }
+    }));
     for field in &fields.named {
         let mut field_name = field
             .ident
