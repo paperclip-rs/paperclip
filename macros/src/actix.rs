@@ -5,9 +5,10 @@ use heck::*;
 use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use strum_macros::EnumString;
 use syn::{
+    parse_macro_input,
     punctuated::{Pair, Punctuated},
     spanned::Spanned,
     Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
@@ -1171,4 +1172,147 @@ impl SerdeFlatten {
 
         false
     }
+}
+
+macro_rules! doc_comment {
+    ($x:expr; $($tt:tt)*) => {
+        #[doc = $x]
+        $($tt)*
+    };
+}
+
+#[cfg(feature = "actix")]
+impl super::Method {
+    fn handler_uri(attr: TokenStream) -> TokenStream {
+        let attr = parse_macro_input!(attr as syn::AttributeArgs);
+        attr.first().into_token_stream().into()
+    }
+    fn handler_name(item: TokenStream) -> syn::Result<syn::Ident> {
+        let handler: ItemFn = syn::parse(item)?;
+        Ok(handler.sig.ident)
+    }
+    pub(crate) fn generate(
+        &self,
+        attr: TokenStream,
+        item: TokenStream,
+    ) -> syn::Result<proc_macro2::TokenStream> {
+        let uri: proc_macro2::TokenStream = Self::handler_uri(attr).into();
+        let handler_name = Self::handler_name(item.clone())?;
+        let handler_fn: proc_macro2::TokenStream = item.into();
+        let method: proc_macro2::TokenStream = self.method().parse()?;
+        let variant: proc_macro2::TokenStream = self.variant().parse()?;
+        let handler_name_str = handler_name.to_string();
+
+        Ok(quote! {
+            #[allow(non_camel_case_types, missing_docs)]
+            pub struct #handler_name;
+
+            impl #handler_name {
+                fn resource() -> paperclip::actix::web::Resource {
+                    #handler_fn
+                    paperclip::actix::web::Resource::new(#uri)
+                        .name(#handler_name_str)
+                        .guard(actix_web::guard::#variant())
+                        .route(paperclip::actix::web::#method().to(#handler_name))
+                }
+            }
+
+            impl actix_web::dev::HttpServiceFactory for #handler_name {
+                fn register(self, config: &mut actix_web::dev::AppService) {
+                    Self::resource().register(config);
+                }
+            }
+
+            impl paperclip::actix::Mountable for #handler_name {
+                fn path(&self) -> &str {
+                    #uri
+                }
+
+                fn operations(
+                    &mut self,
+                ) -> std::collections::BTreeMap<
+                    paperclip::v2::models::HttpMethod,
+                    paperclip::v2::models::DefaultOperationRaw,
+                > {
+                    Self::resource().operations()
+                }
+
+                fn definitions(
+                    &mut self,
+                ) -> std::collections::BTreeMap<
+                    String,
+                    paperclip::v2::models::DefaultSchemaRaw,
+                > {
+                    Self::resource().definitions()
+                }
+
+                fn security_definitions(
+                    &mut self,
+                ) -> std::collections::BTreeMap<String, paperclip::v2::models::SecurityScheme>
+                {
+                    Self::resource().security_definitions()
+                }
+            }
+        })
+    }
+}
+
+#[macro_use]
+macro_rules! rest_methods {
+    (
+        $($variant:ident, $method:ident, )+
+    ) => {
+        /// All available Rest methods
+        #[derive(Debug, PartialEq, Eq, Hash)]
+        pub(crate) enum Method {
+            $(
+                $variant,
+            )+
+        }
+
+        impl Method {
+            fn method(&self) -> &'static str {
+                match self {
+                    $(Self::$variant => stringify!($method),)+
+                }
+            }
+            fn variant(&self) -> &'static str {
+                match self {
+                    $(Self::$variant => stringify!($variant),)+
+                }
+            }
+        }
+
+        $(doc_comment! {
+            concat!("
+Creates route handler with `paperclip::actix::web::Resource", "`.
+In order to control the output type and status codes the return value/response must implement the
+trait actix_web::Responder.
+
+# Syntax
+```text
+#[", stringify!($method), r#"("path"[, attributes])]
+```
+
+# Attributes
+- `"path"` - Raw literal string with path for which to register handler.
+
+# Example
+
+/// use paperclip::actix::web::Json;
+/// use paperclip_macros::"#, stringify!($method), ";
+/// #[", stringify!($method), r#"("/")]
+/// async fn example() {
+/// }
+"#);
+            #[cfg(feature = "actix")]
+            #[proc_macro_attribute]
+            pub fn $method(attr: TokenStream, item: TokenStream) -> TokenStream {
+                match Method::$variant.generate(attr, item) {
+                    Ok(v) => v.into(),
+                    Err(e) => e.to_compile_error().into(),
+                }
+            }
+        })+
+    };
 }
