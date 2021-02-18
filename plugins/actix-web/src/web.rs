@@ -342,6 +342,14 @@ where
         self
     }
 
+    /// Proxy for [`actix_web::Scope::app_data`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.data).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn app_data<U: 'static>(mut self, data: U) -> Self {
+        self.inner = self.inner.take().map(|s| s.app_data(data));
+        self
+    }
+
     /// Wrapper for [`actix_web::Scope::configure`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.configure).
     pub fn configure<F>(mut self, f: F) -> Self
     where
