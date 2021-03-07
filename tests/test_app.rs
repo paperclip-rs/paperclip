@@ -13,8 +13,8 @@ use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::{
     actix::{
-        api_v2_errors, api_v2_operation, delete, get, post, put, web, Apiv2Schema, Apiv2Security,
-        CreatedJson, NoContent, OpenApiExt,
+        api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, web,
+        Apiv2Schema, Apiv2Security, CreatedJson, NoContent, OpenApiExt,
     },
     v2::models::{DefaultApiRaw, Info, Tag},
 };
@@ -2504,6 +2504,10 @@ fn test_errors_app() {
     #[derive(Debug)]
     struct PetError2 {}
 
+    #[api_v2_errors_overlay(401)]
+    #[derive(Debug)]
+    struct PetErrorOverlay(pub PetError2);
+
     impl fmt::Display for PetError {
         fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
             write!(f, "Bad Request")
@@ -2532,7 +2536,9 @@ fn test_errors_app() {
     }
 
     #[api_v2_operation]
-    async fn echo_pet_with_errors2(body: web::Json<Pet>) -> Result<web::Json<Pet>, PetError2> {
+    async fn echo_pet_with_errors2(
+        body: web::Json<Pet>,
+    ) -> Result<web::Json<Pet>, PetErrorOverlay> {
         Ok(body)
     }
 
@@ -2656,12 +2662,6 @@ fn test_errors_app() {
                           },
                           "400": {
                             "description": "Sorry, bad request",
-                            "schema": {
-                              "$ref": "#/definitions/PetErrorScheme2"
-                            }
-                          },
-                          "401": {
-                            "description": "Unauthorized",
                             "schema": {
                               "$ref": "#/definitions/PetErrorScheme2"
                             }
