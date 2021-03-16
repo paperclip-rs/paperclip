@@ -1336,6 +1336,117 @@ fn test_serde_flatten() {
 }
 
 #[test]
+fn test_serde_skip() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "camelCase")]
+    /// Pets are awesome!
+    struct Pet {
+        class: PetClass,
+        #[serde(skip)]
+        #[allow(dead_code)]
+        skip_it: Option<chrono_dev::NaiveDateTime>,
+        un: PetUnnamed,
+    }
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "lowercase")]
+    enum PetClass {
+        Dog,
+        Cat,
+        #[serde(rename = "other")]
+        EverythingElse,
+        #[serde(skip)]
+        #[allow(dead_code)]
+        Another,
+    }
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct PetUnnamed(#[serde(skip)] bool, bool);
+
+    #[post("/v0/pets")]
+    #[api_v2_operation]
+    fn post_pet(pet: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, ()>> {
+        futures::future::ready(Ok(pet))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(post_pet)
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet": {
+                            "description": "Pets are awesome!",
+                            "properties": {
+                                "class": {
+                                "enum": ["dog", "cat", "other"],
+                                    "type":"string"
+                                },
+                                "un": {
+                                    "properties": {
+                                        "1": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["1"],
+                                    "type": "object"
+                                },
+                            },
+                            "required":[
+                                "class",
+                                "un"
+                            ],
+                            "type":"object"
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/v0/pets": {
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
 fn test_list_in_out() {
     #[derive(Serialize, Deserialize, Apiv2Schema)]
     enum Sort {
