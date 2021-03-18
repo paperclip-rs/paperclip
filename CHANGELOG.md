@@ -9,6 +9,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for actix-web-macros methods routing [PR#289](https://github.com/wafflespeanut/paperclip/pull/289)
 - Actix plugin: add an empty impl for actix-web `ReqData<T>`
 - Add support for the `#[serde(skip)]` attribute in structs and enums.
+- Expose openapi v3 spec through `with_json_spec_v3_at` and `with_raw_json_spec_v3` - this is done through a conversion from
+ the v2 types to v3 and so all existing code should be valid. It also means that we're not yet exposing any specific
+ v3 features.
 
 ### Changed
 

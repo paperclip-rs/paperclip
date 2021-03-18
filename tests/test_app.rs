@@ -3030,3 +3030,11 @@ fn check_json(resp: reqwest::blocking::Response, expected: serde_json::Value) {
         )
     }
 }
+
+#[cfg(feature = "v3")]
+#[test]
+fn test_openapi3() {
+    let spec = std::fs::File::open("tests/pet-v2.yaml").unwrap();
+    let spec: DefaultApiRaw = serde_yaml::from_reader(spec).unwrap();
+    let _spec_v3: openapiv3::OpenAPI = spec.into();
+}
