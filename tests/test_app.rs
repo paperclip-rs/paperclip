@@ -1177,7 +1177,7 @@ fn test_serde_flatten() {
         offset: Option<i32>,
         /// Return number of images
         size: Option<i32>,
-    };
+    }
 
     #[derive(Deserialize, Serialize, Apiv2Schema)]
     struct Paging {
@@ -1187,7 +1187,7 @@ fn test_serde_flatten() {
         total: i32,
         /// Page size
         size: i32,
-    };
+    }
 
     #[derive(Serialize, Apiv2Schema)]
     struct Image {

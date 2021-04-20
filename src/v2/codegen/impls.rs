@@ -12,6 +12,22 @@ use std::{
     rc::Rc,
 };
 
+// Using Debug directly to escape/format strings (so they can be put safely in a YAML property) is broken in Rust < 1.53.0
+// See https://github.com/wafflespeanut/paperclip/pull/315#issuecomment-823918807
+// See https://github.com/rust-lang/rust/issues/83046
+// The following code:
+//   - tests (once) if this issue exists in the current context (depends on which version of rustc was used)
+//   - provides a function to escape/format strings that works in both cases
+static CORRECT_ESCAPING: once_cell::sync::Lazy<bool> =
+    once_cell::sync::Lazy::new(|| format!("{:?}", "'") != "\"\\'\"");
+fn mk_description_text(str: &str) -> String {
+    if *CORRECT_ESCAPING {
+        format!("{:?}", str)
+    } else {
+        format!("{:?}", str).replace("\\'", "'")
+    }
+}
+
 /// Represents the API object impl.
 pub struct ApiObjectImpl<'a> {
     inner: &'a ApiObject,
@@ -110,7 +126,7 @@ impl<'a> ApiObjectImpl<'a> {
         self.with_cli_cmd_and_builder(|name, builder| {
             write!(f, "\n  - {}:", name)?;
             if let Some(desc) = builder.description {
-                write!(f, "\n      about: {:?}", desc)?;
+                write!(f, "\n      about: {}", &mk_description_text(desc))?;
             }
 
             let mut iter = builder
@@ -145,7 +161,7 @@ impl<'a> ApiObjectImpl<'a> {
                 }
 
                 if let Some(desc) = field.desc {
-                    write!(f, "\n            help: {:?}", desc)?;
+                    write!(f, "\n            help: {}", &mk_description_text(desc))?;
                 }
 
                 f.write_str("\n            takes_value: true")
