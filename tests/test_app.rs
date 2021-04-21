@@ -404,7 +404,10 @@ fn test_params() {
 
     // issue: https://github.com/wafflespeanut/paperclip/issues/216
     #[api_v2_operation]
-    async fn check_data_ref_async(app: web::Data<AppState>) -> web::Json<bool> {
+    async fn check_data_ref_async(
+        app: web::Data<AppState>,
+        _req_data: Option<web::ReqData<bool>>, // this should compile and change nothing
+    ) -> web::Json<bool> {
         web::Json(is_data_empty(app.get_ref()).await)
     }
 
@@ -1174,7 +1177,7 @@ fn test_serde_flatten() {
         offset: Option<i32>,
         /// Return number of images
         size: Option<i32>,
-    };
+    }
 
     #[derive(Deserialize, Serialize, Apiv2Schema)]
     struct Paging {
@@ -1184,7 +1187,7 @@ fn test_serde_flatten() {
         total: i32,
         /// Page size
         size: i32,
-    };
+    }
 
     #[derive(Serialize, Apiv2Schema)]
     struct Image {

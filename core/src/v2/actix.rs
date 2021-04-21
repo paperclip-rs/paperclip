@@ -10,7 +10,7 @@ use super::{
 use crate::util::{ready, Ready};
 use actix_web::{
     http::StatusCode,
-    web::{Bytes, Data, Form, Json, Path, Payload, Query},
+    web::{Bytes, Data, Form, Json, Path, Payload, Query, ReqData},
     Error, HttpRequest, HttpResponse, Responder,
 };
 use pin_project::pin_project;
@@ -150,6 +150,9 @@ where
 impl<T> Apiv2Schema for Data<T> {}
 #[cfg(not(feature = "nightly"))]
 impl<T> OperationModifier for Data<T> {}
+impl<T: std::clone::Clone> Apiv2Schema for ReqData<T> {}
+#[cfg(not(feature = "nightly"))]
+impl<T: std::clone::Clone> OperationModifier for ReqData<T> {}
 
 macro_rules! impl_empty({ $($ty:ty),+ } => {
     $(
