@@ -1,0 +1,1 @@
+initSidebarItems({"enum":[["ValidationError","Errors related to spec validation."]],"mod":[["im","Interior mutability stuff."],["util",""],["v2","Core types and traits associated with the OpenAPI v2 specification."]]});

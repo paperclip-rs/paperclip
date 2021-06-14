@@ -1,0 +1,416 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>CLI · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    <link rel="next" href="build-script.html" />
+    
+    
+    <link rel="prev" href="./" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.2" data-path="cli.html">
+            
+                <a href="cli.html">
+            
+                    
+                    CLI
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="build-script.html">
+            
+                <a href="build-script.html">
+            
+                    
+                    Build script
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="compile-checks.html">
+            
+                <a href="compile-checks.html">
+            
+                    
+                    Compile-time checks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="actix-plugin.html">
+            
+                <a href="actix-plugin.html">
+            
+                    
+                    Actix-web plugin
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="actix-operation-meta.html">
+            
+                <a href="actix-operation-meta.html">
+            
+                    
+                    Adding operation metadata
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="actix-status-codes.html">
+            
+                <a href="actix-status-codes.html">
+            
+                    
+                    Defining additional HTTP status codes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="actix-security.html">
+            
+                <a href="actix-security.html">
+            
+                    
+                    Defining security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.4" data-path="actix-schema-defaults.html">
+            
+                <a href="actix-schema-defaults.html">
+            
+                    
+                    Setting schema defaults
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >CLI</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h1 id="paperclip-cli">Paperclip CLI</h1>
+<p>Install <code>paperclip</code> CLI with:</p>
+<pre><code>cargo install paperclip --features cli
+</code></pre><h2 id="generate-client-library-from-cli">Generate client library from CLI</h2>
+<p>You can generate the client library for some spec using the following command:</p>
+<pre><code>wget https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+paperclip --api v2 -o pet pet-v2.yaml
+</code></pre><p>This generates the client library for that spec in <code>./pet</code> directory.</p>
+<h2 id="generate-console-from-cli">Generate console from CLI</h2>
+<p>You can also generate a console for your API using the CLI by passing the <code>--cli</code> flag.</p>
+<pre><code>wget https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+paperclip --api v2 -o pet --cli pet-v2.yaml
+</code></pre><h3 id="build-and-run-the-console">Build and run the console</h3>
+<blockquote>
+<p><strong>NOTE:</strong> I&apos;m using the debug build throughout this example.</p>
+</blockquote>
+<pre><code>cd pet &amp;&amp; cargo build &amp;&amp; ./target/debug/pet
+</code></pre><pre><code>pet 0.1.0
+
+USAGE:
+    pet [FLAGS] [OPTIONS] --url &lt;url&gt; &lt;SUBCOMMAND&gt;
+
+FLAGS:
+    -h, --help       Prints help information
+    -V, --version    Prints version information
+    -v, --verbose    Enable verbose mode.
+
+OPTIONS:
+        --ca-cert &lt;ca-cert&gt;            Path to CA certificate to be added to trust store.
+        --client-cert &lt;client-cert&gt;    Path to certificate for TLS client verification.
+        --client-key &lt;client-key&gt;      Path to private key for TLS client verification.
+        --url &lt;url&gt;                    Base URL for your API.
+
+SUBCOMMANDS:
+    add-pet          Add a new pet to the store
+    get-pet-by-id    Find pet by ID
+    help             Prints this message or the help of the given subcommand(s)
+    list-pets        Fetch list of pets
+</code></pre><p>Note that passing <strong><code>--url</code> is mandatory</strong>. It&apos;s the base URL for your API.</p>
+<blockquote>
+<p>The console also supports client verification and setting root CA.</p>
+</blockquote>
+<h2 id="runtime-checks">Runtime checks</h2>
+<p>The generated console associates subcommands to operations and arguments to parameters. Similar to compile-time checks in the generated client code, the console checks subcommand arguments at runtime.</p>
+<h4 id="parameters-as-arguments">Parameters as arguments</h4>
+<p>Let&apos;s try to fetch a pet by its ID without passing the ID.</p>
+<pre><code>./target/debug/pet --url https://example.com/pets get-pet-by-id
+</code></pre><pre><code>error: The following required arguments were not provided:
+    --pet-id &lt;pet-id&gt;
+
+USAGE:
+    pet get-pet-by-id --pet-id &lt;pet-id&gt;
+
+For more information try --help
+</code></pre><p>... and we get an error.</p>
+<p>Now, let&apos;s add that argument with a valid value (i.e., value that can be parsed to the expected type, which in this case, is an integer).</p>
+<pre><code>./target/debug/pet -v --url http://echo.jsontest.com get-pet-by-id get-pet-by-id --pet-id 25
+
+GET http://echo.jsontest.com/pets/25
+200 OK
+{&quot;pets&quot;: &quot;25&quot;}
+</code></pre><p>Passing <code>-v</code> flag enables verbose mode which prints additional information about the request we&apos;ve made. Also note that the body of the response is piped to stdout directly.</p>
+<h4 id="request-body">Request body</h4>
+<p>Finally, let&apos;s <code>POST</code> something with a body. Here, <code>add-pet</code> requires a payload, so <code>--payload</code> argument is required. This argument is special in that it could be either a path to a file or <code>-</code> (when input is obtained from stdin). Either way, the input is parsed to the actual schema before making the API call.</p>
+<pre><code>./target/debug/pet -v --url http://localhost:8000 add-pet --payload - &lt;&lt; EOF
+{&quot;id&quot;: 25, &quot;name&quot;: &quot;Milo&quot;}
+EOF
+
+POST http://localhost:8000/pets
+200 OK
+{&quot;status&quot;: &quot;ok&quot;}
+</code></pre>
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="./" class="navigation navigation-prev " aria-label="Previous page: Overview">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+                <a href="build-script.html" class="navigation navigation-next " aria-label="Next page: Build script">
+                    <i class="fa fa-angle-right"></i>
+                </a>
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"CLI","level":"1.2","depth":1,"next":{"title":"Build script","level":"1.3","depth":1,"path":"build-script.md","ref":"build-script.md","articles":[{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]}]},"previous":{"title":"Overview","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"cli.md","mtime":"2021-06-14T00:36:41.916Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-14T00:40:21.562Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

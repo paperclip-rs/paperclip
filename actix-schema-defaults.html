@@ -1,0 +1,373 @@
+
+<!DOCTYPE HTML>
+<html lang="" >
+    <head>
+        <meta charset="UTF-8">
+        <meta content="text/html; charset=utf-8" http-equiv="Content-Type">
+        <title>Setting schema defaults · GitBook</title>
+        <meta http-equiv="X-UA-Compatible" content="IE=edge" />
+        <meta name="description" content="">
+        <meta name="generator" content="GitBook 3.2.3">
+        
+        
+        
+    
+    <link rel="stylesheet" href="gitbook/style.css">
+
+    
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-highlight/website.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-search/search.css">
+                
+            
+                
+                <link rel="stylesheet" href="gitbook/gitbook-plugin-fontsettings/website.css">
+                
+            
+        
+
+    
+
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+        
+    
+
+        
+    
+    
+    <meta name="HandheldFriendly" content="true"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, user-scalable=no">
+    <meta name="apple-mobile-web-app-capable" content="yes">
+    <meta name="apple-mobile-web-app-status-bar-style" content="black">
+    <link rel="apple-touch-icon-precomposed" sizes="152x152" href="gitbook/images/apple-touch-icon-precomposed-152.png">
+    <link rel="shortcut icon" href="gitbook/images/favicon.ico" type="image/x-icon">
+
+    
+    
+    <link rel="prev" href="actix-security.html" />
+    
+
+    </head>
+    <body>
+        
+<div class="book">
+    <div class="book-summary">
+        
+            
+<div id="book-search-input" role="search">
+    <input type="text" placeholder="Type to search" />
+</div>
+
+            
+                <nav role="navigation">
+                
+
+
+<ul class="summary">
+    
+    
+
+    
+
+    
+        
+        
+    
+        <li class="chapter " data-level="1.1" data-path="./">
+            
+                <a href="./">
+            
+                    
+                    Overview
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.2" data-path="cli.html">
+            
+                <a href="cli.html">
+            
+                    
+                    CLI
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.3" data-path="build-script.html">
+            
+                <a href="build-script.html">
+            
+                    
+                    Build script
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.3.1" data-path="compile-checks.html">
+            
+                <a href="compile-checks.html">
+            
+                    
+                    Compile-time checks
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4" data-path="actix-plugin.html">
+            
+                <a href="actix-plugin.html">
+            
+                    
+                    Actix-web plugin
+            
+                </a>
+            
+
+            
+            <ul class="articles">
+                
+    
+        <li class="chapter " data-level="1.4.1" data-path="actix-operation-meta.html">
+            
+                <a href="actix-operation-meta.html">
+            
+                    
+                    Adding operation metadata
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.2" data-path="actix-status-codes.html">
+            
+                <a href="actix-status-codes.html">
+            
+                    
+                    Defining additional HTTP status codes
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter " data-level="1.4.3" data-path="actix-security.html">
+            
+                <a href="actix-security.html">
+            
+                    
+                    Defining security
+            
+                </a>
+            
+
+            
+        </li>
+    
+        <li class="chapter active" data-level="1.4.4" data-path="actix-schema-defaults.html">
+            
+                <a href="actix-schema-defaults.html">
+            
+                    
+                    Setting schema defaults
+            
+                </a>
+            
+
+            
+        </li>
+    
+
+            </ul>
+            
+        </li>
+    
+
+    
+
+    <li class="divider"></li>
+
+    <li>
+        <a href="https://www.gitbook.com" target="blank" class="gitbook-link">
+            Published with GitBook
+        </a>
+    </li>
+</ul>
+
+
+                </nav>
+            
+        
+    </div>
+
+    <div class="book-body">
+        
+            <div class="body-inner">
+                
+                    
+
+<div class="book-header" role="navigation">
+    
+
+    <!-- Title -->
+    <h1>
+        <i class="fa fa-circle-o-notch fa-spin"></i>
+        <a href="." >Setting schema defaults</a>
+    </h1>
+</div>
+
+
+
+
+                    <div class="page-wrapper" tabindex="-1" role="main">
+                        <div class="page-inner">
+                            
+<div id="book-search-results">
+    <div class="search-noresults">
+    
+                                <section class="normal markdown-section">
+                                
+                                <h2 id="setting-defaults-in-api-schema">Setting defaults in API schema</h2>
+<p>It is possible to define default initial values for the schema, which might be useful to define &quot;info&quot;,
+&quot;schemes&quot;, &quot;tags&quot; and other top level schema fields which are not inherited from handlers.</p>
+<pre><code class="lang-rust"><span class="hljs-keyword">use</span> paperclip::v2::models::{DefaultApiRaw, Tag};
+
+<span class="hljs-keyword">let</span> <span class="hljs-keyword">mut</span> spec = DefaultApiRaw::default();
+spec.tags = <span class="hljs-built_in">vec!</span>[
+    Tag {
+        name: <span class="hljs-string">&quot;Dogs&quot;</span>.to_string(),
+        description: <span class="hljs-literal">Some</span>(<span class="hljs-string">&quot;Images of dogs&quot;</span>.to_string()),
+        external_docs: <span class="hljs-literal">None</span>,
+    },
+    Tag {
+        name: <span class="hljs-string">&quot;Cats&quot;</span>.to_string(),
+        description: <span class="hljs-literal">Some</span>(<span class="hljs-string">&quot;Images of cats&quot;</span>.to_string()),
+        external_docs: <span class="hljs-literal">None</span>,
+    },
+    Tag {
+        name: <span class="hljs-string">&quot;Api reference&quot;</span>.to_string(),
+        description: <span class="hljs-literal">Some</span>(<span class="hljs-string">&quot;List of all api endpoints&quot;</span>.to_string()),
+        external_docs: <span class="hljs-literal">None</span>,
+    },
+];
+spec.info = Info {
+    version: <span class="hljs-string">&quot;0.1&quot;</span>.into(),
+    title: <span class="hljs-string">&quot;Image server&quot;</span>.into(),
+    ..<span class="hljs-built_in">Default</span>::default()
+};
+App::new()
+    .wrap_api_with_spec(spec)
+    .with_json_spec_at(<span class="hljs-string">&quot;/api/spec&quot;</span>)
+    .service(web::resource(<span class="hljs-string">&quot;/images/pets&quot;</span>).route(web::get().to(some_pets_images)))
+    .build()
+</code></pre>
+
+                                
+                                </section>
+                            
+    </div>
+    <div class="search-results">
+        <div class="has-results">
+            
+            <h1 class="search-results-title"><span class='search-results-count'></span> results matching "<span class='search-query'></span>"</h1>
+            <ul class="search-results-list"></ul>
+            
+        </div>
+        <div class="no-results">
+            
+            <h1 class="search-results-title">No results matching "<span class='search-query'></span>"</h1>
+            
+        </div>
+    </div>
+</div>
+
+                        </div>
+                    </div>
+                
+            </div>
+
+            
+                
+                <a href="actix-security.html" class="navigation navigation-prev navigation-unique" aria-label="Previous page: Defining security">
+                    <i class="fa fa-angle-left"></i>
+                </a>
+                
+                
+            
+        
+    </div>
+
+    <script>
+        var gitbook = gitbook || [];
+        gitbook.push(function() {
+            gitbook.page.hasChanged({"page":{"title":"Setting schema defaults","level":"1.4.4","depth":2,"previous":{"title":"Defining security","level":"1.4.3","depth":2,"path":"actix-security.md","ref":"actix-security.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"actix-schema-defaults.md","mtime":"2021-06-14T00:36:41.912Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2021-06-14T00:40:21.562Z"},"basePath":".","book":{"language":""}});
+        });
+    </script>
+</div>
+
+        
+    <script src="gitbook/gitbook.js"></script>
+    <script src="gitbook/theme.js"></script>
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search-engine.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-search/search.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/lunr.min.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-lunr/search-lunr.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-sharing/buttons.js"></script>
+        
+    
+        
+        <script src="gitbook/gitbook-plugin-fontsettings/fontsettings.js"></script>
+        
+    
+
+    </body>
+</html>
+

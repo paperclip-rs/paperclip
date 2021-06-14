@@ -1,0 +1,1 @@
+window.ALL_CRATES = ["paperclip","paperclip_actix","paperclip_core","paperclip_macros"];
