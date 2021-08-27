@@ -1,14 +1,16 @@
-use super::models::{
-    DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Parameter, ParameterIn,
-    Response, SecurityScheme,
-};
 #[cfg(feature = "actix-multipart")]
 use super::schema::TypedData;
-use super::schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema};
+use super::{
+    models::{
+        DefaultOperationRaw, DefaultResponseRaw, DefaultSchemaRaw, Either, Items, Parameter,
+        ParameterIn, Response, SecurityScheme,
+    },
+    schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema},
+};
 use crate::util::{ready, Ready};
 use actix_web::{
     http::StatusCode,
-    web::{Bytes, Data, Form, Json, Path, Payload, Query},
+    web::{Bytes, Data, Form, Json, Path, Payload, Query, ReqData},
     Error, HttpRequest, HttpResponse, Responder,
 };
 use pin_project::pin_project;
@@ -17,11 +19,13 @@ use serde::Serialize;
 #[cfg(feature = "serde_qs")]
 use serde_qs::actix::QsQuery;
 
-use std::collections::BTreeMap;
-use std::fmt;
-use std::future::Future;
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::{
+    collections::BTreeMap,
+    fmt,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.
@@ -146,6 +150,9 @@ where
 impl<T> Apiv2Schema for Data<T> {}
 #[cfg(not(feature = "nightly"))]
 impl<T> OperationModifier for Data<T> {}
+impl<T: std::clone::Clone> Apiv2Schema for ReqData<T> {}
+#[cfg(not(feature = "nightly"))]
+impl<T: std::clone::Clone> OperationModifier for ReqData<T> {}
 
 macro_rules! impl_empty({ $($ty:ty),+ } => {
     $(
@@ -286,6 +293,11 @@ impl OperationModifier for actix_session::Session {
     fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
 }
 
+#[cfg(feature = "actix-files")]
+impl OperationModifier for actix_files::NamedFile {
+    fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
+}
+
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     #[cfg(feature = "nightly")]
     impl<T> Apiv2Schema for $ty {
@@ -312,19 +324,21 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
                     data_type: def.data_type,
                     format: def.format,
                     enum_: def.enum_,
+                    description: def.description,
                     ..Default::default()
                 }));
             }
-
             for (k, v) in def.properties {
                 op.parameters.push(Either::Right(Parameter {
                     in_: ParameterIn::$container,
                     required: def.required.contains(&k),
-                    name: k,
                     data_type: v.data_type,
                     format: v.format,
                     enum_: v.enum_,
                     description: v.description,
+                    collection_format: None, // this defaults to csv
+                    items: v.items.as_deref().map(map_schema_to_items),
+                    name: k,
                     ..Default::default()
                 }));
             }
@@ -335,6 +349,20 @@ macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
         fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
     }
 });
+
+fn map_schema_to_items(schema: &DefaultSchemaRaw) -> Items {
+    Items {
+        data_type: schema.data_type,
+        format: schema.format.clone(),
+        collection_format: None, // this defaults to csv
+        enum_: schema.enum_.clone(),
+        items: schema
+            .items
+            .as_deref()
+            .map(|schema| Box::new(map_schema_to_items(schema))),
+        ..Default::default() // range fields are not emitted
+    }
+}
 
 /// `formData` can refer to the global definitions.
 #[cfg(feature = "nightly")]
@@ -363,19 +391,36 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
         where $($ty: Apiv2Schema,)+
     {
         fn update_parameter(op: &mut DefaultOperationRaw) {
-            // NOTE: We're setting empty name, because we don't know
-            // the name in this context. We'll get it when we add services.
             $(
                 let def = $ty::raw_schema();
-                op.parameters.push(Either::Right(Parameter {
-                    name: String::new(),
-                    in_: ParameterIn::Path,
-                    required: true,
-                    data_type: def.data_type,
-                    format: def.format,
-                    enum_: def.enum_,
-                    ..Default::default()
-                }));
+                if def.properties.is_empty() {
+                    op.parameters.push(Either::Right(Parameter {
+                        // NOTE: We're setting empty name, because we don't know
+                        // the name in this context. We'll get it when we add services.
+                        name: String::new(),
+                        in_: ParameterIn::Path,
+                        required: true,
+                        data_type: def.data_type,
+                        format: def.format,
+                        enum_: def.enum_,
+                        description: def.description,
+                        ..Default::default()
+                    }));
+                }
+                for (k, v) in def.properties {
+                    op.parameters.push(Either::Right(Parameter {
+                        in_: ParameterIn::Path,
+                        required: def.required.contains(&k),
+                        data_type: v.data_type,
+                        format: v.format,
+                        enum_: v.enum_,
+                        description: v.description,
+                        collection_format: None, // this defaults to csv
+                        items: v.items.as_deref().map(map_schema_to_items),
+                        name: k,
+                        ..Default::default()
+                    }));
+                }
             )+
         }
     }

@@ -8,13 +8,14 @@ pub mod object;
 mod state;
 include!(concat!(env!("OUT_DIR"), "/template.rs"));
 
-pub use self::emitter::{EmittedUnit, Emitter};
-pub use self::state::EmitterState;
+pub use self::{
+    emitter::{EmittedUnit, Emitter},
+    state::EmitterState,
+};
 
 use super::Schema;
 
-use std::fmt::Debug;
-use std::marker::PhantomData;
+use std::{fmt::Debug, marker::PhantomData};
 
 /// Common conflicting keywords in Rust. An underscore will be added
 /// to fields using these keywords.
@@ -63,6 +64,8 @@ pub struct CrateMeta {
     pub authors: Option<Vec<String>>,
     /// Whether we're planning to emit a lib, app or module.
     pub mode: EmitMode,
+    /// Whether or not to make this a root crate.
+    pub no_root: bool,
     // Marker to avoid potential breakage when more public fields come in.
     _marker: (),
 }

@@ -1,7 +1,9 @@
-use std::future::Future;
-use std::marker::Unpin;
-use std::pin::Pin;
-use std::task::{Context, Poll};
+use std::{
+    future::Future,
+    marker::Unpin,
+    pin::Pin,
+    task::{Context, Poll},
+};
 
 /// Unstabilized [`Ready`](https://doc.rust-lang.org/nightly/std/future/struct.Ready.html) future.
 pub struct Ready<T>(Option<T>);

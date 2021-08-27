@@ -1,14 +1,18 @@
 use anyhow::Error;
-use paperclip::v2::{
-    self,
-    codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
-    models::{DefaultSchema, ResolvableApi},
+use paperclip::{
+    v2::{
+        self,
+        codegen::{CrateMeta, DefaultEmitter, EmitMode, Emitter, EmitterState},
+        models::{DefaultSchema, ResolvableApi},
+    },
+    PaperClipError,
 };
-use paperclip::PaperClipError;
 use structopt::StructOpt;
 
-use std::fs::{self, File};
-use std::path::PathBuf;
+use std::{
+    fs::{self, File},
+    path::PathBuf,
+};
 
 fn parse_version(s: &str) -> Result<OApiVersion, Error> {
     match s {
@@ -43,6 +47,9 @@ struct Opt {
     /// Emit CLI target instead.
     #[structopt(long = "cli")]
     cli: bool,
+    /// Do not make the crate a root crate.
+    #[structopt(long = "no-root")]
+    no_root: bool,
     /// Name of the crate. If this is not specified, then the name of the
     /// working directory is assumed to be crate name.
     #[structopt(long = "name")]
@@ -78,6 +85,8 @@ fn parse_args_and_run() -> Result<(), Error> {
     if opt.version.is_some() {
         meta.version = opt.version;
     }
+
+    meta.no_root = opt.no_root;
 
     state.set_meta(meta);
     let emitter = DefaultEmitter::from(state);

@@ -5,17 +5,21 @@
 
 pub use super::impls::{ApiObjectBuilderImpl, ApiObjectImpl};
 
-use super::emitter::{ANY_GENERIC_PARAMETER, EXTRA_PROPS_FIELD, FILE_MARKER};
-use super::RUST_KEYWORDS;
+use super::{
+    emitter::{ANY_GENERIC_PARAMETER, EXTRA_PROPS_FIELD, FILE_MARKER},
+    RUST_KEYWORDS,
+};
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
 use heck::{CamelCase, SnekCase};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 
-use std::collections::{BTreeMap, HashSet};
-use std::fmt::{self, Display, Write};
-use std::iter;
-use std::sync::Arc;
+use std::{
+    collections::{BTreeMap, HashSet},
+    fmt::{self, Display, Write},
+    iter,
+    sync::Arc,
+};
 
 /// Regex for appropriate escaping in docs.
 static DOC_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[|\]").expect("invalid doc regex?"));

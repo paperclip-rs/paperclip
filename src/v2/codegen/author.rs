@@ -3,8 +3,7 @@
 //! Obtained from [Cargo](https://github.com/rust-lang/cargo/blob/fa05862cd0c6b899b801fda0f256ac5b9bae69d9/src/cargo/ops/cargo_new.rs#L690-L750).
 
 use anyhow::Error;
-use git2::Config as GitConfig;
-use git2::Repository as GitRepository;
+use git2::{Config as GitConfig, Repository as GitRepository};
 
 use std::env;
 

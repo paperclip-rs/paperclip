@@ -1,7 +1,9 @@
-use std::env;
-use std::fs::File;
-use std::io::{Read, Write};
-use std::path::PathBuf;
+use std::{
+    env,
+    fs::File,
+    io::{Read, Write},
+    path::PathBuf,
+};
 
 fn load_file(p: PathBuf) -> String {
     let mut string = String::new();
@@ -39,7 +41,7 @@ mod template {
         ",
         );
         contents.push_str(&name);
-        contents.push_str(",");
+        contents.push(',');
     }
 
     contents.push_str(

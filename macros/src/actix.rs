@@ -5,11 +5,12 @@ use heck::*;
 use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
-use quote::quote;
+use quote::{quote, ToTokens};
 use strum_macros::EnumString;
-use syn::spanned::Spanned;
 use syn::{
+    parse_macro_input,
     punctuated::{Pair, Punctuated},
+    spanned::Spanned,
     Attribute, Data, DataEnum, DeriveInput, Field, Fields, FieldsNamed, FieldsUnnamed, FnArg,
     Generics, Ident, ItemFn, Lit, Meta, MetaList, MetaNameValue, NestedMeta, Path, PathArguments,
     ReturnType, Token, TraitBound, Type, TypeTraitObject,
@@ -159,10 +160,12 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         impl #impl_generics paperclip::v2::schema::Apiv2Operation for #unit_struct #ty_generics #where_clause {
             fn operation() -> paperclip::v2::models::DefaultOperationRaw {
                 use paperclip::actix::OperationModifier;
-                let mut op = paperclip::v2::models::DefaultOperationRaw::default();
-                #(
-                    op.#op_params = #op_values;
-                )*
+                let mut op = paperclip::v2::models::DefaultOperationRaw {
+                    #(
+                        #op_params: #op_values,
+                    )*
+                    .. Default::default()
+                };
                 #(
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
@@ -296,6 +299,8 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
                         for meta in nested.pairs().map(|pair| pair.into_value()) {
                             if let NestedMeta::Meta(Meta::Path(Path { segments, .. })) = meta {
                                 tags.push(segments[0].ident.to_string());
+                            } else if let NestedMeta::Lit(Lit::Str(lit)) = meta {
+                                tags.push(lit.value());
                             } else {
                                 emit_error!(
                                     meta.span(),
@@ -343,7 +348,7 @@ fn extract_fn_documentation(
         }
     };
     let summary = none_if_empty(summary.into_iter().collect::<String>().trim());
-    let description = none_if_empty(description.into_iter().collect::<String>().trim());
+    let description = none_if_empty(description.join("\n").trim());
     (summary, description)
 }
 
@@ -487,17 +492,11 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 schema.data_type = Some(DataType::Object);
             ));
             match &s.fields {
-                Fields::Named(ref f) => handle_field_struct(f, &props, &mut props_gen),
+                Fields::Named(ref f) => {
+                    handle_field_struct(f, &item_ast.attrs, &props, &mut props_gen)
+                }
                 Fields::Unnamed(ref f) => {
-                    if f.unnamed.len() == 1 {
-                        handle_unnamed_field_struct(f, &mut props_gen)
-                    } else {
-                        emit_warning!(
-                            f.span().unwrap(),
-                            "tuple structs do not have named fields and hence will have empty schema.";
-                            help = "{}", &*EMPTY_SCHEMA_HELP;
-                        );
-                    }
+                    handle_unnamed_field_struct(f, &item_ast.attrs, &mut props_gen)
                 }
                 Fields::Unit => {
                     emit_warning!(
@@ -516,6 +515,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     let schema_name = name.to_string();
+    let props_gen_empty = props_gen.is_empty();
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             const NAME: Option<&'static str> = Some(#schema_name);
@@ -526,9 +526,17 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw};
                 use paperclip::v2::schema::TypedData;
 
-                let mut schema = DefaultSchemaRaw::default();
+                let mut schema = DefaultSchemaRaw {
+                    name: Some(#schema_name.into()), // Add name for later use.
+                    .. Default::default()
+                };
                 #props_gen
-                schema.name = Some(#schema_name.into()); // Add name for later use.
+                // props_gen may override the schema for unnamed structs with 1 element
+                // as it replaces the struct type with inner type.
+                // make sure we set the name properly if props_gen is not empty
+                if !#props_gen_empty {
+                    schema.name = Some(#schema_name.into());
+                }
                 schema
             }
         }
@@ -767,49 +775,80 @@ fn add_optional_impl(name: &Ident, generics: &Generics) -> proc_macro2::TokenStr
     }
 }
 
-fn get_field_type(field: &Field) -> (Option<proc_macro2::TokenStream>, bool) {
-    let mut is_required = true;
+fn get_field_type(field: &Field) -> Option<proc_macro2::TokenStream> {
     match field.ty {
-        Type::Path(ref p) => {
-            let ty = p
-                .path
-                .segments
-                .last()
-                .expect("expected type for struct field");
-
-            if p.path.segments.len() == 1 && &ty.ident == "Option" {
-                is_required = false;
-            }
-
-            (Some(address_type_for_fn_call(&field.ty)), is_required)
-        }
-        Type::Reference(_) => (Some(address_type_for_fn_call(&field.ty)), is_required),
+        Type::Path(_) | Type::Reference(_) => Some(address_type_for_fn_call(&field.ty)),
         _ => {
             emit_warning!(
                 field.ty.span().unwrap(),
                 "unsupported field type will be ignored."
             );
-            (None, is_required)
+            None
         }
     }
 }
 
 /// Generates code for a tuple struct with fields.
-fn handle_unnamed_field_struct(fields: &FieldsUnnamed, props_gen: &mut proc_macro2::TokenStream) {
-    let field = fields.unnamed.iter().next().unwrap();
-    let (ty_ref, _) = get_field_type(&field);
+fn handle_unnamed_field_struct(
+    fields: &FieldsUnnamed,
+    struct_attr: &[Attribute],
+    props_gen: &mut proc_macro2::TokenStream,
+) {
+    if fields.unnamed.len() == 1 {
+        let field = fields.unnamed.iter().next().unwrap();
 
-    if let Some(ty_ref) = ty_ref {
-        props_gen.extend(quote!({
-            schema = #ty_ref::raw_schema();
-        }));
+        if let Some(ty_ref) = get_field_type(&field) {
+            let docs = extract_documentation(struct_attr);
+            let docs = docs.trim();
+
+            props_gen.extend(quote!({
+                let mut s = #ty_ref::raw_schema();
+                if !#docs.is_empty() {
+                    s.description = Some(#docs.to_string());
+                }
+                schema = s;
+            }));
+        }
+    } else {
+        for (inner_field_id, field) in (&fields.unnamed).into_iter().enumerate() {
+            let ty_ref = get_field_type(&field);
+
+            let docs = extract_documentation(&field.attrs);
+            let docs = docs.trim();
+
+            let mut gen = if !SerdeFlatten::exists(&field.attrs) {
+                // this is really not what we'd want to do because that's not how the
+                // deserialized struct will be like, ideally we want an actual tuple
+                // this type should therefore not be used for anything else than `Path`
+                quote!({
+                    let mut s = #ty_ref::raw_schema();
+                    if !#docs.is_empty() {
+                        s.description = Some(#docs.to_string());
+                    }
+                    schema.properties.insert(#inner_field_id.to_string(), s.into());
+                })
+            } else {
+                quote!({
+                    let s = #ty_ref::raw_schema();
+                    schema.properties.extend(s.properties);
+                })
+            };
+
+            gen.extend(quote! {
+                if #ty_ref::REQUIRED {
+                    schema.required.insert(#inner_field_id.to_string());
+                }
+            });
+
+            props_gen.extend(gen);
+        }
     }
 }
 
 /// Checks for `api_v2_empty` attributes and removes them.
-fn extract_openapi_attrs<'a>(
-    field_attrs: &'a [Attribute],
-) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + 'a {
+fn extract_openapi_attrs(
+    field_attrs: &'_ [Attribute],
+) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + '_ {
     field_attrs.iter().filter_map(|a| match a.parse_meta() {
         Ok(Meta::List(list)) if list.path.is_ident("openapi") => Some(list.nested),
         _ => None,
@@ -859,9 +898,18 @@ fn check_empty_schema(item_ast: &DeriveInput) -> Option<TokenStream> {
 /// Generates code for a struct with fields.
 fn handle_field_struct(
     fields: &FieldsNamed,
+    struct_attr: &[Attribute],
     serde: &SerdeProps,
     props_gen: &mut proc_macro2::TokenStream,
 ) {
+    let docs = extract_documentation(struct_attr);
+    let docs = docs.trim();
+
+    props_gen.extend(quote!({
+        if !#docs.is_empty() {
+            schema.description = Some(#docs.to_string());
+        }
+    }));
     for field in &fields.named {
         let mut field_name = field
             .ident
@@ -875,7 +923,7 @@ fn handle_field_struct(
             field_name = prop.rename(&field_name);
         }
 
-        let (ty_ref, is_required) = get_field_type(&field);
+        let ty_ref = get_field_type(&field);
 
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
@@ -895,11 +943,11 @@ fn handle_field_struct(
             })
         };
 
-        if is_required {
-            gen.extend(quote! {
+        gen.extend(quote! {
+            if #ty_ref::REQUIRED {
                 schema.required.insert(#field_name.into());
-            });
-        }
+            }
+        });
 
         props_gen.extend(gen);
     }
@@ -1124,4 +1172,147 @@ impl SerdeFlatten {
 
         false
     }
+}
+
+macro_rules! doc_comment {
+    ($x:expr; $($tt:tt)*) => {
+        #[doc = $x]
+        $($tt)*
+    };
+}
+
+#[cfg(feature = "actix")]
+impl super::Method {
+    fn handler_uri(attr: TokenStream) -> TokenStream {
+        let attr = parse_macro_input!(attr as syn::AttributeArgs);
+        attr.first().into_token_stream().into()
+    }
+    fn handler_name(item: TokenStream) -> syn::Result<syn::Ident> {
+        let handler: ItemFn = syn::parse(item)?;
+        Ok(handler.sig.ident)
+    }
+    pub(crate) fn generate(
+        &self,
+        attr: TokenStream,
+        item: TokenStream,
+    ) -> syn::Result<proc_macro2::TokenStream> {
+        let uri: proc_macro2::TokenStream = Self::handler_uri(attr).into();
+        let handler_name = Self::handler_name(item.clone())?;
+        let handler_fn: proc_macro2::TokenStream = item.into();
+        let method: proc_macro2::TokenStream = self.method().parse()?;
+        let variant: proc_macro2::TokenStream = self.variant().parse()?;
+        let handler_name_str = handler_name.to_string();
+
+        Ok(quote! {
+            #[allow(non_camel_case_types, missing_docs)]
+            pub struct #handler_name;
+
+            impl #handler_name {
+                fn resource() -> paperclip::actix::web::Resource {
+                    #handler_fn
+                    paperclip::actix::web::Resource::new(#uri)
+                        .name(#handler_name_str)
+                        .guard(actix_web::guard::#variant())
+                        .route(paperclip::actix::web::#method().to(#handler_name))
+                }
+            }
+
+            impl actix_web::dev::HttpServiceFactory for #handler_name {
+                fn register(self, config: &mut actix_web::dev::AppService) {
+                    Self::resource().register(config);
+                }
+            }
+
+            impl paperclip::actix::Mountable for #handler_name {
+                fn path(&self) -> &str {
+                    #uri
+                }
+
+                fn operations(
+                    &mut self,
+                ) -> std::collections::BTreeMap<
+                    paperclip::v2::models::HttpMethod,
+                    paperclip::v2::models::DefaultOperationRaw,
+                > {
+                    Self::resource().operations()
+                }
+
+                fn definitions(
+                    &mut self,
+                ) -> std::collections::BTreeMap<
+                    String,
+                    paperclip::v2::models::DefaultSchemaRaw,
+                > {
+                    Self::resource().definitions()
+                }
+
+                fn security_definitions(
+                    &mut self,
+                ) -> std::collections::BTreeMap<String, paperclip::v2::models::SecurityScheme>
+                {
+                    Self::resource().security_definitions()
+                }
+            }
+        })
+    }
+}
+
+#[macro_use]
+macro_rules! rest_methods {
+    (
+        $($variant:ident, $method:ident, )+
+    ) => {
+        /// All available Rest methods
+        #[derive(Debug, PartialEq, Eq, Hash)]
+        pub(crate) enum Method {
+            $(
+                $variant,
+            )+
+        }
+
+        impl Method {
+            fn method(&self) -> &'static str {
+                match self {
+                    $(Self::$variant => stringify!($method),)+
+                }
+            }
+            fn variant(&self) -> &'static str {
+                match self {
+                    $(Self::$variant => stringify!($variant),)+
+                }
+            }
+        }
+
+        $(doc_comment! {
+            concat!("
+Creates route handler with `paperclip::actix::web::Resource", "`.
+In order to control the output type and status codes the return value/response must implement the
+trait actix_web::Responder.
+
+# Syntax
+```text
+#[", stringify!($method), r#"("path"[, attributes])]
+```
+
+# Attributes
+- `"path"` - Raw literal string with path for which to register handler.
+
+# Example
+
+/// use paperclip::actix::web::Json;
+/// use paperclip_macros::"#, stringify!($method), ";
+/// #[", stringify!($method), r#"("/")]
+/// async fn example() {
+/// }
+"#);
+            #[cfg(feature = "actix")]
+            #[proc_macro_attribute]
+            pub fn $method(attr: TokenStream, item: TokenStream) -> TokenStream {
+                match Method::$variant.generate(attr, item) {
+                    Ok(v) => v.into(),
+                    Err(e) => e.to_compile_error().into(),
+                }
+            }
+        })+
+    };
 }

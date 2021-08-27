@@ -194,6 +194,12 @@ impl_type_simple!(
 );
 #[cfg(feature = "actix-session")]
 impl_type_simple!(actix_session::Session);
+#[cfg(feature = "actix-files")]
+impl_type_simple!(
+    actix_files::NamedFile,
+    DataType::File,
+    DataTypeFormat::Binary
+);
 #[cfg(feature = "chrono")]
 impl_type_simple!(
     chrono::NaiveDateTime,
@@ -202,6 +208,8 @@ impl_type_simple!(
 );
 #[cfg(feature = "chrono")]
 impl_type_simple!(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
+#[cfg(feature = "chrono")]
+impl_type_simple!(chrono::NaiveTime, DataType::String);
 #[cfg(feature = "rust_decimal")]
 impl_type_simple!(
     rust_decimal::Decimal,
@@ -248,6 +256,9 @@ pub trait Apiv2Schema {
     /// Description of this schema. In case the trait is derived, uses the documentation on the type.
     const DESCRIPTION: &'static str = "";
 
+    /// Indicates the requirement of this schema.
+    const REQUIRED: bool = true;
+
     /// Returns the raw schema for this object.
     fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -292,16 +303,18 @@ impl Apiv2Schema for serde_yaml::Value {}
 
 impl<T: TypedData> Apiv2Schema for T {
     fn raw_schema() -> DefaultSchemaRaw {
-        let mut schema = DefaultSchemaRaw::default();
-        schema.data_type = Some(T::data_type());
-        schema.format = T::format();
-        schema
+        DefaultSchemaRaw {
+            data_type: Some(T::data_type()),
+            format: T::format(),
+            ..Default::default()
+        }
     }
 }
 
 #[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Option<T> {
     default const NAME: Option<&'static str> = None;
+    default const REQUIRED: bool = false;
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -314,6 +327,7 @@ impl<T> Apiv2Schema for Option<T> {
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     const NAME: Option<&'static str> = T::NAME;
+    const REQUIRED: bool = false;
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
@@ -371,10 +385,11 @@ macro_rules! impl_schema_array {
     ($ty:ty) => {
         impl<T: Apiv2Schema> Apiv2Schema for $ty {
             fn raw_schema() -> DefaultSchemaRaw {
-                let mut schema = DefaultSchemaRaw::default();
-                schema.data_type = Some(DataType::Array);
-                schema.items = Some(T::schema_with_ref().into());
-                schema
+                DefaultSchemaRaw {
+                    data_type: Some(DataType::Array),
+                    items: Some(T::schema_with_ref().into()),
+                    ..Default::default()
+                }
             }
         }
     };
@@ -384,10 +399,11 @@ macro_rules! impl_schema_map {
     ($ty:ty) => {
         impl<K: ToString, V: Apiv2Schema> Apiv2Schema for $ty {
             fn raw_schema() -> DefaultSchemaRaw {
-                let mut schema = DefaultSchemaRaw::default();
-                schema.data_type = Some(DataType::Object);
-                schema.extra_props = Some(Either::Right(V::schema_with_ref().into()));
-                schema
+                DefaultSchemaRaw {
+                    data_type: Some(DataType::Object),
+                    extra_props: Some(Either::Right(V::schema_with_ref().into())),
+                    ..Default::default()
+                }
             }
         }
     };

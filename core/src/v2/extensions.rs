@@ -1,11 +1,13 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use once_cell::sync::Lazy;
-use std::cmp::Ordering;
-use std::collections::BTreeMap;
-use std::fmt;
-use std::ops::{Deref, DerefMut};
-use std::sync::Arc;
+use std::{
+    cmp::Ordering,
+    collections::BTreeMap,
+    fmt,
+    ops::{Deref, DerefMut},
+    sync::Arc,
+};
 
 /// Media range for JSON.
 pub static JSON_MIME: Lazy<MediaRange> =

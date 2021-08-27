@@ -3,7 +3,7 @@ source: tests/test_codegen.rs
 expression: data
 ---
 [package]
-name = "test_pet"
+name = "no_root"
 version = "0.1.0"
 authors = ["Me <me@example.com>"]
 edition = "2018"
@@ -31,5 +31,5 @@ url = "2.1"
 tokio = { version = "0.3", features = ["fs", "io-util"] }
 reqwest = { version = "0.10", features = ["stream", "json"] }
 
-[workspace]
+
 

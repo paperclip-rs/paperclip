@@ -8,9 +8,7 @@ use super::{
 use crate::error::ValidationError;
 use heck::CamelCase;
 
-use std::cell::RefCell;
-use std::collections::BTreeMap;
-use std::mem;
+use std::{cell::RefCell, collections::BTreeMap, mem};
 
 // FIXME: The resolver is not in its best. It "just" works atm.
 

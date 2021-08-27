@@ -2,25 +2,25 @@
 
 pub use actix_web::web::{
     block, service, to, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest, HttpResponse, Json,
-    JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
+    JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig, ReqData,
 };
 
 use crate::Mountable;
 use actix_service::{IntoServiceFactory, ServiceFactory};
-use actix_web::dev::{
-    AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse, Transform,
+use actix_web::{
+    dev::{AppService, Factory, HttpServiceFactory, ServiceRequest, ServiceResponse, Transform},
+    guard::Guard,
+    http::Method,
+    Error, FromRequest, Responder,
 };
-use actix_web::guard::Guard;
-use actix_web::{http::Method, Error, FromRequest, Responder};
-use paperclip_core::v2::models::{
-    DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod, SecurityScheme,
+use paperclip_core::v2::{
+    models::{
+        DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod, SecurityScheme,
+    },
+    schema::Apiv2Operation,
 };
-use paperclip_core::v2::schema::Apiv2Operation;
 
-use std::collections::BTreeMap;
-use std::fmt::Debug;
-use std::future::Future;
-use std::mem;
+use std::{collections::BTreeMap, fmt::Debug, future::Future, mem};
 
 const METHODS: &[Method] = &[
     Method::GET,
@@ -339,6 +339,14 @@ where
     /// **NOTE:** This doesn't affect spec generation.
     pub fn data<U: 'static>(mut self, data: U) -> Self {
         self.inner = self.inner.take().map(|s| s.data(data));
+        self
+    }
+
+    /// Proxy for [`actix_web::Scope::app_data`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.data).
+    ///
+    /// **NOTE:** This doesn't affect spec generation.
+    pub fn app_data<U: 'static>(mut self, data: U) -> Self {
+        self.inner = self.inner.take().map(|s| s.app_data(data));
         self
     }
 

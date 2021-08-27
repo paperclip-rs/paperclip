@@ -5,8 +5,7 @@ use paperclip::v2::{
 };
 
 use once_cell::sync::Lazy;
-use std::fs::File;
-use std::path::PathBuf;
+use std::{fs::File, path::PathBuf};
 
 static ROOT: Lazy<PathBuf> = Lazy::new(|| PathBuf::from(env!("CARGO_MANIFEST_DIR")));
 static PET_SCHEMA: Lazy<ResolvableApi<DefaultSchema>> = Lazy::new(|| {
@@ -26,6 +25,19 @@ static CODEGEN_PET_LIB: Lazy<()> = Lazy::new(|| {
     let mut meta = CrateMeta::default();
     meta.authors = Some(vec!["Me <me@example.com>".into()]);
     meta.mode = EmitMode::Crate;
+    state.set_meta(meta);
+
+    let emitter = DefaultEmitter::from(state);
+    emitter.generate(&PET_SCHEMA).expect("codegen");
+});
+static CODEGEN_PET_LIB_NO_ROOT: Lazy<()> = Lazy::new(|| {
+    let mut state = EmitterState::default();
+    state.working_dir = ROOT.clone();
+    state.working_dir.push("tests/test_pet/no_root");
+    let mut meta = CrateMeta::default();
+    meta.authors = Some(vec!["Me <me@example.com>".into()]);
+    meta.mode = EmitMode::Crate;
+    meta.no_root = true;
     state.set_meta(meta);
 
     let emitter = DefaultEmitter::from(state);
@@ -92,6 +104,7 @@ static CODEGEN: Lazy<()> = Lazy::new(|| {
         .filter(Some("paperclip"), log::LevelFilter::Info)
         .init();
     Lazy::force(&CODEGEN_PET_LIB);
+    Lazy::force(&CODEGEN_PET_LIB_NO_ROOT);
     Lazy::force(&CODEGEN_PET_CLI);
     Lazy::force(&CODEGEN_K8S_LIB);
     Lazy::force(&CODEGEN_K8S_CLI);
@@ -111,6 +124,11 @@ mod tests_pet {
     #[test]
     fn test_lib_root() {
         assert_file("tests/test_pet/lib.rs");
+    }
+
+    #[test]
+    fn test_no_root_manifest() {
+        assert_file("tests/test_pet/no_root/Cargo.toml");
     }
 
     #[test]

@@ -1,5 +1,4 @@
-use std::collections::HashSet;
-use std::path::PathBuf;
+use std::{collections::HashSet, path::PathBuf};
 
 macro_rules! impl_err_from {
     ($err:ident :: $type:ty > $variant:ident) => {
@@ -25,6 +24,7 @@ pub enum PaperClipError {
     InvalidCodegenDirectory,
     /// Currently, we only support OpenAPI v2, and eventually v3.
     #[error("This version of OpenAPI is unsupported.")]
+    #[allow(clippy::upper_case_acronyms)]
     UnsupportedOpenAPIVersion,
     /// Paths listed in the spec must be unique.
     #[error("Path similar to {:?} already exists.", _0)]
@@ -36,6 +36,7 @@ pub enum PaperClipError {
     InvalidHost(String, url::ParseError),
     /// Invalid base path URL.
     #[error("Cannot set URL {:?}: {}", _0, _1)]
+    #[allow(clippy::upper_case_acronyms)]
     InvalidBasePathURL(String, url::ParseError),
     /// The given schema object is an array, but the `items` field is missing.
     #[error("Mising item schema for array: {:?}", _0)]

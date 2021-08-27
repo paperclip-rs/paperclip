@@ -1,7 +1,12 @@
-use super::template::{self, TEMPLATE};
-use super::{object::ApiObject, CrateMeta, EmitMode};
-use crate::error::PaperClipError;
-use crate::v2::models::{Coders, SpecFormat};
+use super::{
+    object::ApiObject,
+    template::{self, TEMPLATE},
+    CrateMeta, EmitMode,
+};
+use crate::{
+    error::PaperClipError,
+    v2::models::{Coders, SpecFormat},
+};
 use anyhow::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
@@ -9,16 +14,18 @@ use heck::SnekCase;
 use itertools::Itertools;
 use url::Url;
 
-use std::cell::RefCell;
-use std::collections::{BTreeMap, BTreeSet, HashMap, HashSet};
-use std::fmt::Write as _;
 #[cfg(feature = "cli")]
 use std::fs;
-use std::fs::OpenOptions;
-use std::hash::{Hash, Hasher};
-use std::io::Write;
-use std::path::{Path, PathBuf};
-use std::rc::Rc;
+use std::{
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    fmt::Write as _,
+    fs::OpenOptions,
+    hash::{Hash, Hasher},
+    io::Write,
+    path::{Path, PathBuf},
+    rc::Rc,
+};
 
 /// Holds the state for your schema emitter.
 #[derive(Debug)]
@@ -367,6 +374,15 @@ pub mod util {
             .unwrap_or(false))
     }
 
+    fn no_root(&self) -> Result<bool, Error> {
+        Ok(self
+            .infer_crate_meta()?
+            .borrow()
+            .as_ref()
+            .map(|m| m.no_root)
+            .unwrap_or(true))
+    }
+
     /// Normalized module prefix used by codegen.
     fn normalized_mod_prefix(&self) -> String {
         format!("{}::", self.mod_prefix.trim_matches(':'))
@@ -413,6 +429,7 @@ impl EmitterState {
     fn create_manifest(&self) -> Result<(), Error> {
         let mut man_path = self.root_module_path();
         let is_cli = self.is_cli()?;
+        let no_root = self.no_root()?;
         man_path.set_file_name("Cargo.toml");
 
         let cm = self.infer_crate_meta()?;
@@ -430,6 +447,7 @@ impl EmitterState {
                     version: &format!("{:?}", meta.version.as_ref().unwrap()),
                     authors: &format!("{:?}", meta.authors.as_ref().unwrap()),
                     is_cli,
+                    no_root,
                 },
             )?;
 
@@ -565,6 +583,7 @@ struct ManifestContext<'a> {
     version: &'a str,
     authors: &'a str,
     is_cli: bool,
+    no_root: bool,
 }
 
 #[derive(serde::Serialize)]

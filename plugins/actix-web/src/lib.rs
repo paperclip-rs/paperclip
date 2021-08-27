@@ -6,12 +6,17 @@ extern crate actix_web3 as actix_web;
 pub mod web;
 
 pub use self::web::{Resource, Route, Scope};
-pub use paperclip_macros::{api_v2_errors, api_v2_operation, Apiv2Schema, Apiv2Security};
+pub use paperclip_macros::{
+    api_v2_errors, api_v2_operation, delete, get, post, put, Apiv2Schema, Apiv2Security,
+};
 
 use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;
-use actix_web::dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform};
-use actix_web::{web::HttpResponse, Error};
+use actix_web::{
+    dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform},
+    web::HttpResponse,
+    Error,
+};
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{
     DefaultApiRaw, DefaultOperationRaw, DefaultPathItemRaw, DefaultSchemaRaw, HttpMethod,
@@ -25,10 +30,7 @@ use tinytemplate::TinyTemplate;
 #[cfg(feature = "swagger-ui")]
 use serde::Serialize;
 
-use std::collections::BTreeMap;
-use std::fmt::Debug;
-use std::future::Future;
-use std::sync::Arc;
+use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 #[cfg(feature = "swagger-ui")]
 static TEMPLATE: &str = include_str!("../../templates/swagger-ui.html");

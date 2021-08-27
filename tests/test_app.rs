@@ -5,24 +5,32 @@ extern crate serde_json;
 
 use actix_rt::System;
 use actix_service::ServiceFactory;
-use actix_web::dev::{MessageBody, Payload, ServiceRequest, ServiceResponse};
-use actix_web::{App, Error, FromRequest, HttpRequest, HttpServer, Responder};
+use actix_web::{
+    dev::{MessageBody, Payload, ServiceRequest, ServiceResponse},
+    App, Error, FromRequest, HttpRequest, HttpServer, Responder,
+};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
-use paperclip::actix::{
-    api_v2_errors, api_v2_operation, web, Apiv2Schema, Apiv2Security, CreatedJson, NoContent,
-    OpenApiExt,
+use paperclip::{
+    actix::{
+        api_v2_errors, api_v2_operation, delete, get, post, put, web, Apiv2Schema, Apiv2Security,
+        CreatedJson, NoContent, OpenApiExt,
+    },
+    v2::models::{DefaultApiRaw, Info, Tag},
 };
-use paperclip::v2::models::{DefaultApiRaw, Info, Tag};
 use parking_lot::Mutex;
 
-use std::collections::{BTreeMap, HashMap, HashSet};
-use std::sync::mpsc;
-use std::thread;
+use std::{
+    collections::{BTreeMap, HashMap, HashSet},
+    sync::mpsc,
+    thread,
+};
 use uuid_dev::Uuid;
 
 static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
 static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
+
+type OptionalUuid = Option<uuid_dev::Uuid>;
 
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "lowercase")]
@@ -44,7 +52,7 @@ struct Pet {
     birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
     #[serde(rename = "uuid")]
-    uid: Option<uuid_dev::Uuid>,
+    uid: OptionalUuid,
 }
 
 impl Default for Pet {
@@ -142,6 +150,7 @@ fn test_simple_app() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description":"Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -343,10 +352,27 @@ fn test_params() {
         name: String,
     }
 
+    /// KnownBadge Id Doc
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    struct KnownBadgeId(String);
+
+    /// KnownBadge Id2 Doc
+    #[derive(Deserialize, Apiv2Schema)]
+    struct KnownBadgeId2(u64);
+
+    /// KnownBadge Id3 Doc
+    #[derive(Deserialize, Apiv2Schema)]
+    struct KnownBadgeId3(
+        /// Number Doc
+        pub u64,
+        /// String Doc
+        pub String,
+    );
+
     #[derive(Deserialize, Apiv2Schema)]
     struct BadgeParams {
         res: Option<u16>,
-        color: String,
+        colors: Vec<String>,
     }
 
     #[derive(Deserialize, Apiv2Schema)]
@@ -378,7 +404,10 @@ fn test_params() {
 
     // issue: https://github.com/wafflespeanut/paperclip/issues/216
     #[api_v2_operation]
-    async fn check_data_ref_async(app: web::Data<AppState>) -> web::Json<bool> {
+    async fn check_data_ref_async(
+        app: web::Data<AppState>,
+        _req_data: Option<web::ReqData<bool>>, // this should compile and change nothing
+    ) -> web::Json<bool> {
         web::Json(is_data_empty(app.get_ref()).await)
     }
 
@@ -399,6 +428,21 @@ fn test_params() {
     fn get_known_badge_2(
         _p: web::Path<(u32, String)>,
         _q: web::Query<BadgeParams>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[api_v2_operation]
+    fn get_known_badge_3(
+        _p: web::Path<KnownBadgeId>,
+    ) -> impl Future<Output = Result<web::Json<KnownBadgeId>, ()>> {
+        futures::future::ok(web::Json(KnownBadgeId("id".into())))
+    }
+
+    #[api_v2_operation]
+    fn get_known_badge_4(
+        _p1: web::Path<KnownBadgeId>,
+        _p2: web::Path<(KnownBadgeId2, KnownBadgeId3)>,
     ) -> impl Future<Output = &'static str> {
         ready("")
     }
@@ -457,6 +501,14 @@ fn test_params() {
                                         .route(web::post().to(post_badge_2)),
                                 )
                                 .service(
+                                    web::resource("/v/{id}")
+                                        .route(web::get().to(get_known_badge_3)),
+                                )
+                                .service(
+                                    web::resource("/v/{id}/{id2}/{id3}/{id4}")
+                                        .route(web::get().to(get_known_badge_4)),
+                                )
+                                .service(
                                     web::resource("/v")
                                         .route(web::post().to(post_badge_3))
                                         .route(web::patch().to(patch_badge_3)),
@@ -499,7 +551,11 @@ fn test_params() {
                                 }
                             },
                             "type":"object"
-                        }
+                        },
+                        "KnownBadgeId": {
+                            "description": "KnownBadge Id Doc",
+                            "type": "string"
+                        },
                     },
                     "info": {
                         "title": "",
@@ -523,9 +579,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -553,9 +612,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -583,9 +645,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -613,9 +678,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -643,9 +711,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -673,9 +744,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -709,9 +783,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -783,6 +860,65 @@ fn test_params() {
                                 }
                             }
                         },
+                        "/api/v2/{resource}/v/{id}": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "description": "KnownBadge Id Doc",
+                                        "in": "path",
+                                        "name": "id",
+                                        "required": true,
+                                        "type": "string"
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/KnownBadgeId"
+                                        }
+                                    }
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/v/{id}/{id2}/{id3}/{id4}": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "description": "KnownBadge Id Doc",
+                                        "in": "path",
+                                        "name": "id",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "description": "KnownBadge Id2 Doc",
+                                        "format": "int64",
+                                        "in": "path",
+                                        "name": "id2",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "description": "Number Doc",
+                                        "format": "int64",
+                                        "in": "path",
+                                        "name": "id3",
+                                        "required": true,
+                                        "type": "integer"
+                                    },
+                                    {
+                                        "description": "String Doc",
+                                        "in": "path",
+                                        "name": "id4",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
                         "/api/v2/{resource}/v/{name}": {
                             "get": {
                                 "parameters": [
@@ -801,9 +937,12 @@ fn test_params() {
                                     },
                                     {
                                         "in": "query",
-                                        "name": "color",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "array"
                                     },
                                     {
                                         "format": "int32",
@@ -1038,7 +1177,7 @@ fn test_serde_flatten() {
         offset: Option<i32>,
         /// Return number of images
         size: Option<i32>,
-    };
+    }
 
     #[derive(Deserialize, Serialize, Apiv2Schema)]
     struct Paging {
@@ -1048,7 +1187,7 @@ fn test_serde_flatten() {
         total: i32,
         /// Page size
         size: i32,
-    };
+    }
 
     #[derive(Serialize, Apiv2Schema)]
     struct Image {
@@ -1101,6 +1240,7 @@ fn test_serde_flatten() {
                 json!({
                     "definitions": {
                         "Images": {
+                          "description": "Images response with paging information embedded",
                           "properties": {
                             "data": {
                               "items": {
@@ -1314,6 +1454,11 @@ fn test_tags() {
         ready(web::Json(Vec::new()))
     }
 
+    #[api_v2_operation(tags(Cats, "Nice cars"))]
+    fn some_cats_cars_images() -> impl Future<Output = web::Json<Vec<Image>>> {
+        ready(web::Json(Vec::new()))
+    }
+
     run_and_check_app(
         || {
             let mut spec = DefaultApiRaw::default();
@@ -1329,7 +1474,7 @@ fn test_tags() {
                     external_docs: None,
                 },
                 Tag {
-                    name: "Cars".to_string(),
+                    name: "Nice cars".to_string(),
                     description: Some("Images of nice cars".to_string()),
                     external_docs: None,
                 },
@@ -1344,6 +1489,9 @@ fn test_tags() {
                 .wrap_api_with_spec(spec)
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/images/pets").route(web::get().to(some_pets_images)))
+                .service(
+                    web::resource("/images/cats/cars").route(web::get().to(some_cats_cars_images)),
+                )
                 .build()
         },
         |addr| {
@@ -1393,6 +1541,22 @@ fn test_tags() {
                                 },
                                 "tags":[ "Cats", "Dogs" ]
                             }
+                        },
+                        "/images/cats/cars":{
+                            "get":{
+                                "responses":{
+                                "200":{
+                                    "description":"OK",
+                                    "schema":{
+                                        "items":{
+                                            "$ref":"#/definitions/Image"
+                                        },
+                                        "type":"array"
+                                    }
+                                }
+                                },
+                                "tags":[ "Cats", "Nice cars" ]
+                            }
                         }
                     },
                     "swagger":"2.0",
@@ -1407,7 +1571,7 @@ fn test_tags() {
                         },
                         {
                             "description":"Images of nice cars",
-                            "name":"Cars"
+                            "name":"Nice cars"
                         }
                     ]
                 }),
@@ -2246,6 +2410,7 @@ fn test_errors_app() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -2408,6 +2573,7 @@ fn test_security_app() {
                   "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
+                      "description": "Pets are awesome!",
                       "properties": {
                         "class": {
                           "enum": ["dog", "cat", "other"],
@@ -2515,6 +2681,182 @@ fn test_security_app() {
     );
 }
 
+#[test]
+fn test_method_macro() {
+    #[get("/v0/pets")]
+    #[api_v2_operation]
+    fn get_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, ()>> {
+        futures::future::ready(Ok(web::Json(Default::default())))
+    }
+    #[put("/v0/pets/{name}")]
+    #[api_v2_operation]
+    fn put_pet(
+        _name: web::Path<String>,
+        pet: web::Json<Pet>,
+    ) -> impl Future<Output = Result<web::Json<Pet>, ()>> {
+        futures::future::ready(Ok(pet))
+    }
+    #[post("/v0/pets")]
+    #[api_v2_operation]
+    fn post_pet(pet: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, ()>> {
+        futures::future::ready(Ok(pet))
+    }
+    #[delete("/v0/pets/{name}")]
+    #[api_v2_operation]
+    fn delete_pet(_name: web::Path<String>) -> impl Future<Output = Result<web::Json<()>, ()>> {
+        futures::future::ready(Ok(web::Json(())))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(get_pets)
+                .service(put_pet)
+                .service(post_pet)
+                .service(delete_pet)
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet": {
+                            "description": "Pets are awesome!",
+                            "properties": {
+                                "class": {
+                                "enum": ["dog", "cat", "other"],
+                                    "type":"string"
+                                },
+                                "id": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "description": "Pick a good one.",
+                                    "type": "string"
+                                },
+                                "birthday": {
+                                  "format": "date",
+                                  "type": "string"
+                                },
+                                "updatedOn": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                },
+                                "uuid":{
+                                    "format": "uuid",
+                                    "type": "string"
+                                }
+                            },
+                            "required":[
+                                "birthday",
+                                "class",
+                                "name"
+                            ],
+                            "type":"object"
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/v0/pets": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "items": {
+                                                "$ref": "#/definitions/Pet"
+                                            },
+                                            "type": "array"
+                                        }
+                                    }
+                                },
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                        "/v0/pets/{name}": {
+                            "delete": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                        }
+                                    }
+                                },
+                            },
+                            "put": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
 fn run_and_check_app<F, G, T, B, U>(factory: F, check: G) -> U
 where
     F: Fn() -> App<T, B> + Clone + Send + Sync + 'static,
@@ -2557,6 +2899,7 @@ where
 
     let (_server, addr) = rx.recv().unwrap();
     let ret = check(addr);
+    let _ = _server.stop(true);
     ret
 }
 
