@@ -32,6 +32,8 @@ use serde::Serialize;
 
 use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
+use snafu::Snafu;
+
 #[cfg(feature = "swagger-ui")]
 static TEMPLATE: &str = include_str!("../../templates/swagger-ui.html");
 
@@ -40,6 +42,17 @@ pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
     spec_path: Option<String>,
     inner: Option<actix_web::App<T, B>>,
+}
+
+/// Actix plugin error type
+#[derive(Debug, Snafu)]
+pub enum PaperclipActixError {
+    #[snafu(display(
+        "JSON specification not found.\nYou have to run with_json_spec_at(path) first."
+    ))]
+    JSONSpecificationNotFound,
+    #[snafu(display("An error occurred while rendering Swagger-UI"))]
+    SwaggerUIRenderingError,
 }
 
 /// Extension trait for actix-web applications.
@@ -286,9 +299,9 @@ where
     ///
     /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
     #[cfg(feature = "swagger-ui")]
-    pub fn with_swagger_ui_at(mut self, path: &str) -> Self {
-        self.inner = match self.spec_path.clone() {
-            Some(spec_path) => self.inner.take().map(|a| {
+    pub fn with_swagger_ui_at(mut self, path: &str) -> Result<Self, PaperclipActixError> {
+        match self.spec_path.clone() {
+            Some(spec_path) => {
                 let mut tt = TinyTemplate::new();
                 let context = SwaggerUIContext {
                     api_spec_url: spec_path,
@@ -298,35 +311,19 @@ where
                 let rendered = tt.render("swagger-ui", &context);
                 match rendered {
                     Ok(r) => {
-                        a.service(
-                            actix_web::web::resource(path.to_owned())
-                                .route(actix_web::web::get().to(SwaggerUIHandler(r))),
-                        )
-                    },
-                    Err(_) => {
-                        a.service(
-                            actix_web::web::resource(path.to_owned()).route(
-                            actix_web::web::get().to(|| {
-                                HttpResponse::InternalServerError().body(
-                                    "An error occurred while rendering Swagger-UI",
-                                )
-                            }),
-                        ))
+                        self.inner = self.inner.take().map(|a| {
+                            a.service(
+                                actix_web::web::resource(path.to_owned())
+                                    .route(actix_web::web::get().to(SwaggerUIHandler(r))),
+                            )
+                        });
+                        Ok(self)
                     }
+                    Err(_) => Err(PaperclipActixError::SwaggerUIRenderingError),
                 }
-
-            }),
-            None => self.inner.take().map(|a| {
-                a.service(actix_web::web::resource(path.to_owned()).route(
-                    actix_web::web::get().to(|| {
-                        HttpResponse::NotFound().body(
-                            "JSON specification not found.\nYou have to run with_json_spec_at(path) first.",
-                        )
-                    }),
-                ))
-            }),
-        };
-        self
+            }
+            None => Err(PaperclipActixError::JSONSpecificationNotFound),
+        }
     }
 
     /// Calls the given function with `App` and JSON `Value` representing your API
