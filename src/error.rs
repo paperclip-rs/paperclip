@@ -67,6 +67,10 @@ pub enum PaperClipError {
     /// Errors in templating.
     #[error("Templating error: {}", _0)]
     Templating(tinytemplate::error::Error),
+    #[cfg(feature = "swagger-ui")]
+    /// Swagger UI building errors
+    #[error("Swagger UI error: {:?}", _0)]
+    Swagger(paperclip_actix::SwaggerError),
 }
 
 impl_err_from!(PaperClipError::std::io::Error > Io);
@@ -77,3 +81,5 @@ impl_err_from!(PaperClipError::paperclip_core::ValidationError > Validation);
 impl_err_from!(PaperClipError::rustfmt_nightly::ErrorKind > RustFmt);
 #[cfg(feature = "codegen")]
 impl_err_from!(PaperClipError::tinytemplate::error::Error > Templating);
+#[cfg(feature = "swagger-ui")]
+impl_err_from!(PaperClipError::paperclip_actix::SwaggerError > Swagger);

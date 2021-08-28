@@ -5,6 +5,8 @@ extern crate actix_web3 as actix_web;
 
 pub mod web;
 
+mod error;
+
 pub use self::web::{Resource, Route, Scope};
 pub use paperclip_macros::{
     api_v2_errors, api_v2_operation, delete, get, post, put, Apiv2Schema, Apiv2Security,
@@ -30,9 +32,10 @@ use tinytemplate::TinyTemplate;
 #[cfg(feature = "swagger-ui")]
 use serde::Serialize;
 
-use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
+#[cfg(feature = "swagger-ui")]
+pub use self::error::SwaggerError;
 
-use snafu::Snafu;
+use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 #[cfg(feature = "swagger-ui")]
 static TEMPLATE: &str = include_str!("../../templates/swagger-ui.html");
@@ -42,17 +45,6 @@ pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
     spec_path: Option<String>,
     inner: Option<actix_web::App<T, B>>,
-}
-
-/// Actix plugin error type
-#[derive(Debug, Snafu)]
-pub enum PaperclipActixError {
-    #[snafu(display(
-        "JSON specification not found.\nYou have to run with_json_spec_at(path) first."
-    ))]
-    JSONSpecificationNotFound,
-    #[snafu(display("An error occurred while rendering Swagger-UI"))]
-    SwaggerUIRenderingError,
 }
 
 /// Extension trait for actix-web applications.
@@ -299,7 +291,7 @@ where
     ///
     /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
     #[cfg(feature = "swagger-ui")]
-    pub fn with_swagger_ui_at(mut self, path: &str) -> Result<Self, PaperclipActixError> {
+    pub fn with_swagger_ui_at(mut self, path: &str) -> Result<Self, SwaggerError> {
         match self.spec_path.clone() {
             Some(spec_path) => {
                 let mut tt = TinyTemplate::new();
@@ -319,10 +311,10 @@ where
                         });
                         Ok(self)
                     }
-                    Err(_) => Err(PaperclipActixError::SwaggerUIRenderingError),
+                    Err(_) => Err(SwaggerError::SwaggerUIRenderingError),
                 }
             }
-            None => Err(PaperclipActixError::JSONSpecificationNotFound),
+            None => Err(SwaggerError::JSONSpecificationNotFound),
         }
     }
 
