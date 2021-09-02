@@ -3,6 +3,9 @@ extern crate actix_web2 as actix_web;
 #[cfg(feature = "actix3")]
 extern crate actix_web3 as actix_web;
 
+#[cfg(feature = "swagger-ui")]
+use include_dir::{include_dir, Dir};
+
 pub mod web;
 
 pub use self::web::{Resource, Route, Scope};
@@ -15,7 +18,7 @@ use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;
 use actix_web::{
     dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform},
-    web::HttpResponse,
+    web::{HttpRequest, HttpResponse},
     Error,
 };
 use futures::future::{ok as fut_ok, Ready};
@@ -32,8 +35,12 @@ pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
     #[cfg(feature = "v3")]
     spec_v3: Option<Arc<RwLock<openapiv3::OpenAPI>>>,
+    spec_path: Option<String>,
     inner: Option<actix_web::App<T, B>>,
 }
+
+#[cfg(feature = "swagger-ui")]
+static SWAGGER_DIST: Dir = include_dir!("../swagger-ui/dist");
 
 /// Extension trait for actix-web applications.
 pub trait OpenApiExt<T, B> {
@@ -57,6 +64,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
             #[cfg(feature = "v3")]
             spec_v3: None,
+            spec_path: None,
             inner: Some(self),
         }
     }
@@ -66,6 +74,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
             spec: Arc::new(RwLock::new(spec)),
             #[cfg(feature = "v3")]
             spec_v3: None,
+            spec_path: None,
             inner: Some(self),
         }
     }
@@ -232,6 +241,7 @@ where
             spec: self.spec,
             #[cfg(feature = "v3")]
             spec_v3: self.spec_v3,
+            spec_path: None,
             inner: self.inner.take().map(|a| a.wrap(mw)),
         }
     }
@@ -261,6 +271,7 @@ where
             spec: self.spec,
             #[cfg(feature = "v3")]
             spec_v3: self.spec_v3,
+            spec_path: None,
             inner: self.inner.take().map(|a| a.wrap_fn(mw)),
         }
     }
@@ -269,6 +280,7 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_at(mut self, path: &str) -> Self {
+        self.spec_path = Some(path.to_owned());
         self.inner = self.inner.take().map(|a| {
             a.service(
                 actix_web::web::resource(path)
@@ -328,6 +340,46 @@ where
         let v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().clone());
         let spec = serde_json::to_value(v3).expect("generating json spec");
         call(self, spec)
+    }
+
+    /// Exposes the previously built JSON specification with Swagger UI at the given path
+    ///
+    /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
+    #[cfg(feature = "swagger-ui")]
+    pub fn with_swagger_ui_at(mut self, path: &str) -> Self {
+        let spec_path = self.spec_path.clone().expect(
+            "Specification not set, be sure to call `with_json_spec_at` before this function",
+        );
+
+        let path: String = path.into();
+        // Grab any file request from the documentation UI path and fetch it from SWAGGER_DIST
+        // E.g: js, html, svg and etc.
+        let regex_path = format!("{}/{{filename:.*}}", path);
+
+        self.inner = self.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource([regex_path.to_owned(), path.clone()]).route(
+                    actix_web::web::get().to(move |request: HttpRequest| {
+                        let filename = request.match_info().query("filename");
+                        if filename.is_empty() && request.query_string().is_empty() {
+                            let redirect_url = format!("{}/index.html?url={}", path, spec_path);
+                            HttpResponse::PermanentRedirect()
+                                .header("Location", redirect_url)
+                                .finish()
+                        } else {
+                            HttpResponse::Ok().body(
+                                SWAGGER_DIST
+                                    .get_file(filename)
+                                    .unwrap()
+                                    .contents_utf8()
+                                    .unwrap(),
+                            )
+                        }
+                    }),
+                ),
+            )
+        });
+        self
     }
 
     /// Builds and returns the `actix_web::App`.
