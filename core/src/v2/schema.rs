@@ -251,13 +251,19 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::Date<T> {
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
     /// Name of this schema. This is the name to which the definition of the object is mapped.
-    const NAME: Option<&'static str> = None;
+    fn name() -> Option<String> {
+        None
+    }
 
     /// Description of this schema. In case the trait is derived, uses the documentation on the type.
-    const DESCRIPTION: &'static str = "";
+    fn description() -> &'static str {
+        ""
+    }
 
     /// Indicates the requirement of this schema.
-    const REQUIRED: bool = true;
+    fn required() -> bool {
+        true
+    }
 
     /// Returns the raw schema for this object.
     fn raw_schema() -> DefaultSchemaRaw {
@@ -279,13 +285,13 @@ pub trait Apiv2Schema {
     /// so it won't affect the incoming requests at all.
     fn schema_with_ref() -> DefaultSchemaRaw {
         let mut def = Self::raw_schema();
-        if let Some(n) = Self::NAME {
-            def.reference = Some(String::from("#/definitions/") + n);
+        if let Some(n) = Self::name() {
+            def.reference = Some(String::from("#/definitions/") + &n);
         } else if let Some(n) = def.name.as_ref() {
             def.reference = Some(String::from("#/definitions/") + n);
         }
-        if !Self::DESCRIPTION.is_empty() {
-            def.description = Some(Self::DESCRIPTION.to_owned());
+        if !Self::description().is_empty() {
+            def.description = Some(Self::description().to_owned());
         }
 
         def
@@ -313,8 +319,13 @@ impl<T: TypedData> Apiv2Schema for T {
 
 #[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Option<T> {
-    default const NAME: Option<&'static str> = None;
-    default const REQUIRED: bool = false;
+    default fn name() -> Option<String> {
+        None
+    }
+
+    default fn required() -> bool {
+        false
+    }
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -326,8 +337,13 @@ impl<T> Apiv2Schema for Option<T> {
 }
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
-    const NAME: Option<&'static str> = T::NAME;
-    const REQUIRED: bool = false;
+    fn name() -> Option<String> {
+        T::name()
+    }
+
+    fn required() -> bool {
+        false
+    }
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
@@ -340,7 +356,9 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
 
 #[cfg(feature = "nightly")]
 impl<T, E> Apiv2Schema for Result<T, E> {
-    default const NAME: Option<&'static str> = None;
+    default fn name() -> Option<String> {
+        None
+    }
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -352,7 +370,9 @@ impl<T, E> Apiv2Schema for Result<T, E> {
 }
 
 impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
-    const NAME: Option<&'static str> = T::NAME;
+    fn name() -> Option<String> {
+        T::name()
+    }
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
@@ -364,7 +384,9 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
 }
 
 impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
-    const NAME: Option<&'static str> = T::NAME;
+    fn name() -> Option<String> {
+        T::name()
+    }
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
