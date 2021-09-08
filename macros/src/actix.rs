@@ -515,7 +515,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     let base_name = name.to_string();
-    let type_params: Vec<&Ident> = generics.type_params().map(|p| &p.ident ).collect();
+    let type_params: Vec<&Ident> = generics.type_params().map(|p| &p.ident).collect();
     let schema_name = if type_params.is_empty() {
         quote! { #base_name }
     } else {
@@ -532,7 +532,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             fn name() -> Option<String> {
-                Some(format!("{}", #schema_name))
+                Some(#schema_name.to_string())
             }
 
             fn description() -> &'static str {
@@ -725,7 +725,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
                         description: #quoted_description,
                     })
                 }),
-                Some(quote!(Some(#alias))),
+                Some(quote!(Some(#alias.to_string()))),
             )
         }
         (None, Some(parent)) => {

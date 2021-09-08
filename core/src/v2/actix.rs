@@ -566,7 +566,7 @@ where
     if let (Some(name), Some(scheme)) = (T::name(), T::security_scheme()) {
         let mut security_map = BTreeMap::new();
         let scopes = scheme.scopes.keys().map(String::clone).collect();
-        security_map.insert(name.into(), scopes);
+        security_map.insert(name, scopes);
         op.security.push(security_map);
     }
 }
