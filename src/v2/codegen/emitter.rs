@@ -30,7 +30,7 @@ use std::{
     path::{Path, PathBuf},
     sync::Arc,
 };
-use url::Host;
+use url_dep::Host;
 
 /// Identifier used for `Any` generic parameters in struct definitions.
 pub(super) const ANY_GENERIC_PARAMETER: &str = "Any";
@@ -287,7 +287,7 @@ pub trait Emitter: Sized {
 
             if let Some(port) = parts.next() {
                 let p = port.parse::<u16>().map_err(|_| {
-                    PaperClipError::InvalidHost(h.into(), url::ParseError::InvalidPort)
+                    PaperClipError::InvalidHost(h.into(), url_dep::ParseError::InvalidPort)
                 })?;
                 u.set_port(Some(p)).expect("expected valid port in URL?");
             }

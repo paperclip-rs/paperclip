@@ -211,6 +211,8 @@ mod manual_impl {
     impl_simple!(chrono::NaiveDateTime);
     #[cfg(feature = "rust_decimal")]
     impl_simple!(rust_decimal::Decimal);
+    #[cfg(feature = "url")]
+    impl_simple!(url::Url);
     #[cfg(feature = "uuid")]
     impl_simple!(uuid::Uuid);
 }

@@ -75,6 +75,7 @@ pub enum DataTypeFormat {
     #[serde(rename = "date-time")]
     DateTime,
     Password,
+    Url,
     Uuid,
     #[serde(other)]
     Other,
@@ -92,6 +93,7 @@ impl ToString for DataTypeFormat {
             DataTypeFormat::Date => "data",
             DataTypeFormat::DateTime => "datetime",
             DataTypeFormat::Password => "password",
+            DataTypeFormat::Url => "url",
             DataTypeFormat::Uuid => "uuid",
             // would be nice if Other was Other(String)
             DataTypeFormat::Other => "other",
