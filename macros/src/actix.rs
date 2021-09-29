@@ -138,7 +138,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     let (mut op_params, mut op_values) = parse_operation_attrs(attrs);
 
     // Optionally extract summary and description from doc comments
-    if op_params.iter().find(|i| *i == "summary").is_none() {
+    if !op_params.iter().any(|i| *i == "summary") {
         let (summary, description) = extract_fn_documentation(&item_ast);
         if let Some(summary) = summary {
             op_params.push(Ident::new("summary", item_ast.span()));
@@ -480,7 +480,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         param.bounds.push(bound.clone().into());
     });
 
-    let opt_impl = add_optional_impl(&name, &generics);
+    let opt_impl = add_optional_impl(name, &generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     // FIXME: Use attr path segments to find flattening, skipping, etc.
@@ -567,7 +567,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
         param.bounds.push(bound.clone().into());
     });
 
-    let opt_impl = add_optional_impl(&name, &generics);
+    let opt_impl = add_optional_impl(name, &generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     let mut security_attrs = HashMap::new();
@@ -797,7 +797,7 @@ fn handle_unnamed_field_struct(
     if fields.unnamed.len() == 1 {
         let field = fields.unnamed.iter().next().unwrap();
 
-        if let Some(ty_ref) = get_field_type(&field) {
+        if let Some(ty_ref) = get_field_type(field) {
             let docs = extract_documentation(struct_attr);
             let docs = docs.trim();
 
@@ -811,7 +811,7 @@ fn handle_unnamed_field_struct(
         }
     } else {
         for (inner_field_id, field) in (&fields.unnamed).into_iter().enumerate() {
-            let ty_ref = get_field_type(&field);
+            let ty_ref = get_field_type(field);
 
             let docs = extract_documentation(&field.attrs);
             let docs = docs.trim();
@@ -883,7 +883,7 @@ fn check_empty_schema(item_ast: &DeriveInput) -> Option<TokenStream> {
     if needs_empty_schema {
         let name = &item_ast.ident;
         let generics = item_ast.generics.clone();
-        let opt_impl = add_optional_impl(&name, &generics);
+        let opt_impl = add_optional_impl(name, &generics);
         let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
         return Some(quote!(
             impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {}
@@ -923,7 +923,7 @@ fn handle_field_struct(
             field_name = prop.rename(&field_name);
         }
 
-        let ty_ref = get_field_type(&field);
+        let ty_ref = get_field_type(field);
 
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
