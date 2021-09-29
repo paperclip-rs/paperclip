@@ -92,15 +92,15 @@ impl<T> Mountable for Resource<T> {
     }
 
     fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
-        mem::replace(&mut self.operations, BTreeMap::new())
+        mem::take(&mut self.operations)
     }
 
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
-        mem::replace(&mut self.definitions, BTreeMap::new())
+        mem::take(&mut self.definitions)
     }
 
     fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
-        mem::replace(&mut self.security, BTreeMap::new())
+        mem::take(&mut self.security)
     }
 }
 
@@ -498,15 +498,15 @@ impl<T> Mountable for Scope<T> {
     }
 
     fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
-        mem::replace(&mut self.security, BTreeMap::new())
+        mem::take(&mut self.security)
     }
 
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
-        mem::replace(&mut self.definitions, BTreeMap::new())
+        mem::take(&mut self.definitions)
     }
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
-        for (path, item) in mem::replace(&mut self.path_map, BTreeMap::new()) {
+        for (path, item) in mem::take(&mut self.path_map) {
             let op_map = map.entry(path).or_insert_with(Default::default);
             op_map.methods.extend(item.methods.into_iter());
         }
@@ -680,15 +680,15 @@ where
     }
 
     fn operations(&mut self) -> BTreeMap<HttpMethod, DefaultOperationRaw> {
-        mem::replace(&mut self.operations, BTreeMap::new())
+        mem::take(&mut self.operations)
     }
 
     fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
-        mem::replace(&mut self.security, BTreeMap::new())
+        mem::take(&mut self.security)
     }
 
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
-        mem::replace(&mut self.definitions, BTreeMap::new())
+        mem::take(&mut self.definitions)
     }
 }
 
@@ -725,15 +725,15 @@ impl<'a> Mountable for ServiceConfig<'a> {
     }
 
     fn security_definitions(&mut self) -> BTreeMap<String, SecurityScheme> {
-        mem::replace(&mut self.security, BTreeMap::new())
+        mem::take(&mut self.security)
     }
 
     fn definitions(&mut self) -> BTreeMap<String, DefaultSchemaRaw> {
-        mem::replace(&mut self.definitions, BTreeMap::new())
+        mem::take(&mut self.definitions)
     }
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
-        for (path, item) in mem::replace(&mut self.path_map, BTreeMap::new()) {
+        for (path, item) in mem::take(&mut self.path_map) {
             let op_map = map.entry(path).or_insert_with(Default::default);
             op_map.methods.extend(item.methods.into_iter());
         }
