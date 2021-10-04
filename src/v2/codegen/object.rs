@@ -24,6 +24,9 @@ use std::{
 /// Regex for appropriate escaping in docs.
 static DOC_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[|\]").expect("invalid doc regex?"));
 
+/// Regex for renaming properties with leading @
+static AT_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^@").expect("invalid at regex?"));
+
 /// Represents a (simplified) Rust struct or enum.
 #[derive(Default, Debug, Clone)]
 pub struct ApiObject {
@@ -911,7 +914,8 @@ impl Display for ApiObject {
         self.fields()
             .iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let mut new_name = field.name.to_snek_case();
+                let new_name = AT_REGEX.replace(&field.name, "at_").to_string();
+                let mut new_name = new_name.to_snek_case();
                 // Check if the field matches a Rust keyword and add '_' suffix.
                 if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                     new_name.push('_');
