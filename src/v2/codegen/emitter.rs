@@ -177,7 +177,7 @@ pub trait Emitter: Sized {
                 n.to_string().replace('-', "_").replace('.', "_")
             ),
             Value::Bool(b) => b.to_string().to_camel_case(),
-            Value::String(ref s) => s.to_string().to_camel_case(),
+            Value::String(ref s) => s.to_string().to_camel_case().replace('.', "_"),
             _ => return None,
         };
 
