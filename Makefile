@@ -30,7 +30,7 @@ build:
 	cargo build --features cli
 
 test:
-	cargo test --all --features "actix cli chrono uuid"
+	cargo test --all --features "actix cli chrono uuid swagger-ui"
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check
 	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check
