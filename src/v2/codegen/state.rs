@@ -1,4 +1,5 @@
 use super::{
+    object,
     object::ApiObject,
     template::{self, TEMPLATE},
     CrateMeta, EmitMode,
@@ -10,7 +11,7 @@ use crate::{
 use anyhow::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
-use heck::SnekCase;
+use heck::SnakeCase;
 use itertools::Itertools;
 use url::Url;
 
@@ -219,7 +220,7 @@ pub mod {name} {{
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
                     .for_each(|f| {
-                        unit_types.insert(f.name.to_camel_case());
+                        unit_types.insert(object::to_camel_case(f.name));
                     });
 
                 builder_content.push('\n');
@@ -468,7 +469,7 @@ impl EmitterState {
                         .ok_or(PaperClipError::InvalidCodegenDirectory)?
                         .to_string_lossy()
                         .into_owned()
-                        .to_snek_case(),
+                        .to_snake_case(),
                 );
             }
 

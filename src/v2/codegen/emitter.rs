@@ -18,7 +18,7 @@ use crate::{
     },
 };
 use anyhow::Error;
-use heck::{CamelCase, SnekCase};
+use heck::{CamelCase, SnakeCase};
 use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;
 use parking_lot::RwLock;
@@ -118,7 +118,7 @@ pub trait Emitter: Sized {
 
     /// Returns an iterator of path components for the given definition.
     ///
-    /// **NOTE:** All components are [snake_cased](https://docs.rs/heck/*/heck/trait.SnekCase.html)
+    /// **NOTE:** All components are [snake_cased](https://docs.rs/heck/*/heck/trait.SnakeCase.html)
     /// (including the definition name).
     fn def_ns_name<'a>(
         &self,
@@ -126,7 +126,7 @@ pub trait Emitter: Sized {
     ) -> Result<Box<dyn Iterator<Item = String> + 'a>, Error> {
         let state = self.state();
         def.name()
-            .map(|n| n.split(state.ns_sep).map(SnekCase::to_snek_case))
+            .map(|n| n.split(state.ns_sep).map(SnakeCase::to_snake_case))
             .ok_or_else(|| {
                 trace!("Missing name for definition: '{:?}'", def);
                 PaperClipError::MissingDefinitionName.into()
@@ -177,7 +177,7 @@ pub trait Emitter: Sized {
                 n.to_string().replace('-', "_").replace('.', "_")
             ),
             Value::Bool(b) => b.to_string().to_camel_case(),
-            Value::String(ref s) => s.to_string().to_camel_case(),
+            Value::String(ref s) => s.to_string().to_camel_case().replace('.', "_"),
             _ => return None,
         };
 
@@ -598,7 +598,7 @@ where
             if let Some(name) = self.def_anon_name(def, &ctx.parents) {
                 ty_path.push_str("::");
                 let parent = ctx.parents.get(0).expect("expected first parent name");
-                ty_path.push_str(&parent.to_snek_case());
+                ty_path.push_str(&parent.to_snake_case());
                 ty_path.push_str("::");
                 ty_path.push_str(&name);
                 return Ok(EmittedUnit::KnownButAnonymous(ty_path, objects));

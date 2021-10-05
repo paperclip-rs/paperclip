@@ -1107,8 +1107,8 @@ impl SerdeRename {
             SerdeRename::Upper => name.to_uppercase(),
             SerdeRename::Pascal => name.to_camel_case(),
             SerdeRename::Camel => name.to_mixed_case(),
-            SerdeRename::Snake => name.to_snek_case(),
-            SerdeRename::ScreamingSnake => name.to_snek_case().to_uppercase(),
+            SerdeRename::Snake => name.to_snake_case(),
+            SerdeRename::ScreamingSnake => name.to_snake_case().to_uppercase(),
             SerdeRename::Kebab => name.to_kebab_case(),
             SerdeRename::ScreamingKebab => name.to_kebab_case().to_uppercase(),
         }
