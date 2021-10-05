@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  v3 features.
 - Added new method `trim_base_path` to trim the api base path from all method paths.
 - `Apiv2Schema` supports `url` [PR#334](https://github.com/paperclip-rs/paperclip/pull/334)
+- Add [swagger-ui](https://swagger.io/tools/swagger-ui/) for visualization/test of API via `with_swagger_ui_at` [PR#331](https://github.com/paperclip-rs/paperclip/pull/331).
 
 ### Changed
 - Actix plugin: `#[api_v2_errors]` macro now supports adding different error schemes per response code.
