@@ -1,4 +1,5 @@
 use super::{
+    object,
     object::ApiObject,
     template::{self, TEMPLATE},
     CrateMeta, EmitMode,
@@ -219,7 +220,7 @@ pub mod {name} {{
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
                     .for_each(|f| {
-                        unit_types.insert(f.name.to_camel_case());
+                        unit_types.insert(object::to_camel_case(f.name));
                     });
 
                 builder_content.push('\n');

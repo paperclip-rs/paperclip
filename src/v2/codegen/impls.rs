@@ -1,5 +1,6 @@
 use super::{
     emitter::ANY_GENERIC_PARAMETER,
+    object,
     object::{ApiObject, ApiObjectBuilder, Response, StructField, TypeParameters},
     RUST_KEYWORDS,
 };
@@ -282,12 +283,12 @@ impl<'a> ApiObjectImpl<'a> {
                         }
 
                         f.write_str("_")?;
-                        f.write_str(&field.name.to_snek_case())?;
+                        f.write_str(&object::to_snek_case(&field.name))?;
                         f.write_str(": core::marker::PhantomData,")?;
                     // If we have a container, then we store parameters inside that.
                     } else if field.prop.is_parameter() && !needs_container {
                         f.write_str("\n            param_")?;
-                        f.write_str(&field.name.to_snek_case())?;
+                        f.write_str(&object::to_snek_case(&field.name))?;
                         f.write_str(": None,")?;
                     }
 
@@ -406,7 +407,10 @@ where
 
         let mut phantom = String::new();
         self.0.struct_fields_iter().try_for_each(|field| {
-            let (sk, kk) = (field.name.to_snek_case(), field.name.to_kebab_case());
+            let (sk, kk) = (
+                object::to_snek_case(&field.name),
+                field.name.to_kebab_case(),
+            );
             if field.prop.is_required() {
                 phantom.push_str("\n            _");
                 if field.prop.is_parameter() {
@@ -508,7 +512,7 @@ where
 
                     f.write_str(self.0.helper_module_prefix)?;
                     f.write_str("generics::")?;
-                    f.write_str(&n.to_camel_case())?;
+                    f.write_str(&object::to_camel_case(&n))?;
                     f.write_str("Exists")
                 })?;
 
@@ -560,7 +564,7 @@ where
     where
         F: Write,
     {
-        let field_name = field.name.to_snek_case();
+        let field_name = object::to_snek_case(&field.name);
         let (prop_is_parameter, prop_is_required, needs_container) = (
             field.prop.is_parameter(),
             field.prop.is_required(),
@@ -868,7 +872,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     /// Handle field for a path parameter.
     fn handle_path_param(&mut self, field: StructField) {
         let _ = write!(self.path_items, ", {}=self.", &field.name);
-        let name = field.name.to_snek_case();
+        let name = object::to_snek_case(&field.name);
         if self.needs_container {
             self.path_items.push_str("inner.");
         }
@@ -883,7 +887,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     /// Handle field for a header parameter.
     fn handle_header_param(&mut self, field: StructField) {
         let is_required = field.prop.is_required();
-        let name = field.name.to_snek_case();
+        let name = object::to_snek_case(&field.name);
         let mut param_ref = String::from("&self.");
         if self.needs_container {
             param_ref.push_str("inner.");
@@ -919,7 +923,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
     /// Handle field for a form data parameter.
     fn handle_form_param(&mut self, field: StructField) {
-        let name = field.name.to_snek_case();
+        let name = object::to_snek_case(&field.name);
         if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
             let _ = write!(
                 self.form,
@@ -981,7 +985,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
     /// Handle field for an URL query parameter.
     fn handle_query_param(&mut self, field: StructField) {
-        let name = field.name.to_snek_case();
+        let name = object::to_snek_case(&field.name);
         if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
             self.multi_value_query.push(format!(
                 "

@@ -236,6 +236,16 @@ pub struct ObjectField {
     pub child_req_fields: Vec<String>,
 }
 
+pub fn to_snek_case(name: &str) -> String {
+    let new_name = AT_REGEX.replace(name, "at_");
+    new_name.to_snek_case()
+}
+
+pub fn to_camel_case(name: &str) -> String {
+    let new_name = AT_REGEX.replace(name, "at_");
+    new_name.to_camel_case()
+}
+
 impl ApiObject {
     /// Create an object with the given name.
     pub fn with_name<S>(name: S) -> Self
@@ -601,14 +611,14 @@ impl<'a> ApiObjectBuilder<'a> {
                     TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&field.name.to_camel_case())?;
+                        f.write_str(&to_camel_case(&field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be changed to `{Name}Exists`
                     TypeParameters::ChangeAll => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&field.name.to_camel_case())?;
+                        f.write_str(&to_camel_case(&field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be reset to `Missing{Name}`
@@ -620,8 +630,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     _ => (),
                 }
 
-                let new_name = AT_REGEX.replace(&field.name, "at_");
-                f.write_str(&new_name.to_camel_case())
+                f.write_str(&to_camel_case(&field.name))
             })?;
 
         if self.needs_any {
@@ -845,7 +854,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         // Write struct fields and the associated markers if needed.
         self.struct_fields_iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
+                let (cc, sk) = (to_camel_case(field.name), to_snek_case(field.name));
                 if needs_container {
                     self.write_parameter_if_required(
                         field.prop,
@@ -915,8 +924,7 @@ impl Display for ApiObject {
         self.fields()
             .iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let new_name = AT_REGEX.replace(&field.name, "at_").to_string();
-                let mut new_name = new_name.to_snek_case();
+                let mut new_name = to_snek_case(&field.name);
                 // Check if the field matches a Rust keyword and add '_' suffix.
                 if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                     new_name.push('_');
