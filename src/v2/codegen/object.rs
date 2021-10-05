@@ -436,6 +436,8 @@ pub(super) struct StructField<'a> {
     pub ty: &'a str,
     /// What this field represents.
     pub prop: Property,
+    /// If the field is boxed
+    pub boxed: bool,
     /// Description for this field (if any), for docs.
     pub desc: Option<&'a str>,
     /// Whether this field had a collision (i.e., between parameter and object field)
@@ -499,6 +501,7 @@ impl<'a> ApiObjectBuilder<'a> {
             } else {
                 Property::OptionalField
             },
+            boxed: field.boxed,
             desc: field.description.as_deref(),
             strict_child_fields: &*field.child_req_fields,
             param_loc: None,
@@ -528,6 +531,7 @@ impl<'a> ApiObjectBuilder<'a> {
                         } else {
                             Property::OptionalParam
                         },
+                        boxed: false,
                         desc: param.description.as_deref(),
                         strict_child_fields: &[] as &[_],
                         param_loc: Some(param.presence),

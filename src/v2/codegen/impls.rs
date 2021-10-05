@@ -621,6 +621,8 @@ where
         f.write_str(" = ")?;
         if prop_is_parameter || !prop_is_required {
             f.write_str("Some(")?;
+        } else if field.boxed {
+            f.write_str("Box::new(")?;
         }
 
         if field.needs_file {
@@ -647,7 +649,7 @@ where
             Self::write_value_map(field.ty, f)?;
         }
 
-        if prop_is_parameter || !prop_is_required {
+        if prop_is_parameter || !prop_is_required || field.boxed {
             f.write_str(")")?;
         }
 
