@@ -620,7 +620,8 @@ impl<'a> ApiObjectBuilder<'a> {
                     _ => (),
                 }
 
-                f.write_str(&field.name.to_camel_case())
+                let new_name = AT_REGEX.replace(&field.name, "at_");
+                f.write_str(&new_name.to_camel_case())
             })?;
 
         if self.needs_any {
