@@ -10,7 +10,7 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
-use heck::{CamelCase, SnekCase};
+use heck::{CamelCase, SnakeCase};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 
@@ -236,9 +236,9 @@ pub struct ObjectField {
     pub child_req_fields: Vec<String>,
 }
 
-pub fn to_snek_case(name: &str) -> String {
+pub fn to_snake_case(name: &str) -> String {
     let new_name = AT_REGEX.replace(name, "at_");
-    new_name.to_snek_case()
+    new_name.to_snake_case()
 }
 
 pub fn to_camel_case(name: &str) -> String {
@@ -461,16 +461,16 @@ impl<'a> ApiObjectBuilder<'a> {
     pub fn constructor_fn_name(&self) -> Option<String> {
         match (self.op_id, self.method) {
             // If there's an operation ID, then we go for that ...
-            (Some(id), _) => Some(id.to_snek_case()),
+            (Some(id), _) => Some(id.to_snake_case()),
             // If there's a method and we *don't* have any collisions
             // (i.e., two or more paths for same object), then we default
             // to using the method ...
             (_, Some(meth)) if !self.multiple_builders_exist => {
-                Some(meth.to_string().to_snek_case())
+                Some(meth.to_string().to_snake_case())
             }
             // If there's a method, then we go for numbered functions ...
             (_, Some(meth)) => {
-                let mut name = meth.to_string().to_snek_case();
+                let mut name = meth.to_string().to_snake_case();
                 if self.idx > 0 {
                     name.push('_');
                     name.push_str(&self.idx.to_string());
@@ -858,7 +858,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         // Write struct fields and the associated markers if needed.
         self.struct_fields_iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let (cc, sk) = (to_camel_case(field.name), to_snek_case(field.name));
+                let (cc, sk) = (to_camel_case(field.name), to_snake_case(field.name));
                 if needs_container {
                     self.write_parameter_if_required(
                         field.prop,
@@ -928,7 +928,7 @@ impl Display for ApiObject {
         self.fields()
             .iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let mut new_name = to_snek_case(&field.name);
+                let mut new_name = to_snake_case(&field.name);
                 // Check if the field matches a Rust keyword and add '_' suffix.
                 if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                     new_name.push('_');

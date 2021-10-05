@@ -11,7 +11,7 @@ use crate::{
 use anyhow::Error;
 use heck::CamelCase;
 #[cfg(feature = "cli")]
-use heck::SnekCase;
+use heck::SnakeCase;
 use itertools::Itertools;
 use url::Url;
 
@@ -469,7 +469,7 @@ impl EmitterState {
                         .ok_or(PaperClipError::InvalidCodegenDirectory)?
                         .to_string_lossy()
                         .into_owned()
-                        .to_snek_case(),
+                        .to_snake_case(),
                 );
             }
 
