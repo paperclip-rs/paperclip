@@ -7,24 +7,14 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                 scheme: "basic".to_string(),
                 bearer_format: None,
             },
-            "apiKey" => {
-                // how to determine when it should be JWT?
-                if v2.in_ == Some("header".into()) {
-                    openapiv3::SecurityScheme::HTTP {
-                        scheme: "bearer".to_string(),
-                        bearer_format: Some("JWT".into()),
-                    }
-                } else {
-                    openapiv3::SecurityScheme::APIKey {
-                        location: match v2.in_.unwrap_or_default().as_str() {
-                            "query" => openapiv3::APIKeyLocation::Query,
-                            "header" => openapiv3::APIKeyLocation::Header,
-                            _ => openapiv3::APIKeyLocation::Query,
-                        },
-                        name: v2.name.unwrap_or_default(),
-                    }
-                }
-            }
+            "apiKey" => openapiv3::SecurityScheme::APIKey {
+                location: match v2.in_.unwrap_or_default().as_str() {
+                    "query" => openapiv3::APIKeyLocation::Query,
+                    "header" => openapiv3::APIKeyLocation::Header,
+                    _ => openapiv3::APIKeyLocation::Query,
+                },
+                name: v2.name.unwrap_or_default(),
+            },
             "oauth2" => {
                 let scopes = v2
                     .scopes
