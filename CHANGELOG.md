@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Expose openapi v3 spec through `with_json_spec_v3_at` and `with_raw_json_spec_v3` - this is done through a conversion from
  the v2 types to v3 and so all existing code should be valid. It also means that we're not yet exposing any specific
  v3 features.
+- Added new method `trim_base_path` to trim the api base path from all method paths.
 
 ### Changed
 - Actix plugin: `#[api_v2_errors]` macro now supports adding different error schemes per response code.
