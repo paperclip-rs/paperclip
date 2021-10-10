@@ -80,6 +80,26 @@ pub enum DataTypeFormat {
     Other,
 }
 
+impl ToString for DataTypeFormat {
+    fn to_string(&self) -> String {
+        match self {
+            DataTypeFormat::Int32 => "int32",
+            DataTypeFormat::Int64 => "int64",
+            DataTypeFormat::Float => "float",
+            DataTypeFormat::Double => "double",
+            DataTypeFormat::Byte => "byte",
+            DataTypeFormat::Binary => "binary",
+            DataTypeFormat::Date => "data",
+            DataTypeFormat::DateTime => "datetime",
+            DataTypeFormat::Password => "password",
+            DataTypeFormat::Uuid => "uuid",
+            // would be nice if Other was Other(String)
+            DataTypeFormat::Other => "other",
+        }
+        .to_string()
+    }
+}
+
 /// OpenAPI v2 spec which can be traversed and resolved for codegen.
 pub type ResolvableApi<S> = Api<ResolvableParameter<S>, ResolvableResponse<S>, Resolvable<S>>;
 
@@ -379,12 +399,7 @@ impl<S> PathItem<Parameter<S>, Response<S>> {
                     .position(|p| p.name == name.as_str())
                     .expect("collected parameter missing?");
                 let p = op.parameters.swap_remove(idx);
-                if self
-                    .parameters
-                    .iter()
-                    .find(|p| p.name == name.as_str())
-                    .is_none()
-                {
+                if !self.parameters.iter().any(|p| p.name == name.as_str()) {
                     self.parameters.push(p);
                 }
             }
