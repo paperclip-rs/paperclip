@@ -14,6 +14,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  v3 features.
 
 ### Changed
+- Actix plugin: `#[api_v2_errors]` macro now supports adding different error schemes per response code.
+- Actix plugin: Add new `#[api_v2_errors_overlay]` macro which can be used to filter out unwanted responses from an existing error type.
 
 ### Fixed
 - Optional type aliases like `type Email = Option<String>` will not be added to the `required` fields.
