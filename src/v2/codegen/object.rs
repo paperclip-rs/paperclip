@@ -10,7 +10,7 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
-use heck::{CamelCase, SnekCase};
+use heck::{CamelCase, SnakeCase};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 
@@ -23,6 +23,9 @@ use std::{
 
 /// Regex for appropriate escaping in docs.
 static DOC_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"\[|\]").expect("invalid doc regex?"));
+
+/// Regex for renaming properties with leading @
+static AT_REGEX: Lazy<Regex> = Lazy::new(|| Regex::new(r"^@").expect("invalid at regex?"));
 
 /// Represents a (simplified) Rust struct or enum.
 #[derive(Default, Debug, Clone)]
@@ -233,6 +236,16 @@ pub struct ObjectField {
     pub child_req_fields: Vec<String>,
 }
 
+pub fn to_snake_case(name: &str) -> String {
+    let new_name = AT_REGEX.replace(name, "at_");
+    new_name.to_snake_case()
+}
+
+pub fn to_camel_case(name: &str) -> String {
+    let new_name = AT_REGEX.replace(name, "at_");
+    new_name.to_camel_case()
+}
+
 impl ApiObject {
     /// Create an object with the given name.
     pub fn with_name<S>(name: S) -> Self
@@ -423,6 +436,8 @@ pub(super) struct StructField<'a> {
     pub ty: &'a str,
     /// What this field represents.
     pub prop: Property,
+    /// If the field is boxed
+    pub boxed: bool,
     /// Description for this field (if any), for docs.
     pub desc: Option<&'a str>,
     /// Whether this field had a collision (i.e., between parameter and object field)
@@ -446,16 +461,16 @@ impl<'a> ApiObjectBuilder<'a> {
     pub fn constructor_fn_name(&self) -> Option<String> {
         match (self.op_id, self.method) {
             // If there's an operation ID, then we go for that ...
-            (Some(id), _) => Some(id.to_snek_case()),
+            (Some(id), _) => Some(id.to_snake_case()),
             // If there's a method and we *don't* have any collisions
             // (i.e., two or more paths for same object), then we default
             // to using the method ...
             (_, Some(meth)) if !self.multiple_builders_exist => {
-                Some(meth.to_string().to_snek_case())
+                Some(meth.to_string().to_snake_case())
             }
             // If there's a method, then we go for numbered functions ...
             (_, Some(meth)) => {
-                let mut name = meth.to_string().to_snek_case();
+                let mut name = meth.to_string().to_snake_case();
                 if self.idx > 0 {
                     name.push('_');
                     name.push_str(&self.idx.to_string());
@@ -486,6 +501,7 @@ impl<'a> ApiObjectBuilder<'a> {
             } else {
                 Property::OptionalField
             },
+            boxed: field.boxed,
             desc: field.description.as_deref(),
             strict_child_fields: &*field.child_req_fields,
             param_loc: None,
@@ -515,6 +531,7 @@ impl<'a> ApiObjectBuilder<'a> {
                         } else {
                             Property::OptionalParam
                         },
+                        boxed: false,
                         desc: param.description.as_deref(),
                         strict_child_fields: &[] as &[_],
                         param_loc: Some(param.presence),
@@ -598,14 +615,14 @@ impl<'a> ApiObjectBuilder<'a> {
                     TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&field.name.to_camel_case())?;
+                        f.write_str(&to_camel_case(&field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be changed to `{Name}Exists`
                     TypeParameters::ChangeAll => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&field.name.to_camel_case())?;
+                        f.write_str(&to_camel_case(&field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be reset to `Missing{Name}`
@@ -617,7 +634,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     _ => (),
                 }
 
-                f.write_str(&field.name.to_camel_case())
+                f.write_str(&to_camel_case(&field.name))
             })?;
 
         if self.needs_any {
@@ -841,7 +858,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         // Write struct fields and the associated markers if needed.
         self.struct_fields_iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let (cc, sk) = (field.name.to_camel_case(), field.name.to_snek_case());
+                let (cc, sk) = (to_camel_case(field.name), to_snake_case(field.name));
                 if needs_container {
                     self.write_parameter_if_required(
                         field.prop,
@@ -911,7 +928,7 @@ impl Display for ApiObject {
         self.fields()
             .iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let mut new_name = field.name.to_snek_case();
+                let mut new_name = to_snake_case(&field.name);
                 // Check if the field matches a Rust keyword and add '_' suffix.
                 if RUST_KEYWORDS.iter().any(|&k| k == new_name) {
                     new_name.push('_');
