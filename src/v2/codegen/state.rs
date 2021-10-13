@@ -13,7 +13,7 @@ use heck::CamelCase;
 #[cfg(feature = "cli")]
 use heck::SnakeCase;
 use itertools::Itertools;
-use url::Url;
+use url_dep::Url;
 
 #[cfg(feature = "cli")]
 use std::fs;

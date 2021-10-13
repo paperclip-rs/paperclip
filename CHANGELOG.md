@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
  the v2 types to v3 and so all existing code should be valid. It also means that we're not yet exposing any specific
  v3 features.
 - Added new method `trim_base_path` to trim the api base path from all method paths.
+- `Apiv2Schema` supports `url` [PR#334](https://github.com/paperclip-rs/paperclip/pull/334)
 
 ### Changed
 - Actix plugin: `#[api_v2_errors]` macro now supports adding different error schemes per response code.

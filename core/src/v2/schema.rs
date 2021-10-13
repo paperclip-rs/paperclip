@@ -217,6 +217,9 @@ impl_type_simple!(
     DataTypeFormat::Float
 );
 
+#[cfg(feature = "url")]
+impl_type_simple!(url::Url, DataType::String, DataTypeFormat::Url);
+
 #[cfg(feature = "uuid")]
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
