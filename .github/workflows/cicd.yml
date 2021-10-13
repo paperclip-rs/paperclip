@@ -50,12 +50,16 @@ jobs:
           path: target
           key: ${{ matrix.version }}-x86_64-unknown-linux-gnu-cargo-build-trimmed-${{ hashFiles('**/Cargo.lock') }}
 
+      - name: Init submodule
+        run: |
+          git submodule update --init --recursive
+
       - name: Run default tests
         uses: actions-rs/cargo@v1
         timeout-minutes: 40
         with:
           command: test
-          args: --all --features "actix cli chrono url uuid v3"
+          args: --all --features "actix cli chrono url uuid swagger-ui v3"
 
       - name: Run tests
         timeout-minutes: 40
