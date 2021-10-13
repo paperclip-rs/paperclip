@@ -1,6 +1,6 @@
 [package]
 name = "paperclip"
-version = "0.5.0"
+version = "0.6.0"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
@@ -18,15 +18,16 @@ path = "src/bin/main.rs"
 required-features = ["cli"]
 
 [dependencies]
+paperclip-actix = { path = "plugins/actix-web", version = "0.4.0", optional = true }
+paperclip-core = { path = "core", version = "0.4.0" }
+paperclip-macros = { path = "macros", version = "0.5.0", optional = true }
+
 env_logger = { version = "0.8", optional = true }
 git2 = { version = "0.13", optional = true }
 heck = { version = "0.3", optional = true }
 http = { version = "0.2", optional = true }
 itertools = "0.10"
 log = { version = "0.4", optional = true }
-paperclip-actix = { path = "plugins/actix-web", version = "0.3.0", optional = true }
-paperclip-core = { path = "core", version = "0.3.0" }
-paperclip-macros = { path = "macros", version = "0.4.0", optional = true }
 parking_lot = { version = ">=0.10,<0.12" }
 regex = { version = "1.3", optional = true }
 reqwest = { version = "0.10", features = ["blocking"], optional = true }
