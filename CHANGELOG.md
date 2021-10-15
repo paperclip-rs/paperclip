@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.6.1] - 2021-10-15
+### Fixed
+- Actix2 plugin: fix compilation error `ReqData` not found
+
 ## [0.6.0] - 2021-10-13
 ### Added
 - Add support for actix-web-macros methods routing [PR#289](https://github.com/wafflespeanut/paperclip/pull/289)
