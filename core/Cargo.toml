@@ -1,6 +1,6 @@
 [package]
 name = "paperclip-core"
-version = "0.4.0"
+version = "0.4.1"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "Core types and traits for paperclip OpenAPI tooling library"

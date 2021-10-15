@@ -1,6 +1,6 @@
 [package]
 name = "paperclip-macros"
-version = "0.5.0"
+version = "0.5.1"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "Macros for paperclip OpenAPI tooling library"
