@@ -1,7 +1,6 @@
 name: cicd
 
 on:
-  push:
   pull_request:
   schedule:
     - cron: "0 7 * * *"
@@ -54,12 +53,33 @@ jobs:
         run: |
           git submodule update --init --recursive
 
-      - name: Run default tests
+      - name: Build actix features
         uses: actions-rs/cargo@v1
-        timeout-minutes: 40
+        timeout-minutes: 10
+        with:
+          command: build
+          args: --all --features "actix cli chrono url uuid swagger-ui v3"
+
+      - name: Build actix2 features
+        uses: actions-rs/cargo@v1
+        timeout-minutes: 10
+        with:
+          command: build
+          args: --all --features "actix2 cli chrono url uuid swagger-ui v3"
+
+      - name: Run actix tests
+        uses: actions-rs/cargo@v1
+        timeout-minutes: 20
         with:
           command: test
           args: --all --features "actix cli chrono url uuid swagger-ui v3"
+
+      - name: Run actix2 tests
+        uses: actions-rs/cargo@v1
+        timeout-minutes: 20
+        with:
+          command: test
+          args: --all --features "actix2 cli chrono url uuid swagger-ui v3"
 
       - name: Run tests
         timeout-minutes: 40
