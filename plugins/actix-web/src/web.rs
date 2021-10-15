@@ -1,8 +1,11 @@
 //! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
+#![cfg(any(feature = "actix2", feature = "actix3"))]
 
+#[cfg(feature = "actix3")]
+pub use actix_web::web::ReqData;
 pub use actix_web::web::{
     block, service, to, Bytes, BytesMut, Data, Form, FormConfig, HttpRequest, HttpResponse, Json,
-    JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig, ReqData,
+    JsonConfig, Path, PathConfig, Payload, PayloadConfig, Query, QueryConfig,
 };
 
 use crate::Mountable;
@@ -778,6 +781,7 @@ impl<'a> ServiceConfig<'a> {
     /// Proxy for [`actix_web::web::ServiceConfig::app_data`](https://docs.rs/actix-web/3.3.2/actix_web/web/struct.ServiceConfig.html#method.app_data).
     ///
     /// **NOTE:** This doesn't affect spec generation.
+    #[cfg(feature = "actix3")]
     pub fn app_data<U: 'static>(&mut self, data: U) -> &mut Self {
         self.inner.app_data(data);
         self
