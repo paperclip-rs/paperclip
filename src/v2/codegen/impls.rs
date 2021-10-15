@@ -5,7 +5,7 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{CollectionFormat, ParameterIn, JSON_CODER, JSON_MIME};
-use heck::{CamelCase, KebabCase, SnakeCase};
+use heck::{KebabCase, SnakeCase};
 
 use std::{
     fmt::{self, Display, Write},

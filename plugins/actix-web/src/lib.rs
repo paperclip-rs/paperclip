@@ -1,3 +1,5 @@
+#![cfg(any(feature = "actix2", feature = "actix3"))]
+
 #[cfg(feature = "actix2")]
 extern crate actix_web2 as actix_web;
 #[cfg(feature = "actix3")]
@@ -16,9 +18,11 @@ pub use paperclip_macros::{
 
 use self::web::{RouteWrapper, ServiceConfig};
 use actix_service::ServiceFactory;
+#[cfg(feature = "swagger-ui")]
+use actix_web::web::HttpRequest;
 use actix_web::{
     dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform},
-    web::{HttpRequest, HttpResponse},
+    web::HttpResponse,
     Error,
 };
 use futures::future::{ok as fut_ok, Ready};
@@ -35,6 +39,7 @@ pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
     #[cfg(feature = "v3")]
     spec_v3: Option<Arc<RwLock<openapiv3::OpenAPI>>>,
+    #[cfg(feature = "swagger-ui")]
     spec_path: Option<String>,
     inner: Option<actix_web::App<T, B>>,
 }
@@ -64,6 +69,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
             #[cfg(feature = "v3")]
             spec_v3: None,
+            #[cfg(feature = "swagger-ui")]
             spec_path: None,
             inner: Some(self),
         }
@@ -74,6 +80,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
             spec: Arc::new(RwLock::new(spec)),
             #[cfg(feature = "v3")]
             spec_v3: None,
+            #[cfg(feature = "swagger-ui")]
             spec_path: None,
             inner: Some(self),
         }
@@ -241,6 +248,7 @@ where
             spec: self.spec,
             #[cfg(feature = "v3")]
             spec_v3: self.spec_v3,
+            #[cfg(feature = "swagger-ui")]
             spec_path: None,
             inner: self.inner.take().map(|a| a.wrap(mw)),
         }
@@ -271,6 +279,7 @@ where
             spec: self.spec,
             #[cfg(feature = "v3")]
             spec_v3: self.spec_v3,
+            #[cfg(feature = "swagger-ui")]
             spec_path: None,
             inner: self.inner.take().map(|a| a.wrap_fn(mw)),
         }
@@ -280,7 +289,11 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_at(mut self, path: &str) -> Self {
-        self.spec_path = Some(path.to_owned());
+        #[cfg(feature = "swagger-ui")]
+        {
+            self.spec_path = Some(path.to_owned());
+        }
+
         self.inner = self.inner.take().map(|a| {
             a.service(
                 actix_web::web::resource(path)
