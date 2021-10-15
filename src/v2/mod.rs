@@ -66,13 +66,16 @@
 //! and add them to the known map of definitions.
 //!
 //! ```rust,no_run
+//! #[cfg(feature = "codegen")] {
 //! # use paperclip::v2::{self, ResolvableApi, DefaultSchema};
 //! # let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //!
 //! let resolved = api.resolve().unwrap();
+//! }
 //! ```
 //!
 //! ```rust,no_run
+//! #[cfg(feature = "codegen")] {
 //! # use paperclip::v2::{self, ResolvableApi, DefaultSchema};
 //! # let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //! use paperclip::v2::{DefaultEmitter, EmitterState, Emitter};
@@ -81,6 +84,7 @@
 //! state.working_dir = "/path/to/my/crate".into();
 //! let emitter = DefaultEmitter::from(state);
 //! emitter.generate(&api).unwrap(); // generate code!
+//! }
 //! ```
 
 #[cfg(feature = "codegen")]
