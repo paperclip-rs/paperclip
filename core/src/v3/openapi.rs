@@ -41,6 +41,15 @@ impl From<v2::DefaultApiRaw> for openapiv3::OpenAPI {
             });
         spec.components = Some(components);
 
+        spec.security = v2
+            .security
+            .iter()
+            .map(|item| item.iter().fold(indexmap::IndexMap::new(), |mut i, b| {
+                i.insert(b.0.to_string(), b.1.iter().map(|e| e.clone()).collect());
+                i
+            }))
+            .collect();
+
         spec
     }
 }
