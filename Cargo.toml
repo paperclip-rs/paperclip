@@ -18,7 +18,7 @@ path = "src/bin/main.rs"
 required-features = ["cli"]
 
 [dependencies]
-paperclip-actix = { path = "plugins/actix-web", version = "0.4.1", optional = true }
+paperclip-actix = { path = "plugins/actix-web", version = "0.4.2", optional = true }
 paperclip-core = { path = "core", version = "0.4.1" }
 paperclip-macros = { path = "macros", version = "0.5.1", optional = true }
 
