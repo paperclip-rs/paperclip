@@ -1,4 +1,4 @@
-# Host OpenAPI v2 spec through actix-web
+# Host OpenAPI spec through actix-web
 
 With `actix` feature enabled, paperclip exports a plugin for [actix-web](https://github.com/actix/actix-web) framework to host OpenAPI v2 spec for your APIs *automatically*. While it's not feature complete, you can rely on it to not break your actix-web flow.
 
@@ -14,7 +14,8 @@ actix-web = "3.0"
 # this plugin works smoothly with the nightly compiler, it also works in stable
 # channel (replace "actix-nightly" feature with "actix" in that case). There maybe compilation errors,
 # but those can be fixed.
-paperclip = { version = "0.5", features = ["actix"] }
+# Add the "v3" option if you want to expose an OpenAPI v3 document
+paperclip = { version = "0.6", features = ["actix"] }
 serde = "1.0"
 ```
 
@@ -53,6 +54,8 @@ use actix_web::{App, HttpServer};
 use paperclip::actix::{
     // extension trait for actix_web::App and proc-macro attributes
     OpenApiExt, Apiv2Schema, api_v2_operation,
+    // If you prefer the macro syntax for defining routes, import the paperclip macros
+    // get, post, put, delete
     // use this instead of actix_web::web
     web::{self, Json},
 };
@@ -67,6 +70,8 @@ struct Pet {
 
 // Mark operations like so...
 #[api_v2_operation]
+// Add the next line if you want to use the macro syntax
+// #[post("/pets")]
 async fn echo_pet(body: Json<Pet>) -> Result<Json<Pet>, ()> {
     Ok(body)
 }
@@ -81,8 +86,11 @@ async fn main() -> std::io::Result<()> {
             web::resource("/pets")
                 .route(web::post().to(echo_pet))
         )
-        // Mount the JSON spec at this path.
-        .with_json_spec_at("/api/spec")
+        // Or just .service(echo_pet) if you're using the macro syntax
+        // Mount the v2/Swagger JSON spec at this path.
+        .with_json_spec_at("/api/spec/v2")
+        // If you added the "v3" feature, you can also include
+        // .with_json_spec_v3_at("/api/spec/v3")
 
         // ... or if you wish to build the spec by yourself...
 
@@ -105,7 +113,8 @@ We have:
  - Switched from `actix_web::web` to `paperclip::actix::web`.
  - Marked our `Pet` struct and `add_pet` function as OpenAPI-compatible schema and operation using proc macro attributes.
  - Transformed our `actix_web::App` to a wrapper using `.wrap_api()`.
- - Mounted the JSON spec at a relative path using `.with_json_spec_at("/api/spec")`.
+ - Optionally switched to Paperclip's macros instead of the actix-web route macros
+ - Mounted the JSON spec at a relative path using `.with_json_spec_at("/api/spec/v2")` (and optionally a v3 spec as well).
  - Built (using `.build()`) and passed the original `App` back to actix-web.
 
 Note that we never touched the service, resources, routes or anything else! This means that our original actix-web flow is unchanged.
@@ -119,7 +128,7 @@ curl -X POST http://localhost:8080/pets -H "Content-Type: application/json" -d '
 And see the specs with this:
 
 ```
-curl http://localhost:8080/api/spec
+curl http://localhost:8080/api/spec/v2
 ```
 
 ... we get the swagger spec as a JSON!
