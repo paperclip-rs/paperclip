@@ -22,6 +22,7 @@ heck = { version = "0.3", optional = true }
 http = { version = "0.2", optional = true }
 lazy_static = { version = "1.4", optional = true }
 strum = { version = "0.22", optional = true }
+rand = "0.8"
 strum_macros = { version = "0.22", optional = true }
 
 [features]

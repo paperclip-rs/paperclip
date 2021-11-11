@@ -15,6 +15,7 @@ use syn::{
     Generics, Ident, ItemFn, Lit, Meta, MetaList, MetaNameValue, NestedMeta, Path, PathArguments,
     ReturnType, Token, TraitBound, Type, TypeTraitObject,
 };
+use rand::Rng;
 
 use proc_macro2::TokenStream as TokenStream2;
 use std::collections::HashMap;
@@ -719,10 +720,13 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     let schema_name = name.to_string();
+    let random_prefix = generate_random_uppercase(6);
+    let prefixed_schema_name = format!("{}{}", random_prefix, schema_name);
+
     let props_gen_empty = props_gen.is_empty();
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-            const NAME: Option<&'static str> = Some(#schema_name);
+            const NAME: Option<&'static str> = Some(#prefixed_schema_name);
 
             const DESCRIPTION: &'static str = #docs;
 
@@ -731,7 +735,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 use paperclip::v2::schema::TypedData;
 
                 let mut schema = DefaultSchemaRaw {
-                    name: Some(#schema_name.into()), // Add name for later use.
+                    name: Some(#prefixed_schema_name.into()), // Add name for later use.
                     .. Default::default()
                 };
                 #props_gen
@@ -739,7 +743,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 // as it replaces the struct type with inner type.
                 // make sure we set the name properly if props_gen is not empty
                 if !#props_gen_empty {
-                    schema.name = Some(#schema_name.into());
+                    schema.name = Some(#prefixed_schema_name.into());
                 }
                 schema
             }
@@ -749,6 +753,19 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     gen.into()
+}
+
+/// Generate a random String of uppercase characters (A-Z) with the provided *len*
+fn generate_random_uppercase(len: usize) -> String {
+    const CHARSET: &[u8] = b"ABCDEFGHIJKLMNOPQRSTUVWXYZ";
+    let mut rng = rand::thread_rng();
+    let ident: String = (0..len)
+        .map(|_| {
+            let idx = rng.gen_range(0..CHARSET.len());
+            CHARSET[idx] as char
+        })
+        .collect();
+    ident
 }
 
 /// Actual parser and emitter for `Apiv2Security` derive macro.
