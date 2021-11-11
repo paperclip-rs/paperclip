@@ -6,6 +6,7 @@ use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
 use quote::{quote, ToTokens};
+use rand::Rng;
 use strum_macros::EnumString;
 use syn::{
     parse_macro_input,
@@ -15,7 +16,6 @@ use syn::{
     Generics, Ident, ItemFn, Lit, Meta, MetaList, MetaNameValue, NestedMeta, Path, PathArguments,
     ReturnType, Token, TraitBound, Type, TypeTraitObject,
 };
-use rand::Rng;
 
 use proc_macro2::TokenStream as TokenStream2;
 use std::collections::HashMap;
