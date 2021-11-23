@@ -63,9 +63,7 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
                                     schema_data: Default::default(),
                                     schema_kind: openapiv3::SchemaKind::Any(form_data.clone()),
                                 })),
-                                example: None,
-                                examples: indexmap::IndexMap::new(),
-                                encoding: indexmap::IndexMap::new(),
+                                ..Default::default()
                             }
                         });
                     }
@@ -81,7 +79,7 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
             tags: v2.tags,
             summary: v2.summary,
             description: v2.description,
-            external_documentation: None,
+            external_docs: None,
             operation_id: v2.operation_id,
             parameters,
             request_body,
@@ -104,18 +102,24 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
                         }
                         i
                     }),
+                ..Default::default()
             },
             deprecated: v2.deprecated,
-            security: v2
-                .security
-                .iter()
-                .map(|s| {
-                    s.iter().fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
-                        i.insert(k.to_string(), v.clone());
-                        i
-                    })
-                })
-                .collect(),
+            security: if v2.security.is_empty() {
+                None
+            } else {
+                Some(
+                    v2.security
+                        .iter()
+                        .map(|s| {
+                            s.iter().fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
+                                i.insert(k.to_string(), v.clone());
+                                i
+                            })
+                        })
+                        .collect(),
+                )
+            },
             servers: vec![],
             extensions: indexmap::IndexMap::new(),
         }
