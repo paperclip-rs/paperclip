@@ -659,6 +659,44 @@ pub fn emit_v2_errors_overlay(attrs: TokenStream, input: TokenStream) -> TokenSt
     gen.into()
 }
 
+fn extract_rename(attrs: &[Attribute]) -> Option<String> {
+    let attrs = extract_openapi_attrs(attrs);
+    for punc in attrs {
+        for attr in punc {
+            if let NestedMeta::Meta(attr) = attr {
+                match attr {
+                    Meta::NameValue(nv) => {
+                        if nv
+                            .path
+                            .get_ident()
+                            .map(|id| id.to_string() == "rename")
+                            .unwrap_or(false)
+                        {
+                            match nv.lit {
+                                Lit::Str(s) => {
+                                    return Some(s.value());
+                                }
+                                _ => {
+                                    emit_error!(
+                                        nv.lit.span().unwrap(),
+                                        format!(
+                                            "`#[{}(rename = \"...\")]` expects a string argument",
+                                            SCHEMA_MACRO_ATTR
+                                        ),
+                                    );
+                                }
+                            }
+                        }
+                    }
+                    _ => {}
+                }
+            }
+        }
+    }
+
+    None
+}
+
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
@@ -718,7 +756,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         ),
     };
 
-    let schema_name = name.to_string();
+    let schema_name = extract_rename(&item_ast.attrs).unwrap_or(name.to_string());
     let props_gen_empty = props_gen.is_empty();
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {

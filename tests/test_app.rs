@@ -3143,3 +3143,85 @@ fn test_openapi3() {
     let spec: DefaultApiRaw = serde_yaml::from_reader(spec).unwrap();
     let _spec_v3: openapiv3::OpenAPI = spec.into();
 }
+
+#[test]
+fn test_rename() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "camelCase")]
+    #[openapi(rename = "PetRenamed")]
+    /// Pets are awesome!
+    struct Pet {
+        /// Pick a good one.
+        name: String,
+    }
+
+    #[get("/pets")]
+    #[api_v2_operation]
+    fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(echo_pets)
+                .with_raw_json_spec(|app, spec| {
+                    app.route(
+                        "/api/spec",
+                        web::get().to(move || actix_web::HttpResponse::Ok().json(&spec)),
+                    )
+                })
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "PetRenamed": {
+                            "description": "Pets are awesome!",
+                            "properties": {
+                                "name": {
+                                    "description": "Pick a good one.",
+                                    "type": "string"
+                                },
+                            },
+                            "required":[
+                                "name"
+                            ],
+                            "type":"object"
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/pets": {
+                            "get": {
+                                "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "items": {
+                                            "$ref": "#/definitions/PetRenamed"
+                                        },
+                                        "type": "array"
+                                    }
+                                }
+                                },
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
