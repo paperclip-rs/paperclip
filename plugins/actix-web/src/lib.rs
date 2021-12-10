@@ -383,9 +383,8 @@ where
                             HttpResponse::Ok().body(
                                 SWAGGER_DIST
                                     .get_file(filename)
-                                    .unwrap()
-                                    .contents_utf8()
-                                    .unwrap(),
+                                    .expect(&format!("Failed to get file {}",filename))
+                                    .contents(),
                             )
                         }
                     }),
