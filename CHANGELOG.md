@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add openapi component rename attribute [PR#367](https://github.com/paperclip-rs/paperclip/pull/367)
 - Allow automatically adding the module path to the openapi component name, via a feature "path-in-definition" [PR#373](https://github.com/paperclip-rs/paperclip/pull/373)
 - Add missing ip, ipv4 and ipv6 string format types
+- Add support for actix-web 4
 
 ### Fixed
 - Add more tuple sizes for web::Path for OperationModifier impl [PR#379](https://github.com/paperclip-rs/paperclip/pull/379)

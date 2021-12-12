@@ -46,9 +46,12 @@ openapiv3 = { version = "1.0.0-beta.5", optional = true }
 indexmap = { version = "1.0", features = ["serde-1", "std"], optional = true }
 
 [dev-dependencies]
-actix-rt = "1"
-actix-service = "1"
-actix-web = { version = "3", default-features = false }
+actix-rt1 = { version = "1.0", package = "actix-rt" }
+actix-service1 = { version = "1", package = "actix-service" }
+actix-service2 = { version = "2", package = "actix-service" }
+actix-web2 = { version = "2", default-features = false, package = "actix-web" }
+actix-web3 = { version = "3", default-features = false, package = "actix-web" }
+actix-web4 = { version = "4", default-features = false, package = "actix-web" }
 chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
 futures = "0.3"
 uuid_dev = { version = "0.8", features = ["serde"], package = "uuid" }
@@ -59,12 +62,13 @@ env_logger = "0.8"
 
 [features]
 # actix-web support
-actix = ["actix3"]
-actix-nightly = ["actix3-nightly"]
+actix-nightly = ["actix4-nightly"]
+actix4-nightly = ["actix4", "paperclip-actix/nightly"]
 actix3-nightly = ["actix3", "paperclip-actix/nightly"]
 actix2-nightly = ["actix2", "paperclip-actix/nightly"]
-actix2 = ["actix-base", "paperclip-actix/actix2"]
+actix4 = ["actix-base", "paperclip-actix/actix4"]
 actix3 = ["actix-base", "paperclip-actix/actix3"]
+actix2 = ["actix-base", "paperclip-actix/actix2"]
 actix-base = ["v2", "paperclip-macros/actix"]
 swagger-ui = ["paperclip-actix/swagger-ui"]
 path-in-definition = ["paperclip-macros/path-in-definition"]
@@ -105,4 +109,4 @@ required-features = ["v2", "codegen"]
 
 [[test]]
 name = "test_app"
-required-features = ["cli", "actix", "uuid", "chrono", "swagger-ui"]
+required-features = ["cli", "actix-base", "uuid", "chrono", "swagger-ui"]
