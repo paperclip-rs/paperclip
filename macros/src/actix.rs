@@ -674,6 +674,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let docs = docs.trim();
 
     let props = SerdeProps::from_item_attrs(&item_ast.attrs);
+
     let name = &item_ast.ident;
 
     // Add `Apiv2Schema` bound for impl if the type is generic.
@@ -720,18 +721,34 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
 
     let schema_name = name.to_string();
     let props_gen_empty = props_gen.is_empty();
-    let gen = quote! {
-        impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-            const NAME: Option<&'static str> = Some(#schema_name);
 
+    let gen = quote! {
+        impl #name #ty_generics #where_clause {
+            fn __paperclip_schema_name() -> String {
+                // The module path itself, e.g cratename::module
+                let full_module_path = std::module_path!().to_string();
+                // We're not interested in the crate name, nor do we want :: as a seperator
+                let trimmed_module_path = full_module_path.split("::")
+                    .enumerate()
+                    .filter(|(index, _)| *index != 0) // Skip the first element, i.e the crate name
+                    .map(|(_, component)| component)
+                    .collect::<Vec<_>>()
+                    .join("_");
+                format!("{}_{}", trimmed_module_path, #schema_name)
+            }
+        }
+
+        impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
+            //const NAME: Option<&'static str> = None;
             const DESCRIPTION: &'static str = #docs;
 
             fn raw_schema() -> paperclip::v2::models::DefaultSchemaRaw {
                 use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw};
                 use paperclip::v2::schema::TypedData;
 
+                let name = Self::__paperclip_schema_name();
                 let mut schema = DefaultSchemaRaw {
-                    name: Some(#schema_name.into()), // Add name for later use.
+                    name: Some(name.clone()), // Add name for later use.
                     .. Default::default()
                 };
                 #props_gen
@@ -739,7 +756,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 // as it replaces the struct type with inner type.
                 // make sure we set the name properly if props_gen is not empty
                 if !#props_gen_empty {
-                    schema.name = Some(#schema_name.into());
+                    schema.name = Some(name);
                 }
                 schema
             }
