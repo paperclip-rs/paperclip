@@ -34,6 +34,7 @@ impl From<v2::DefaultSchemaRaw> for openapiv3::ReferenceOr<openapiv3::Schema> {
                         description: v2.description,
                         discriminator: None,
                         default: None,
+                        extensions: indexmap::IndexMap::new(),
                     },
                     schema_kind: {
                         if let Some(data_type) = v2.data_type {
@@ -169,13 +170,7 @@ fn v2_data_type_to_v3(
         v2::DataType::Boolean => openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
         v2::DataType::Array => {
             openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
-                items: {
-                    if let Some(i) = items {
-                        i.deref().clone().into()
-                    } else {
-                        invalid_referenceor("Array with 0 items!".into())
-                    }
-                },
+                items: items.as_ref().map(|items| items.deref().clone().into()),
                 min_items: None,
                 max_items: None,
                 unique_items: false,
@@ -337,16 +332,7 @@ impl From<v2::Items> for openapiv3::ReferenceOr<Box<openapiv3::Schema>> {
                 v2::DataType::Boolean => openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
                 v2::DataType::Array => {
                     openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
-                        items: {
-                            match &v2.items {
-                                Some(items) => items.deref().clone().into(),
-                                None => {
-                                    return invalid_referenceor(
-                                        "Invalid array, no items".to_string(),
-                                    );
-                                }
-                            }
-                        },
+                        items: v2.items.map(|items| items.deref().clone().into()),
                         min_items: v2.min_items.map(|v| v as usize),
                         max_items: v2.max_items.map(|v| v as usize),
                         unique_items: v2.unique_items.unwrap_or_default(),
