@@ -26,7 +26,6 @@
 //! [kube-spec]: https://github.com/kubernetes/kubernetes/tree/afd928b8bc81cea385eba4c94558373df7aeae75/api/openapi-spec
 //!
 //! ```rust,no_run
-//! #[macro_use] extern crate paperclip;
 //! #[macro_use] extern crate serde_derive; // NOTE: We're using serde for decoding stuff.
 //!
 //! use paperclip::v2::{self, ResolvableApi};
@@ -44,7 +43,7 @@
 //!     Other,
 //! }
 //!
-//! #[api_v2_schema]
+//! #[paperclip::api_v2_schema]
 //! #[derive(Debug, Deserialize)]
 //! struct K8sSchema {
 //!     #[serde(rename = "x-kubernetes-patch-strategy")]
