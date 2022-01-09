@@ -67,6 +67,7 @@ actix2 = ["actix-base", "paperclip-actix/actix2"]
 actix3 = ["actix-base", "paperclip-actix/actix3"]
 actix-base = ["v2", "paperclip-macros/actix"]
 swagger-ui = ["paperclip-actix/swagger-ui"]
+path-in-definition = ["paperclip-macros/path-in-definition"]
 
 # OpenAPI support (v2 and codegen)
 cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
