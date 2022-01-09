@@ -1,6 +1,7 @@
 # Paperclip
 
-[![Build Status](https://api.travis-ci.org/wafflespeanut/paperclip.svg?branch=master)](https://travis-ci.org/wafflespeanut/paperclip)
+![Build Status](https://github.com/paperclip-rs/paperclip/actions/workflows/cicd.yml/badge.svg)
+![Linter Status](https://github.com/paperclip-rs/paperclip/actions/workflows/linter.yml/badge.svg)
 [![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip)
 [![Crates.io](https://img.shields.io/crates/v/paperclip.svg)](https://crates.io/crates/paperclip)
 

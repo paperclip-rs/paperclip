@@ -6,6 +6,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
             "basic" => openapiv3::SecurityScheme::HTTP {
                 scheme: "basic".to_string(),
                 bearer_format: None,
+                description: None,
             },
             "apiKey" => {
                 // how to determine when it should be JWT?
@@ -13,6 +14,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                     openapiv3::SecurityScheme::HTTP {
                         scheme: "bearer".to_string(),
                         bearer_format: Some("JWT".into()),
+                        description: None,
                     }
                 } else {
                     openapiv3::SecurityScheme::APIKey {
@@ -22,6 +24,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             _ => openapiv3::APIKeyLocation::Query,
                         },
                         name: v2.name.unwrap_or_default(),
+                        description: None,
                     }
                 }
             }
@@ -70,6 +73,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             _ => None,
                         },
                     },
+                    description: None,
                 }
             }
             type_ => {
@@ -77,6 +81,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                 openapiv3::SecurityScheme::HTTP {
                     scheme: "invalid".to_string(),
                     bearer_format: None,
+                    description: None,
                 }
             }
         }

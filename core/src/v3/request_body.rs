@@ -20,6 +20,7 @@ impl From<v2::DefaultParameterRaw>
             },
             example: None,
             examples: indexmap::IndexMap::new(),
+            explode: None,
             extensions: indexmap::IndexMap::new(),
         };
 
@@ -46,9 +47,7 @@ impl From<v2::DefaultParameterRaw>
                 content: {
                     let media = openapiv3::MediaType {
                         schema: v2.schema.map(|s| s.into()),
-                        example: None,
-                        examples: indexmap::IndexMap::new(),
-                        encoding: indexmap::IndexMap::new(),
+                        ..Default::default()
                     };
                     let mut map = indexmap::IndexMap::new();
                     map.insert(v2::SpecFormat::Json.mime().0.to_string(), media);
