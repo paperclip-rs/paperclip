@@ -1,7 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/schema.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>schema.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../paperclip_core/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core&#x2F;src&#x2F;v2&#x2F;schema.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>schema.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.png" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.png" alt="logo"></a><nav class="sub"><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -486,15 +485,19 @@
 <span id="483">483</span>
 <span id="484">484</span>
 <span id="485">485</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Traits used for code and spec generation.</span>
+<span id="486">486</span>
+<span id="487">487</span>
+<span id="488">488</span>
+<span id="489">489</span>
+<span id="490">490</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.</span>
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">models</span>::{
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::models</span>::{
     <span class="ident">DataType</span>, <span class="ident">DataTypeFormat</span>, <span class="ident">DefaultOperationRaw</span>, <span class="ident">DefaultSchemaRaw</span>, <span class="ident">Either</span>, <span class="ident">Resolvable</span>,
     <span class="ident">SecurityScheme</span>,
 };
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>};
+<span class="kw">use</span> <span class="ident">std::collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>};
 
 <span class="doccomment">/// Interface for the [`Schema`](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject) object.</span>
 <span class="doccomment">///</span>
@@ -504,81 +507,81 @@
 <span class="doccomment">/// proc macro attribute instead.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Schema</span>: <span class="ident">Sized</span> {
     <span class="doccomment">/// Description for this schema, if any (`description` field).</span>
-    <span class="kw">fn</span> <span class="ident">description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Reference to some other schema, if any (`$ref` field).</span>
-    <span class="kw">fn</span> <span class="ident">reference</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">reference</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Data type of this schema, if any (`type` field).</span>
-    <span class="kw">fn</span> <span class="ident">data_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataType</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">data_type</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataType</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Data type format used by this schema, if any (`format` field).</span>
-    <span class="kw">fn</span> <span class="ident">format</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">format</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Schema for array definitions, if any (`items` field).</span>
-    <span class="kw">fn</span> <span class="ident">items</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">items</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Mutable access to the `items` field, if it exists.</span>
-    <span class="kw">fn</span> <span class="ident">items_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">items_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Value schema for maps (`additional_properties` field).</span>
-    <span class="kw">fn</span> <span class="ident">additional_properties</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Either</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">additional_properties</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Either</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Mutable access to `additional_properties` field, if it&#39;s a map.</span>
-    <span class="kw">fn</span> <span class="ident">additional_properties_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">additional_properties_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Map of names and schema for properties, if it&#39;s an object (`properties` field)</span>
-    <span class="kw">fn</span> <span class="ident">properties</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">properties</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Mutable access to `properties` field.</span>
-    <span class="kw">fn</span> <span class="ident">properties_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">properties_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns the required properties (if any) for this object.</span>
-    <span class="kw">fn</span> <span class="ident">required_properties</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">required_properties</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Enum variants in this schema (if any). It&#39;s `serde_json::Value`</span>
     <span class="doccomment">/// because:</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// - Enum variants are allowed to have any type of value.</span>
     <span class="doccomment">/// - `serde_json::Value` works for both JSON and YAML.</span>
-    <span class="kw">fn</span> <span class="ident">enum_variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">serde_json</span>::<span class="ident">Value</span>]<span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">enum_variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span>[<span class="ident">serde_json::Value</span>]<span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns whether this definition &quot;is&quot; or &quot;has&quot; `Any` type.</span>
-    <span class="kw">fn</span> <span class="ident">contains_any</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">_schema_contains_any</span>(<span class="self">self</span>, <span class="macro">vec</span><span class="macro">!</span>[])
+    <span class="kw">fn</span> <span class="ident">contains_any</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="ident">_schema_contains_any</span>(<span class="self">self</span>, <span class="macro">vec!</span>[])
     }
 
     <span class="comment">/* MARK: Resolver-specific methods. */</span>
 
     <span class="doccomment">/// Set the reference to this schema.</span>
-    <span class="kw">fn</span> <span class="ident">set_reference</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">ref_</span>: <span class="ident">String</span>);
+    <span class="kw">fn</span> <span class="ident">set_reference</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">ref_</span>: <span class="ident">String</span>);
 
     <span class="doccomment">/// Set whether this definition is cyclic. This is done by the resolver.</span>
-    <span class="kw">fn</span> <span class="ident">set_cyclic</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">cyclic</span>: <span class="ident">bool</span>);
+    <span class="kw">fn</span> <span class="ident">set_cyclic</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">cyclic</span>: <span class="ident">bool</span>);
 
     <span class="doccomment">/// Returns whether this definition is cyclic.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **NOTE:** This is not part of the schema object, but it&#39;s</span>
     <span class="doccomment">/// set by the resolver using `set_cyclic` for codegen.</span>
-    <span class="kw">fn</span> <span class="ident">is_cyclic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span>;
+    <span class="kw">fn</span> <span class="ident">is_cyclic</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span>;
 
     <span class="doccomment">/// Name of this schema, if any.</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **NOTE:** This is not part of the schema object, but it&#39;s</span>
     <span class="doccomment">/// set by the resolver using `set_name` for codegen.</span>
-    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Sets the name for this schema. This is done by the resolver.</span>
-    <span class="kw">fn</span> <span class="ident">set_name</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>);
+    <span class="kw">fn</span> <span class="ident">set_name</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>);
 }
 
-<span class="kw">fn</span> <span class="ident">_schema_contains_any</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">Schema</span><span class="op">&gt;</span>(<span class="ident">schema</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">S</span>, <span class="kw-2">mut</span> <span class="ident">nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="kw">fn</span> <span class="ident">_schema_contains_any</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">S</span>: <span class="ident">Schema</span><span class="op">&gt;</span>(<span class="ident">schema</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">S</span>, <span class="kw-2">mut</span> <span class="ident">nodes</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>) -&gt; <span class="ident">bool</span> {
     <span class="kw">if</span> <span class="ident">schema</span>.<span class="ident">data_type</span>().<span class="ident">is_none</span>() {
         <span class="kw">return</span> <span class="bool-val">true</span>;
     }
 
     <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">name</span>) <span class="op">=</span> <span class="ident">schema</span>.<span class="ident">name</span>() {
-        <span class="kw">if</span> <span class="ident">nodes</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span> <span class="op">=</span><span class="op">=</span> <span class="ident">name</span>) {
+        <span class="kw">if</span> <span class="ident">nodes</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span> <span class="op">==</span> <span class="ident">name</span>) {
             <span class="kw">return</span> <span class="bool-val">false</span>; <span class="comment">// We&#39;ve encountered a cycle.</span>
         } <span class="kw">else</span> {
             <span class="ident">nodes</span>.<span class="ident">push</span>(<span class="ident">name</span>);
@@ -599,8 +602,8 @@
         <span class="op">|</span><span class="op">|</span> <span class="ident">schema</span>
             .<span class="ident">additional_properties</span>()
             .<span class="ident">map</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">e</span> {
-                <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="ident">extra_props_allowed</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">extra_props_allowed</span>,
-                <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">_schema_contains_any</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">s</span>.<span class="ident">read</span>(), <span class="ident">nodes</span>),
+                <span class="ident">Either::Left</span>(<span class="ident">extra_props_allowed</span>) =&gt; <span class="kw-2">*</span><span class="ident">extra_props_allowed</span>,
+                <span class="ident">Either::Right</span>(<span class="ident">s</span>) =&gt; <span class="ident">_schema_contains_any</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">s</span>.<span class="ident">read</span>(), <span class="ident">nodes</span>),
             })
             .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
 }
@@ -608,33 +611,33 @@
 <span class="doccomment">/// Trait for returning OpenAPI data type and format for the implementor.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">TypedData</span> {
     <span class="doccomment">/// The OpenAPI type for this implementor.</span>
-    <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
-        <span class="ident">DataType</span>::<span class="ident">Object</span>
+    <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
+        <span class="ident">DataType::Object</span>
     }
 
     <span class="doccomment">/// The optional OpenAPI data format for this implementor.</span>
-    <span class="kw">fn</span> <span class="ident">format</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">format</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_type_simple</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> {
+<span class="macro">macro_rules!</span> <span class="ident">impl_type_simple</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) =&gt; {
         <span class="kw">impl</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {}
     };
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dt</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dt</span>:<span class="ident">expr</span>) =&gt; {
         <span class="kw">impl</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-            <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
+            <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dt</span>
             }
         }
     };
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dt</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">df</span>:<span class="ident">expr</span>) <span class="op">=</span><span class="op">&gt;</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dt</span>:<span class="ident">expr</span>, <span class="macro-nonterminal">$</span><span class="macro-nonterminal">df</span>:<span class="ident">expr</span>) =&gt; {
         <span class="kw">impl</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-            <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
+            <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
                 <span class="macro-nonterminal">$</span><span class="macro-nonterminal">dt</span>
             }
-            <span class="kw">fn</span> <span class="ident">format</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
+            <span class="kw">fn</span> <span class="ident">format</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
                 <span class="prelude-val">Some</span>(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">df</span>)
             }
         }
@@ -642,90 +645,93 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span> {
-    <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
-        <span class="ident">DataType</span>::<span class="ident">String</span>
+    <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
+        <span class="ident">DataType::String</span>
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">TypedData</span><span class="op">&gt;</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">T</span> {
-    <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
-        <span class="ident">T</span>::<span class="ident">data_type</span>()
+    <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
+        <span class="ident">T::data_type</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">format</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
-        <span class="ident">T</span>::<span class="ident">format</span>()
+    <span class="kw">fn</span> <span class="ident">format</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
+        <span class="ident">T::format</span>()
     }
 }
 
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">char</span>, <span class="ident">DataType</span>::<span class="ident">String</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">String</span>, <span class="ident">DataType</span>::<span class="ident">String</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">bool</span>, <span class="ident">DataType</span>::<span class="ident">Boolean</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">f32</span>, <span class="ident">DataType</span>::<span class="ident">Number</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Float</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">f64</span>, <span class="ident">DataType</span>::<span class="ident">Number</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Double</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">i8</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int32</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">i16</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int32</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">i32</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int32</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">u8</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int32</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">u16</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int32</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">u32</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int32</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">i64</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int64</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">i128</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int64</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">isize</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int64</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">u64</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int64</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">u128</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int64</span>);
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">usize</span>, <span class="ident">DataType</span>::<span class="ident">Integer</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Int64</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">char</span>, <span class="ident">DataType::String</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">String</span>, <span class="ident">DataType::String</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">bool</span>, <span class="ident">DataType::Boolean</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">f32</span>, <span class="ident">DataType::Number</span>, <span class="ident">DataTypeFormat::Float</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">f64</span>, <span class="ident">DataType::Number</span>, <span class="ident">DataTypeFormat::Double</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">i8</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int32</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">i16</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int32</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">i32</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int32</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">u8</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int32</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">u16</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int32</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">u32</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int32</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">i64</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int64</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">i128</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int64</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">isize</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int64</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">u64</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int64</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">u128</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int64</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">usize</span>, <span class="ident">DataType::Integer</span>, <span class="ident">DataTypeFormat::Int64</span>);
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-multipart&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(
-    <span class="ident">actix_multipart</span>::<span class="ident">Multipart</span>,
-    <span class="ident">DataType</span>::<span class="ident">File</span>,
-    <span class="ident">DataTypeFormat</span>::<span class="ident">Binary</span>
+<span class="macro">impl_type_simple!</span>(
+    <span class="ident">actix_multipart::Multipart</span>,
+    <span class="ident">DataType::File</span>,
+    <span class="ident">DataTypeFormat::Binary</span>
 );
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-session&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">actix_session</span>::<span class="ident">Session</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">actix_session::Session</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-files&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(
-    <span class="ident">actix_files</span>::<span class="ident">NamedFile</span>,
-    <span class="ident">DataType</span>::<span class="ident">File</span>,
-    <span class="ident">DataTypeFormat</span>::<span class="ident">Binary</span>
+<span class="macro">impl_type_simple!</span>(
+    <span class="ident">actix_files::NamedFile</span>,
+    <span class="ident">DataType::File</span>,
+    <span class="ident">DataTypeFormat::Binary</span>
 );
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(
-    <span class="ident">chrono</span>::<span class="ident">NaiveDateTime</span>,
-    <span class="ident">DataType</span>::<span class="ident">String</span>,
-    <span class="ident">DataTypeFormat</span>::<span class="ident">DateTime</span>
+<span class="macro">impl_type_simple!</span>(
+    <span class="ident">chrono::NaiveDateTime</span>,
+    <span class="ident">DataType::String</span>,
+    <span class="ident">DataTypeFormat::DateTime</span>
 );
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">chrono</span>::<span class="ident">NaiveDate</span>, <span class="ident">DataType</span>::<span class="ident">String</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Date</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">chrono::NaiveDate</span>, <span class="ident">DataType::String</span>, <span class="ident">DataTypeFormat::Date</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">chrono</span>::<span class="ident">NaiveTime</span>, <span class="ident">DataType</span>::<span class="ident">String</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">chrono::NaiveTime</span>, <span class="ident">DataType::String</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rust_decimal&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(
-    <span class="ident">rust_decimal</span>::<span class="ident">Decimal</span>,
-    <span class="ident">DataType</span>::<span class="ident">Number</span>,
-    <span class="ident">DataTypeFormat</span>::<span class="ident">Float</span>
+<span class="macro">impl_type_simple!</span>(
+    <span class="ident">rust_decimal::Decimal</span>,
+    <span class="ident">DataType::Number</span>,
+    <span class="ident">DataTypeFormat::Float</span>
 );
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;url&quot;</span>)]</span>
+<span class="macro">impl_type_simple!</span>(<span class="ident">url::Url</span>, <span class="ident">DataType::String</span>, <span class="ident">DataTypeFormat::Url</span>);
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;uuid&quot;</span>)]</span>
-<span class="macro">impl_type_simple</span><span class="macro">!</span>(<span class="ident">uuid</span>::<span class="ident">Uuid</span>, <span class="ident">DataType</span>::<span class="ident">String</span>, <span class="ident">DataTypeFormat</span>::<span class="ident">Uuid</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">uuid::Uuid</span>, <span class="ident">DataType::String</span>, <span class="ident">DataTypeFormat::Uuid</span>);
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">chrono</span>::<span class="ident">offset</span>::<span class="ident">TimeZone</span><span class="op">&gt;</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="ident">chrono</span>::<span class="ident">DateTime</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
-        <span class="ident">DataType</span>::<span class="ident">String</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">chrono::offset::TimeZone</span><span class="op">&gt;</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="ident">chrono::DateTime</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
+        <span class="ident">DataType::String</span>
     }
-    <span class="kw">fn</span> <span class="ident">format</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">DataTypeFormat</span>::<span class="ident">DateTime</span>)
+    <span class="kw">fn</span> <span class="ident">format</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">DataTypeFormat::DateTime</span>)
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">chrono</span>::<span class="ident">offset</span>::<span class="ident">TimeZone</span><span class="op">&gt;</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="ident">chrono</span>::<span class="ident">Date</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">data_type</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DataType</span> {
-        <span class="ident">DataType</span>::<span class="ident">String</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">chrono::offset::TimeZone</span><span class="op">&gt;</span> <span class="ident">TypedData</span> <span class="kw">for</span> <span class="ident">chrono::Date</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">data_type</span>() -&gt; <span class="ident">DataType</span> {
+        <span class="ident">DataType::String</span>
     }
-    <span class="kw">fn</span> <span class="ident">format</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">DataTypeFormat</span>::<span class="ident">Date</span>)
+    <span class="kw">fn</span> <span class="ident">format</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> {
+        <span class="prelude-val">Some</span>(<span class="ident">DataTypeFormat::Date</span>)
     }
 }
 
@@ -749,8 +755,8 @@
     <span class="kw">const</span> <span class="ident">REQUIRED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
 
     <span class="doccomment">/// Returns the raw schema for this object.</span>
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">Default</span>::<span class="ident">default</span>()
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">Default::default</span>()
     }
 
     <span class="doccomment">/// Returns the schema with a reference (if this is an object).</span>
@@ -766,36 +772,36 @@
     <span class="doccomment">/// and so I went for runtime collection. Even though this happens at</span>
     <span class="doccomment">/// runtime, we&#39;re only doing this once at the start of the application,</span>
     <span class="doccomment">/// so it won&#39;t affect the incoming requests at all.</span>
-    <span class="kw">fn</span> <span class="ident">schema_with_ref</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="self">Self</span>::<span class="ident">raw_schema</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="self">Self</span>::<span class="ident">NAME</span> {
-            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
+    <span class="kw">fn</span> <span class="ident">schema_with_ref</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::raw_schema</span>();
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::NAME</span> {
+            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
         } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">def</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>() {
-            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String</span>::<span class="ident">from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
+            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
         }
-        <span class="kw">if</span> <span class="op">!</span><span class="self">Self</span>::<span class="ident">DESCRIPTION</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">def</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="self">Self</span>::<span class="ident">DESCRIPTION</span>.<span class="ident">to_owned</span>());
+        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::DESCRIPTION</span>.<span class="ident">is_empty</span>() {
+            <span class="ident">def</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::DESCRIPTION</span>.<span class="ident">to_owned</span>());
         }
 
         <span class="ident">def</span>
     }
 
     <span class="doccomment">/// Returns the security scheme for this object.</span>
-    <span class="kw">fn</span> <span class="ident">security_scheme</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> () {}
-<span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">serde_json</span>::<span class="ident">Value</span> {}
-<span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">serde_yaml</span>::<span class="ident">Value</span> {}
+<span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">serde_json::Value</span> {}
+<span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">serde_yaml::Value</span> {}
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">TypedData</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">T</span> {
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="ident">DefaultSchemaRaw</span> {
-            <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="ident">T</span>::<span class="ident">data_type</span>()),
-            <span class="ident">format</span>: <span class="ident">T</span>::<span class="ident">format</span>(),
-            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+            <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="ident">T::data_type</span>()),
+            <span class="ident">format</span>: <span class="ident">T::format</span>(),
+            ..<span class="ident">Default::default</span>()
         }
     }
 }
@@ -805,25 +811,25 @@
     <span class="ident">default</span> <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
     <span class="ident">default</span> <span class="kw">const</span> <span class="ident">REQUIRED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">Default</span>::<span class="ident">default</span>()
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">Default::default</span>()
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">security_scheme</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">NAME</span>;
+    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T::NAME</span>;
     <span class="kw">const</span> <span class="ident">REQUIRED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
 
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">T</span>::<span class="ident">raw_schema</span>()
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">T::raw_schema</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">security_scheme</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">T</span>::<span class="ident">security_scheme</span>()
+    <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+        <span class="ident">T::security_scheme</span>()
     }
 }
 
@@ -831,117 +837,117 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
     <span class="ident">default</span> <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">Default</span>::<span class="ident">default</span>()
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">Default::default</span>()
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">security_scheme</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">Default</span>::<span class="ident">default</span>()
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+        <span class="ident">Default::default</span>()
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">NAME</span>;
+    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T::NAME</span>;
 
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">T</span>::<span class="ident">raw_schema</span>()
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">T::raw_schema</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">security_scheme</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">T</span>::<span class="ident">security_scheme</span>()
+    <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+        <span class="ident">T::security_scheme</span>()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">std</span>::<span class="ident">borrow</span>::<span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T</span>::<span class="ident">NAME</span>;
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">std::borrow::Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T::NAME</span>;
 
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">T</span>::<span class="ident">raw_schema</span>()
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">T::raw_schema</span>()
     }
 
-    <span class="kw">fn</span> <span class="ident">security_scheme</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">T</span>::<span class="ident">security_scheme</span>()
+    <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+        <span class="ident">T::security_scheme</span>()
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">T</span>] {
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>::<span class="ident">raw_schema</span>()
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">Vec</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::raw_schema</span>()
     }
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_schema_array</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> {
+<span class="macro">macro_rules!</span> <span class="ident">impl_schema_array</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) =&gt; {
         <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-            <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
+            <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
                 <span class="ident">DefaultSchemaRaw</span> {
-                    <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="ident">DataType</span>::<span class="ident">Array</span>),
-                    <span class="ident">items</span>: <span class="prelude-val">Some</span>(<span class="ident">T</span>::<span class="ident">schema_with_ref</span>().<span class="ident">into</span>()),
-                    ..<span class="ident">Default</span>::<span class="ident">default</span>()
+                    <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="ident">DataType::Array</span>),
+                    <span class="ident">items</span>: <span class="prelude-val">Some</span>(<span class="ident">T::schema_with_ref</span>().<span class="ident">into</span>()),
+                    ..<span class="ident">Default::default</span>()
                 }
             }
         }
     };
 }
 
-<span class="macro">macro_rules</span><span class="macro">!</span> <span class="ident">impl_schema_map</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) <span class="op">=</span><span class="op">&gt;</span> {
+<span class="macro">macro_rules!</span> <span class="ident">impl_schema_map</span> {
+    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>) =&gt; {
         <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">K</span>: <span class="ident">ToString</span>, <span class="ident">V</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-            <span class="kw">fn</span> <span class="ident">raw_schema</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultSchemaRaw</span> {
+            <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
                 <span class="ident">DefaultSchemaRaw</span> {
-                    <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="ident">DataType</span>::<span class="ident">Object</span>),
-                    <span class="ident">extra_props</span>: <span class="prelude-val">Some</span>(<span class="ident">Either</span>::<span class="ident">Right</span>(<span class="ident">V</span>::<span class="ident">schema_with_ref</span>().<span class="ident">into</span>())),
-                    ..<span class="ident">Default</span>::<span class="ident">default</span>()
+                    <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="ident">DataType::Object</span>),
+                    <span class="ident">extra_props</span>: <span class="prelude-val">Some</span>(<span class="ident">Either::Right</span>(<span class="ident">V::schema_with_ref</span>().<span class="ident">into</span>())),
+                    ..<span class="ident">Default::default</span>()
                 }
             }
         }
     };
 }
 
-<span class="kw">use</span> <span class="ident">std</span>::<span class="ident">collections</span>::<span class="kw-2">*</span>;
+<span class="kw">use</span> <span class="ident">std::collections</span>::<span class="kw-2">*</span>;
 
-<span class="macro">impl_schema_array</span><span class="macro">!</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>(<span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>(<span class="ident">LinkedList</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>(<span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>(<span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>(<span class="ident">BinaryHeap</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">0</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">1</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">2</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">3</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">4</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">5</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">6</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">7</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">8</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">9</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">10</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">11</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">12</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">13</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">14</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">15</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">16</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">17</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">18</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">19</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">20</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">21</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">22</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">23</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">24</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">25</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">26</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">27</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">28</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">29</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">30</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">31</span>]);
-<span class="macro">impl_schema_array</span><span class="macro">!</span>([<span class="ident">T</span>; <span class="number">32</span>]);
+<span class="macro">impl_schema_array!</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_array!</span>(<span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_array!</span>(<span class="ident">LinkedList</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_array!</span>(<span class="ident">VecDeque</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_array!</span>(<span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_array!</span>(<span class="ident">BinaryHeap</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">0</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">1</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">2</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">3</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">4</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">5</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">6</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">7</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">8</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">9</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">10</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">11</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">12</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">13</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">14</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">15</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">16</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">17</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">18</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">19</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">20</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">21</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">22</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">23</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">24</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">25</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">26</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">27</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">28</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">29</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">30</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">31</span>]);
+<span class="macro">impl_schema_array!</span>([<span class="ident">T</span>; <span class="number">32</span>]);
 
-<span class="macro">impl_schema_map</span><span class="macro">!</span>(<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>);
-<span class="macro">impl_schema_map</span><span class="macro">!</span>(<span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_map!</span>(<span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>);
+<span class="macro">impl_schema_map!</span>(<span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>);
 
 <span class="doccomment">/// Represents a OpenAPI v2 operation convertible. This is auto-implemented by</span>
 <span class="doccomment">/// framework-specific macros:</span>
@@ -952,13 +958,13 @@
 <span class="doccomment">/// but *can* be used for constraining stuff in framework-related impls.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Apiv2Operation</span> {
     <span class="doccomment">/// Returns the definition for this operation.</span>
-    <span class="kw">fn</span> <span class="ident">operation</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">DefaultOperationRaw</span>;
+    <span class="kw">fn</span> <span class="ident">operation</span>() -&gt; <span class="ident">DefaultOperationRaw</span>;
 
     <span class="doccomment">/// Returns a map of security definitions that will be merged globally.</span>
-    <span class="kw">fn</span> <span class="ident">security_definitions</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">security_definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>;
 
     <span class="doccomment">/// Returns the definitions used by this operation.</span>
-    <span class="kw">fn</span> <span class="ident">definitions</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>;
+    <span class="kw">fn</span> <span class="ident">definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>;
 }
 
 <span class="doccomment">/// Represents a OpenAPI v2 error convertible. This is auto-implemented by</span>
@@ -967,11 +973,13 @@
 <span class="doccomment">/// - [`paperclip_actix::api_v2_errors`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_errors.html).</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Apiv2Errors</span> {
     <span class="kw">const</span> <span class="ident">ERROR_MAP</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">u16</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[];
+    <span class="kw">fn</span> <span class="ident">update_error_definitions</span>(<span class="ident">_op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {}
+    <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">_map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {}
 }
 
 <span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> () {}
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> <span class="ident">actix_web</span>::<span class="ident">Error</span> {}
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-search-js="../../../search-index.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+<span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> <span class="ident">actix_web::Error</span> {}
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (a7e2e3396 2022-01-08)" ></div>
+</body></html>

@@ -1,7 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/models.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>models.rs - source</title><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../paperclip_core/index.html'><div class='logo-container rust-logo'><img src='../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../settings.html"><img src="../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">  1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core&#x2F;src&#x2F;v2&#x2F;models.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>models.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script src="../../../crates.js"></script><script defer src="../../../main.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.png" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.png" alt="logo"></a><nav class="sub"><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">  1</span>
 <span id="2">  2</span>
 <span id="3">  3</span>
 <span id="4">  4</span>
@@ -951,34 +950,50 @@
 <span id="948">948</span>
 <span id="949">949</span>
 <span id="950">950</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Models used by OpenAPI v2.</span>
+<span id="951">951</span>
+<span id="952">952</span>
+<span id="953">953</span>
+<span id="954">954</span>
+<span id="955">955</span>
+<span id="956">956</span>
+<span id="957">957</span>
+<span id="958">958</span>
+<span id="959">959</span>
+<span id="960">960</span>
+<span id="961">961</span>
+<span id="962">962</span>
+<span id="963">963</span>
+<span id="964">964</span>
+<span id="965">965</span>
+<span id="966">966</span>
+<span id="967">967</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.</span>
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">extensions</span>::{
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::extensions</span>::{
     <span class="ident">Coder</span>, <span class="ident">Coders</span>, <span class="ident">MediaRange</span>, <span class="ident">JSON_CODER</span>, <span class="ident">JSON_MIME</span>, <span class="ident">YAML_CODER</span>, <span class="ident">YAML_MIME</span>,
 };
 
-<span class="kw">use</span> <span class="kw">super</span>::<span class="ident">schema</span>::<span class="ident">Schema</span>;
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">error</span>::<span class="ident">ValidationError</span>;
-<span class="kw">use</span> <span class="ident">once_cell</span>::<span class="ident">sync</span>::<span class="ident">Lazy</span>;
-<span class="kw">use</span> <span class="ident">paperclip_macros</span>::<span class="ident">api_v2_schema_struct</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::schema::Schema</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::ValidationError</span>;
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
+<span class="kw">use</span> <span class="ident">paperclip_macros::api_v2_schema_struct</span>;
 <span class="kw">use</span> <span class="ident">regex</span>::{<span class="ident">Captures</span>, <span class="ident">Regex</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">actix_web</span>::<span class="ident">http</span>::<span class="ident">Method</span>;
+<span class="kw">use</span> <span class="ident">actix_web::http::Method</span>;
 
-<span class="kw">use</span> <span class="ident">parking_lot</span>::<span class="ident">RwLock</span>;
+<span class="kw">use</span> <span class="ident">parking_lot::RwLock</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">borrow</span>::<span class="ident">Cow</span>,
+    <span class="ident">borrow::Cow</span>,
     <span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>},
     <span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>},
     <span class="ident">ops</span>::{<span class="ident">Deref</span>, <span class="ident">DerefMut</span>},
-    <span class="ident">sync</span>::<span class="ident">Arc</span>,
+    <span class="ident">sync::Arc</span>,
 };
 
 <span class="doccomment">/// Regex that can be used for fetching templated path parameters.</span>
 <span class="kw">static</span> <span class="ident">PATH_TEMPLATE_REGEX</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Regex</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">Lazy</span>::<span class="ident">new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;\{(.*?)\}&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;path template regex&quot;</span>));
+    <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;\{(.*?)\}&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;path template regex&quot;</span>));
 
 <span class="comment">// Headers that have special meaning in OpenAPI. These cannot be used in header parameter.</span>
 <span class="comment">// Ensure that they&#39;re all lowercase for case insensitive check.</span>
@@ -1007,10 +1022,10 @@
 <span class="kw">impl</span> <span class="ident">DataType</span> {
     <span class="doccomment">/// Checks if this is a primitive type.</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_primitive</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">std</span>::<span class="macro">matches</span><span class="macro">!</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_primitive</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="macro">std::matches!</span>(
             <span class="self">self</span>,
-            <span class="ident">DataType</span>::<span class="ident">Integer</span> <span class="op">|</span> <span class="ident">DataType</span>::<span class="ident">Number</span> <span class="op">|</span> <span class="ident">DataType</span>::<span class="ident">String</span> <span class="op">|</span> <span class="ident">DataType</span>::<span class="ident">Boolean</span>
+            <span class="ident">DataType::Integer</span> <span class="op">|</span> <span class="ident">DataType::Number</span> <span class="op">|</span> <span class="ident">DataType::String</span> <span class="op">|</span> <span class="ident">DataType::Boolean</span>
         )
     }
 }
@@ -1029,9 +1044,31 @@
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;date-time&quot;</span>)]</span>
     <span class="ident">DateTime</span>,
     <span class="ident">Password</span>,
+    <span class="ident">Url</span>,
     <span class="ident">Uuid</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">other</span>)]</span>
     <span class="ident">Other</span>,
+}
+
+<span class="kw">impl</span> <span class="ident">ToString</span> <span class="kw">for</span> <span class="ident">DataTypeFormat</span> {
+    <span class="kw">fn</span> <span class="ident">to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
+        <span class="kw">match</span> <span class="self">self</span> {
+            <span class="ident">DataTypeFormat::Int32</span> =&gt; <span class="string">&quot;int32&quot;</span>,
+            <span class="ident">DataTypeFormat::Int64</span> =&gt; <span class="string">&quot;int64&quot;</span>,
+            <span class="ident">DataTypeFormat::Float</span> =&gt; <span class="string">&quot;float&quot;</span>,
+            <span class="ident">DataTypeFormat::Double</span> =&gt; <span class="string">&quot;double&quot;</span>,
+            <span class="ident">DataTypeFormat::Byte</span> =&gt; <span class="string">&quot;byte&quot;</span>,
+            <span class="ident">DataTypeFormat::Binary</span> =&gt; <span class="string">&quot;binary&quot;</span>,
+            <span class="ident">DataTypeFormat::Date</span> =&gt; <span class="string">&quot;data&quot;</span>,
+            <span class="ident">DataTypeFormat::DateTime</span> =&gt; <span class="string">&quot;datetime&quot;</span>,
+            <span class="ident">DataTypeFormat::Password</span> =&gt; <span class="string">&quot;password&quot;</span>,
+            <span class="ident">DataTypeFormat::Url</span> =&gt; <span class="string">&quot;url&quot;</span>,
+            <span class="ident">DataTypeFormat::Uuid</span> =&gt; <span class="string">&quot;uuid&quot;</span>,
+            <span class="comment">// would be nice if Other was Other(String)</span>
+            <span class="ident">DataTypeFormat::Other</span> =&gt; <span class="string">&quot;other&quot;</span>,
+        }
+        .<span class="ident">to_string</span>()
+    }
 }
 
 <span class="doccomment">/// OpenAPI v2 spec which can be traversed and resolved for codegen.</span>
@@ -1042,7 +1079,7 @@
 
 <span class="doccomment">/// OpenAPI v2 (swagger) spec generic over parameter and schema.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Api</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">R</span>, <span class="ident">S</span><span class="op">&gt;</span> {
     <span class="kw">pub</span> <span class="ident">swagger</span>: <span class="ident">Version</span>,
@@ -1126,18 +1163,18 @@
 
 <span class="kw">impl</span> <span class="ident">SpecFormat</span> {
     <span class="doccomment">/// The en/decoder used for this format.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coder</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">coder</span>(<span class="self">self</span>) -&gt; <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">SpecFormat</span>::<span class="ident">Json</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">JSON_CODER</span>.<span class="ident">clone</span>(),
-            <span class="ident">SpecFormat</span>::<span class="ident">Yaml</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">YAML_CODER</span>.<span class="ident">clone</span>(),
+            <span class="ident">SpecFormat::Json</span> =&gt; <span class="ident">JSON_CODER</span>.<span class="ident">clone</span>(),
+            <span class="ident">SpecFormat::Yaml</span> =&gt; <span class="ident">YAML_CODER</span>.<span class="ident">clone</span>(),
         }
     }
 
     <span class="doccomment">/// The mime for this format.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mime</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">MediaRange</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mime</span>(<span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">MediaRange</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">SpecFormat</span>::<span class="ident">Json</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">JSON_MIME</span>,
-            <span class="ident">SpecFormat</span>::<span class="ident">Yaml</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">YAML_MIME</span>,
+            <span class="ident">SpecFormat::Json</span> =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">JSON_MIME</span>,
+            <span class="ident">SpecFormat::Yaml</span> =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">YAML_MIME</span>,
         }
     }
 }
@@ -1147,8 +1184,8 @@
     <span class="doccomment">/// the given function with the parameter names.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">path_parameters_map</span>(
         <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span> {
+        <span class="kw-2">mut</span> <span class="ident">f</span>: <span class="kw">impl</span> <span class="ident">FnMut</span>(<span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;static</span>, <span class="ident">str</span><span class="op">&gt;</span>,
+    ) -&gt; <span class="ident">Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">str</span><span class="op">&gt;</span> {
         <span class="ident">PATH_TEMPLATE_REGEX</span>.<span class="ident">replace_all</span>(<span class="ident">path</span>, <span class="op">|</span><span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Captures</span><span class="op">|</span> <span class="ident">f</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>[<span class="number">1</span>]))
     }
 }
@@ -1157,14 +1194,14 @@
 
 <span class="doccomment">/// Default schema if your schema doesn&#39;t have any custom fields.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject&gt;</span>
 <span class="attribute">#[<span class="ident">api_v2_schema_struct</span>]</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">DefaultSchema</span>;
 
 <span class="doccomment">/// Info object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Info</span> {
     <span class="kw">pub</span> <span class="ident">version</span>: <span class="ident">String</span>,
@@ -1179,7 +1216,7 @@
 
 <span class="doccomment">/// Contact object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Contact</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1192,7 +1229,7 @@
 
 <span class="doccomment">/// License object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">License</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1203,7 +1240,7 @@
 
 <span class="doccomment">/// Security Scheme object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">SecurityScheme</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1226,7 +1263,7 @@
 
 <span class="kw">impl</span> <span class="ident">SecurityScheme</span> {
     <span class="doccomment">/// Adds or updates this definition to the map of security definitions.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">map</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">existing</span>) <span class="op">=</span> <span class="ident">map</span>.<span class="ident">get_mut</span>(<span class="ident">name</span>) {
             <span class="ident">existing</span>.<span class="ident">name</span> <span class="op">=</span> <span class="ident">existing</span>.<span class="ident">name</span>.<span class="ident">take</span>().<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">name</span>);
             <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">type_</span>.<span class="ident">is_empty</span>() {
@@ -1236,7 +1273,7 @@
             <span class="ident">existing</span>.<span class="ident">flow</span> <span class="op">=</span> <span class="ident">existing</span>.<span class="ident">flow</span>.<span class="ident">take</span>().<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">flow</span>);
             <span class="ident">existing</span>.<span class="ident">auth_url</span> <span class="op">=</span> <span class="ident">existing</span>.<span class="ident">auth_url</span>.<span class="ident">take</span>().<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">auth_url</span>);
             <span class="ident">existing</span>.<span class="ident">token_url</span> <span class="op">=</span> <span class="ident">existing</span>.<span class="ident">token_url</span>.<span class="ident">take</span>().<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">token_url</span>);
-            <span class="ident">existing</span>.<span class="ident">scopes</span>.<span class="ident">append</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">scopes</span>);
+            <span class="ident">existing</span>.<span class="ident">scopes</span>.<span class="ident">append</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">scopes</span>);
             <span class="ident">existing</span>.<span class="ident">description</span> <span class="op">=</span> <span class="ident">existing</span>.<span class="ident">description</span>.<span class="ident">take</span>().<span class="ident">or</span>(<span class="self">self</span>.<span class="ident">description</span>);
             <span class="kw">return</span>;
         }
@@ -1247,7 +1284,7 @@
     <span class="doccomment">/// Appends one map to the other whilst merging individual scheme properties.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">append_map</span>(
         <span class="ident">old</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>,
-        <span class="ident">new</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>,
+        <span class="ident">new</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>,
     ) {
         <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">def</span>) <span class="kw">in</span> <span class="ident">old</span> {
             <span class="ident">def</span>.<span class="ident">update_definitions</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="ident">new</span>);
@@ -1257,7 +1294,7 @@
 
 <span class="doccomment">/// Tag object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#tag-object</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#tag-object&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Tag</span> {
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
@@ -1270,7 +1307,7 @@
 
 <span class="doccomment">/// External Documentation object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#external-documentation-object</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#external-documentation-object&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ExternalDocs</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1286,7 +1323,7 @@
 
 <span class="doccomment">/// Path item object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">PathItem</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">R</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">flatten</span>, <span class="ident">default</span> <span class="op">=</span> <span class="string">&quot;BTreeMap::default&quot;</span>)]</span>
@@ -1299,7 +1336,7 @@
     <span class="doccomment">/// Normalizes this operation map.</span>
     <span class="doccomment">/// - Collects and removes parameters shared across operations</span>
     <span class="doccomment">/// and adds them to the list global to this map.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">normalize</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) {
         <span class="comment">// We&#39;re using `Option&lt;BTreeSet&gt;` over `BTreeSet` because we need to</span>
         <span class="comment">// differentiate between the first operation that we use for initial</span>
         <span class="comment">// value of the set and  an operation that doesn&#39;t have any parameters.</span>
@@ -1318,8 +1355,8 @@
         }
 
         <span class="kw">let</span> <span class="ident">shared_params</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">shared_params</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">p</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">p</span>,
-            <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> <span class="kw">return</span>,
+            <span class="prelude-val">Some</span>(<span class="ident">p</span>) =&gt; <span class="ident">p</span>,
+            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span>,
         };
 
         <span class="comment">// FIXME: A parameter defined at path level could be overridden at</span>
@@ -1330,15 +1367,10 @@
                 <span class="kw">let</span> <span class="ident">idx</span> <span class="op">=</span> <span class="ident">op</span>
                     .<span class="ident">parameters</span>
                     .<span class="ident">iter</span>()
-                    .<span class="ident">position</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">name</span>.<span class="ident">as_str</span>())
+                    .<span class="ident">position</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">name</span>.<span class="ident">as_str</span>())
                     .<span class="ident">expect</span>(<span class="string">&quot;collected parameter missing?&quot;</span>);
                 <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">swap_remove</span>(<span class="ident">idx</span>);
-                <span class="kw">if</span> <span class="self">self</span>
-                    .<span class="ident">parameters</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">find</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">name</span>.<span class="ident">as_str</span>())
-                    .<span class="ident">is_none</span>()
-                {
+                <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">parameters</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">name</span>.<span class="ident">as_str</span>()) {
                     <span class="self">self</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">p</span>);
                 }
             }
@@ -1354,7 +1386,7 @@
 
 <span class="doccomment">/// Request parameter object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
@@ -1378,7 +1410,7 @@
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;is_false&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">allow_empty_value</span>: <span class="ident">bool</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">default</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">serde_json</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">default</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">maximum</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;exclusiveMaximum&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1402,12 +1434,12 @@
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;multipleOf&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">multiple_of</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;enum&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">enum_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">serde_json</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">enum_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// Items object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Items</span> {
@@ -1420,7 +1452,7 @@
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">collection_format</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CollectionFormat</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;enum&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">enum_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">serde_json</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">enum_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">maximum</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;exclusiveMaximum&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1451,22 +1483,22 @@
 {
     <span class="doccomment">/// Checks the validity of this parameter using the relative URL</span>
     <span class="doccomment">/// path it&#39;s associated with.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_</span> <span class="op">=</span><span class="op">=</span> <span class="ident">ParameterIn</span>::<span class="ident">Body</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">check</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
+        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_</span> <span class="op">==</span> <span class="ident">ParameterIn::Body</span> {
             <span class="comment">// Body parameter must specify a schema.</span>
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">schema</span>.<span class="ident">is_none</span>() {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError</span>::<span class="ident">MissingSchemaForBodyParameter</span>(
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::MissingSchemaForBodyParameter</span>(
                     <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
                     <span class="ident">path</span>.<span class="ident">into</span>(),
                 ));
             }
 
             <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_</span> <span class="op">=</span><span class="op">=</span> <span class="ident">ParameterIn</span>::<span class="ident">Header</span> {
+        } <span class="kw">else</span> <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_</span> <span class="op">==</span> <span class="ident">ParameterIn::Header</span> {
             <span class="comment">// Some headers aren&#39;t allowed.</span>
             <span class="kw">let</span> <span class="ident">lower</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">to_lowercase</span>();
-            <span class="kw">if</span> <span class="ident">SPECIAL_HEADERS</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">h</span><span class="op">|</span> <span class="ident">lower</span> <span class="op">=</span><span class="op">=</span> <span class="ident">h</span>) {
-                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError</span>::<span class="ident">InvalidHeader</span>(
+            <span class="kw">if</span> <span class="ident">SPECIAL_HEADERS</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">h</span><span class="op">|</span> <span class="ident">lower</span> <span class="op">==</span> <span class="ident">h</span>) {
+                <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::InvalidHeader</span>(
                     <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
                     <span class="ident">path</span>.<span class="ident">into</span>(),
                 ));
@@ -1476,25 +1508,25 @@
         <span class="comment">// Non-body parameters must be primitives or an array - they can&#39;t have objects.</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">is_invalid</span> <span class="op">=</span> <span class="bool-val">false</span>;
         <span class="kw">match</span> <span class="self">self</span>.<span class="ident">data_type</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">dt</span>) <span class="kw">if</span> <span class="ident">dt</span>.<span class="ident">is_primitive</span>() <span class="op">=</span><span class="op">&gt;</span> (),
-            <span class="prelude-val">Some</span>(<span class="ident">DataType</span>::<span class="ident">Array</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">dt</span>) <span class="kw">if</span> <span class="ident">dt</span>.<span class="ident">is_primitive</span>() =&gt; (),
+            <span class="prelude-val">Some</span>(<span class="ident">DataType::Array</span>) =&gt; {
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">items</span>.<span class="ident">as_ref</span>();
                 <span class="kw">loop</span> {
                     <span class="kw">let</span> <span class="ident">dt</span> <span class="op">=</span> <span class="ident">inner</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">data_type</span>);
                     <span class="kw">match</span> <span class="ident">dt</span> {
-                        <span class="prelude-val">Some</span>(<span class="ident">ty</span>) <span class="kw">if</span> <span class="ident">ty</span>.<span class="ident">is_primitive</span>() <span class="op">=</span><span class="op">&gt;</span> <span class="kw">break</span>,
-                        <span class="prelude-val">Some</span>(<span class="ident">DataType</span>::<span class="ident">Array</span>) <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="prelude-val">Some</span>(<span class="ident">ty</span>) <span class="kw">if</span> <span class="ident">ty</span>.<span class="ident">is_primitive</span>() =&gt; <span class="kw">break</span>,
+                        <span class="prelude-val">Some</span>(<span class="ident">DataType::Array</span>) =&gt; {
                             <span class="ident">inner</span> <span class="op">=</span> <span class="ident">inner</span>.<span class="ident">as_ref</span>().<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">items</span>.<span class="ident">as_deref</span>());
                         }
-                        <span class="prelude-val">None</span> <span class="op">=</span><span class="op">&gt;</span> {
-                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError</span>::<span class="ident">InvalidParameterType</span>(
+                        <span class="prelude-val">None</span> =&gt; {
+                            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::InvalidParameterType</span>(
                                 <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
                                 <span class="ident">path</span>.<span class="ident">into</span>(),
                                 <span class="ident">dt</span>,
                                 <span class="self">self</span>.<span class="ident">in_</span>,
                             ));
                         }
-                        <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> {
+                        <span class="kw">_</span> =&gt; {
                             <span class="ident">is_invalid</span> <span class="op">=</span> <span class="bool-val">true</span>;
                             <span class="kw">break</span>;
                         }
@@ -1502,17 +1534,17 @@
                 }
             }
             <span class="comment">// If &quot;file&quot; is specified, then it must be `formData` parameter.</span>
-            <span class="prelude-val">Some</span>(<span class="ident">DataType</span>::<span class="ident">File</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="prelude-val">Some</span>(<span class="ident">DataType::File</span>) =&gt; {
                 <span class="comment">// FIXME: Check against `consumes` and `produces` fields.</span>
-                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ParameterIn</span>::<span class="ident">FormData</span> {
+                <span class="kw">if</span> <span class="self">self</span>.<span class="ident">in_</span> <span class="op">!</span><span class="op">=</span> <span class="ident">ParameterIn::FormData</span> {
                     <span class="ident">is_invalid</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
             }
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">is_invalid</span> <span class="op">=</span> <span class="bool-val">true</span>,
+            <span class="kw">_</span> =&gt; <span class="ident">is_invalid</span> <span class="op">=</span> <span class="bool-val">true</span>,
         }
 
         <span class="kw">if</span> <span class="ident">is_invalid</span> {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError</span>::<span class="ident">InvalidParameterType</span>(
+            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::InvalidParameterType</span>(
                 <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
                 <span class="ident">path</span>.<span class="ident">into</span>(),
                 <span class="self">self</span>.<span class="ident">data_type</span>,
@@ -1554,7 +1586,7 @@
 
 <span class="doccomment">/// Operation object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename_all</span> <span class="op">=</span> <span class="string">&quot;camelCase&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Operation</span><span class="op">&lt;</span><span class="ident">P</span>, <span class="ident">R</span><span class="op">&gt;</span> {
@@ -1588,9 +1620,9 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Operation</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Overwrites the names of parameters in this operation using the</span>
     <span class="doccomment">/// given path template.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_parameter_names_from_path_template</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">names</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
-        <span class="ident">Api</span>::<span class="op">&lt;</span>(), (), ()<span class="op">&gt;</span>::<span class="ident">path_parameters_map</span>(<span class="ident">path</span>, <span class="op">|</span><span class="ident">p</span><span class="op">|</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_parameter_names_from_path_template</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">names</span> <span class="op">=</span> <span class="macro">vec!</span>[];
+        <span class="ident">Api</span>::<span class="op">&lt;</span>(), (), ()<span class="op">&gt;</span><span class="ident">::path_parameters_map</span>(<span class="ident">path</span>, <span class="op">|</span><span class="ident">p</span><span class="op">|</span> {
             <span class="ident">names</span>.<span class="ident">push</span>(<span class="ident">p</span>.<span class="ident">to_owned</span>());
             <span class="string">&quot;:&quot;</span>.<span class="ident">into</span>()
         });
@@ -1598,7 +1630,7 @@
         <span class="kw">for</span> <span class="ident">p</span> <span class="kw">in</span> <span class="self">self</span>
             .<span class="ident">parameters</span>
             .<span class="ident">iter_mut</span>()
-            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">in_</span> <span class="op">=</span><span class="op">=</span> <span class="ident">ParameterIn</span>::<span class="ident">Path</span>)
+            .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>.<span class="ident">in_</span> <span class="op">==</span> <span class="ident">ParameterIn::Path</span>)
             .<span class="ident">rev</span>()
         {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">names</span>.<span class="ident">pop</span>() {
@@ -1612,7 +1644,7 @@
 
 <span class="doccomment">/// Reference object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>, <span class="ident">PartialEq</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Reference</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;$ref&quot;</span>)]</span>
@@ -1637,7 +1669,7 @@
 
 <span class="doccomment">/// Response object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Response</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1650,7 +1682,7 @@
 
 <span class="doccomment">/// Header object.</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#headerObject</span>
+<span class="doccomment">/// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#headerObject&gt;</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>, <span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Header</span> {
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1664,9 +1696,9 @@
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">collection_format</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CollectionFormat</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">default</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">serde_json</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">default</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>, <span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;enum&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">enum_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">serde_json</span>::<span class="ident">Value</span><span class="op">&gt;</span>,
+    <span class="kw">pub</span> <span class="ident">enum_</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="ident">maximum</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">f32</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">rename</span> <span class="op">=</span> <span class="string">&quot;exclusiveMaximum&quot;</span>, <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;Option::is_none&quot;</span>)]</span>
@@ -1706,8 +1738,8 @@
 
 <span class="kw">impl</span> <span class="ident">HttpMethod</span> {
     <span class="doccomment">/// Whether this method allows body in requests.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allows_body</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
-        <span class="ident">std</span>::<span class="macro">matches</span><span class="macro">!</span>(<span class="self">self</span>, <span class="ident">HttpMethod</span>::<span class="ident">Post</span> <span class="op">|</span> <span class="ident">HttpMethod</span>::<span class="ident">Put</span> <span class="op">|</span> <span class="ident">HttpMethod</span>::<span class="ident">Patch</span>)
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">allows_body</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
+        <span class="macro">std::matches!</span>(<span class="self">self</span>, <span class="ident">HttpMethod::Post</span> <span class="op">|</span> <span class="ident">HttpMethod::Put</span> <span class="op">|</span> <span class="ident">HttpMethod::Patch</span>)
     }
 }
 
@@ -1724,34 +1756,34 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">R</span><span class="op">&gt;</span> <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">L</span>, <span class="ident">R</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Get a readable reference to the right variant (if it exists).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">right</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">right</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">R</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">r</span>),
+            <span class="ident">Either::Left</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+            <span class="ident">Either::Right</span>(<span class="ident">r</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">r</span>),
         }
     }
 
     <span class="doccomment">/// Get a mutable reference to the right variant (if it exists).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">right_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">R</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">right_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">R</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
-            <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">r</span>),
+            <span class="ident">Either::Left</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
+            <span class="ident">Either::Right</span>(<span class="ident">r</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">r</span>),
         }
     }
 
     <span class="doccomment">/// Get a readable reference to the left variant (if it exists).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">left</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">L</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">left</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">L</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="ident">l</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">l</span>),
-            <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">Either::Left</span>(<span class="ident">l</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">l</span>),
+            <span class="ident">Either::Right</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
         }
     }
 
     <span class="doccomment">/// Get a mutable reference to the left variant (if it exists).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">left_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">L</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">left_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="ident">L</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="ident">l</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">l</span>),
-            <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="ident">Either::Left</span>(<span class="ident">l</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">l</span>),
+            <span class="ident">Either::Right</span>(<span class="kw">_</span>) =&gt; <span class="prelude-val">None</span>,
         }
     }
 }
@@ -1775,11 +1807,11 @@
     <span class="ident">S</span>: <span class="ident">Schema</span>,
 {
     <span class="doccomment">/// Fetch the description for this schema.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_description</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Resolvable</span>::<span class="ident">Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>.<span class="ident">read</span>().<span class="ident">description</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>),
+            <span class="ident">Resolvable::Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">read</span>().<span class="ident">description</span>().<span class="ident">map</span>(<span class="ident">String::from</span>),
             <span class="comment">// We don&#39;t want parameters/fields to describe the actual refrenced object.</span>
-            <span class="ident">Resolvable</span>::<span class="ident">Resolved</span> { <span class="kw-2">ref</span> <span class="ident">old</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">old</span>.<span class="ident">read</span>().<span class="ident">description</span>().<span class="ident">map</span>(<span class="ident">String</span>::<span class="ident">from</span>),
+            <span class="ident">Resolvable::Resolved</span> { <span class="kw-2">ref</span> <span class="ident">old</span>, .. } =&gt; <span class="ident">old</span>.<span class="ident">read</span>().<span class="ident">description</span>().<span class="ident">map</span>(<span class="ident">String::from</span>),
         }
     }
 }
@@ -1787,22 +1819,22 @@
 <span class="comment">/* Common trait impls */</span>
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">SpecFormat</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">SpecFormat</span>::<span class="ident">Json</span>
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">SpecFormat::Json</span>
     }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">Method</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">HttpMethod</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">Method</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">method</span>: <span class="kw-2">&amp;</span><span class="ident">Method</span>) -&gt; <span class="ident">HttpMethod</span> {
         <span class="kw">match</span> <span class="ident">method</span>.<span class="ident">as_str</span>() {
-            <span class="string">&quot;PUT&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Put</span>,
-            <span class="string">&quot;POST&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Post</span>,
-            <span class="string">&quot;DELETE&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Delete</span>,
-            <span class="string">&quot;OPTIONS&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Options</span>,
-            <span class="string">&quot;HEAD&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Head</span>,
-            <span class="string">&quot;PATCH&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Patch</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">HttpMethod</span>::<span class="ident">Get</span>,
+            <span class="string">&quot;PUT&quot;</span> =&gt; <span class="ident">HttpMethod::Put</span>,
+            <span class="string">&quot;POST&quot;</span> =&gt; <span class="ident">HttpMethod::Post</span>,
+            <span class="string">&quot;DELETE&quot;</span> =&gt; <span class="ident">HttpMethod::Delete</span>,
+            <span class="string">&quot;OPTIONS&quot;</span> =&gt; <span class="ident">HttpMethod::Options</span>,
+            <span class="string">&quot;HEAD&quot;</span> =&gt; <span class="ident">HttpMethod::Head</span>,
+            <span class="string">&quot;PATCH&quot;</span> =&gt; <span class="ident">HttpMethod::Patch</span>,
+            <span class="kw">_</span> =&gt; <span class="ident">HttpMethod::Get</span>,
         }
     }
 }
@@ -1810,19 +1842,19 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">T</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">T</span>;
 
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Target</span> {
+    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;unable to deref because reference is not resolved.&quot;</span>),
-            <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="kw-2">ref</span> <span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">r</span>,
+            <span class="ident">Either::Left</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unable to deref because reference is not resolved.&quot;</span>),
+            <span class="ident">Either::Right</span>(<span class="kw-2">ref</span> <span class="ident">r</span>) =&gt; <span class="ident">r</span>,
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">DerefMut</span> <span class="kw">for</span> <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">deref_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Target</span> {
+    <span class="kw">fn</span> <span class="ident">deref_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Either</span>::<span class="ident">Left</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;unable to deref because reference is not resolved.&quot;</span>),
-            <span class="ident">Either</span>::<span class="ident">Right</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">r</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">r</span>,
+            <span class="ident">Either::Left</span>(<span class="kw">_</span>) =&gt; <span class="macro">panic!</span>(<span class="string">&quot;unable to deref because reference is not resolved.&quot;</span>),
+            <span class="ident">Either::Right</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">r</span>) =&gt; <span class="ident">r</span>,
         }
     }
 }
@@ -1830,40 +1862,40 @@
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
     <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>;
 
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="self">Self</span>::<span class="ident">Target</span> {
+    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Resolvable</span>::<span class="ident">Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,
-            <span class="ident">Resolvable</span>::<span class="ident">Resolved</span> { <span class="kw-2">ref</span> <span class="ident">new</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">new</span>,
+            <span class="ident">Resolvable::Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>,
+            <span class="ident">Resolvable::Resolved</span> { <span class="kw-2">ref</span> <span class="ident">new</span>, .. } =&gt; <span class="ident">new</span>,
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">DerefMut</span> <span class="kw">for</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">deref_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">Self</span>::<span class="ident">Target</span> {
+    <span class="kw">fn</span> <span class="ident">deref_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident"><span class="self">Self</span>::Target</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Resolvable</span>::<span class="ident">Raw</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">s</span>,
-            <span class="ident">Resolvable</span>::<span class="ident">Resolved</span> { <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">new</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">new</span>,
+            <span class="ident">Resolvable::Raw</span>(<span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>,
+            <span class="ident">Resolvable::Resolved</span> { <span class="kw-2">ref</span> <span class="kw-2">mut</span> <span class="ident">new</span>, .. } =&gt; <span class="ident">new</span>,
         }
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Default</span><span class="op">&gt;</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">Resolvable</span>::<span class="ident">from</span>(<span class="ident">S</span>::<span class="ident">default</span>())
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">Resolvable::from</span>(<span class="ident">S::default</span>())
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">t</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">Resolvable</span>::<span class="ident">Raw</span>(<span class="ident">Arc</span>::<span class="ident">new</span>(<span class="ident">RwLock</span>::<span class="ident">new</span>(<span class="ident">t</span>)))
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">t</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span> {
+        <span class="ident">Resolvable::Raw</span>(<span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="ident">t</span>)))
     }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
+    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="self">Self</span> {
         <span class="kw">match</span> <span class="kw-2">*</span><span class="self">self</span> {
-            <span class="ident">Resolvable</span>::<span class="ident">Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Resolvable</span>::<span class="ident">Raw</span>(<span class="ident">s</span>.<span class="ident">clone</span>()),
-            <span class="ident">Resolvable</span>::<span class="ident">Resolved</span> { <span class="kw-2">ref</span> <span class="ident">new</span>, <span class="kw-2">ref</span> <span class="ident">old</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">Resolvable</span>::<span class="ident">Resolved</span> {
+            <span class="ident">Resolvable::Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">Resolvable::Raw</span>(<span class="ident">s</span>.<span class="ident">clone</span>()),
+            <span class="ident">Resolvable::Resolved</span> { <span class="kw-2">ref</span> <span class="ident">new</span>, <span class="kw-2">ref</span> <span class="ident">old</span> } =&gt; <span class="ident">Resolvable::Resolved</span> {
                 <span class="ident">new</span>: <span class="ident">new</span>.<span class="ident">clone</span>(),
                 <span class="ident">old</span>: <span class="ident">old</span>.<span class="ident">clone</span>(),
             },
@@ -1872,36 +1904,36 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">HttpMethod</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="self">self</span>)
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">Version</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">Version</span>::<span class="ident">V2</span>
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">Version::V2</span>
     }
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">CollectionFormat</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">CollectionFormat</span>::<span class="ident">Csv</span>
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">CollectionFormat::Csv</span>
     }
 }
 
 <span class="doccomment">/// **NOTE:** This is just a stub. This is usually set explicitly.</span>
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ParameterIn</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">ParameterIn</span>::<span class="ident">Body</span>
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">ParameterIn::Body</span>
     }
 }
 
 <span class="comment">/* Serde helpers */</span>
 
-<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy</span>::<span class="ident">trivially_copy_pass_by_ref</span>)]</span>
-<span class="kw">fn</span> <span class="ident">is_false</span>(<span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">bool</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+<span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::trivially_copy_pass_by_ref</span>)]</span>
+<span class="kw">fn</span> <span class="ident">is_false</span>(<span class="ident">val</span>: <span class="kw-2">&amp;</span><span class="ident">bool</span>) -&gt; <span class="ident">bool</span> {
     <span class="op">!</span><span class="kw-2">*</span><span class="ident">val</span>
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-search-js="../../../search-index.js"></div>
-    <script src="../../../main.js"></script><script src="../../../source-script.js"></script><script src="../../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (a7e2e3396 2022-01-08)" ></div>
+</body></html>

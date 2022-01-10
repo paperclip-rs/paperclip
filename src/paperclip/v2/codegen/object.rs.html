@@ -1,7 +1,6 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/object.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>object.rs - source</title><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../light.css"  id="themeStyle"><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled ><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled ><script id="default-settings"></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg">
-<link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png">
-<link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><style type="text/css">#crate-search{background-image:url("../../../../down-arrow.svg");}</style></head><body class="rustdoc source"><!--[if lte IE 8]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a href='../../../../paperclip/index.html'><div class='logo-container rust-logo'><img src='../../../../rust-logo.png' alt='logo'></div></a></nav><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu"><img src="../../../../brush.svg" width="18" height="18" alt="Pick another theme!"></button><div id="theme-choices" role="menu"></div></div><script src="../../../../theme.js"></script><nav class="sub"><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" disabled autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" class="help-button">?</button>
-                <a id="settings-menu" href="../../../../settings.html"><img src="../../../../wheel.svg" width="18" height="18" alt="Change settings"></a></div></form></nav><section id="main" class="content"><pre class="line-numbers"><span id="1">   1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src&#x2F;v2&#x2F;codegen&#x2F;object.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>object.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script src="../../../../crates.js"></script><script defer src="../../../../main.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script>
+    <noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="sidebar-menu" role="button">&#9776;</div><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.png" alt="logo"></div>
+        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../rust-logo.png" alt="logo"></a><nav class="sub"><div class="theme-picker"><button id="theme-picker" aria-label="Pick another theme!" aria-haspopup="menu" title="themes"><img width="18" height="18" alt="Pick another theme!" src="../../../../brush.svg"></button><div id="theme-choices" role="menu"></div></div><form class="search-form"><div class="search-container"><div><select id="crate-search"><option value="All crates">All crates</option></select><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"></div><button type="button" id="help-button" title="help">?</button><a id="settings-menu" href="../../../../settings.html" title="settings"><img width="18" height="18" alt="Change settings" src="../../../../wheel.svg"></a></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">   1</span>
 <span id="2">   2</span>
 <span id="3">   3</span>
 <span id="4">   4</span>
@@ -1187,32 +1186,51 @@
 <span id="1184">1184</span>
 <span id="1185">1185</span>
 <span id="1186">1186</span>
-</pre><div class="example-wrap"><pre class="rust ">
-<span class="doccomment">//! Simplified objects for codegen.</span>
+<span id="1187">1187</span>
+<span id="1188">1188</span>
+<span id="1189">1189</span>
+<span id="1190">1190</span>
+<span id="1191">1191</span>
+<span id="1192">1192</span>
+<span id="1193">1193</span>
+<span id="1194">1194</span>
+<span id="1195">1195</span>
+<span id="1196">1196</span>
+<span id="1197">1197</span>
+<span id="1198">1198</span>
+<span id="1199">1199</span>
+<span id="1200">1200</span>
+<span id="1201">1201</span>
+<span id="1202">1202</span>
+<span id="1203">1203</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Simplified objects for codegen.</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! This contains the necessary objects for generating actual</span>
 <span class="doccomment">//! API objects, their builders, impls, etc.</span>
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="kw">super</span>::<span class="ident">impls</span>::{<span class="ident">ApiObjectBuilderImpl</span>, <span class="ident">ApiObjectImpl</span>};
+<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::impls</span>::{<span class="ident">ApiObjectBuilderImpl</span>, <span class="ident">ApiObjectImpl</span>};
 
 <span class="kw">use</span> <span class="kw">super</span>::{
     <span class="ident">emitter</span>::{<span class="ident">ANY_GENERIC_PARAMETER</span>, <span class="ident">EXTRA_PROPS_FIELD</span>, <span class="ident">FILE_MARKER</span>},
     <span class="ident">RUST_KEYWORDS</span>,
 };
-<span class="kw">use</span> <span class="kw">crate</span>::<span class="ident">v2</span>::<span class="ident">models</span>::{<span class="ident">Coder</span>, <span class="ident">CollectionFormat</span>, <span class="ident">HttpMethod</span>, <span class="ident">ParameterIn</span>};
-<span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">SnekCase</span>};
-<span class="kw">use</span> <span class="ident">once_cell</span>::<span class="ident">sync</span>::<span class="ident">Lazy</span>;
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::v2::models</span>::{<span class="ident">Coder</span>, <span class="ident">CollectionFormat</span>, <span class="ident">HttpMethod</span>, <span class="ident">ParameterIn</span>};
+<span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">SnakeCase</span>};
+<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
 <span class="kw">use</span> <span class="ident">regex</span>::{<span class="ident">Captures</span>, <span class="ident">Regex</span>};
 
 <span class="kw">use</span> <span class="ident">std</span>::{
     <span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">HashSet</span>},
     <span class="ident">fmt</span>::{<span class="self">self</span>, <span class="ident">Display</span>, <span class="ident">Write</span>},
     <span class="ident">iter</span>,
-    <span class="ident">sync</span>::<span class="ident">Arc</span>,
+    <span class="ident">sync::Arc</span>,
 };
 
 <span class="doccomment">/// Regex for appropriate escaping in docs.</span>
-<span class="kw">static</span> <span class="ident">DOC_REGEX</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Regex</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy</span>::<span class="ident">new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Regex</span>::<span class="ident">new</span>(<span class="string">r&quot;\[|\]&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;invalid doc regex?&quot;</span>));
+<span class="kw">static</span> <span class="ident">DOC_REGEX</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Regex</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;\[|\]&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;invalid doc regex?&quot;</span>));
+
+<span class="doccomment">/// Regex for renaming properties with leading @</span>
+<span class="kw">static</span> <span class="ident">AT_REGEX</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Regex</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">Regex::new</span>(<span class="string">r&quot;^@&quot;</span>).<span class="ident">expect</span>(<span class="string">&quot;invalid at regex?&quot;</span>));
 
 <span class="doccomment">/// Represents a (simplified) Rust struct or enum.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Default</span>, <span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
@@ -1232,37 +1250,37 @@
 <span class="kw">impl</span> <span class="ident">ApiObject</span> {
     <span class="doccomment">/// Get a mutable reference to the struct fields. **Panics** if this</span>
     <span class="doccomment">/// is not a struct.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectField</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span> {
-            <span class="ident">ObjectContainer</span>::<span class="ident">Struct</span> { <span class="ident">fields</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fields</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectField</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">inner</span> {
+            <span class="ident">ObjectContainer::Struct</span> { <span class="ident">fields</span> } =&gt; <span class="ident">fields</span>,
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
         }
     }
 
     <span class="doccomment">/// Get a reference to the struct fields. **Panics** if this</span>
     <span class="doccomment">/// is not a struct.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">ObjectField</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">ObjectField</span>] {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span> {
-            <span class="ident">ObjectContainer</span>::<span class="ident">Struct</span> { <span class="ident">fields</span> } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">fields</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
+            <span class="ident">ObjectContainer::Struct</span> { <span class="ident">fields</span> } =&gt; <span class="ident">fields</span>,
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
         }
     }
 
     <span class="doccomment">/// Get a mutable reference to the enum variants. **Panics** if this</span>
     <span class="doccomment">/// is not an enum.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants_mut</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectVariant</span><span class="op">&gt;</span> {
-        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="self">self</span>.<span class="ident">inner</span> {
-            <span class="ident">ObjectContainer</span>::<span class="ident">Enum</span> { <span class="ident">variants</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variants</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ObjectVariant</span><span class="op">&gt;</span> {
+        <span class="kw">match</span> <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">inner</span> {
+            <span class="ident">ObjectContainer::Enum</span> { <span class="ident">variants</span>, .. } =&gt; <span class="ident">variants</span>,
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
         }
     }
 
     <span class="doccomment">/// Get a reference to the enum variants. **Panics** if this</span>
     <span class="doccomment">/// is not an enum.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw-2">&amp;</span>[<span class="ident">ObjectVariant</span>] {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">variants</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>[<span class="ident">ObjectVariant</span>] {
         <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">inner</span> {
-            <span class="ident">ObjectContainer</span>::<span class="ident">Enum</span> { <span class="ident">variants</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="ident">variants</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">panic</span><span class="macro">!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
+            <span class="ident">ObjectContainer::Enum</span> { <span class="ident">variants</span>, .. } =&gt; <span class="ident">variants</span>,
+            <span class="kw">_</span> =&gt; <span class="macro">panic!</span>(<span class="string">&quot;cannot obtain fields for enum type&quot;</span>),
         }
     }
 }
@@ -1288,18 +1306,18 @@
 
 <span class="kw">impl</span> <span class="ident">ObjectContainer</span> {
     <span class="doccomment">/// Returns whether this object is an enum.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_enum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_enum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ObjectContainer</span>::<span class="ident">Enum</span> { .. } <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">ObjectContainer::Enum</span> { .. } =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
         }
     }
 
     <span class="doccomment">/// Returns whether this enum is to represent a string.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_string_enum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_string_enum</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">ObjectContainer</span>::<span class="ident">Enum</span> { <span class="ident">is_string</span>, .. } <span class="op">=</span><span class="op">&gt;</span> <span class="kw-2">*</span><span class="ident">is_string</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">ObjectContainer::Enum</span> { <span class="ident">is_string</span>, .. } =&gt; <span class="kw-2">*</span><span class="ident">is_string</span>,
+            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
         }
     }
 }
@@ -1360,10 +1378,10 @@
     <span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
 {
     <span class="doccomment">/// Returns whether this response is a file.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_file</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">is_file</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">ty_path</span>
             .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ref</span>() <span class="op">=</span><span class="op">=</span> <span class="ident">FILE_MARKER</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">as_ref</span>() <span class="op">==</span> <span class="ident">FILE_MARKER</span>)
             .<span class="ident">unwrap_or_default</span>()
     }
 }
@@ -1392,7 +1410,7 @@
     <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
     <span class="doccomment">/// Value of this variant (if any). Note that this is only applicable</span>
     <span class="doccomment">/// for simple enums, and it&#39;s ignored entirely for string enums.</span>
-    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">serde_json</span>::<span class="ident">Value</span>,
+    <span class="kw">pub</span> <span class="ident">value</span>: <span class="ident">serde_json::Value</span>,
 }
 
 <span class="doccomment">/// Represents a struct field.</span>
@@ -1423,21 +1441,31 @@
     <span class="kw">pub</span> <span class="ident">child_req_fields</span>: <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
 }
 
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_snake_case</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
+    <span class="kw">let</span> <span class="ident">new_name</span> <span class="op">=</span> <span class="ident">AT_REGEX</span>.<span class="ident">replace</span>(<span class="ident">name</span>, <span class="string">&quot;at_&quot;</span>);
+    <span class="ident">new_name</span>.<span class="ident">to_snake_case</span>()
+}
+
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">to_camel_case</span>(<span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">String</span> {
+    <span class="kw">let</span> <span class="ident">new_name</span> <span class="op">=</span> <span class="ident">AT_REGEX</span>.<span class="ident">replace</span>(<span class="ident">name</span>, <span class="string">&quot;at_&quot;</span>);
+    <span class="ident">new_name</span>.<span class="ident">to_camel_case</span>()
+}
+
 <span class="kw">impl</span> <span class="ident">ApiObject</span> {
     <span class="doccomment">/// Create an object with the given name.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">name</span>: <span class="ident">S</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_name</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">name</span>: <span class="ident">S</span>) -&gt; <span class="self">Self</span>
     <span class="kw">where</span>
         <span class="ident">S</span>: <span class="ident">Into</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     {
         <span class="ident">ApiObject</span> {
             <span class="ident">name</span>: <span class="ident">name</span>.<span class="ident">into</span>(),
             <span class="comment">// NOTE: Even though `path` is empty, it&#39;ll be replaced by the emitter.</span>
-            ..<span class="ident">Default</span>::<span class="ident">default</span>()
+            ..<span class="ident">Default::default</span>()
         }
     }
 
     <span class="doccomment">/// Writes `Any` as a generic parameter (including `&lt;&gt;`).</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_any_generic</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_any_generic</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
@@ -1448,12 +1476,12 @@
 
     <span class="doccomment">/// Writes the given string (if any) as Rust documentation into</span>
     <span class="doccomment">/// the given formatter.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_docs</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">stuff</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>, <span class="ident">levels</span>: <span class="ident">usize</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_docs</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="ident">stuff</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>, <span class="ident">levels</span>: <span class="ident">usize</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
         <span class="ident">S</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
     {
-        <span class="kw">let</span> <span class="ident">indent</span> <span class="op">=</span> <span class="ident">iter</span>::<span class="ident">repeat</span>(<span class="string">&#39; &#39;</span>).<span class="ident">take</span>(<span class="ident">levels</span> <span class="op">*</span> <span class="number">4</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>();
+        <span class="kw">let</span> <span class="ident">indent</span> <span class="op">=</span> <span class="ident">iter::repeat</span>(<span class="string">&#39; &#39;</span>).<span class="ident">take</span>(<span class="ident">levels</span> <span class="op">*</span> <span class="number">4</span>).<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>();
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">desc</span>) <span class="op">=</span> <span class="ident">stuff</span>.<span class="ident">as_ref</span>() {
             <span class="ident">desc</span>.<span class="ident">as_ref</span>().<span class="ident">split</span>(<span class="string">&#39;\n&#39;</span>).<span class="ident">try_for_each</span>(<span class="op">|</span><span class="ident">line</span><span class="op">|</span> {
                 <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
@@ -1467,9 +1495,9 @@
                 <span class="ident">f</span>.<span class="ident">write_str</span>(
                     <span class="kw-2">&amp;</span><span class="ident">DOC_REGEX</span>
                         .<span class="ident">replace_all</span>(<span class="ident">line</span>, <span class="op">|</span><span class="ident">c</span>: <span class="kw-2">&amp;</span><span class="ident">Captures</span><span class="op">|</span> <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">c</span>[<span class="number">0</span>] {
-                            <span class="string">&quot;[&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;\\[&quot;</span>,
-                            <span class="string">&quot;]&quot;</span> <span class="op">=</span><span class="op">&gt;</span> <span class="string">&quot;\\]&quot;</span>,
-                            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="macro">unreachable</span><span class="macro">!</span>(),
+                            <span class="string">&quot;[&quot;</span> =&gt; <span class="string">&quot;\\[&quot;</span>,
+                            <span class="string">&quot;]&quot;</span> =&gt; <span class="string">&quot;\\]&quot;</span>,
+                            <span class="kw">_</span> =&gt; <span class="macro">unreachable!</span>(),
                         })
                         .<span class="ident">trim_end</span>(),
                 )
@@ -1482,25 +1510,25 @@
 
     <span class="doccomment">/// Returns whether this type is simple (i.e., not an object defined by us).</span>
     <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_simple_type</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_simple_type</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="ident">bool</span> {
         <span class="op">!</span><span class="ident">ty</span>.<span class="ident">contains</span>(<span class="string">&quot;::&quot;</span>) <span class="op">|</span><span class="op">|</span> <span class="ident">ty</span>.<span class="ident">ends_with</span>(<span class="string">&quot;Delimited&quot;</span>)
     }
 
     <span class="doccomment">/// Assuming that the given type &quot;is&quot; or &quot;has&quot; `Any`, this adds</span>
     <span class="doccomment">/// the appropriate generic parameter.</span>
-    <span class="kw">fn</span> <span class="ident">write_field_with_any</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">fn</span> <span class="ident">write_field_with_any</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">i</span>) <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">find</span>(<span class="string">&#39;&lt;&#39;</span>) {
             <span class="kw">if</span> <span class="ident">ty</span>[..<span class="ident">i</span>].<span class="ident">ends_with</span>(<span class="string">&quot;Vec&quot;</span>) {
                 <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[..<span class="op">=</span><span class="ident">i</span>])<span class="question-mark">?</span>;
-                <span class="self">Self</span>::<span class="ident">write_field_with_any</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>..<span class="ident">ty</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>], <span class="ident">f</span>)<span class="question-mark">?</span>;
+                <span class="ident"><span class="self">Self</span>::write_field_with_any</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">1</span>..<span class="ident">ty</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>], <span class="ident">f</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">ty</span>[..<span class="ident">i</span>].<span class="ident">ends_with</span>(<span class="string">&quot;std::collections::BTreeMap&quot;</span>) {
                 <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[..<span class="ident">i</span> <span class="op">+</span> <span class="number">9</span>])<span class="question-mark">?</span>;
-                <span class="self">Self</span>::<span class="ident">write_field_with_any</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">9</span>..<span class="ident">ty</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>], <span class="ident">f</span>)<span class="question-mark">?</span>;
+                <span class="ident"><span class="self">Self</span>::write_field_with_any</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[<span class="ident">i</span> <span class="op">+</span> <span class="number">9</span>..<span class="ident">ty</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>], <span class="ident">f</span>)<span class="question-mark">?</span>;
             } <span class="kw">else</span> {
-                <span class="macro">unreachable</span><span class="macro">!</span>(<span class="string">&quot;no other generics expected.&quot;</span>);
+                <span class="macro">unreachable!</span>(<span class="string">&quot;no other generics expected.&quot;</span>);
             }
 
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;&gt;&quot;</span>)<span class="question-mark">?</span>;
@@ -1508,8 +1536,8 @@
         }
 
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="ident">ty</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="op">!</span><span class="self">Self</span>::<span class="ident">is_simple_type</span>(<span class="ident">ty</span>) {
-            <span class="self">Self</span>::<span class="ident">write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::is_simple_type</span>(<span class="ident">ty</span>) {
+            <span class="ident"><span class="self">Self</span>::write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -1572,26 +1600,26 @@
 
 <span class="kw">impl</span> <span class="ident">Property</span> {
     <span class="doccomment">/// Whether this property is required.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_required</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_required</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Property</span>::<span class="ident">RequiredField</span> <span class="op">|</span> <span class="ident">Property</span>::<span class="ident">RequiredParam</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">Property::RequiredField</span> <span class="op">|</span> <span class="ident">Property::RequiredParam</span> =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
         }
     }
 
     <span class="doccomment">/// Checks whether this property is a parameter.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_parameter</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_parameter</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Property</span>::<span class="ident">RequiredParam</span> <span class="op">|</span> <span class="ident">Property</span>::<span class="ident">OptionalParam</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">Property::RequiredParam</span> <span class="op">|</span> <span class="ident">Property::OptionalParam</span> =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
         }
     }
 
     <span class="doccomment">/// Checks whether this property is a field.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_field</span>(<span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">is_field</span>(<span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">Property</span>::<span class="ident">RequiredField</span> <span class="op">|</span> <span class="ident">Property</span>::<span class="ident">OptionalField</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">true</span>,
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="bool-val">false</span>,
+            <span class="ident">Property::RequiredField</span> <span class="op">|</span> <span class="ident">Property::OptionalField</span> =&gt; <span class="bool-val">true</span>,
+            <span class="kw">_</span> =&gt; <span class="bool-val">false</span>,
         }
     }
 }
@@ -1613,6 +1641,8 @@
     <span class="kw">pub</span> <span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
     <span class="doccomment">/// What this field represents.</span>
     <span class="kw">pub</span> <span class="ident">prop</span>: <span class="ident">Property</span>,
+    <span class="doccomment">/// If the field is boxed</span>
+    <span class="kw">pub</span> <span class="ident">boxed</span>: <span class="ident">bool</span>,
     <span class="doccomment">/// Description for this field (if any), for docs.</span>
     <span class="kw">pub</span> <span class="ident">desc</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span><span class="op">&gt;</span>,
     <span class="doccomment">/// Whether this field had a collision (i.e., between parameter and object field)</span>
@@ -1633,19 +1663,19 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">ApiObjectBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
     <span class="doccomment">/// Name of the constructor function which creates this builder.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">constructor_fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">constructor_fn_name</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
         <span class="kw">match</span> (<span class="self">self</span>.<span class="ident">op_id</span>, <span class="self">self</span>.<span class="ident">method</span>) {
             <span class="comment">// If there&#39;s an operation ID, then we go for that ...</span>
-            (<span class="prelude-val">Some</span>(<span class="ident">id</span>), <span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">Some</span>(<span class="ident">id</span>.<span class="ident">to_snek_case</span>()),
+            (<span class="prelude-val">Some</span>(<span class="ident">id</span>), <span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">id</span>.<span class="ident">to_snake_case</span>()),
             <span class="comment">// If there&#39;s a method and we *don&#39;t* have any collisions</span>
             <span class="comment">// (i.e., two or more paths for same object), then we default</span>
             <span class="comment">// to using the method ...</span>
-            (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="ident">meth</span>)) <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">multiple_builders_exist</span> <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">meth</span>.<span class="ident">to_string</span>().<span class="ident">to_snek_case</span>())
+            (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="ident">meth</span>)) <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">multiple_builders_exist</span> =&gt; {
+                <span class="prelude-val">Some</span>(<span class="ident">meth</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>())
             }
             <span class="comment">// If there&#39;s a method, then we go for numbered functions ...</span>
-            (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="ident">meth</span>)) <span class="op">=</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">meth</span>.<span class="ident">to_string</span>().<span class="ident">to_snek_case</span>();
+            (<span class="kw">_</span>, <span class="prelude-val">Some</span>(<span class="ident">meth</span>)) =&gt; {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">meth</span>.<span class="ident">to_string</span>().<span class="ident">to_snake_case</span>();
                 <span class="kw">if</span> <span class="self">self</span>.<span class="ident">idx</span> <span class="op">&gt;</span> <span class="number">0</span> {
                     <span class="ident">name</span>.<span class="ident">push</span>(<span class="string">&#39;_&#39;</span>);
                     <span class="ident">name</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">idx</span>.<span class="ident">to_string</span>());
@@ -1655,7 +1685,7 @@
             }
             <span class="comment">// We don&#39;t know what to do ...</span>
             <span class="comment">// FIXME: Use route and method to generate a name.</span>
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> <span class="prelude-val">None</span>,
+            <span class="kw">_</span> =&gt; <span class="prelude-val">None</span>,
         }
     }
 
@@ -1665,23 +1695,24 @@
     <span class="doccomment">/// If there&#39;s a collision between a path-specific parameter and an operation-specific</span>
     <span class="doccomment">/// parameter, then the latter overrides the former. If there&#39;s a collision between a field</span>
     <span class="doccomment">/// and a parameter, then the latter overrides the former.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">struct_fields_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">StructField</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">struct_fields_iter</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw">impl</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">StructField</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span> {
         <span class="kw">let</span> <span class="ident">body_required</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">body_required</span>;
         <span class="kw">let</span> <span class="ident">field_iter</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">fields</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">field</span><span class="op">|</span> <span class="ident">StructField</span> {
             <span class="ident">name</span>: <span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">as_str</span>(),
             <span class="ident">ty</span>: <span class="ident">field</span>.<span class="ident">ty_path</span>.<span class="ident">as_str</span>(),
             <span class="comment">// We &quot;require&quot; the object fields only if the object itself is required.</span>
             <span class="ident">prop</span>: <span class="kw">if</span> <span class="ident">body_required</span> <span class="op">&amp;&amp;</span> <span class="ident">field</span>.<span class="ident">is_required</span> {
-                <span class="ident">Property</span>::<span class="ident">RequiredField</span>
+                <span class="ident">Property::RequiredField</span>
             } <span class="kw">else</span> {
-                <span class="ident">Property</span>::<span class="ident">OptionalField</span>
+                <span class="ident">Property::OptionalField</span>
             },
+            <span class="ident">boxed</span>: <span class="ident">field</span>.<span class="ident">boxed</span>,
             <span class="ident">desc</span>: <span class="ident">field</span>.<span class="ident">description</span>.<span class="ident">as_deref</span>(),
             <span class="ident">strict_child_fields</span>: <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">field</span>.<span class="ident">child_req_fields</span>,
             <span class="ident">param_loc</span>: <span class="prelude-val">None</span>,
             <span class="ident">overridden</span>: <span class="bool-val">false</span>,
             <span class="ident">needs_any</span>: <span class="ident">field</span>.<span class="ident">needs_any</span>,
-            <span class="ident">needs_file</span>: <span class="ident">field</span>.<span class="ident">ty_path</span> <span class="op">=</span><span class="op">=</span> <span class="ident">FILE_MARKER</span>,
+            <span class="ident">needs_file</span>: <span class="ident">field</span>.<span class="ident">ty_path</span> <span class="op">==</span> <span class="ident">FILE_MARKER</span>,
             <span class="ident">delimiting</span>: <span class="kw-2">&amp;</span>[],
         });
 
@@ -1689,7 +1720,7 @@
             .<span class="ident">global_params</span>
             .<span class="ident">iter</span>()
             .<span class="ident">chain</span>(<span class="self">self</span>.<span class="ident">local_params</span>.<span class="ident">iter</span>())
-            .<span class="ident">scan</span>(<span class="ident">HashSet</span>::<span class="ident">new</span>(), <span class="op">|</span><span class="ident">set</span>, <span class="ident">param</span><span class="op">|</span> {
+            .<span class="ident">scan</span>(<span class="ident">HashSet::new</span>(), <span class="op">|</span><span class="ident">set</span>, <span class="ident">param</span><span class="op">|</span> {
                 <span class="comment">// Local parameters override global parameters.</span>
                 <span class="kw">if</span> <span class="ident">set</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">param</span>.<span class="ident">name</span>) {
                     <span class="comment">// Workaround because `scan` stops when it encounters</span>
@@ -1701,30 +1732,31 @@
                         <span class="ident">name</span>: <span class="ident">param</span>.<span class="ident">name</span>.<span class="ident">as_str</span>(),
                         <span class="ident">ty</span>: <span class="ident">param</span>.<span class="ident">ty_path</span>.<span class="ident">as_str</span>(),
                         <span class="ident">prop</span>: <span class="kw">if</span> <span class="ident">param</span>.<span class="ident">required</span> {
-                            <span class="ident">Property</span>::<span class="ident">RequiredParam</span>
+                            <span class="ident">Property::RequiredParam</span>
                         } <span class="kw">else</span> {
-                            <span class="ident">Property</span>::<span class="ident">OptionalParam</span>
+                            <span class="ident">Property::OptionalParam</span>
                         },
+                        <span class="ident">boxed</span>: <span class="bool-val">false</span>,
                         <span class="ident">desc</span>: <span class="ident">param</span>.<span class="ident">description</span>.<span class="ident">as_deref</span>(),
                         <span class="ident">strict_child_fields</span>: <span class="kw-2">&amp;</span>[] <span class="kw">as</span> <span class="kw-2">&amp;</span>[<span class="kw">_</span>],
                         <span class="ident">param_loc</span>: <span class="prelude-val">Some</span>(<span class="ident">param</span>.<span class="ident">presence</span>),
                         <span class="ident">overridden</span>: <span class="bool-val">false</span>,
                         <span class="ident">needs_any</span>: <span class="bool-val">false</span>,
-                        <span class="ident">needs_file</span>: <span class="ident">param</span>.<span class="ident">ty_path</span> <span class="op">=</span><span class="op">=</span> <span class="ident">FILE_MARKER</span>,
+                        <span class="ident">needs_file</span>: <span class="ident">param</span>.<span class="ident">ty_path</span> <span class="op">==</span> <span class="ident">FILE_MARKER</span>,
                         <span class="ident">delimiting</span>: <span class="kw-2">&amp;</span><span class="ident">param</span>.<span class="ident">delimiting</span>,
                     }))
                 }
             })
             .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="ident">p</span>);
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fields</span> <span class="op">=</span> <span class="macro">vec!</span>[];
         <span class="comment">// Check parameter-field collisions.</span>
         <span class="kw">for</span> <span class="ident">field</span> <span class="kw">in</span> <span class="ident">param_iter</span>.<span class="ident">chain</span>(<span class="ident">field_iter</span>) {
             <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v</span>) <span class="op">=</span> <span class="ident">fields</span>
                 .<span class="ident">iter_mut</span>()
-                .<span class="ident">find</span>(<span class="op">|</span><span class="ident">f</span>: <span class="op">&amp;&amp;</span><span class="kw-2">mut</span> <span class="ident">StructField</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">field</span>.<span class="ident">name</span>)
+                .<span class="ident">find</span>(<span class="op">|</span><span class="ident">f</span>: <span class="op">&amp;&amp;</span><span class="kw-2">mut</span> <span class="ident">StructField</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">field</span>.<span class="ident">name</span>)
             {
-                <span class="kw">if</span> <span class="ident">v</span>.<span class="ident">ty</span> <span class="op">=</span><span class="op">=</span> <span class="ident">field</span>.<span class="ident">ty</span> {
+                <span class="kw">if</span> <span class="ident">v</span>.<span class="ident">ty</span> <span class="op">==</span> <span class="ident">field</span>.<span class="ident">ty</span> {
                     <span class="ident">v</span>.<span class="ident">overridden</span> <span class="op">=</span> <span class="bool-val">true</span>;
                 }
 
@@ -1740,13 +1772,13 @@
     }
 
     <span class="doccomment">/// Write this builder&#39;s name into the given formatter.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_name</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_name</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">object</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">method</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">method</span> {
-            <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">method</span>)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">method</span>)<span class="question-mark">?</span>;
         }
 
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Builder&quot;</span>)<span class="question-mark">?</span>;
@@ -1763,10 +1795,10 @@
     <span class="doccomment">/// should make use of actual types.</span>
     <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_generics_if_necessary</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>,
+        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>,
         <span class="ident">any_value</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="ident">str</span><span class="op">&gt;</span>,
         <span class="ident">params</span>: <span class="ident">TypeParameters</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">fmt</span>::<span class="ident">Error</span><span class="op">&gt;</span>
+    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">usize</span>, <span class="ident">fmt::Error</span><span class="op">&gt;</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
@@ -1777,7 +1809,7 @@
             .<span class="ident">enumerate</span>()
             .<span class="ident">try_for_each</span>(<span class="op">|</span>(<span class="ident">i</span>, <span class="ident">field</span>)<span class="op">|</span> {
                 <span class="ident">num_generics</span> <span class="op">+</span><span class="op">=</span> <span class="number">1</span>;
-                <span class="kw">if</span> <span class="ident">i</span> <span class="op">=</span><span class="op">=</span> <span class="number">0</span> {
+                <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="number">0</span> {
                     <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;&lt;&quot;</span>)<span class="question-mark">?</span>;
                 } <span class="kw">else</span> {
                     <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
@@ -1785,29 +1817,29 @@
 
                 <span class="kw">match</span> <span class="ident">params</span> {
                     <span class="comment">// If the name matches, then change that unit type to `{Name}Exists`</span>
-                    <span class="ident">TypeParameters</span>::<span class="ident">ChangeOne</span>(<span class="ident">n</span>) <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">n</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">TypeParameters::ChangeOne</span>(<span class="ident">n</span>) <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">n</span> =&gt; {
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="self">self</span>.<span class="ident">helper_module_prefix</span>)<span class="question-mark">?</span>;
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;generics::&quot;</span>)<span class="question-mark">?</span>;
-                        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">to_camel_case</span>())<span class="question-mark">?</span>;
+                        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">to_camel_case</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>))<span class="question-mark">?</span>;
                         <span class="kw">return</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Exists&quot;</span>);
                     }
                     <span class="comment">// All names should be changed to `{Name}Exists`</span>
-                    <span class="ident">TypeParameters</span>::<span class="ident">ChangeAll</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">TypeParameters::ChangeAll</span> =&gt; {
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="self">self</span>.<span class="ident">helper_module_prefix</span>)<span class="question-mark">?</span>;
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;generics::&quot;</span>)<span class="question-mark">?</span>;
-                        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">to_camel_case</span>())<span class="question-mark">?</span>;
+                        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">to_camel_case</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>))<span class="question-mark">?</span>;
                         <span class="kw">return</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Exists&quot;</span>);
                     }
                     <span class="comment">// All names should be reset to `Missing{Name}`</span>
-                    <span class="ident">TypeParameters</span>::<span class="ident">ReplaceAll</span> <span class="op">=</span><span class="op">&gt;</span> {
+                    <span class="ident">TypeParameters::ReplaceAll</span> =&gt; {
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="self">self</span>.<span class="ident">helper_module_prefix</span>)<span class="question-mark">?</span>;
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;generics::&quot;</span>)<span class="question-mark">?</span>;
                         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;Missing&quot;</span>)<span class="question-mark">?</span>;
                     }
-                    <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> (),
+                    <span class="kw">_</span> =&gt; (),
                 }
 
-                <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">to_camel_case</span>())
+                <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">to_camel_case</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>))
             })<span class="question-mark">?</span>;
 
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">needs_any</span> {
@@ -1829,13 +1861,13 @@
     }
 
     <span class="doccomment">/// Returns whether this builder will have at least one field.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">has_atleast_one_field</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">has_atleast_one_field</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="self">self</span>.<span class="ident">struct_fields_iter</span>()
             .<span class="ident">any</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">prop</span>.<span class="ident">is_parameter</span>() <span class="op">|</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">prop</span>.<span class="ident">is_required</span>())
     }
 
     <span class="doccomment">/// Returns whether a separate container is needed for the builder struct.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">needs_container</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">bool</span> {
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">needs_container</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
         <span class="comment">// This is perhaps one of those important blocks, because this</span>
         <span class="comment">// decides whether to mark builder structs as `repr(transparent)`</span>
         <span class="comment">// (for unsafely transmuting). It&#39;s UB to transmute `repr(Rust)`</span>
@@ -1861,7 +1893,7 @@
     }
 
     <span class="doccomment">/// Write this builder&#39;s container name into the given formatter.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_container_name</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">write_container_name</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
@@ -1875,10 +1907,10 @@
         <span class="ident">module_prefix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
         <span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
         <span class="ident">delims</span>: <span class="kw-2">&amp;</span>[<span class="ident">CollectionFormat</span>],
-        <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>,
+    ) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">fmt</span>::<span class="ident">Write</span>,
+        <span class="ident">F</span>: <span class="ident">fmt::Write</span>,
     {
         <span class="kw">if</span> <span class="op">!</span><span class="ident">ty</span>.<span class="ident">contains</span>(<span class="string">&quot;Vec&quot;</span>) {
             <span class="kw">return</span> <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="ident">ty</span>);
@@ -1887,22 +1919,22 @@
         <span class="comment">// In parameters, we&#39;re limited to basic types and arrays,</span>
         <span class="comment">// so we can assume that whatever `&lt;&gt;` we encounter, they&#39;re</span>
         <span class="comment">// all for `Vec`.</span>
-        <span class="kw">let</span> <span class="ident">delim_ty</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">from</span>(<span class="ident">module_prefix</span>) <span class="op">+</span> <span class="string">&quot;util::Delimited&quot;</span>;
+        <span class="kw">let</span> <span class="ident">delim_ty</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="ident">module_prefix</span>) <span class="op">+</span> <span class="string">&quot;util::Delimited&quot;</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ty</span> <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">replace</span>(<span class="string">&quot;Vec&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">delim_ty</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_ty</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_ty</span> <span class="op">=</span> <span class="ident">String::new</span>();
         <span class="comment">// From the reverse, because we replace from inside out.</span>
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">delim_idx</span> <span class="op">=</span> <span class="ident">delims</span>.<span class="ident">len</span>();
         <span class="kw">while</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">idx</span>) <span class="op">=</span> <span class="ident">ty</span>.<span class="ident">find</span>(<span class="string">&#39;&gt;&#39;</span>) {
             <span class="ident">delim_idx</span> <span class="op">-</span><span class="op">=</span> <span class="number">1</span>;
             <span class="ident">new_ty</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">ty</span>[..<span class="ident">idx</span>]);
             <span class="ident">new_ty</span>.<span class="ident">push_str</span>(<span class="string">&quot;, &quot;</span>);
-            <span class="macro">write</span><span class="macro">!</span>(
-                <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">new_ty</span>,
+            <span class="macro">write!</span>(
+                <span class="kw-2">&amp;mut</span> <span class="ident">new_ty</span>,
                 <span class="string">&quot;{}util::{:?}&quot;</span>,
                 <span class="ident">module_prefix</span>, <span class="ident">delims</span>[<span class="ident">delim_idx</span>]
             )<span class="question-mark">?</span>;
             <span class="ident">new_ty</span>.<span class="ident">push</span>(<span class="string">&#39;&gt;&#39;</span>);
-            <span class="kw">if</span> <span class="ident">idx</span> <span class="op">=</span><span class="op">=</span> <span class="ident">ty</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span> {
+            <span class="kw">if</span> <span class="ident">idx</span> <span class="op">==</span> <span class="ident">ty</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span> {
                 <span class="kw">break</span>;
             }
 
@@ -1913,7 +1945,7 @@
     }
 
     <span class="doccomment">/// Writes the body field into the formatter if required.</span>
-    <span class="kw">fn</span> <span class="ident">write_body_field_if_required</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">fn</span> <span class="ident">write_body_field_if_required</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
@@ -1923,7 +1955,7 @@
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n    body: self::&quot;</span>)<span class="question-mark">?</span>;
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">object</span>)<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">needs_any</span> {
-                <span class="ident">ApiObject</span>::<span class="ident">write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+                <span class="ident">ApiObject::write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
             }
 
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;,&quot;</span>)<span class="question-mark">?</span>;
@@ -1939,8 +1971,8 @@
         <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
         <span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
         <span class="ident">delims</span>: <span class="kw-2">&amp;</span>[<span class="ident">CollectionFormat</span>],
-        <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>,
-    ) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+        <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>,
+    ) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
         <span class="ident">F</span>: <span class="ident">Write</span>,
     {
@@ -1951,10 +1983,10 @@
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n    param_&quot;</span>)<span class="question-mark">?</span>;
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>)<span class="question-mark">?</span>;
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;: Option&lt;&quot;</span>)<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="ident">ty</span> <span class="op">=</span><span class="op">=</span> <span class="ident">FILE_MARKER</span> {
+        <span class="kw">if</span> <span class="ident">ty</span> <span class="op">==</span> <span class="ident">FILE_MARKER</span> {
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;std::path::PathBuf&quot;</span>)<span class="question-mark">?</span>;
         } <span class="kw">else</span> {
-            <span class="self">Self</span>::<span class="ident">write_wrapped_ty</span>(<span class="self">self</span>.<span class="ident">helper_module_prefix</span>, <span class="ident">ty</span>, <span class="ident">delims</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
+            <span class="ident"><span class="self">Self</span>::write_wrapped_ty</span>(<span class="self">self</span>.<span class="ident">helper_module_prefix</span>, <span class="ident">ty</span>, <span class="ident">delims</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
         }
 
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;&gt;,&quot;</span>)
@@ -1962,7 +1994,7 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ApiObjectBuilder</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;/// Builder &quot;</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">name</span>), <span class="prelude-val">Some</span>(<span class="ident">m</span>)) <span class="op">=</span> (<span class="self">self</span>.<span class="ident">constructor_fn_name</span>(), <span class="self">self</span>.<span class="ident">method</span>) {
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;created by [`&quot;</span>)<span class="question-mark">?</span>;
@@ -1997,7 +2029,7 @@
 
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;#[derive(Debug, Clone)]\npub struct &quot;</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="ident">write_name</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">write_generics_if_necessary</span>(<span class="ident">f</span>, <span class="prelude-val">None</span>, <span class="ident">TypeParameters</span>::<span class="ident">Generic</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.<span class="ident">write_generics_if_necessary</span>(<span class="ident">f</span>, <span class="prelude-val">None</span>, <span class="ident">TypeParameters::Generic</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// If structs don&#39;t have any fields, then we go for unit structs.</span>
         <span class="kw">let</span> <span class="ident">has_fields</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">has_atleast_one_field</span>();
@@ -2006,21 +2038,21 @@
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
         }
 
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">String</span>::<span class="ident">new</span>();
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">container</span> <span class="op">=</span> <span class="ident">String::new</span>();
         <span class="kw">if</span> <span class="ident">needs_container</span> {
             <span class="ident">container</span>.<span class="ident">push_str</span>(<span class="string">&quot;#[derive(Debug, Default, Clone)]\nstruct &quot;</span>);
-            <span class="self">self</span>.<span class="ident">write_container_name</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">container</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">write_container_name</span>(<span class="kw-2">&amp;mut</span> <span class="ident">container</span>)<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">needs_any</span> {
-                <span class="ident">ApiObject</span>::<span class="ident">write_any_generic</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">container</span>)<span class="question-mark">?</span>;
+                <span class="ident">ApiObject::write_any_generic</span>(<span class="kw-2">&amp;mut</span> <span class="ident">container</span>)<span class="question-mark">?</span>;
             }
 
             <span class="ident">container</span>.<span class="ident">push_str</span>(<span class="string">&quot; {&quot;</span>);
-            <span class="self">self</span>.<span class="ident">write_body_field_if_required</span>(<span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">container</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.<span class="ident">write_body_field_if_required</span>(<span class="kw-2">&amp;mut</span> <span class="ident">container</span>)<span class="question-mark">?</span>;
 
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n    inner: &quot;</span>)<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="ident">write_container_name</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
             <span class="kw">if</span> <span class="self">self</span>.<span class="ident">needs_any</span> {
-                <span class="ident">ApiObject</span>::<span class="ident">write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+                <span class="ident">ApiObject::write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
             }
 
             <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;,&quot;</span>)<span class="question-mark">?</span>;
@@ -2030,15 +2062,15 @@
 
         <span class="comment">// Write struct fields and the associated markers if needed.</span>
         <span class="self">self</span>.<span class="ident">struct_fields_iter</span>()
-            .<span class="ident">try_for_each</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">fmt</span>::<span class="prelude-ty">Result</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> {
-                <span class="kw">let</span> (<span class="ident">cc</span>, <span class="ident">sk</span>) <span class="op">=</span> (<span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">to_camel_case</span>(), <span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">to_snek_case</span>());
+            .<span class="ident">try_for_each</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">fmt::Result</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> {
+                <span class="kw">let</span> (<span class="ident">cc</span>, <span class="ident">sk</span>) <span class="op">=</span> (<span class="ident">to_camel_case</span>(<span class="ident">field</span>.<span class="ident">name</span>), <span class="ident">to_snake_case</span>(<span class="ident">field</span>.<span class="ident">name</span>));
                 <span class="kw">if</span> <span class="ident">needs_container</span> {
                     <span class="self">self</span>.<span class="ident">write_parameter_if_required</span>(
                         <span class="ident">field</span>.<span class="ident">prop</span>,
                         <span class="kw-2">&amp;</span><span class="ident">sk</span>,
                         <span class="ident">field</span>.<span class="ident">ty</span>,
                         <span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">delimiting</span>,
-                        <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">container</span>,
+                        <span class="kw-2">&amp;mut</span> <span class="ident">container</span>,
                     )<span class="question-mark">?</span>;
                 } <span class="kw">else</span> {
                     <span class="self">self</span>.<span class="ident">write_parameter_if_required</span>(
@@ -2084,8 +2116,8 @@
 }
 
 <span class="kw">impl</span> <span class="ident">Display</span> <span class="kw">for</span> <span class="ident">ApiObject</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">fmt</span>::<span class="ident">Formatter</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span> {
-        <span class="ident">ApiObject</span>::<span class="ident">write_docs</span>(<span class="self">self</span>.<span class="ident">description</span>.<span class="ident">as_ref</span>(), <span class="ident">f</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
+    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
+        <span class="ident">ApiObject::write_docs</span>(<span class="self">self</span>.<span class="ident">description</span>.<span class="ident">as_ref</span>(), <span class="ident">f</span>, <span class="number">0</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">is_enum</span>() {
             <span class="kw">return</span> <span class="self">self</span>.<span class="ident">write_enum</span>(<span class="ident">f</span>);
         }
@@ -2093,27 +2125,27 @@
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;#[derive(Debug, Default, Clone, Serialize, Deserialize)]\npub struct &quot;</span>)<span class="question-mark">?</span>;
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">name</span>)<span class="question-mark">?</span>;
         <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">is_enum</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">fields</span>().<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">needs_any</span>) {
-            <span class="ident">ApiObject</span>::<span class="ident">write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+            <span class="ident">ApiObject::write_any_generic</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
         }
 
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.<span class="ident">fields</span>()
             .<span class="ident">iter</span>()
-            .<span class="ident">try_for_each</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">fmt</span>::<span class="prelude-ty">Result</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_name</span> <span class="op">=</span> <span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">to_snek_case</span>();
+            .<span class="ident">try_for_each</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">fmt::Result</span><span class="op">&gt;</span>(<span class="op">|</span><span class="ident">field</span><span class="op">|</span> {
+                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">new_name</span> <span class="op">=</span> <span class="ident">to_snake_case</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">name</span>);
                 <span class="comment">// Check if the field matches a Rust keyword and add &#39;_&#39; suffix.</span>
-                <span class="kw">if</span> <span class="ident">RUST_KEYWORDS</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">k</span><span class="op">|</span> <span class="ident">k</span> <span class="op">=</span><span class="op">=</span> <span class="ident">new_name</span>) {
+                <span class="kw">if</span> <span class="ident">RUST_KEYWORDS</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="kw-2">&amp;</span><span class="ident">k</span><span class="op">|</span> <span class="ident">k</span> <span class="op">==</span> <span class="ident">new_name</span>) {
                     <span class="ident">new_name</span>.<span class="ident">push</span>(<span class="string">&#39;_&#39;</span>);
                 }
 
-                <span class="ident">ApiObject</span>::<span class="ident">write_docs</span>(<span class="ident">field</span>.<span class="ident">description</span>.<span class="ident">as_ref</span>(), <span class="ident">f</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
+                <span class="ident">ApiObject::write_docs</span>(<span class="ident">field</span>.<span class="ident">description</span>.<span class="ident">as_ref</span>(), <span class="ident">f</span>, <span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">description</span>.<span class="ident">is_none</span>() {
                     <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
                 }
 
                 <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;    &quot;</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">name</span> <span class="op">=</span><span class="op">=</span> <span class="ident">EXTRA_PROPS_FIELD</span> {
+                <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">EXTRA_PROPS_FIELD</span> {
                     <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;#[serde(flatten)]\n    &quot;</span>)<span class="question-mark">?</span>;
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">new_name</span> <span class="op">!</span><span class="op">=</span> <span class="ident">field</span>.<span class="ident">name</span>.<span class="ident">as_str</span>() {
                     <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;#[serde(rename = \&quot;&quot;</span>)<span class="question-mark">?</span>;
@@ -2133,7 +2165,7 @@
                 }
 
                 <span class="kw">if</span> <span class="ident">field</span>.<span class="ident">needs_any</span> {
-                    <span class="self">Self</span>::<span class="ident">write_field_with_any</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">ty_path</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
+                    <span class="ident"><span class="self">Self</span>::write_field_with_any</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">ty_path</span>, <span class="ident">f</span>)<span class="question-mark">?</span>;
                 } <span class="kw">else</span> {
                     <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">ty_path</span>)<span class="question-mark">?</span>;
                 }
@@ -2160,9 +2192,9 @@
 
 <span class="kw">impl</span> <span class="ident">ApiObject</span> {
     <span class="doccomment">/// Writes an enum declaration along with serde impl if needed.</span>
-    <span class="kw">fn</span> <span class="ident">write_enum</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">fn</span> <span class="ident">write_enum</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">fmt</span>::<span class="ident">Write</span>,
+        <span class="ident">F</span>: <span class="ident">fmt::Write</span>,
     {
         <span class="kw">let</span> <span class="ident">is_string</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">is_string_enum</span>();
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;#[derive(Debug, Clone&quot;</span>)<span class="question-mark">?</span>;
@@ -2177,10 +2209,10 @@
         <span class="self">self</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">try_for_each</span>(<span class="op">|</span><span class="ident">var</span><span class="op">|</span> {
             <span class="kw">if</span> <span class="ident">is_string</span> {
                 <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n    #[serde(rename = &quot;</span>)<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">serde_json</span>::<span class="ident">Value</span>::<span class="ident">String</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">var</span>.<span class="ident">value</span> {
-                    <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="ident">s</span>)<span class="question-mark">?</span>;
+                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">serde_json::Value::String</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">var</span>.<span class="ident">value</span> {
+                    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="ident">s</span>)<span class="question-mark">?</span>;
                 } <span class="kw">else</span> {
-                    <span class="macro">write</span><span class="macro">!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="ident">var</span>.<span class="ident">value</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
+                    <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{:?}&quot;</span>, <span class="ident">var</span>.<span class="ident">value</span>.<span class="ident">to_string</span>())<span class="question-mark">?</span>;
                 }
 
                 <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;)]&quot;</span>)<span class="question-mark">?</span>;
@@ -2196,7 +2228,7 @@
         <span class="comment">// FIXME: Currently, we&#39;re implementing the first value as enum default.</span>
         <span class="comment">// If &quot;default&quot; field exists, then we should use that instead.</span>
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">var</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">variants</span>().<span class="ident">get</span>(<span class="number">0</span>) {
-            <span class="macro">writeln</span><span class="macro">!</span>(
+            <span class="macro">writeln!</span>(
                 <span class="ident">f</span>,
                 <span class="string">&quot;impl Default for {name} {{
     fn default() -&gt; Self {{
@@ -2209,7 +2241,7 @@
         }
 
         <span class="kw">if</span> <span class="op">!</span><span class="ident">is_string</span> {
-            <span class="ident">EnumSerdeImpl</span>::<span class="ident">from</span>(<span class="self">self</span>).<span class="ident">write_to</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
+            <span class="ident">EnumSerdeImpl::from</span>(<span class="self">self</span>).<span class="ident">write_to</span>(<span class="ident">f</span>)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
@@ -2229,20 +2261,20 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">EnumSerdeImpl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">o</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ApiObject</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="kw">use</span> <span class="ident">serde_json</span>::<span class="ident">Value</span>;
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">o</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">ApiObject</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">use</span> <span class="ident">serde_json::Value</span>;
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">writer</span> <span class="op">=</span> <span class="ident">EnumSerdeImpl</span> {
             <span class="ident">obj</span>: <span class="ident">o</span>,
             <span class="ident">true_</span>: <span class="prelude-val">None</span>,
             <span class="ident">false_</span>: <span class="prelude-val">None</span>,
-            <span class="ident">i64_</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-            <span class="ident">u64_</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-            <span class="ident">f64_</span>: <span class="macro">vec</span><span class="macro">!</span>[],
-            <span class="ident">str_</span>: <span class="macro">vec</span><span class="macro">!</span>[],
+            <span class="ident">i64_</span>: <span class="macro">vec!</span>[],
+            <span class="ident">u64_</span>: <span class="macro">vec!</span>[],
+            <span class="ident">f64_</span>: <span class="macro">vec!</span>[],
+            <span class="ident">str_</span>: <span class="macro">vec!</span>[],
         };
 
         <span class="ident">o</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">var</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">var</span>.<span class="ident">value</span> {
-            <span class="ident">Value</span>::<span class="ident">Number</span>(<span class="kw-2">ref</span> <span class="ident">n</span>) <span class="op">=</span><span class="op">&gt;</span> {
+            <span class="ident">Value::Number</span>(<span class="kw-2">ref</span> <span class="ident">n</span>) =&gt; {
                 <span class="kw">if</span> <span class="ident">n</span>.<span class="ident">is_u64</span>() {
                     <span class="ident">writer</span>.<span class="ident">u64_</span>.<span class="ident">push</span>(<span class="ident">var</span>);
                 } <span class="kw">else</span> <span class="kw">if</span> <span class="ident">n</span>.<span class="ident">is_i64</span>() {
@@ -2251,19 +2283,19 @@
                     <span class="ident">writer</span>.<span class="ident">f64_</span>.<span class="ident">push</span>(<span class="ident">var</span>);
                 }
             }
-            <span class="ident">Value</span>::<span class="ident">Bool</span>(<span class="kw-2">ref</span> <span class="ident">b</span>) <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">b</span> <span class="op">=</span><span class="op">&gt;</span> <span class="ident">writer</span>.<span class="ident">true_</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">var</span>),
-            <span class="ident">Value</span>::<span class="ident">Bool</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">writer</span>.<span class="ident">false_</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">var</span>),
-            <span class="ident">Value</span>::<span class="ident">String</span>(<span class="kw">_</span>) <span class="op">=</span><span class="op">&gt;</span> <span class="ident">writer</span>.<span class="ident">str_</span>.<span class="ident">push</span>(<span class="ident">var</span>),
-            <span class="kw">_</span> <span class="op">=</span><span class="op">&gt;</span> (),
+            <span class="ident">Value::Bool</span>(<span class="kw-2">ref</span> <span class="ident">b</span>) <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">b</span> =&gt; <span class="ident">writer</span>.<span class="ident">true_</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">var</span>),
+            <span class="ident">Value::Bool</span>(<span class="kw">_</span>) =&gt; <span class="ident">writer</span>.<span class="ident">false_</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">var</span>),
+            <span class="ident">Value::String</span>(<span class="kw">_</span>) =&gt; <span class="ident">writer</span>.<span class="ident">str_</span>.<span class="ident">push</span>(<span class="ident">var</span>),
+            <span class="kw">_</span> =&gt; (),
         });
 
         <span class="ident">writer</span>
     }
 
     <span class="doccomment">/// Writes the serde impl to the given formatter.</span>
-    <span class="kw">fn</span> <span class="ident">write_to</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">fn</span> <span class="ident">write_to</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">fmt</span>::<span class="ident">Write</span>,
+        <span class="ident">F</span>: <span class="ident">fmt::Write</span>,
     {
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;impl serde::Serialize for &quot;</span>)<span class="question-mark">?</span>;
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">obj</span>.<span class="ident">name</span>)<span class="question-mark">?</span>;
@@ -2276,7 +2308,7 @@
         <span class="comment">// We&#39;ve already checked that we have non-zero variants when we emitted</span>
         <span class="comment">// the enum, so we&#39;re okay here.</span>
         <span class="self">self</span>.<span class="ident">obj</span>.<span class="ident">variants</span>().<span class="ident">iter</span>().<span class="ident">try_for_each</span>(<span class="op">|</span><span class="ident">var</span><span class="op">|</span> {
-            <span class="macro">write</span><span class="macro">!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">f</span>,
                 <span class="string">&quot;
             {}::{} =&gt; ({}).serialize(ser),&quot;</span>,
@@ -2285,7 +2317,7 @@
         })<span class="question-mark">?</span>;
         <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;\n        }\n    }\n}&quot;</span>)<span class="question-mark">?</span>;
 
-        <span class="macro">write</span><span class="macro">!</span>(
+        <span class="macro">write!</span>(
             <span class="ident">f</span>,
             <span class="string">&quot;
 impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
@@ -2312,11 +2344,11 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
     }
 
     <span class="doccomment">/// Writes the necessary visitor methods for deserializing the enum.</span>
-    <span class="kw">fn</span> <span class="ident">write_visit_methods</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;</span><span class="kw-2">mut</span> <span class="ident">F</span>) <span class="op">-</span><span class="op">&gt;</span> <span class="ident">fmt</span>::<span class="prelude-ty">Result</span>
+    <span class="kw">fn</span> <span class="ident">write_visit_methods</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>) -&gt; <span class="ident">fmt::Result</span>
     <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">fmt</span>::<span class="ident">Write</span>,
+        <span class="ident">F</span>: <span class="ident">fmt::Write</span>,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bool_vis</span> <span class="op">=</span> <span class="macro">vec</span><span class="macro">!</span>[];
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">bool_vis</span> <span class="op">=</span> <span class="macro">vec!</span>[];
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">var</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">true_</span> {
             <span class="ident">bool_vis</span>.<span class="ident">push</span>(<span class="ident">var</span>);
         }
@@ -2325,7 +2357,7 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
         }
 
         <span class="kw">let</span> <span class="ident">visitors</span> <span class="op">=</span> <span class="kw-2">&amp;</span>[
-            (<span class="string">&quot;bool&quot;</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="ident">bool_vis</span>, <span class="string">&quot;Bool&quot;</span>, <span class="ident">bool_vis</span>.<span class="ident">len</span>() <span class="op">=</span><span class="op">=</span> <span class="number">1</span>),
+            (<span class="string">&quot;bool&quot;</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="ident">bool_vis</span>, <span class="string">&quot;Bool&quot;</span>, <span class="ident">bool_vis</span>.<span class="ident">len</span>() <span class="op">==</span> <span class="number">1</span>),
             (<span class="string">&quot;i64&quot;</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">i64_</span>, <span class="string">&quot;Signed&quot;</span>, <span class="bool-val">true</span>),
             (<span class="string">&quot;u64&quot;</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">u64_</span>, <span class="string">&quot;Unsigned&quot;</span>, <span class="bool-val">true</span>),
             (<span class="string">&quot;f64&quot;</span>, <span class="prelude-val">None</span>, <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">f64_</span>, <span class="string">&quot;Float&quot;</span>, <span class="bool-val">true</span>),
@@ -2333,7 +2365,7 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
         ];
 
         <span class="kw">for</span> (<span class="ident">vis_name</span>, <span class="ident">vis_ty</span>, <span class="ident">vars</span>, <span class="ident">ident</span>, <span class="ident">needs_error</span>) <span class="kw">in</span> <span class="ident">visitors</span> {
-            <span class="macro">write</span><span class="macro">!</span>(
+            <span class="macro">write!</span>(
                 <span class="ident">f</span>,
                 <span class="string">&quot;
 
@@ -2343,7 +2375,7 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
             )<span class="question-mark">?</span>;
 
             <span class="kw">for</span> <span class="ident">var</span> <span class="kw">in</span> <span class="kw-2">*</span><span class="ident">vars</span> {
-                <span class="macro">write</span><span class="macro">!</span>(
+                <span class="macro">write!</span>(
                     <span class="ident">f</span>,
                     <span class="string">&quot;
                 if v == {} {{
@@ -2355,7 +2387,7 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
 
             <span class="comment">// For bool, this is needed for &quot;unreachable&quot; code check.</span>
             <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">needs_error</span> {
-                <span class="macro">write</span><span class="macro">!</span>(
+                <span class="macro">write!</span>(
                     <span class="ident">f</span>,
                     <span class="string">&quot;
                 Err(E::invalid_value(Unexpected::{ident}(v), &amp;EXPECT_MSG))
@@ -2370,10 +2402,10 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
 }
 
 <span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">ObjectContainer</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() <span class="op">-</span><span class="op">&gt;</span> <span class="self">Self</span> {
-        <span class="ident">ObjectContainer</span>::<span class="ident">Struct</span> { <span class="ident">fields</span>: <span class="macro">vec</span><span class="macro">!</span>[] }
+    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="self">Self</span> {
+        <span class="ident">ObjectContainer::Struct</span> { <span class="ident">fields</span>: <span class="macro">vec!</span>[] }
     }
 }
-</pre></div>
-</section><section id="search" class="content hidden"></section><section class="footer"></section><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-search-js="../../../../search-index.js"></div>
-    <script src="../../../../main.js"></script><script src="../../../../source-script.js"></script><script src="../../../../source-files.js"></script></body></html>
+</code></pre></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (a7e2e3396 2022-01-08)" ></div>
+</body></html>

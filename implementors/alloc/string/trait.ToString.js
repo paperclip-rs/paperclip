@@ -1,0 +1,3 @@
+(function() {var implementors = {};
+implementors["paperclip_core"] = [{"text":"impl <a class=\"trait\" href=\"https://doc.rust-lang.org/nightly/alloc/string/trait.ToString.html\" title=\"trait alloc::string::ToString\">ToString</a> for <a class=\"enum\" href=\"paperclip_core/v2/models/enum.DataTypeFormat.html\" title=\"enum paperclip_core::v2::models::DataTypeFormat\">DataTypeFormat</a>","synthetic":false,"types":["paperclip_core::v2::models::DataTypeFormat"]}];
+if (window.register_implementors) {window.register_implementors(implementors);} else {window.pending_implementors = implementors;}})()
