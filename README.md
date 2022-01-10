@@ -18,7 +18,7 @@ You may be interested in:
 
  - [Examples and Usage](https://paperclip-rs.github.io/paperclip).
  - [Features being worked on](https://github.com/paperclip-rs/paperclip/projects).
- - [API documentation](hhttps://paperclip-rs.github.io/paperclip/paperclip).
+ - [API documentation](https://paperclip-rs.github.io/paperclip/paperclip).
 
 ## Developing locally
 

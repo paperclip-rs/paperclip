@@ -151,7 +151,7 @@ pub trait Emitter: Sized {
         let mut name = String::new();
         parents.iter().for_each(|s| {
             name.push_str(s);
-            name.push_str("_");
+            name.push('_');
         });
 
         if name.is_empty() {
@@ -204,11 +204,10 @@ pub trait Emitter: Sized {
     /// **NOTE:** This should set `.rs` extension to the leaf path component.
     fn unknown_op_mod_path(
         &self,
-        path: &str,
-        method: HttpMethod,
-        op: &ResolvableOperation<Self::Definition>,
+        _path: &str,
+        _method: HttpMethod,
+        _op: &ResolvableOperation<Self::Definition>,
     ) -> Result<PathBuf, Error> {
-        let _ = (path, method, op);
         let state = self.state();
         let mut path = state.working_dir.clone();
         path.push("miscellaneous");
@@ -224,11 +223,10 @@ pub trait Emitter: Sized {
     /// creating `ApiObject`. Others may be overridden.
     fn unknown_op_object(
         &self,
-        path: &str,
-        method: HttpMethod,
-        op: &ResolvableOperation<Self::Definition>,
+        _path: &str,
+        _method: HttpMethod,
+        _op: &ResolvableOperation<Self::Definition>,
     ) -> Result<ApiObject, Error> {
-        let _ = (path, method, op);
         Ok(ApiObject {
             name: "Miscellaneous".into(),
             description: Some(
@@ -246,6 +244,7 @@ pub trait Emitter: Sized {
     /// inside Rust modules in the configured working directory.
     ///
     /// **NOTE:** Not meant to be overridden.
+    #[allow(clippy::field_reassign_with_default)]
     fn generate(&self, api: &ResolvableApi<Self::Definition>) -> Result<(), Error> {
         let state = self.state();
         state.reset_internal_fields();
@@ -281,8 +280,7 @@ pub trait Emitter: Sized {
             let mut u = state.base_url.borrow_mut();
             if let Some(host) = parts.next() {
                 Host::parse(host).map_err(|e| PaperClipError::InvalidHost(h.into(), e))?;
-                u.set_host(Some(&host))
-                    .expect("expected valid host in URL?");
+                u.set_host(Some(host)).expect("expected valid host in URL?");
             }
 
             if let Some(port) = parts.next() {
@@ -374,7 +372,7 @@ impl<'a, E> Deref for CodegenEmitter<'a, E> {
     type Target = E;
 
     fn deref(&self) -> &E {
-        &self.0
+        self.0
     }
 }
 
@@ -513,7 +511,7 @@ where
 
         let name = self.def_name(def).or_else(|e| {
             // anonymous object
-            self.def_anon_name(def, &ctx.parents).ok_or_else(|| e)
+            self.def_anon_name(def, &ctx.parents).ok_or(e)
         })?;
 
         let mut obj = ApiObject::with_name(&name);
@@ -629,7 +627,7 @@ where
     ) -> Result<EmittedUnit, Error> {
         let name = self.def_name(def).or_else(|e| {
             // anonymous object
-            self.def_anon_name(def, &ctx.parents).ok_or_else(|| e)
+            self.def_anon_name(def, &ctx.parents).ok_or(e)
         })?;
         let mut obj = ApiObject::with_name(&name);
         obj.description = def.description().map(String::from);
@@ -805,11 +803,7 @@ where
         // If we have unused params which don't exist in the method-specific
         // params (which take higher precedence), then we can copy those inside.
         for global_param in unused_params {
-            if params
-                .iter()
-                .find(|p| p.name == global_param.name)
-                .is_none()
-            {
+            if !params.iter().any(|p| p.name == global_param.name) {
                 params.push(global_param.clone());
             }
         }
@@ -988,7 +982,7 @@ where
             .or_insert_with(Default::default);
 
         let mut response_contains_any = false;
-        let response_ty_path = if let Some(s) = Self::get_2xx_response_schema(&op) {
+        let response_ty_path = if let Some(s) = Self::get_2xx_response_schema(op) {
             let schema = &*s.read();
             response_contains_any = schema.contains_any();
             Some(
@@ -1031,7 +1025,7 @@ where
         params: Vec<Parameter>,
     ) -> Result<(), Error> {
         // Let's try from the response maybe...
-        let s = match Self::get_2xx_response_schema(&op) {
+        let s = match Self::get_2xx_response_schema(op) {
             Some(s) => s,
             None => {
                 warn!(
