@@ -86,7 +86,6 @@
 <span id="83">83</span>
 <span id="84">84</span>
 <span id="85">85</span>
-<span id="86">86</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Code generation for OpenAPI v2.</span>
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
@@ -143,6 +142,7 @@
 
 <span class="doccomment">/// Metadata for generating a crate.</span>
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
+<span class="attribute">#[<span class="ident">non_exhaustive</span>]</span>
 <span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">CrateMeta</span> {
     <span class="doccomment">/// Name of the crate. If this is not specified, then the name of the</span>
     <span class="doccomment">/// working directory is assumed to be crate name.</span>
@@ -155,8 +155,6 @@
     <span class="kw">pub</span> <span class="ident">mode</span>: <span class="ident">EmitMode</span>,
     <span class="doccomment">/// Whether or not to make this a root crate.</span>
     <span class="kw">pub</span> <span class="ident">no_root</span>: <span class="ident">bool</span>,
-    <span class="comment">// Marker to avoid potential breakage when more public fields come in.</span>
-    <span class="ident">_marker</span>: (),
 }
 
 <span class="doccomment">/// Mode of codegen (module, crate or CLI app).</span>
