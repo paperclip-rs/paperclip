@@ -273,13 +273,13 @@ pub mod util {
         for ty in &*types {
             content.push_str("\npub struct Missing");
             content.push_str(ty);
-            content.push_str(";");
+            content.push(';');
             content.push_str("\npub struct ");
             content.push_str(ty);
             content.push_str("Exists;");
         }
 
-        content.push_str("\n");
+        content.push('\n');
         self.write_contents(&content, &module)?;
 
         module.set_file_name("util.rs");
@@ -482,7 +482,7 @@ impl EmitterState {
                 if let Some(e) = email {
                     name.push_str(" <");
                     name.push_str(&e);
-                    name.push_str(">");
+                    name.push('>');
                 }
 
                 meta.authors = Some(vec![name]);

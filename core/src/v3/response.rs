@@ -27,8 +27,7 @@ impl From<OperationResponse<'_>> for openapiv3::Response {
                             .response
                             .schema
                             .as_ref()
-                            .map(|s| s.data_type.clone().map(|d| d == v2::DataType::File))
-                            .flatten()
+                            .and_then(|s| s.data_type.map(|d| d == v2::DataType::File))
                             .unwrap_or_default();
                         let media = openapiv3::MediaType {
                             schema: Some(response.into()),

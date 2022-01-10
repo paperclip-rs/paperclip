@@ -384,7 +384,7 @@ where
                             HttpResponse::Ok().body(
                                 SWAGGER_DIST
                                     .get_file(filename)
-                                    .expect(&format!("Failed to get file {}", filename))
+                                    .unwrap_or_else(|| panic!("Failed to get file {}", filename))
                                     .contents(),
                             )
                         }
@@ -398,10 +398,10 @@ where
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
         #[cfg(feature = "v3")]
-        self.spec_v3.clone().map(|v3| {
+        if let Some(v3) = self.spec_v3 {
             let mut v3 = v3.write();
             *v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().clone());
-        });
+        }
         self.inner.expect("missing app?")
     }
 
