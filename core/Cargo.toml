@@ -4,10 +4,10 @@ version = "0.4.1"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "Core types and traits for paperclip OpenAPI tooling library"
-documentation = "https://paperclip.waffles.space/paperclip_core"
+documentation = "https://paperclip-rs.github.io/paperclip/paperclip_core"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/wafflespeanut/paperclip"
-repository = "https://github.com/wafflespeanut/paperclip"
+homepage = "https://github.com/paperclip-rs/paperclip"
+repository = "https://github.com/paperclip-rs/paperclip"
 
 [dependencies]
 paperclip-macros = { path = "../macros", version = "0.5.0" }

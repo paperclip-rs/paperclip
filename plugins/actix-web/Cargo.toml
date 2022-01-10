@@ -4,10 +4,10 @@ version = "0.4.2"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "Paperclip OpenAPI plugin for actix-web framework"
-documentation = "https://paperclip.waffles.space/paperclip_actix"
+documentation = "https://paperclip-rs.github.io/paperclip/paperclip_actix"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/wafflespeanut/paperclip"
-repository = "https://github.com/wafflespeanut/paperclip"
+homepage = "https://github.com/paperclip-rs/paperclip"
+repository = "https://github.com/paperclip-rs/paperclip"
 
 [dependencies]
 paperclip-core = { path = "../../core", version = "0.4.0", optional = true }
