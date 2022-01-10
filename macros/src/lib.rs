@@ -1,4 +1,4 @@
-//! Convenience macros for [paperclip](https://github.com/wafflespeanut/paperclip).
+//! Convenience macros for [paperclip](https://github.com/paperclip-rs/paperclip).
 //!
 //! You shouldn't need to depend on this, because the stuff here is
 //! already exposed by the corresponding crates.
@@ -27,7 +27,7 @@ use syn::{
 
 /// Converts your struct to support deserializing from an OpenAPI v2
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
-/// object ([example](https://paperclip.waffles.space/paperclip/v2/)). This adds the necessary fields (in addition to your own fields) and implements the
+/// object ([example](https://paperclip-rs.github.io/paperclip/paperclip/v2/)). This adds the necessary fields (in addition to your own fields) and implements the
 /// `Schema` trait for parsing and codegen.
 #[cfg(feature = "v2")]
 #[proc_macro_attribute]

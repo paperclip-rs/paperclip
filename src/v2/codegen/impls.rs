@@ -14,7 +14,7 @@ use std::{
 };
 
 // Using Debug directly to escape/format strings (so they can be put safely in a YAML property) is broken in Rust < 1.53.0
-// See https://github.com/wafflespeanut/paperclip/pull/315#issuecomment-823918807
+// See https://github.com/paperclip-rs/paperclip/pull/315#issuecomment-823918807
 // See https://github.com/rust-lang/rust/issues/83046
 // The following code:
 //   - tests (once) if this issue exists in the current context (depends on which version of rustc was used)

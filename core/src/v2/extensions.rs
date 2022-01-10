@@ -64,7 +64,7 @@ pub struct Coders(BTreeMap<MediaRange, Arc<Coder>>);
 impl Coders {
     /// Returns the matching coder for the given media range (if any).
     ///
-    /// Matching algorithm from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126
+    /// Matching algorithm from <https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126>
     pub fn matching_coder(&self, ty: &MediaRange) -> Option<Arc<Coder>> {
         self.0
             .get(ty)

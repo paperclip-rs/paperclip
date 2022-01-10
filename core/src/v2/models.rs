@@ -110,7 +110,7 @@ pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultResponseRaw, DefaultSch
 
 /// OpenAPI v2 (swagger) spec generic over parameter and schema.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Api<P, R, S> {
     pub swagger: Version,
@@ -225,14 +225,14 @@ use crate as paperclip; // hack for proc macro
 
 /// Default schema if your schema doesn't have any custom fields.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject>
 #[api_v2_schema_struct]
 #[derive(Clone, Debug, Serialize, Deserialize)]
 pub struct DefaultSchema;
 
 /// Info object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Info {
     pub version: String,
@@ -247,7 +247,7 @@ pub struct Info {
 
 /// Contact object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Contact {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -260,7 +260,7 @@ pub struct Contact {
 
 /// License object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct License {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -271,7 +271,7 @@ pub struct License {
 
 /// Security Scheme object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct SecurityScheme {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -325,7 +325,7 @@ impl SecurityScheme {
 
 /// Tag object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#tag-object
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#tag-object>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Tag {
     pub name: String,
@@ -338,7 +338,7 @@ pub struct Tag {
 
 /// External Documentation object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#external-documentation-object
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#external-documentation-object>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct ExternalDocs {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -354,7 +354,7 @@ pub type DefaultPathItemRaw = PathItem<DefaultParameterRaw, DefaultResponseRaw>;
 
 /// Path item object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct PathItem<P, R> {
     #[serde(flatten, default = "BTreeMap::default")]
@@ -417,7 +417,7 @@ pub type DefaultParameterRaw = Parameter<DefaultSchemaRaw>;
 
 /// Request parameter object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Parameter<S> {
@@ -470,7 +470,7 @@ pub struct Parameter<S> {
 
 /// Items object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 #[serde(rename_all = "camelCase")]
 pub struct Items {
@@ -617,7 +617,7 @@ pub type DefaultOperationRaw = Operation<DefaultParameterRaw, DefaultResponseRaw
 
 /// Operation object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct Operation<P, R> {
@@ -675,7 +675,7 @@ impl<S> Operation<Parameter<S>, Response<S>> {
 
 /// Reference object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
 pub struct Reference {
     #[serde(rename = "$ref")]
@@ -700,7 +700,7 @@ pub type DefaultResponseRaw = Response<DefaultSchemaRaw>;
 
 /// Response object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Response<S> {
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -713,7 +713,7 @@ pub struct Response<S> {
 
 /// Header object.
 ///
-/// https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#headerObject
+/// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#headerObject>
 #[derive(Clone, Debug, Default, Serialize, Deserialize)]
 pub struct Header {
     #[serde(skip_serializing_if = "Option::is_none")]
