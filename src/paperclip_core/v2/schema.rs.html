@@ -738,9 +738,9 @@
 <span class="doccomment">/// Represents a OpenAPI v2 schema object convertible. This is auto-implemented by</span>
 <span class="doccomment">/// framework-specific macros:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// - [`Apiv2Schema`](https://paperclip.waffles.space/paperclip_actix/derive.Apiv2Schema.html)</span>
+<span class="doccomment">/// - [`Apiv2Schema`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Schema.html)</span>
 <span class="doccomment">/// for schema objects.</span>
-<span class="doccomment">/// - [`Apiv2Security`](https://paperclip.waffles.space/paperclip_actix/derive.Apiv2Security.html)</span>
+<span class="doccomment">/// - [`Apiv2Security`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)</span>
 <span class="doccomment">/// for security scheme objects.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is implemented for primitive types by default.</span>
@@ -952,7 +952,7 @@
 <span class="doccomment">/// Represents a OpenAPI v2 operation convertible. This is auto-implemented by</span>
 <span class="doccomment">/// framework-specific macros:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// - [`paperclip_actix::api_v2_operation`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_operation.html).</span>
+<span class="doccomment">/// - [`paperclip_actix::api_v2_operation`](https://paperclip-rs.github.io/paperclip/paperclip_actix/attr.api_v2_operation.html).</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// **NOTE:** The type parameters specified here aren&#39;t used by the trait itself,</span>
 <span class="doccomment">/// but *can* be used for constraining stuff in framework-related impls.</span>
@@ -970,7 +970,7 @@
 <span class="doccomment">/// Represents a OpenAPI v2 error convertible. This is auto-implemented by</span>
 <span class="doccomment">/// framework-specific macros:</span>
 <span class="doccomment">///</span>
-<span class="doccomment">/// - [`paperclip_actix::api_v2_errors`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_errors.html).</span>
+<span class="doccomment">/// - [`paperclip_actix::api_v2_errors`](https://paperclip-rs.github.io/paperclip/paperclip_actix/attr.api_v2_errors.html).</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Apiv2Errors</span> {
     <span class="kw">const</span> <span class="ident">ERROR_MAP</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> [(<span class="ident">u16</span>, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>)] <span class="op">=</span> <span class="kw-2">&amp;</span>[];
     <span class="kw">fn</span> <span class="ident">update_error_definitions</span>(<span class="ident">_op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {}

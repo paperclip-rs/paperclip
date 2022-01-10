@@ -268,12 +268,12 @@
 <pre><code>cargo install paperclip --features cli
 </code></pre><h2 id="generate-client-library-from-cli">Generate client library from CLI</h2>
 <p>You can generate the client library for some spec using the following command:</p>
-<pre><code>wget https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+<pre><code>wget https://raw.githubusercontent.com/paperclip-rs/paperclip/master/tests/pet-v2.yaml
 paperclip --api v2 -o pet pet-v2.yaml
 </code></pre><p>This generates the client library for that spec in <code>./pet</code> directory.</p>
 <h2 id="generate-console-from-cli">Generate console from CLI</h2>
 <p>You can also generate a console for your API using the CLI by passing the <code>--cli</code> flag.</p>
-<pre><code>wget https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml
+<pre><code>wget https://raw.githubusercontent.com/paperclip-rs/paperclip/master/tests/pet-v2.yaml
 paperclip --api v2 -o pet --cli pet-v2.yaml
 </code></pre><h3 id="build-and-run-the-console">Build and run the console</h3>
 <blockquote>
@@ -377,7 +377,7 @@ POST http://localhost:8000/pets
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"CLI","level":"1.2","depth":1,"next":{"title":"Build script","level":"1.3","depth":1,"path":"build-script.md","ref":"build-script.md","articles":[{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]}]},"previous":{"title":"Overview","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"cli.md","mtime":"2022-01-10T00:08:36.172Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-10T00:11:47.398Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"CLI","level":"1.2","depth":1,"next":{"title":"Build script","level":"1.3","depth":1,"path":"build-script.md","ref":"build-script.md","articles":[{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]}]},"previous":{"title":"Overview","level":"1.1","depth":1,"path":"README.md","ref":"README.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"cli.md","mtime":"2022-01-10T00:29:58.547Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-01-10T00:33:33.192Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
