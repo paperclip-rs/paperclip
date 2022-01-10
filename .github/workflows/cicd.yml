@@ -1,6 +1,9 @@
-name: cicd
+name: Build and Test
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
   schedule:
     - cron: "0 7 * * *"

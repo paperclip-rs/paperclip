@@ -2,6 +2,7 @@
 
 ![Build Status](https://github.com/paperclip-rs/paperclip/actions/workflows/cicd.yml/badge.svg)
 ![Linter Status](https://github.com/paperclip-rs/paperclip/actions/workflows/linter.yml/badge.svg)
+[![Usage docs](https://img.shields.io/badge/quickstart-blue.svg)](https://paperclip-rs.github.io/paperclip)
 [![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip-rs.github.io/paperclip/paperclip)
 [![Crates.io](https://img.shields.io/crates/v/paperclip.svg)](https://crates.io/crates/paperclip)
 
