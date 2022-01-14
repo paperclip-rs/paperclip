@@ -776,7 +776,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     };
 
     let gen = quote! {
-        impl #name #ty_generics #where_clause {
+        impl #impl_generics #ty_generics #where_clause {
             #paperclip_schema_name_def
         }
 
