@@ -1,4 +1,5 @@
 #![cfg(any(feature = "actix2", feature = "actix3"))]
+#![allow(clippy::return_self_not_must_use)]
 
 #[cfg(feature = "actix2")]
 extern crate actix_web2 as actix_web;
@@ -45,7 +46,7 @@ pub struct App<T, B> {
 }
 
 #[cfg(feature = "swagger-ui")]
-static SWAGGER_DIST: Dir = include_dir!("./swagger-ui/dist");
+static SWAGGER_DIST: Dir = include_dir!("$CARGO_MANIFEST_DIR/swagger-ui/dist");
 
 /// Extension trait for actix-web applications.
 pub trait OpenApiExt<T, B> {
@@ -383,7 +384,7 @@ where
                             HttpResponse::Ok().body(
                                 SWAGGER_DIST
                                     .get_file(filename)
-                                    .expect(&format!("Failed to get file {}", filename))
+                                    .unwrap_or_else(|| panic!("Failed to get file {}", filename))
                                     .contents(),
                             )
                         }
@@ -397,10 +398,10 @@ where
     /// Builds and returns the `actix_web::App`.
     pub fn build(self) -> actix_web::App<T, B> {
         #[cfg(feature = "v3")]
-        self.spec_v3.clone().map(|v3| {
+        if let Some(v3) = self.spec_v3 {
             let mut v3 = v3.write();
             *v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().clone());
-        });
+        }
         self.inner.expect("missing app?")
     }
 

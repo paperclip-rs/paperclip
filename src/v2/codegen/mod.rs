@@ -54,6 +54,7 @@ impl<S: Schema + Debug> Emitter for DefaultEmitter<S> {
 
 /// Metadata for generating a crate.
 #[derive(Debug, Default, Clone)]
+#[non_exhaustive]
 pub struct CrateMeta {
     /// Name of the crate. If this is not specified, then the name of the
     /// working directory is assumed to be crate name.
@@ -66,8 +67,6 @@ pub struct CrateMeta {
     pub mode: EmitMode,
     /// Whether or not to make this a root crate.
     pub no_root: bool,
-    // Marker to avoid potential breakage when more public fields come in.
-    _marker: (),
 }
 
 /// Mode of codegen (module, crate or CLI app).

@@ -1,5 +1,9 @@
-name: linter
+name: Lint
+
 on:
+  push:
+    branches:
+      - master
   pull_request:
   schedule:
     - cron: "0 7 * * *"
@@ -14,6 +18,8 @@ jobs:
           - nightly
     steps:
       - uses: actions/checkout@v2
+        with:
+          submodules: recursive
       - uses: actions-rs/toolchain@v1
         with:
           components: clippy
@@ -22,7 +28,7 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all --features "actix" -- -D clippy::all
+          args: --all --features "actix cli chrono url uuid swagger-ui v3" -- -D clippy::all
   
   fmt:
     name: rustfmt

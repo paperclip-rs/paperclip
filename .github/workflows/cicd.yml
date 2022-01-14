@@ -1,6 +1,9 @@
-name: cicd
+name: Build and Test
 
 on:
+  push:
+    branches:
+      - master
   pull_request:
   schedule:
     - cron: "0 7 * * *"
@@ -80,10 +83,6 @@ jobs:
         with:
           command: test
           args: --all --features "actix2 cli chrono url uuid swagger-ui v3"
-
-      - name: Run tests
-        timeout-minutes: 40
-        run: make test
 
       - name: Install cargo-cache
         continue-on-error: true

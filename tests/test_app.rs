@@ -402,7 +402,7 @@ fn test_params() {
         p.data.is_empty()
     }
 
-    // issue: https://github.com/wafflespeanut/paperclip/issues/216
+    // issue: https://github.com/paperclip-rs/paperclip/issues/216
     #[api_v2_operation]
     async fn check_data_ref_async(
         app: web::Data<AppState>,

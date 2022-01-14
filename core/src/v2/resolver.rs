@@ -73,7 +73,7 @@ where
         // Resolve path operations first. We may encounter anonymous
         // definitions along the way, which we'll insert into `self.defs`
         // and we'll have to resolve them anyway.
-        let mut paths = mem::replace(&mut self.paths, BTreeMap::new());
+        let mut paths = mem::take(&mut self.paths);
         paths.iter_mut().try_for_each(|(path, map)| {
             log::trace!("Checking path: {}", path);
             self.resolve_operations(path, map)
