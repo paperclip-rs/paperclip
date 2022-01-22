@@ -3150,7 +3150,7 @@ mod module_path_in_definition_name {
             #[derive(serde::Serialize, paperclip::actix::Apiv2Schema)]
             pub struct Baz {
                 pub a: i32,
-                pub b: i32
+                pub b: i32,
             }
         }
 
@@ -3158,7 +3158,7 @@ mod module_path_in_definition_name {
             #[derive(serde::Serialize, paperclip::actix::Apiv2Schema)]
             pub struct Baz {
                 pub a: String,
-                pub b: bool
+                pub b: bool,
             }
         }
     }
@@ -3168,108 +3168,106 @@ mod module_path_in_definition_name {
 #[cfg(feature = "path-in-definition")]
 fn test_module_path_in_definition_name() {
     use paperclip::actix::OpenApiExt;
-    use paperclip::actix::{web, api_v2_operation};
+    use paperclip::actix::{api_v2_operation, web};
 
     #[api_v2_operation]
     fn a() -> web::Json<module_path_in_definition_name::foo::bar::Baz> {
-        web::Json(module_path_in_definition_name::foo::bar::Baz {
-            a: 10,
-            b: 10
-        })
+        web::Json(module_path_in_definition_name::foo::bar::Baz { a: 10, b: 10 })
     }
 
     #[api_v2_operation]
     fn b() -> web::Json<module_path_in_definition_name::foo::other_bar::Baz> {
         web::Json(module_path_in_definition_name::foo::other_bar::Baz {
             a: String::default(),
-            b: true
+            b: true,
         })
     }
 
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/spec")
+                .route("/a", web::get().to(a))
+                .route("/b", web::get().to(b))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/spec", addr))
+                .send()
+                .expect("request failed?");
 
-
-    run_and_check_app(|| {
-        App::new()
-            .wrap_api()
-            .with_json_spec_at("/spec")
-            .route("/a", web::get().to(a))
-            .route("/b", web::get().to(b))
-            .build()
-    }, |addr| {
-        let resp = CLIENT
-            .get(&format!("http://{}/spec", addr))
-            .send()
-            .expect("request failed?");
-
-        check_json(
-            resp,
-            json!({
-                "definitions": {
-                  "module_path_in_definition_name_foo_bar_Baz": {
-                    "properties": {
-                      "a": {
-                        "format": "int32",
-                        "type": "integer"
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                      "module_path_in_definition_name_foo_bar_Baz": {
+                        "properties": {
+                          "a": {
+                            "format": "int32",
+                            "type": "integer"
+                          },
+                          "b": {
+                            "format": "int32",
+                            "type": "integer"
+                          }
+                        },
+                        "required": [
+                          "a",
+                          "b"
+                        ],
+                        "type": "object"
                       },
-                      "b": {
-                        "format": "int32",
-                        "type": "integer"
+                      "module_path_in_definition_name_foo_other_bar_Baz": {
+                        "properties": {
+                          "a": {
+                            "type": "string"
+                          },
+                          "b": {
+                            "type": "boolean"
+                          }
+                        },
+                        "required": [
+                          "a",
+                          "b"
+                        ],
+                        "type": "object"
                       }
                     },
-                    "required": [
-                      "a",
-                      "b"
-                    ],
-                    "type": "object"
-                  },
-                  "module_path_in_definition_name_foo_other_bar_Baz": {
-                    "properties": {
-                      "a": {
-                        "type": "string"
-                      },
-                      "b": {
-                        "type": "boolean"
-                      }
+                    "info": {
+                      "title": "",
+                      "version": ""
                     },
-                    "required": [
-                      "a",
-                      "b"
-                    ],
-                    "type": "object"
-                  }
-                },
-                "info": {
-                  "title": "",
-                  "version": ""
-                },
-                "paths": {
-                  "/a": {
-                    "get": {
-                      "responses": {
-                        "200": {
-                          "description": "OK",
-                          "schema": {
-                            "$ref": "#/definitions/module_path_in_definition_name_foo_bar_Baz"
+                    "paths": {
+                      "/a": {
+                        "get": {
+                          "responses": {
+                            "200": {
+                              "description": "OK",
+                              "schema": {
+                                "$ref": "#/definitions/module_path_in_definition_name_foo_bar_Baz"
+                              }
+                            }
+                          }
+                        }
+                      },
+                      "/b": {
+                        "get": {
+                          "responses": {
+                            "200": {
+                              "description": "OK",
+                              "schema": {
+                                "$ref": "#/definitions/module_path_in_definition_name_foo_other_bar_Baz"
+                              }
+                            }
                           }
                         }
                       }
-                    }
-                  },
-                  "/b": {
-                    "get": {
-                      "responses": {
-                        "200": {
-                          "description": "OK",
-                          "schema": {
-                            "$ref": "#/definitions/module_path_in_definition_name_foo_other_bar_Baz"
-                          }
-                        }
-                      }
-                    }
-                  }
-                },
-                "swagger": "2.0"
-            })
-        )
-    })
+                    },
+                    "swagger": "2.0"
+                }),
+            )
+        },
+    )
 }
