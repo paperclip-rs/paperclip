@@ -3167,8 +3167,7 @@ mod module_path_in_definition_name {
 #[test]
 #[cfg(feature = "path-in-definition")]
 fn test_module_path_in_definition_name() {
-    use paperclip::actix::OpenApiExt;
-    use paperclip::actix::{api_v2_operation, web};
+    use paperclip::actix::{api_v2_operation, web, OpenApiExt};
 
     #[api_v2_operation]
     fn a() -> web::Json<module_path_in_definition_name::foo::bar::Baz> {
