@@ -1106,7 +1106,7 @@ fn extract_openapi_attrs(
     field_attrs: &'_ [Attribute],
 ) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + '_ {
     field_attrs.iter().filter_map(|a| match a.parse_meta() {
-        Ok(Meta::List(list)) if list.path.is_ident("openapi") => Some(list.nested),
+        Ok(Meta::List(list)) if list.path.is_ident(SCHEMA_MACRO_ATTR) => Some(list.nested),
         _ => None,
     })
 }
