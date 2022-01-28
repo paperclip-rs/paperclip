@@ -439,6 +439,14 @@ impl_path_tuple!(A, B);
 impl_path_tuple!(A, B, C);
 impl_path_tuple!(A, B, C, D);
 impl_path_tuple!(A, B, C, D, E);
+impl_path_tuple!(A, B, C, D, E, F);
+impl_path_tuple!(A, B, C, D, E, F, G);
+impl_path_tuple!(A, B, C, D, E, F, G, H);
+impl_path_tuple!(A, B, C, D, E, F, G, H, I);
+impl_path_tuple!(A, B, C, D, E, F, G, H, I, J);
+impl_path_tuple!(A, B, C, D, E, F, G, H, I, J, K);
+impl_path_tuple!(A, B, C, D, E, F, G, H, I, J, K, L);
+impl_path_tuple!(A, B, C, D, E, F, G, H, I, J, K, L, M);
 
 /// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).
 pub struct ResponderWrapper<T>(pub T);
