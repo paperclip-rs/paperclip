@@ -31,6 +31,10 @@ build:
 
 test:
 	cargo test --all --features "actix cli chrono uuid swagger-ui"
+
+	# We test this one seperately as it affects the generated spec, which'd fail the other tests
+	cargo test test_module_path_in_definition_name --features "actix cli chrono uuid swagger-ui path-in-definition"
+
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check
 	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check

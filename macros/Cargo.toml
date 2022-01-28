@@ -28,3 +28,4 @@ strum_macros = { version = "0.23", optional = true }
 actix = ["heck", "http", "lazy_static", "strum", "strum_macros"]
 v2 = []
 nightly = []
+path-in-definition = []
