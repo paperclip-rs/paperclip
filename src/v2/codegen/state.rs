@@ -9,9 +9,9 @@ use crate::{
     v2::models::{Coders, SpecFormat},
 };
 use anyhow::Error;
-use heck::CamelCase;
+use heck::ToPascalCase;
 #[cfg(feature = "cli")]
-use heck::SnakeCase;
+use heck::ToSnakeCase;
 use itertools::Itertools;
 use url_dep::Url;
 
@@ -113,7 +113,7 @@ impl EmitterState {
             .map(|(r, c)| (r.0.as_ref(), c))
             .map(|(r, c)| MediaCoder {
                 range: r.into(),
-                error_variant: r.replace('*', "wildcard").to_camel_case(),
+                error_variant: r.replace('*', "wildcard").to_pascal_case(),
                 error_ty_path: c.error_path.clone(),
                 decoder: c.decoder_path.clone(),
             })
@@ -220,7 +220,7 @@ pub mod {name} {{
                     .struct_fields_iter()
                     .filter(|f| f.prop.is_required())
                     .for_each(|f| {
-                        unit_types.insert(object::to_camel_case(f.name));
+                        unit_types.insert(object::to_pascal_case(f.name));
                     });
 
                 builder_content.push('\n');

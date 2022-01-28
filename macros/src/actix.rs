@@ -1103,7 +1103,7 @@ fn handle_unnamed_field_struct(
             }
         }
     } else {
-        for (inner_field_id, field) in (&fields.unnamed).into_iter().enumerate() {
+        for (inner_field_id, field) in fields.unnamed.iter().enumerate() {
             if SerdeSkip::exists(&field.attrs) {
                 continue;
             }
@@ -1388,12 +1388,12 @@ impl SerdeRename {
         match self {
             SerdeRename::Lower => name.to_lowercase(),
             SerdeRename::Upper => name.to_uppercase(),
-            SerdeRename::Pascal => name.to_camel_case(),
-            SerdeRename::Camel => name.to_mixed_case(),
+            SerdeRename::Pascal => name.to_pascal_case(),
+            SerdeRename::Camel => name.to_lower_camel_case(),
             SerdeRename::Snake => name.to_snake_case(),
-            SerdeRename::ScreamingSnake => name.to_snake_case().to_uppercase(),
+            SerdeRename::ScreamingSnake => name.to_shouty_snake_case(),
             SerdeRename::Kebab => name.to_kebab_case(),
-            SerdeRename::ScreamingKebab => name.to_kebab_case().to_uppercase(),
+            SerdeRename::ScreamingKebab => name.to_shouty_kebab_case(),
         }
     }
 }

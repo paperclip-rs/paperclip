@@ -5,7 +5,7 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{CollectionFormat, ParameterIn, JSON_CODER, JSON_MIME};
-use heck::{KebabCase, SnakeCase};
+use heck::{ToKebabCase, ToSnakeCase};
 
 use std::{
     fmt::{self, Display, Write},
@@ -512,7 +512,7 @@ where
 
                     f.write_str(self.0.helper_module_prefix)?;
                     f.write_str("generics::")?;
-                    f.write_str(&object::to_camel_case(n))?;
+                    f.write_str(&object::to_pascal_case(n))?;
                     f.write_str("Exists")
                 })?;
 

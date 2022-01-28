@@ -24,7 +24,7 @@ paperclip-macros = { path = "macros", version = "0.5.1", optional = true }
 
 env_logger = { version = "0.8", optional = true }
 git2 = { version = "0.13", optional = true }
-heck = { version = "0.3", optional = true }
+heck = { version = "0.4", optional = true }
 http = { version = "0.2", optional = true }
 itertools = "0.10"
 log = { version = "0.4", optional = true }

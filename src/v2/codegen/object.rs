@@ -10,7 +10,7 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
-use heck::{CamelCase, SnakeCase};
+use heck::{ToPascalCase, ToSnakeCase};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 
@@ -237,9 +237,9 @@ pub fn to_snake_case(name: &str) -> String {
     new_name.to_snake_case()
 }
 
-pub fn to_camel_case(name: &str) -> String {
+pub fn to_pascal_case(name: &str) -> String {
     let new_name = AT_REGEX.replace(name, "at_");
-    new_name.to_camel_case()
+    new_name.to_pascal_case()
 }
 
 impl ApiObject {
@@ -602,14 +602,14 @@ impl<'a> ApiObjectBuilder<'a> {
                     TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&to_camel_case(field.name))?;
+                        f.write_str(&to_pascal_case(field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be changed to `{Name}Exists`
                     TypeParameters::ChangeAll => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&to_camel_case(field.name))?;
+                        f.write_str(&to_pascal_case(field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be reset to `Missing{Name}`
@@ -621,7 +621,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     _ => (),
                 }
 
-                f.write_str(&to_camel_case(field.name))
+                f.write_str(&to_pascal_case(field.name))
             })?;
 
         if self.needs_any {
@@ -710,11 +710,7 @@ impl<'a> ApiObjectBuilder<'a> {
             delim_idx -= 1;
             new_ty.push_str(&ty[..idx]);
             new_ty.push_str(", ");
-            write!(
-                &mut new_ty,
-                "{}util::{:?}",
-                module_prefix, delims[delim_idx]
-            )?;
+            write!(new_ty, "{}util::{:?}", module_prefix, delims[delim_idx])?;
             new_ty.push('>');
             if idx == ty.len() - 1 {
                 break;
@@ -845,7 +841,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         // Write struct fields and the associated markers if needed.
         self.struct_fields_iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let (cc, sk) = (to_camel_case(field.name), to_snake_case(field.name));
+                let (cc, sk) = (to_pascal_case(field.name), to_snake_case(field.name));
                 if needs_container {
                     self.write_parameter_if_required(
                         field.prop,
