@@ -1605,6 +1605,62 @@
 <span id="1600">1600</span>
 <span id="1601">1601</span>
 <span id="1602">1602</span>
+<span id="1603">1603</span>
+<span id="1604">1604</span>
+<span id="1605">1605</span>
+<span id="1606">1606</span>
+<span id="1607">1607</span>
+<span id="1608">1608</span>
+<span id="1609">1609</span>
+<span id="1610">1610</span>
+<span id="1611">1611</span>
+<span id="1612">1612</span>
+<span id="1613">1613</span>
+<span id="1614">1614</span>
+<span id="1615">1615</span>
+<span id="1616">1616</span>
+<span id="1617">1617</span>
+<span id="1618">1618</span>
+<span id="1619">1619</span>
+<span id="1620">1620</span>
+<span id="1621">1621</span>
+<span id="1622">1622</span>
+<span id="1623">1623</span>
+<span id="1624">1624</span>
+<span id="1625">1625</span>
+<span id="1626">1626</span>
+<span id="1627">1627</span>
+<span id="1628">1628</span>
+<span id="1629">1629</span>
+<span id="1630">1630</span>
+<span id="1631">1631</span>
+<span id="1632">1632</span>
+<span id="1633">1633</span>
+<span id="1634">1634</span>
+<span id="1635">1635</span>
+<span id="1636">1636</span>
+<span id="1637">1637</span>
+<span id="1638">1638</span>
+<span id="1639">1639</span>
+<span id="1640">1640</span>
+<span id="1641">1641</span>
+<span id="1642">1642</span>
+<span id="1643">1643</span>
+<span id="1644">1644</span>
+<span id="1645">1645</span>
+<span id="1646">1646</span>
+<span id="1647">1647</span>
+<span id="1648">1648</span>
+<span id="1649">1649</span>
+<span id="1650">1650</span>
+<span id="1651">1651</span>
+<span id="1652">1652</span>
+<span id="1653">1653</span>
+<span id="1654">1654</span>
+<span id="1655">1655</span>
+<span id="1656">1656</span>
+<span id="1657">1657</span>
+<span id="1658">1658</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)</span>
 <span class="doccomment">//! OpenAPI plugin (exposed by paperclip with `actix` feature).</span>
 
@@ -2304,6 +2360,7 @@
     <span class="kw">let</span> <span class="ident">docs</span> <span class="op">=</span> <span class="ident">docs</span>.<span class="ident">trim</span>();
 
     <span class="kw">let</span> <span class="ident">props</span> <span class="op">=</span> <span class="ident">SerdeProps::from_item_attrs</span>(<span class="kw-2">&amp;</span><span class="ident">item_ast</span>.<span class="ident">attrs</span>);
+
     <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">item_ast</span>.<span class="ident">ident</span>;
 
     <span class="comment">// Add `Apiv2Schema` bound for impl if the type is generic.</span>
@@ -2350,26 +2407,81 @@
 
     <span class="kw">let</span> <span class="ident">schema_name</span> <span class="op">=</span> <span class="ident">extract_rename</span>(<span class="kw-2">&amp;</span><span class="ident">item_ast</span>.<span class="ident">attrs</span>).<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">name</span>.<span class="ident">to_string</span>());
     <span class="kw">let</span> <span class="ident">props_gen_empty</span> <span class="op">=</span> <span class="ident">props_gen</span>.<span class="ident">is_empty</span>();
-    <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="macro">quote!</span> {
-        <span class="kw">impl</span> #<span class="ident">impl_generics</span> <span class="ident">paperclip::v2::schema::Apiv2Schema</span> <span class="kw">for</span> #<span class="ident">name</span> #<span class="ident">ty_generics</span> #<span class="ident">where_clause</span> {
-            <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>);
 
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>))]</span>
+    <span class="kw">let</span> <span class="ident">default_schema_raw_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="ident">DefaultSchemaRaw</span> {
+            <span class="ident">name</span>: <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>.<span class="ident">into</span>()),
+            ..<span class="ident">Default::default</span>()
+        };
+    };
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>)]</span>
+    <span class="kw">let</span> <span class="ident">default_schema_raw_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="ident">DefaultSchemaRaw</span> {
+            <span class="ident">name</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::__paperclip_schema_name</span>()), <span class="comment">// Add name for later use.</span>
+            .. <span class="ident">Default::default</span>()
+        };
+    };
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>))]</span>
+    <span class="kw">let</span> <span class="ident">paperclip_schema_name_def</span> <span class="op">=</span> <span class="macro">quote!</span>();
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>)]</span>
+    <span class="kw">let</span> <span class="ident">paperclip_schema_name_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">fn</span> <span class="ident">__paperclip_schema_name</span>() -&gt; <span class="ident">String</span> {
+            <span class="comment">// The module path itself, e.g cratename::module</span>
+            <span class="kw">let</span> <span class="ident">full_module_path</span> <span class="op">=</span> <span class="macro">std::module_path!</span>().<span class="ident">to_string</span>();
+            <span class="comment">// We&#39;re not interested in the crate name, nor do we want :: as a seperator</span>
+            <span class="kw">let</span> <span class="ident">trimmed_module_path</span> <span class="op">=</span> <span class="ident">full_module_path</span>.<span class="ident">split</span>(<span class="string">&quot;::&quot;</span>)
+                .<span class="ident">enumerate</span>()
+                .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">index</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="kw-2">*</span><span class="ident">index</span> <span class="op">!</span><span class="op">=</span> <span class="number">0</span>) <span class="comment">// Skip the first element, i.e the crate name</span>
+                .<span class="ident">map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">component</span>)<span class="op">|</span> <span class="ident">component</span>)
+                .<span class="ident">collect</span>::<span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="kw">_</span><span class="op">&gt;</span><span class="op">&gt;</span>()
+                .<span class="ident">join</span>(<span class="string">&quot;_&quot;</span>);
+            <span class="macro">format!</span>(<span class="string">&quot;{}_{}&quot;</span>, <span class="ident">trimmed_module_path</span>, #<span class="ident">schema_name</span>)
+        }
+    };
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>))]</span>
+    <span class="kw">let</span> <span class="ident">const_name_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>);
+    };
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>)]</span>
+    <span class="kw">let</span> <span class="ident">const_name_def</span> <span class="op">=</span> <span class="macro">quote!</span>();
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>))]</span>
+    <span class="kw">let</span> <span class="ident">props_gen_empty_name_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="ident">schema</span>.<span class="ident">name</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>.<span class="ident">into</span>());
+    };
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;path-in-definition&quot;</span>)]</span>
+    <span class="kw">let</span> <span class="ident">props_gen_empty_name_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="ident">schema</span>.<span class="ident">name</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::__paperclip_schema_name</span>());
+    };
+
+    <span class="kw">let</span> <span class="ident">gen</span> <span class="op">=</span> <span class="macro">quote!</span> {
+        <span class="kw">impl</span> #<span class="ident">impl_generics</span> #<span class="ident">name</span> #<span class="ident">ty_generics</span> #<span class="ident">where_clause</span> {
+            #<span class="ident">paperclip_schema_name_def</span>
+        }
+
+        <span class="kw">impl</span> #<span class="ident">impl_generics</span> <span class="ident">paperclip::v2::schema::Apiv2Schema</span> <span class="kw">for</span> #<span class="ident">name</span> #<span class="ident">ty_generics</span> #<span class="ident">where_clause</span> {
+            #<span class="ident">const_name_def</span>
             <span class="kw">const</span> <span class="ident">DESCRIPTION</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> #<span class="ident">docs</span>;
 
             <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">paperclip::v2::models::DefaultSchemaRaw</span> {
                 <span class="kw">use</span> <span class="ident">paperclip::v2::models</span>::{<span class="ident">DataType</span>, <span class="ident">DataTypeFormat</span>, <span class="ident">DefaultSchemaRaw</span>};
                 <span class="kw">use</span> <span class="ident">paperclip::v2::schema::TypedData</span>;
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="ident">DefaultSchemaRaw</span> {
-                    <span class="ident">name</span>: <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>.<span class="ident">into</span>()), <span class="comment">// Add name for later use.</span>
-                    .. <span class="ident">Default::default</span>()
-                };
+                #<span class="ident">default_schema_raw_def</span>
+
                 #<span class="ident">props_gen</span>
                 <span class="comment">// props_gen may override the schema for unnamed structs with 1 element</span>
                 <span class="comment">// as it replaces the struct type with inner type.</span>
                 <span class="comment">// make sure we set the name properly if props_gen is not empty</span>
                 <span class="kw">if</span> <span class="op">!</span>#<span class="ident">props_gen_empty</span> {
-                    <span class="ident">schema</span>.<span class="ident">name</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>.<span class="ident">into</span>());
+                    #<span class="ident">props_gen_empty_name_def</span>
                 }
                 <span class="ident">schema</span>
             }
