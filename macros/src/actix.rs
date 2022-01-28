@@ -659,6 +659,29 @@ pub fn emit_v2_errors_overlay(attrs: TokenStream, input: TokenStream) -> TokenSt
     gen.into()
 }
 
+fn extract_rename(attrs: &[Attribute]) -> Option<String> {
+    let attrs = extract_openapi_attrs(attrs);
+    for attr in attrs.flat_map(|attr| attr.into_iter()) {
+        if let NestedMeta::Meta(Meta::NameValue(nv)) = attr {
+            if nv.path.is_ident("rename") {
+                if let Lit::Str(s) = nv.lit {
+                    return Some(s.value());
+                } else {
+                    emit_error!(
+                        nv.lit.span().unwrap(),
+                        format!(
+                            "`#[{}(rename = \"...\")]` expects a string argument",
+                            SCHEMA_MACRO_ATTR
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
+    None
+}
+
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
@@ -718,7 +741,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         ),
     };
 
-    let schema_name = name.to_string();
+    let schema_name = extract_rename(&item_ast.attrs).unwrap_or_else(|| name.to_string());
     let props_gen_empty = props_gen.is_empty();
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
@@ -1068,7 +1091,7 @@ fn extract_openapi_attrs(
     field_attrs: &'_ [Attribute],
 ) -> impl Iterator<Item = Punctuated<syn::NestedMeta, syn::token::Comma>> + '_ {
     field_attrs.iter().filter_map(|a| match a.parse_meta() {
-        Ok(Meta::List(list)) if list.path.is_ident("openapi") => Some(list.nested),
+        Ok(Meta::List(list)) if list.path.is_ident(SCHEMA_MACRO_ATTR) => Some(list.nested),
         _ => None,
     })
 }
