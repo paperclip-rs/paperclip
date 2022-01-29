@@ -18,7 +18,7 @@ use crate::{
     },
 };
 use anyhow::Error;
-use heck::{CamelCase, SnakeCase};
+use heck::{ToPascalCase, ToSnakeCase};
 use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;
 use parking_lot::RwLock;
@@ -126,7 +126,7 @@ pub trait Emitter: Sized {
     ) -> Result<Box<dyn Iterator<Item = String> + 'a>, Error> {
         let state = self.state();
         def.name()
-            .map(|n| n.split(state.ns_sep).map(SnakeCase::to_snake_case))
+            .map(|n| n.split(state.ns_sep).map(ToSnakeCase::to_snake_case))
             .ok_or_else(|| {
                 trace!("Missing name for definition: '{:?}'", def);
                 PaperClipError::MissingDefinitionName.into()
@@ -140,7 +140,7 @@ pub trait Emitter: Sized {
         Ok(self
             .def_ns_name(def)?
             .last()
-            .map(|s| s.to_camel_case())
+            .map(|s| s.to_pascal_case())
             .expect("last item always exists for split?"))
     }
 
@@ -158,7 +158,7 @@ pub trait Emitter: Sized {
             trace!("Unable to get name for anonymous schema: {:?}", def);
             None
         } else {
-            Some(name.to_camel_case())
+            Some(name.to_pascal_case())
         }
     }
 
@@ -176,8 +176,8 @@ pub trait Emitter: Sized {
                 "Number_{}",
                 n.to_string().replace('-', "_").replace('.', "_")
             ),
-            Value::Bool(b) => b.to_string().to_camel_case(),
-            Value::String(ref s) => s.to_string().to_camel_case().replace('.', "_"),
+            Value::Bool(b) => b.to_string().to_pascal_case(),
+            Value::String(ref s) => s.to_string().to_pascal_case().replace('.', "_"),
             _ => return None,
         };
 
@@ -609,7 +609,7 @@ where
             if iter.peek().is_none() {
                 ty_path.push_str(&c);
                 ty_path.push_str("::");
-                c = c.to_camel_case();
+                c = c.to_pascal_case();
             }
 
             ty_path.push_str(&c);
@@ -1133,7 +1133,7 @@ where
             .filter(|(c, _)| c.starts_with('2')) // 2xx response
             .filter_map(|(_, r)| {
                 let resp = r.read();
-                resp.schema.as_ref().map(|r| (&**r).clone())
+                resp.schema.as_ref().map(|r| (**r).clone())
             })
             .next()
     }

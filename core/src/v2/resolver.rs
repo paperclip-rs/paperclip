@@ -6,7 +6,7 @@ use super::{
     Schema,
 };
 use crate::error::ValidationError;
-use heck::CamelCase;
+use heck::ToPascalCase;
 
 use std::{cell::RefCell, collections::BTreeMap, mem};
 
@@ -161,7 +161,7 @@ where
             *schema = match schema {
                 Resolvable::Raw(old) => Resolvable::Resolved {
                     old: old.clone(),
-                    new: (&*new).clone(),
+                    new: (*new).clone(),
                 },
                 _ => unimplemented!("schema already resolved?"),
             };
@@ -208,7 +208,7 @@ where
         &mut self,
         method: Option<HttpMethod>,
         path: &str,
-        params: &mut Vec<Either<Reference, ResolvableParameter<S>>>,
+        params: &mut [Either<Reference, ResolvableParameter<S>>],
     ) -> Result<(), ValidationError> {
         for p in params.iter_mut() {
             let ref_param = if let Some(r) = p.left() {
@@ -247,7 +247,7 @@ where
                 // We've encountered an anonymous schema definition in some
                 // parameter/response. Give it a name and add it to global definitions.
                 let prefix = method.map(|s| s.to_string()).unwrap_or_default();
-                let def_name = (prefix + path + suffix).to_camel_case();
+                let def_name = (prefix + path + suffix).to_pascal_case();
                 let mut ref_schema = S::default();
                 ref_schema.set_reference(format!("{}{}", DEF_REF_PREFIX, def_name));
                 let old_schema = mem::replace(schema, ref_schema.into());
