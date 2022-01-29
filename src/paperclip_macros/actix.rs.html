@@ -2766,7 +2766,7 @@
             }
         }
     } <span class="kw">else</span> {
-        <span class="kw">for</span> (<span class="ident">inner_field_id</span>, <span class="ident">field</span>) <span class="kw">in</span> (<span class="kw-2">&amp;</span><span class="ident">fields</span>.<span class="ident">unnamed</span>).<span class="ident">into_iter</span>().<span class="ident">enumerate</span>() {
+        <span class="kw">for</span> (<span class="ident">inner_field_id</span>, <span class="ident">field</span>) <span class="kw">in</span> <span class="ident">fields</span>.<span class="ident">unnamed</span>.<span class="ident">iter</span>().<span class="ident">enumerate</span>() {
             <span class="kw">if</span> <span class="ident">SerdeSkip::exists</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">attrs</span>) {
                 <span class="kw">continue</span>;
             }
@@ -3051,12 +3051,12 @@
         <span class="kw">match</span> <span class="self">self</span> {
             <span class="ident">SerdeRename::Lower</span> =&gt; <span class="ident">name</span>.<span class="ident">to_lowercase</span>(),
             <span class="ident">SerdeRename::Upper</span> =&gt; <span class="ident">name</span>.<span class="ident">to_uppercase</span>(),
-            <span class="ident">SerdeRename::Pascal</span> =&gt; <span class="ident">name</span>.<span class="ident">to_camel_case</span>(),
-            <span class="ident">SerdeRename::Camel</span> =&gt; <span class="ident">name</span>.<span class="ident">to_mixed_case</span>(),
+            <span class="ident">SerdeRename::Pascal</span> =&gt; <span class="ident">name</span>.<span class="ident">to_pascal_case</span>(),
+            <span class="ident">SerdeRename::Camel</span> =&gt; <span class="ident">name</span>.<span class="ident">to_lower_camel_case</span>(),
             <span class="ident">SerdeRename::Snake</span> =&gt; <span class="ident">name</span>.<span class="ident">to_snake_case</span>(),
-            <span class="ident">SerdeRename::ScreamingSnake</span> =&gt; <span class="ident">name</span>.<span class="ident">to_snake_case</span>().<span class="ident">to_uppercase</span>(),
+            <span class="ident">SerdeRename::ScreamingSnake</span> =&gt; <span class="ident">name</span>.<span class="ident">to_shouty_snake_case</span>(),
             <span class="ident">SerdeRename::Kebab</span> =&gt; <span class="ident">name</span>.<span class="ident">to_kebab_case</span>(),
-            <span class="ident">SerdeRename::ScreamingKebab</span> =&gt; <span class="ident">name</span>.<span class="ident">to_kebab_case</span>().<span class="ident">to_uppercase</span>(),
+            <span class="ident">SerdeRename::ScreamingKebab</span> =&gt; <span class="ident">name</span>.<span class="ident">to_shouty_kebab_case</span>(),
         }
     }
 }
@@ -3320,5 +3320,5 @@ trait actix_web::Responder.
     };
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (21b4a9cfd 2022-01-27)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (e0a55f449 2022-01-28)" ></div>
 </body></html>

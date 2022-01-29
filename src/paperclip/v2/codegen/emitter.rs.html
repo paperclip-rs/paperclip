@@ -1298,7 +1298,7 @@
     },
 };
 <span class="kw">use</span> <span class="ident">anyhow::Error</span>;
-<span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">CamelCase</span>, <span class="ident">SnakeCase</span>};
+<span class="kw">use</span> <span class="ident">heck</span>::{<span class="ident">ToPascalCase</span>, <span class="ident">ToSnakeCase</span>};
 <span class="kw">use</span> <span class="ident">http</span>::{<span class="ident">header::HeaderName</span>, <span class="ident">HeaderMap</span>};
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 <span class="kw">use</span> <span class="ident">parking_lot::RwLock</span>;
@@ -1406,7 +1406,7 @@
     ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Box</span><span class="op">&lt;</span><span class="kw">dyn</span> <span class="ident">Iterator</span><span class="op">&lt;</span><span class="ident">Item</span> <span class="op">=</span> <span class="ident">String</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;a</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
         <span class="kw">let</span> <span class="ident">state</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">state</span>();
         <span class="ident">def</span>.<span class="ident">name</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">split</span>(<span class="ident">state</span>.<span class="ident">ns_sep</span>).<span class="ident">map</span>(<span class="ident">SnakeCase::to_snake_case</span>))
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">split</span>(<span class="ident">state</span>.<span class="ident">ns_sep</span>).<span class="ident">map</span>(<span class="ident">ToSnakeCase::to_snake_case</span>))
             .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> {
                 <span class="macro">trace!</span>(<span class="string">&quot;Missing name for definition: &#39;{:?}&#39;&quot;</span>, <span class="ident">def</span>);
                 <span class="ident">PaperClipError::MissingDefinitionName</span>.<span class="ident">into</span>()
@@ -1420,7 +1420,7 @@
         <span class="prelude-val">Ok</span>(<span class="self">self</span>
             .<span class="ident">def_ns_name</span>(<span class="ident">def</span>)<span class="question-mark">?</span>
             .<span class="ident">last</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_camel_case</span>())
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_pascal_case</span>())
             .<span class="ident">expect</span>(<span class="string">&quot;last item always exists for split?&quot;</span>))
     }
 
@@ -1438,7 +1438,7 @@
             <span class="macro">trace!</span>(<span class="string">&quot;Unable to get name for anonymous schema: {:?}&quot;</span>, <span class="ident">def</span>);
             <span class="prelude-val">None</span>
         } <span class="kw">else</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">name</span>.<span class="ident">to_camel_case</span>())
+            <span class="prelude-val">Some</span>(<span class="ident">name</span>.<span class="ident">to_pascal_case</span>())
         }
     }
 
@@ -1456,8 +1456,8 @@
                 <span class="string">&quot;Number_{}&quot;</span>,
                 <span class="ident">n</span>.<span class="ident">to_string</span>().<span class="ident">replace</span>(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>).<span class="ident">replace</span>(<span class="string">&#39;.&#39;</span>, <span class="string">&quot;_&quot;</span>)
             ),
-            <span class="ident">Value::Bool</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>(),
-            <span class="ident">Value::String</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">to_string</span>().<span class="ident">to_camel_case</span>().<span class="ident">replace</span>(<span class="string">&#39;.&#39;</span>, <span class="string">&quot;_&quot;</span>),
+            <span class="ident">Value::Bool</span>(<span class="ident">b</span>) =&gt; <span class="ident">b</span>.<span class="ident">to_string</span>().<span class="ident">to_pascal_case</span>(),
+            <span class="ident">Value::String</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) =&gt; <span class="ident">s</span>.<span class="ident">to_string</span>().<span class="ident">to_pascal_case</span>().<span class="ident">replace</span>(<span class="string">&#39;.&#39;</span>, <span class="string">&quot;_&quot;</span>),
             <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">None</span>,
         };
 
@@ -1889,7 +1889,7 @@
             <span class="kw">if</span> <span class="ident">iter</span>.<span class="ident">peek</span>().<span class="ident">is_none</span>() {
                 <span class="ident">ty_path</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>);
                 <span class="ident">ty_path</span>.<span class="ident">push_str</span>(<span class="string">&quot;::&quot;</span>);
-                <span class="ident">c</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">to_camel_case</span>();
+                <span class="ident">c</span> <span class="op">=</span> <span class="ident">c</span>.<span class="ident">to_pascal_case</span>();
             }
 
             <span class="ident">ty_path</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">c</span>);
@@ -2413,7 +2413,7 @@
             .<span class="ident">filter</span>(<span class="op">|</span>(<span class="ident">c</span>, <span class="kw">_</span>)<span class="op">|</span> <span class="ident">c</span>.<span class="ident">starts_with</span>(<span class="string">&#39;2&#39;</span>)) <span class="comment">// 2xx response</span>
             .<span class="ident">filter_map</span>(<span class="op">|</span>(<span class="kw">_</span>, <span class="ident">r</span>)<span class="op">|</span> {
                 <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="ident">r</span>.<span class="ident">read</span>();
-                <span class="ident">resp</span>.<span class="ident">schema</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> (<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">clone</span>())
+                <span class="ident">resp</span>.<span class="ident">schema</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">r</span><span class="op">|</span> (<span class="kw-2">*</span><span class="kw-2">*</span><span class="ident">r</span>).<span class="ident">clone</span>())
             })
             .<span class="ident">next</span>()
     }
@@ -2554,5 +2554,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (21b4a9cfd 2022-01-27)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (e0a55f449 2022-01-28)" ></div>
 </body></html>

@@ -632,9 +632,9 @@
     <span class="ident">v2::models</span>::{<span class="ident">Coders</span>, <span class="ident">SpecFormat</span>},
 };
 <span class="kw">use</span> <span class="ident">anyhow::Error</span>;
-<span class="kw">use</span> <span class="ident">heck::CamelCase</span>;
+<span class="kw">use</span> <span class="ident">heck::ToPascalCase</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">heck::SnakeCase</span>;
+<span class="kw">use</span> <span class="ident">heck::ToSnakeCase</span>;
 <span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
 <span class="kw">use</span> <span class="ident">url_dep::Url</span>;
 
@@ -736,7 +736,7 @@
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">c</span>)<span class="op">|</span> (<span class="ident">r</span>.<span class="number">0</span>.<span class="ident">as_ref</span>(), <span class="ident">c</span>))
             .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">c</span>)<span class="op">|</span> <span class="ident">MediaCoder</span> {
                 <span class="ident">range</span>: <span class="ident">r</span>.<span class="ident">into</span>(),
-                <span class="ident">error_variant</span>: <span class="ident">r</span>.<span class="ident">replace</span>(<span class="string">&#39;*&#39;</span>, <span class="string">&quot;wildcard&quot;</span>).<span class="ident">to_camel_case</span>(),
+                <span class="ident">error_variant</span>: <span class="ident">r</span>.<span class="ident">replace</span>(<span class="string">&#39;*&#39;</span>, <span class="string">&quot;wildcard&quot;</span>).<span class="ident">to_pascal_case</span>(),
                 <span class="ident">error_ty_path</span>: <span class="ident">c</span>.<span class="ident">error_path</span>.<span class="ident">clone</span>(),
                 <span class="ident">decoder</span>: <span class="ident">c</span>.<span class="ident">decoder_path</span>.<span class="ident">clone</span>(),
             })
@@ -843,7 +843,7 @@ pub mod {name} {{
                     .<span class="ident">struct_fields_iter</span>()
                     .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">prop</span>.<span class="ident">is_required</span>())
                     .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> {
-                        <span class="ident">unit_types</span>.<span class="ident">insert</span>(<span class="ident">object::to_camel_case</span>(<span class="ident">f</span>.<span class="ident">name</span>));
+                        <span class="ident">unit_types</span>.<span class="ident">insert</span>(<span class="ident">object::to_pascal_case</span>(<span class="ident">f</span>.<span class="ident">name</span>));
                     });
 
                 <span class="ident">builder_content</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
@@ -1240,5 +1240,5 @@ pub mod util {
 <span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde::Serialize</span>)]</span>
 <span class="kw">struct</span> <span class="ident">EmptyContext</span> {}
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (21b4a9cfd 2022-01-27)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (e0a55f449 2022-01-28)" ></div>
 </body></html>
