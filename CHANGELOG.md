@@ -4,6 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased]
+### Added
+- Add openapi component rename attribute [PR#367](https://github.com/paperclip-rs/paperclip/pull/367)
+- Allow automatically adding the module path to the openapi component name, via a feature "path-in-definition" [PR#373](https://github.com/paperclip-rs/paperclip/pull/373)
+
+### Fixed
+- Add more tuple sizes for web::Path for OperationModifier impl [PR#379](https://github.com/paperclip-rs/paperclip/pull/379)
+
 ## [0.6.1] - 2021-10-15
 ### Fixed
 - Actix2 plugin: fix compilation error `ReqData` not found
