@@ -493,6 +493,9 @@
 <span id="488">488</span>
 <span id="489">489</span>
 <span id="490">490</span>
+<span id="491">491</span>
+<span id="492">492</span>
+<span id="493">493</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::models</span>::{
@@ -737,6 +740,9 @@
         <span class="prelude-val">Some</span>(<span class="ident">DataTypeFormat::Date</span>)
     }
 }
+
+<span class="macro">impl_type_simple!</span>(<span class="ident">std::net::Ipv4Addr</span>, <span class="ident">DataType::String</span>, <span class="ident">DataTypeFormat::IpV4</span>);
+<span class="macro">impl_type_simple!</span>(<span class="ident">std::net::Ipv6Addr</span>, <span class="ident">DataType::String</span>, <span class="ident">DataTypeFormat::IpV6</span>);
 
 <span class="doccomment">/// Represents a OpenAPI v2 schema object convertible. This is auto-implemented by</span>
 <span class="doccomment">/// framework-specific macros:</span>
@@ -984,5 +990,5 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> <span class="ident">actix_web::Error</span> {}
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (e0a55f449 2022-01-28)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (a00e130da 2022-01-29)" ></div>
 </body></html>

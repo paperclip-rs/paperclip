@@ -970,6 +970,10 @@
 <span id="965">965</span>
 <span id="966">966</span>
 <span id="967">967</span>
+<span id="968">968</span>
+<span id="969">969</span>
+<span id="970">970</span>
+<span id="971">971</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.</span>
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::extensions</span>::{
@@ -1049,6 +1053,8 @@
     <span class="ident">Password</span>,
     <span class="ident">Url</span>,
     <span class="ident">Uuid</span>,
+    <span class="ident">IpV4</span>,
+    <span class="ident">IpV6</span>,
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">other</span>)]</span>
     <span class="ident">Other</span>,
 }
@@ -1067,6 +1073,8 @@
             <span class="ident">DataTypeFormat::Password</span> =&gt; <span class="string">&quot;password&quot;</span>,
             <span class="ident">DataTypeFormat::Url</span> =&gt; <span class="string">&quot;url&quot;</span>,
             <span class="ident">DataTypeFormat::Uuid</span> =&gt; <span class="string">&quot;uuid&quot;</span>,
+            <span class="ident">DataTypeFormat::IpV4</span> =&gt; <span class="string">&quot;ipv4&quot;</span>,
+            <span class="ident">DataTypeFormat::IpV6</span> =&gt; <span class="string">&quot;ipv6&quot;</span>,
             <span class="comment">// would be nice if Other was Other(String)</span>
             <span class="ident">DataTypeFormat::Other</span> =&gt; <span class="string">&quot;other&quot;</span>,
         }
@@ -1938,5 +1946,5 @@
     <span class="op">!</span><span class="kw-2">*</span><span class="ident">val</span>
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (e0a55f449 2022-01-28)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (a00e130da 2022-01-29)" ></div>
 </body></html>
