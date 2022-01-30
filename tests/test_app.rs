@@ -3352,3 +3352,100 @@ fn test_module_path_in_definition_name() {
         },
     )
 }
+
+#[test]
+fn test_ipvx() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "camelCase")]
+    /// Pets are awesome!
+    struct Pet {
+        /// Pick a good one.
+        name: String,
+        /// An IpV4 address.
+        ip_v4: std::net::Ipv4Addr,
+        /// An IpV6 address.
+        ip_v6: std::net::Ipv6Addr,
+    }
+
+    #[get("/pets")]
+    #[api_v2_operation]
+    fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(echo_pets)
+                .with_raw_json_spec(|app, spec| {
+                    app.route(
+                        "/api/spec",
+                        web::get().to(move || actix_web::HttpResponse::Ok().json(&spec)),
+                    )
+                })
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet": {
+                            "description": "Pets are awesome!",
+                            "properties": {
+                                "name": {
+                                    "description": "Pick a good one.",
+                                    "type": "string"
+                                },
+                                "ipV4": {
+                                    "description": "An IpV4 address.",
+                                    "format": "ipv4",
+                                    "type": "string"
+                                },
+                                "ipV6": {
+                                    "description": "An IpV6 address.",
+                                    "format": "ipv6",
+                                    "type": "string"
+                                }
+                            },
+                            "required": [
+                                "ipV4",
+                                "ipV6",
+                                "name"
+                            ],
+                            "type" : "object"
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/pets": {
+                            "get": {
+                                "responses": {
+                                "200": {
+                                    "description": "OK",
+                                    "schema": {
+                                        "items": {
+                                            "$ref": "#/definitions/Pet"
+                                        },
+                                        "type": "array"
+                                    }
+                                }
+                                },
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
