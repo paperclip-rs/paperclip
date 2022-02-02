@@ -3361,6 +3361,8 @@ fn test_ipvx() {
     struct Pet {
         /// Pick a good one.
         name: String,
+        /// An Ip address.
+        ip: std::net::IpAddr,
         /// An IpV4 address.
         ip_v4: std::net::Ipv4Addr,
         /// An IpV6 address.
@@ -3403,6 +3405,11 @@ fn test_ipvx() {
                                     "description": "Pick a good one.",
                                     "type": "string"
                                 },
+                                "ip": {
+                                    "description": "An Ip address.",
+                                    "format": "ip",
+                                    "type": "string"
+                                },
                                 "ipV4": {
                                     "description": "An IpV4 address.",
                                     "format": "ipv4",
@@ -3415,6 +3422,7 @@ fn test_ipvx() {
                                 }
                             },
                             "required": [
+                                "ip",
                                 "ipV4",
                                 "ipV6",
                                 "name"
