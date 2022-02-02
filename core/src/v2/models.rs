@@ -77,6 +77,7 @@ pub enum DataTypeFormat {
     Password,
     Url,
     Uuid,
+    Ip,
     IpV4,
     IpV6,
     #[serde(other)]
@@ -97,6 +98,7 @@ impl ToString for DataTypeFormat {
             DataTypeFormat::Password => "password",
             DataTypeFormat::Url => "url",
             DataTypeFormat::Uuid => "uuid",
+            DataTypeFormat::Ip => "ip",
             DataTypeFormat::IpV4 => "ipv4",
             DataTypeFormat::IpV6 => "ipv6",
             // would be nice if Other was Other(String)

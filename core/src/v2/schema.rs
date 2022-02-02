@@ -243,6 +243,7 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::Date<T> {
     }
 }
 
+impl_type_simple!(std::net::IpAddr, DataType::String, DataTypeFormat::Ip);
 impl_type_simple!(std::net::Ipv4Addr, DataType::String, DataTypeFormat::IpV4);
 impl_type_simple!(std::net::Ipv6Addr, DataType::String, DataTypeFormat::IpV6);
 
