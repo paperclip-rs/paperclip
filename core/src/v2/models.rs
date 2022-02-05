@@ -249,6 +249,13 @@ pub struct Info {
     pub contact: Option<Contact>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub license: Option<License>,
+    /// Inline extensions to this object.
+    #[serde(
+        flatten,
+        skip_serializing_if = "BTreeMap::is_empty",
+        deserialize_with = "crate::v2::extensions::deserialize_extensions"
+    )]
+    pub extensions: BTreeMap<String, serde_json::Value>,
 }
 
 /// Contact object.
