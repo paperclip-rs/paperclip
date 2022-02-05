@@ -1599,9 +1599,12 @@ fn test_tags() {
                     external_docs: None,
                 },
             ];
+            let mut extensions = BTreeMap::new();
+            extensions.insert("x-my-attr".to_string(), serde_json::Value::Bool(true));
             spec.info = Info {
                 version: "0.1".into(),
                 title: "Image server".into(),
+                extensions,
                 ..Default::default()
             };
 
@@ -1643,7 +1646,8 @@ fn test_tags() {
                     },
                     "info":{
                         "title":"Image server",
-                        "version":"0.1"
+                        "version":"0.1",
+                        "x-my-attr":true
                     },
                     "paths":{
                         "/images/pets":{

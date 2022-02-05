@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 - Add more tuple sizes for web::Path for OperationModifier impl [PR#379](https://github.com/paperclip-rs/paperclip/pull/379)
+- Add missing extensions to openapi v2 Info
 
 ## [0.6.1] - 2021-10-15
 ### Fixed
