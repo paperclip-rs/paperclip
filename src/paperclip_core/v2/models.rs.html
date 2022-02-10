@@ -983,6 +983,13 @@
 <span id="978">978</span>
 <span id="979">979</span>
 <span id="980">980</span>
+<span id="981">981</span>
+<span id="982">982</span>
+<span id="983">983</span>
+<span id="984">984</span>
+<span id="985">985</span>
+<span id="986">986</span>
+<span id="987">987</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.</span>
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::extensions</span>::{
@@ -1174,6 +1181,13 @@
     <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip</span>)]</span>
     <span class="kw">pub</span> <span class="ident">spec_format</span>: <span class="ident">SpecFormat</span>,
     <span class="kw">pub</span> <span class="ident">info</span>: <span class="ident">Info</span>,
+
+    <span class="attribute">#[<span class="ident">serde</span>(
+        <span class="ident">flatten</span>,
+        <span class="ident">skip_serializing_if</span> <span class="op">=</span> <span class="string">&quot;BTreeMap::is_empty&quot;</span>,
+        <span class="ident">deserialize_with</span> <span class="op">=</span> <span class="string">&quot;crate::v2::extensions::deserialize_extensions&quot;</span>
+    )]</span>
+    <span class="kw">pub</span> <span class="ident">extensions</span>: <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">serde_json::Value</span><span class="op">&gt;</span>,
 }
 
 <span class="doccomment">/// The format used by spec (JSON/YAML).</span>
@@ -1964,5 +1978,5 @@
     <span class="op">!</span><span class="kw-2">*</span><span class="ident">val</span>
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (71226d717 2022-02-04)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.60.0-nightly (e7aca8959 2022-02-09)" ></div>
 </body></html>
