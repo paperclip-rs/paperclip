@@ -60,6 +60,7 @@ impl<S: Schema + Default> ResolvableApi<S> {
             security: self.security,
             security_definitions: self.security_definitions,
             tags: self.tags,
+            extensions: self.extensions,
         })
     }
 }

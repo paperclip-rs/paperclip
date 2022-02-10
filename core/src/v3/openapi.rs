@@ -24,6 +24,13 @@ impl From<v2::DefaultApiRaw> for openapiv3::OpenAPI {
                 i.insert(b.0.to_string(), b.1.clone().into());
                 i
             });
+        components.extensions =
+            v2.extensions
+                .into_iter()
+                .fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
+                    i.insert(k, v);
+                    i
+                });
         spec.paths = openapiv3::Paths {
             paths: v2.paths.iter().fold(indexmap::IndexMap::new(), |mut i, b| {
                 i.insert(

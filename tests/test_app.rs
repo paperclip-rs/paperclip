@@ -1608,6 +1608,13 @@ fn test_tags() {
                 ..Default::default()
             };
 
+            let mut root_extensions = BTreeMap::new();
+            root_extensions.insert(
+                "x-root-level-extension".to_string(),
+                serde_json::Value::Bool(false),
+            );
+            spec.extensions = root_extensions;
+
             App::new()
                 .wrap_api_with_spec(spec)
                 .with_json_spec_at("/api/spec")
@@ -1649,6 +1656,7 @@ fn test_tags() {
                         "version":"0.1",
                         "x-my-attr":true
                     },
+                    "x-root-level-extension": false,
                     "paths":{
                         "/images/pets":{
                             "get":{
