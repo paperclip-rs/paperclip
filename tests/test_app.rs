@@ -3238,6 +3238,312 @@ fn test_rename() {
     );
 }
 
+#[test]
+fn test_enum_variants() {
+    /// Pets are awesome!
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "lowercase")]
+    enum PetClassExternal {
+        /// It's a dog
+        Dog,
+        /// It's a cat
+        Cat{ meow: bool },
+        #[allow(dead_code)]
+        #[serde(skip)]
+        Tree,
+        #[serde(rename = "other")]
+        EverythingElse,
+    }
+
+    /// Pets are awesome!
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "lowercase", tag="type")]
+    enum PetClassInternal {
+        /// It's a dog
+        Dog,
+        /// It's a cat
+        Cat{ meow: bool },
+        #[allow(dead_code)]
+        #[serde(skip)]
+        Tree,
+        #[serde(rename = "other")]
+        EverythingElse,
+    }
+
+    /// Pets are awesome!
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "lowercase", tag="type", content="c")]
+    enum PetClassAdjacent {
+        /// It's a dog
+        Dog,
+        /// It's a cat
+        Cat{ meow: bool },
+        #[allow(dead_code)]
+        #[serde(skip)]
+        Tree,
+        #[serde(rename = "other")]
+        EverythingElse,
+    }
+
+    /// Pets are awesome!
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "lowercase", untagged)]
+    enum PetClassUntagged {
+        /// It's a dog
+        Dog{ woof: bool },
+        /// It's a cat
+        Cat{ meow: bool },
+        #[allow(dead_code)]
+        #[serde(skip)]
+        Tree,
+    }
+
+    #[get("/external")]
+    #[api_v2_operation]
+    fn external() -> impl Future<Output = Result<web::Json<PetClassExternal>, Error>> {
+        fut_ok(web::Json(PetClassExternal::Dog))
+    }
+
+    #[get("/internal")]
+    #[api_v2_operation]
+    fn internal() -> impl Future<Output = Result<web::Json<PetClassInternal>, Error>> {
+        fut_ok(web::Json(PetClassInternal::Dog))
+    }
+
+    #[get("/adjacent")]
+    #[api_v2_operation]
+    fn adjacent() -> impl Future<Output = Result<web::Json<PetClassAdjacent>, Error>> {
+        fut_ok(web::Json(PetClassAdjacent::Dog))
+    }
+
+    #[get("/untagged")]
+    #[api_v2_operation]
+    fn untagged() -> impl Future<Output = Result<web::Json<PetClassUntagged>, Error>> {
+        fut_ok(web::Json(PetClassUntagged::Dog{woof: true}))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(external)
+                .service(internal)
+                .service(adjacent)
+                .service(untagged)
+                .with_raw_json_spec(|app, spec| {
+                    app.route(
+                        "/api/spec",
+                        web::get().to(move || actix_web::HttpResponse::Ok().json(&spec)),
+                    )
+                })
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "PetClassExternal": {
+                            "description": "Pets are awesome!",
+                            "anyOf": [
+                                {
+                                    "description": "It's a dog",
+                                    "const": "dog"
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "cat": {
+                                            "type": "object",
+                                            "description": "It's a cat",
+                                            "properties": {
+                                                "meow": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["meow"]
+                                        }
+                                    },
+                                    "required": ["cat"]
+                                },
+                                {
+                                    "const": "other"
+                                },
+                            ]
+                        },
+                        "PetClassInternal": {
+                            "description": "Pets are awesome!",
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "description": "It's a dog",
+                                    "properties": {
+                                        "type": {
+                                            "const": "dog"
+                                        },
+                                    },
+                                    "required": ["type"]
+                                },
+                                {
+                                    "type": "object",
+                                    "description": "It's a cat",
+                                    "properties": {
+                                        "type": {
+                                            "const": "cat"
+                                        },
+                                        "meow": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["meow", "type"]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "const": "other"
+                                        },
+                                    },
+                                    "required": ["type"]
+                                }
+                            ]
+                        },
+                        "PetClassAdjacent": {
+                            "description": "Pets are awesome!",
+                            "anyOf": [
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "It's a dog",
+                                            "const": "dog"
+                                        },
+                                    },
+                                    "required": ["type"]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "description": "It's a cat",
+                                            "const": "cat"
+                                        },
+                                        "c": {
+                                            "description": "It's a cat",
+                                            "type": "object",
+                                            "properties": {
+                                                "meow": {
+                                                    "type": "boolean"
+                                                }
+                                            },
+                                            "required": ["meow"]
+                                        }
+                                    },
+                                    "required": ["c", "type"]
+                                },
+                                {
+                                    "type": "object",
+                                    "properties": {
+                                        "type": {
+                                            "const": "other"
+                                        },
+                                    },
+                                    "required": ["type"]
+                                }
+                            ]
+                        },
+                        "PetClassUntagged": {
+                            "description": "Pets are awesome!",
+                            "anyOf": [
+                                {
+                                    "description": "It's a dog",
+                                    "type": "object",
+                                    "properties": {
+                                        "woof": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["woof"]
+                                },
+                                {
+                                    "description": "It's a cat",
+                                    "type": "object",
+                                    "properties": {
+                                        "meow": {
+                                            "type": "boolean"
+                                        }
+                                    },
+                                    "required": ["meow"]
+                                }
+                            ]
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/external": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/PetClassExternal"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                        "/internal": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/PetClassInternal"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                        "/adjacent": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/PetClassAdjacent"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                        "/untagged": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/PetClassUntagged"
+                                        }
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
 mod module_path_in_definition_name {
     pub mod foo {
         pub mod bar {

@@ -735,7 +735,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
                 }
             }
         }
-        Data::Enum(ref e) => handle_enum(e, &props, &mut props_gen),
+        Data::Enum(ref e) => handle_enum(e, &item_ast.attrs, &props, &mut props_gen),
         Data::Union(ref u) => emit_error!(
             u.union_token.span().unwrap(),
             "unions are unsupported for deriving schema"
@@ -1255,7 +1255,7 @@ fn handle_field_struct(
 }
 
 /// Generates code for an enum (if supported).
-fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::TokenStream) {
+fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen: &mut proc_macro2::TokenStream) {
     // set whether constants are inline strings
     let simple_constants = serde.enum_tag_type == SerdeEnumTagType::External
         || serde.enum_tag_type == SerdeEnumTagType::Untagged;
@@ -1268,6 +1268,14 @@ fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::To
         // we'll use the enum syntax later on and can declare this to be of type string
         props_gen.extend(quote!(
             schema.data_type = Some(DataType::String);
+        ));
+    }
+
+    let doc = extract_documentation(&attrs);
+    let doc = doc.trim();
+    if !doc.is_empty() {
+        props_gen.extend(quote!(
+            schema.description = Some(#doc.into());
         ));
     }
 
@@ -1379,6 +1387,7 @@ fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::To
                                 };
                                 schema.properties.insert(#tag.into(), DefaultSchemaRaw {
                                     const_: Some(serde_json::json!(#name)),
+                                    description: if #docs.is_empty() { None } else { Some(#docs.into()) },
                                     ..Default::default()
                                 }.into());
                                 schema.required.insert(#tag.into());
@@ -1394,6 +1403,7 @@ fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::To
                                 };
                                 schema.properties.insert(#tag.into(), DefaultSchemaRaw {
                                     const_: Some(serde_json::json!(#name)),
+                                    description: if #docs.is_empty() { None } else { Some(#docs.into()) },
                                     ..Default::default()
                                 }.into());
                                 schema.properties.insert(#content_tag.into(), {
