@@ -1256,40 +1256,168 @@ fn handle_field_struct(
 
 /// Generates code for an enum (if supported).
 fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::TokenStream) {
-    props_gen.extend(quote!(
-        schema.data_type = Some(DataType::String);
-    ));
+    // set whether constants are inline strings
+    let simple_constants = serde.enum_tag_type == SerdeEnumTagType::External
+        || serde.enum_tag_type == SerdeEnumTagType::Untagged;
+
+    // check if all variants are simple constants and can use `enum`
+    // otherwise we'll make use of `any_of`
+    let only_simple_constants = simple_constants
+        && !e.variants.iter().any(|variant| variant.fields != Fields::Unit);
+    if only_simple_constants {
+        // we'll use the enum syntax later on and can declare this to be of type string
+        props_gen.extend(quote!(
+            schema.data_type = Some(DataType::String);
+        ));
+    }
 
     for var in &e.variants {
-        let mut name = var.ident.to_string();
-        match &var.fields {
-            Fields::Unit => (),
-            Fields::Named(ref f) => {
-                emit_warning!(
-                    f.span().unwrap(),
-                    "skipping enum variant with named fields in schema."
-                );
-                continue;
-            }
-            Fields::Unnamed(ref f) => {
-                emit_warning!(f.span().unwrap(), "skipping tuple enum variant in schema.");
-                continue;
-            }
-        }
-
         if SerdeSkip::exists(&var.attrs) {
             continue;
         }
 
+        let mut name = var.ident.to_string();
         if let Some(renamed) = SerdeRename::from_field_attrs(&var.attrs) {
             name = renamed;
         } else if let Some(prop) = serde.rename {
             name = prop.rename(&name);
         }
 
-        props_gen.extend(quote!(
-            schema.enum_.push(serde_json::json!(#name));
-        ));
+        if only_simple_constants {
+            props_gen.extend(quote!(
+                schema.enum_.push(serde_json::json!(#name));
+            ));
+        } else {
+            // this will aggregate the construction of the variant schema
+            let mut inner_gen = quote!();
+            // this indicate if the schema is effectively empty
+            let mut inner_gen_empty = false;
+
+            let docs = extract_documentation(&var.attrs);
+            let docs = docs.trim();
+
+            match &var.fields {
+                Fields::Unit => {
+                    // unit constants may be simple constant types
+                    if simple_constants {
+                        props_gen.extend(quote!(
+                            schema.any_of.push(DefaultSchemaRaw {
+                                const_: Some(serde_json::json!(#name)),
+                                description: if #docs.is_empty() { None } else { Some(#docs.into()) },
+                                ..Default::default()
+                            }.into());
+                        ));
+                        continue;
+                    }
+
+                    // this is required so there's something to add tags to
+                    inner_gen = quote!(
+                        let mut schema = DefaultSchemaRaw {
+                            data_type: Some(DataType::Object),
+                            description: if #docs.is_empty() { None } else { Some(#docs.into()) },
+                            ..Default::default()
+                        };
+                    );
+                    inner_gen_empty = true;
+                },
+                Fields::Named(ref f) => {
+                    inner_gen.extend(quote!(
+                        let mut schema = DefaultSchemaRaw {
+                            data_type: Some(DataType::Object),
+                            description: if #docs.is_empty() { None } else { Some(#docs.into()) },
+                            ..Default::default()
+                        };
+                    ));
+                    handle_field_struct(f, &[], &serde, &mut inner_gen);
+                }
+                Fields::Unnamed(ref f) => {
+                    // Fix this once handle_unnamed_field_struct does actually create arrays
+                    emit_warning!(f.span().unwrap(), "skipping tuple enum variant in schema.");
+                    continue;
+                }
+            }
+
+            match serde.enum_tag_type {
+                SerdeEnumTagType::External => {
+                    props_gen.extend(quote!(
+                        schema.any_of.push({
+                            let mut schema = DefaultSchemaRaw {
+                                data_type: Some(DataType::Object),
+                                ..Default::default()
+                            };
+                            schema.properties.insert(#name.into(), {
+                                #inner_gen
+                                schema
+                            }.into());
+                            schema.required.insert(#name.into());
+
+                            schema
+                        }.into());
+                    ));
+                },
+                SerdeEnumTagType::Internal(ref tag) => {
+                    props_gen.extend(quote!(
+                        schema.any_of.push({
+                            #inner_gen
+                            schema.properties.insert(#tag.into(), DefaultSchemaRaw {
+                                const_: Some(serde_json::json!(#name)),
+                                ..Default::default()
+                            }.into());
+                            schema.required.insert(#tag.into());
+                            schema
+                        }.into());
+                    ));
+                },
+                SerdeEnumTagType::Adjacent(ref tag, ref content_tag) => {
+                    // if the variant schema is empty, we don't need the content tag
+                    if inner_gen_empty {
+                        props_gen.extend(quote!(
+                            schema.any_of.push({
+                                let mut schema = DefaultSchemaRaw {
+                                    data_type: Some(DataType::Object),
+                                    ..Default::default()
+                                };
+                                schema.properties.insert(#tag.into(), DefaultSchemaRaw {
+                                    const_: Some(serde_json::json!(#name)),
+                                    ..Default::default()
+                                }.into());
+                                schema.required.insert(#tag.into());
+                                schema
+                            }.into());
+                        ));
+                    } else {
+                        props_gen.extend(quote!(
+                            schema.any_of.push({
+                                let mut schema = DefaultSchemaRaw {
+                                    data_type: Some(DataType::Object),
+                                    ..Default::default()
+                                };
+                                schema.properties.insert(#tag.into(), DefaultSchemaRaw {
+                                    const_: Some(serde_json::json!(#name)),
+                                    ..Default::default()
+                                }.into());
+                                schema.properties.insert(#content_tag.into(), {
+                                    #inner_gen
+                                    schema
+                                }.into());
+                                schema.required.insert(#tag.into());
+                                schema.required.insert(#content_tag.into());
+
+                                schema
+                            }.into());
+                        ));
+                    }
+                },
+                SerdeEnumTagType::Untagged => {
+                    props_gen.extend(quote!(
+                        schema.any_of.push({
+                            #inner_gen
+                            schema
+                        }.into());
+                    ));
+                },
+            }
+        }
     }
 }
 
@@ -1437,6 +1565,21 @@ impl SerdeSkip {
 #[derive(Clone, Debug, Default)]
 struct SerdeProps {
     rename: Option<SerdeRename>,
+    enum_tag_type: SerdeEnumTagType,
+}
+
+#[derive(Clone, Debug, PartialEq)]
+enum SerdeEnumTagType {
+    External,
+    Internal(String),
+    Adjacent(String, String),
+    Untagged,
+}
+
+impl Default for SerdeEnumTagType {
+    fn default() -> Self {
+        SerdeEnumTagType::External
+    }
 }
 
 impl SerdeProps {
@@ -1444,6 +1587,8 @@ impl SerdeProps {
     /// the applicable properties.
     fn from_item_attrs(item_attrs: &[Attribute]) -> Self {
         let mut props = Self::default();
+        let mut enum_tag: Option<String> = None;
+        let mut enum_content_tag: Option<String> = None;
         for meta in item_attrs.iter().filter_map(|a| a.parse_meta().ok()) {
             let inner_meta = match meta {
                 Meta::List(ref l)
@@ -1459,22 +1604,45 @@ impl SerdeProps {
             };
 
             for meta in inner_meta {
-                let global_rename = match meta {
-                    NestedMeta::Meta(Meta::NameValue(ref v))
-                        if v.path
-                            .segments
-                            .last()
-                            .map(|p| p.ident == "rename_all")
-                            .unwrap_or(false) =>
-                    {
-                        &v.lit
+                match meta {
+                    NestedMeta::Meta(Meta::NameValue(ref v)) => {
+                        if let Some(segment) = v.path.segments.last() {
+                            match segment.ident.to_string().as_str() {
+                                "rename_all" => {
+                                    if let Lit::Str(ref s) = &v.lit {
+                                        props.rename = s.value().parse().ok();
+                                    }
+                                },
+                                "tag" => {
+                                    if let Lit::Str(ref s) = &v.lit {
+                                        enum_tag = Some(s.value());
+                                    }
+                                },
+                                "content" => {
+                                    if let Lit::Str(ref s) = &v.lit {
+                                        enum_content_tag = Some(s.value());
+                                    }
+                                },
+                                _ => {}
+                            }
+                        }
+                    },
+                    NestedMeta::Meta(Meta::Path(syn::Path{ segments, .. })) => {
+                        if segments.last().map(|p| p.ident == "untagged").unwrap_or(false) {
+                            props.enum_tag_type = SerdeEnumTagType::Untagged;
+                        }
                     }
                     _ => continue,
                 };
 
-                if let Lit::Str(ref s) = global_rename {
-                    props.rename = s.value().parse().ok();
-                }
+            }
+        }
+
+        if let Some(tag) = enum_tag {
+            if let Some(content_tag) = enum_content_tag {
+                props.enum_tag_type = SerdeEnumTagType::Adjacent(tag, content_tag);
+            } else {
+                props.enum_tag_type = SerdeEnumTagType::Internal(tag);
             }
         }
 
