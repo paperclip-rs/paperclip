@@ -3247,7 +3247,7 @@ fn test_enum_variants() {
         /// It's a dog
         Dog,
         /// It's a cat
-        Cat{ meow: bool },
+        Cat { meow: bool },
         #[allow(dead_code)]
         #[serde(skip)]
         Tree,
@@ -3257,12 +3257,12 @@ fn test_enum_variants() {
 
     /// Pets are awesome!
     #[derive(Deserialize, Serialize, Apiv2Schema)]
-    #[serde(rename_all = "lowercase", tag="type")]
+    #[serde(rename_all = "lowercase", tag = "type")]
     enum PetClassInternal {
         /// It's a dog
         Dog,
         /// It's a cat
-        Cat{ meow: bool },
+        Cat { meow: bool },
         #[allow(dead_code)]
         #[serde(skip)]
         Tree,
@@ -3272,12 +3272,12 @@ fn test_enum_variants() {
 
     /// Pets are awesome!
     #[derive(Deserialize, Serialize, Apiv2Schema)]
-    #[serde(rename_all = "lowercase", tag="type", content="c")]
+    #[serde(rename_all = "lowercase", tag = "type", content = "c")]
     enum PetClassAdjacent {
         /// It's a dog
         Dog,
         /// It's a cat
-        Cat{ meow: bool },
+        Cat { meow: bool },
         #[allow(dead_code)]
         #[serde(skip)]
         Tree,
@@ -3290,9 +3290,9 @@ fn test_enum_variants() {
     #[serde(rename_all = "lowercase", untagged)]
     enum PetClassUntagged {
         /// It's a dog
-        Dog{ woof: bool },
+        Dog { woof: bool },
         /// It's a cat
-        Cat{ meow: bool },
+        Cat { meow: bool },
         #[allow(dead_code)]
         #[serde(skip)]
         Tree,
@@ -3319,7 +3319,7 @@ fn test_enum_variants() {
     #[get("/untagged")]
     #[api_v2_operation]
     fn untagged() -> impl Future<Output = Result<web::Json<PetClassUntagged>, Error>> {
-        fut_ok(web::Json(PetClassUntagged::Dog{woof: true}))
+        fut_ok(web::Json(PetClassUntagged::Dog { woof: true }))
     }
 
     run_and_check_app(

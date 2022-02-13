@@ -1255,7 +1255,12 @@ fn handle_field_struct(
 }
 
 /// Generates code for an enum (if supported).
-fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen: &mut proc_macro2::TokenStream) {
+fn handle_enum(
+    e: &DataEnum,
+    attrs: &[Attribute],
+    serde: &SerdeProps,
+    props_gen: &mut proc_macro2::TokenStream,
+) {
     // set whether constants are inline strings
     let simple_constants = serde.enum_tag_type == SerdeEnumTagType::External
         || serde.enum_tag_type == SerdeEnumTagType::Untagged;
@@ -1263,7 +1268,10 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
     // check if all variants are simple constants and can use `enum`
     // otherwise we'll make use of `any_of`
     let only_simple_constants = simple_constants
-        && !e.variants.iter().any(|variant| variant.fields != Fields::Unit);
+        && !e
+            .variants
+            .iter()
+            .any(|variant| variant.fields != Fields::Unit);
     if only_simple_constants {
         // we'll use the enum syntax later on and can declare this to be of type string
         props_gen.extend(quote!(
@@ -1271,7 +1279,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
         ));
     }
 
-    let doc = extract_documentation(&attrs);
+    let doc = extract_documentation(attrs);
     let doc = doc.trim();
     if !doc.is_empty() {
         props_gen.extend(quote!(
@@ -1327,7 +1335,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
                         };
                     );
                     inner_gen_empty = true;
-                },
+                }
                 Fields::Named(ref f) => {
                     inner_gen.extend(quote!(
                         let mut schema = DefaultSchemaRaw {
@@ -1336,7 +1344,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
                             ..Default::default()
                         };
                     ));
-                    handle_field_struct(f, &[], &serde, &mut inner_gen);
+                    handle_field_struct(f, &[], serde, &mut inner_gen);
                 }
                 Fields::Unnamed(ref f) => {
                     // Fix this once handle_unnamed_field_struct does actually create arrays
@@ -1362,7 +1370,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
                             schema
                         }.into());
                     ));
-                },
+                }
                 SerdeEnumTagType::Internal(ref tag) => {
                     props_gen.extend(quote!(
                         schema.any_of.push({
@@ -1375,7 +1383,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
                             schema
                         }.into());
                     ));
-                },
+                }
                 SerdeEnumTagType::Adjacent(ref tag, ref content_tag) => {
                     // if the variant schema is empty, we don't need the content tag
                     if inner_gen_empty {
@@ -1417,7 +1425,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
                             }.into());
                         ));
                     }
-                },
+                }
                 SerdeEnumTagType::Untagged => {
                     props_gen.extend(quote!(
                         schema.any_of.push({
@@ -1425,7 +1433,7 @@ fn handle_enum(e: &DataEnum, attrs: &[Attribute], serde: &SerdeProps, props_gen:
                             schema
                         }.into());
                     ));
-                },
+                }
             }
         }
     }
@@ -1622,29 +1630,32 @@ impl SerdeProps {
                                     if let Lit::Str(ref s) = &v.lit {
                                         props.rename = s.value().parse().ok();
                                     }
-                                },
+                                }
                                 "tag" => {
                                     if let Lit::Str(ref s) = &v.lit {
                                         enum_tag = Some(s.value());
                                     }
-                                },
+                                }
                                 "content" => {
                                     if let Lit::Str(ref s) = &v.lit {
                                         enum_content_tag = Some(s.value());
                                     }
-                                },
+                                }
                                 _ => {}
                             }
                         }
-                    },
-                    NestedMeta::Meta(Meta::Path(syn::Path{ segments, .. })) => {
-                        if segments.last().map(|p| p.ident == "untagged").unwrap_or(false) {
+                    }
+                    NestedMeta::Meta(Meta::Path(syn::Path { segments, .. })) => {
+                        if segments
+                            .last()
+                            .map(|p| p.ident == "untagged")
+                            .unwrap_or(false)
+                        {
                             props.enum_tag_type = SerdeEnumTagType::Untagged;
                         }
                     }
                     _ => continue,
                 };
-
             }
         }
 
