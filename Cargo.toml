@@ -48,7 +48,7 @@ indexmap = { version = "1.0", features = ["serde-1", "std"], optional = true }
 [dev-dependencies]
 actix-rt = "1"
 actix-service = "1"
-actix-web = { version = "3", default-features = false }
+actix-web = { version = "4", default-features = false }
 chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
 futures = "0.3"
 uuid_dev = { version = "0.8", features = ["serde"], package = "uuid" }
