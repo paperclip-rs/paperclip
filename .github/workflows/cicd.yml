@@ -15,7 +15,8 @@ jobs:
       matrix:
         version:
           - stable
-          - nightly
+          # todo: upgrade to nightly
+          - nightly-2022-02-22
 
     name: ${{ matrix.version }} - x86_64-unknown-linux-gnu
     runs-on: ubuntu-latest
