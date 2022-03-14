@@ -28,8 +28,8 @@ jobs:
       - uses: actions-rs/clippy-check@v1
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all --features "actix cli chrono url uuid swagger-ui v3" -- -D clippy::all
-  
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3" -- -D clippy::all
+
   fmt:
     name: rustfmt
     runs-on: ubuntu-latest

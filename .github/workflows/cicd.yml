@@ -62,7 +62,14 @@ jobs:
         timeout-minutes: 10
         with:
           command: build
-          args: --all --features "actix cli chrono url uuid swagger-ui v3"
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3"
+
+      - name: Build actix3 features
+        uses: actions-rs/cargo@v1
+        timeout-minutes: 10
+        with:
+          command: build
+          args: --all --features "actix3 cli chrono url uuid swagger-ui v3"
 
       - name: Build actix2 features
         uses: actions-rs/cargo@v1
@@ -76,7 +83,14 @@ jobs:
         timeout-minutes: 20
         with:
           command: test
-          args: --all --features "actix cli chrono url uuid swagger-ui v3"
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3"
+
+      - name: Run actix3 tests
+        uses: actions-rs/cargo@v1
+        timeout-minutes: 20
+        with:
+          command: test
+          args: --all --features "actix3 cli chrono url uuid swagger-ui v3"
 
       - name: Run actix2 tests
         uses: actions-rs/cargo@v1

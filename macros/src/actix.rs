@@ -153,6 +153,12 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
 
     let modifiers = extract_fn_arguments_types(&item_ast);
 
+    let operation_modifier = if is_responder {
+        quote! { paperclip::actix::ResponderWrapper::<actix_web::HttpResponse> }
+    } else {
+        quote! { <<#wrapper as std::future::Future>::Output> }
+    };
+
     quote!(
         #struct_definition
 
@@ -171,7 +177,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                     <#modifiers>::update_parameter(&mut op);
                     <#modifiers>::update_security(&mut op);
                 )*
-                <<#wrapper as std::future::Future>::Output>::update_response(&mut op);
+                #operation_modifier::update_response(&mut op);
                 op
             }
 
@@ -191,7 +197,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 #(
                     <#modifiers>::update_definitions(&mut map);
                 )*
-                <<#wrapper as std::future::Future>::Output>::update_definitions(&mut map);
+                #operation_modifier::update_definitions(&mut map);
                 map
             }
         }

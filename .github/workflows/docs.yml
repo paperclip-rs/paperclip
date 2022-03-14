@@ -26,7 +26,7 @@ jobs:
       - uses: actions-rs/cargo@v1
         with:
           command: doc
-          args: --all --features "actix cli chrono url uuid swagger-ui v3" --no-deps
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3" --no-deps
 
       - name: Setup GitBook
         run: |
