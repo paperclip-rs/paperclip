@@ -1,0 +1,1 @@
+initSidebarItems({"struct":[["App","Wrapper for `actix_web::App`."]],"trait":[["OpenApiExt","Extension trait for actix-web applications."]]});

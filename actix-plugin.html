@@ -264,32 +264,34 @@
                                 <section class="normal markdown-section">
                                 
                                 <h1 id="host-openapi-spec-through-actix-web">Host OpenAPI spec through actix-web</h1>
-<p>With <code>actix</code> feature enabled, paperclip exports a plugin for <a href="https://github.com/actix/actix-web" target="_blank">actix-web</a> framework to host OpenAPI v2 spec for your APIs <em>automatically</em>. While it&apos;s not feature complete, you can rely on it to not break your actix-web flow.</p>
-<p>Let&apos;s start with a simple actix-web application. It has <code>actix-web</code> and <code>serde</code> for JSON&apos;ifying your APIs. Let&apos;s also add <code>paperclip</code> with <code>actix</code> feature.</p>
+<p>With <code>actix4</code> feature enabled, paperclip exports a plugin for <a href="https://github.com/actix/actix-web" target="_blank">actix-web</a> framework to host OpenAPI v2 spec for your APIs <em>automatically</em>. While it&apos;s not feature complete, you can rely on it to not break your actix-web flow.</p>
+<p>Let&apos;s start with a simple actix-web application. It has <code>actix-web</code> and <code>serde</code> for JSON&apos;ifying your APIs. Let&apos;s also add <code>paperclip</code> with <code>actix4</code> feature.</p>
 <pre><code class="lang-toml"><span class="hljs-comment"># [package] ignored for brevity</span>
 <span class="hljs-section">
 [dependencies]</span>
 <span class="hljs-comment"># actix-web 2.0 is supported through &quot;actix2&quot; and &quot;actix2-nightly&quot; features</span>
-<span class="hljs-attr">actix-web</span> = <span class="hljs-string">&quot;3.0&quot;</span>
-<span class="hljs-comment"># The &quot;actix-nightly&quot; feature can be specified if you&apos;re using nightly compiler. Even though</span>
+<span class="hljs-comment"># actix-web 3.0 is supported through &quot;actix3&quot; and &quot;actix3-nightly&quot; features</span>
+<span class="hljs-attr">actix-web</span> = <span class="hljs-string">&quot;4.0&quot;</span>
+<span class="hljs-comment"># The &quot;actix4-nightly&quot; feature can be specified if you&apos;re using nightly compiler. Even though</span>
 <span class="hljs-comment"># this plugin works smoothly with the nightly compiler, it also works in stable</span>
-<span class="hljs-comment"># channel (replace &quot;actix-nightly&quot; feature with &quot;actix&quot; in that case). There maybe compilation errors,</span>
+<span class="hljs-comment"># channel (replace &quot;actix4-nightly&quot; feature with &quot;actix4&quot; in that case). There maybe compilation errors,</span>
 <span class="hljs-comment"># but those can be fixed.</span>
 <span class="hljs-comment"># Add the &quot;v3&quot; option if you want to expose an OpenAPI v3 document</span>
-<span class="hljs-attr">paperclip</span> = { version = <span class="hljs-string">&quot;0.6&quot;</span>, features = [<span class="hljs-string">&quot;actix&quot;</span>] }
-<span class="hljs-attr">serde</span> = <span class="hljs-string">&quot;1.0&quot;</span>
+<span class="hljs-attr">paperclip</span> = { version = <span class="hljs-string">&quot;0.6&quot;</span>, features = [<span class="hljs-string">&quot;actix4&quot;</span>] }
+<span class="hljs-attr">serde</span> = { version = <span class="hljs-string">&quot;1.0&quot;</span>, features = [<span class="hljs-string">&quot;derive&quot;</span>] }
 </code></pre>
 <p>Our <code>main.rs</code> looks like this:</p>
-<pre><code class="lang-rust"><span class="hljs-keyword">use</span> actix_web::{App, HttpServer, web::{<span class="hljs-keyword">self</span>, Json}};
+<pre><code class="lang-rust"><span class="hljs-keyword">use</span> actix_web::{App, HttpServer, Error, web::{<span class="hljs-keyword">self</span>, Json}};
 <span class="hljs-keyword">use</span> serde::{Serialize, Deserialize};
 
+<span class="hljs-comment">// Mark containers (body, query, parameter, etc.) like so...</span>
 <span class="hljs-meta">#[derive(Serialize, Deserialize)]</span>
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Pet</span></span> {
     name: <span class="hljs-built_in">String</span>,
     id: <span class="hljs-built_in">Option</span>&lt;<span class="hljs-keyword">i64</span>&gt;,
 }
 
-async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">echo_pet</span></span>(body: Json&lt;Pet&gt;) -&gt; <span class="hljs-built_in">Result</span>&lt;Json&lt;Pet&gt;, ()&gt; {
+async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">echo_pet</span></span>(body: Json&lt;Pet&gt;) -&gt; <span class="hljs-built_in">Result</span>&lt;Json&lt;Pet&gt;, Error&gt; {
     <span class="hljs-literal">Ok</span>(body)
 }
 
@@ -305,7 +307,7 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
 }
 </code></pre>
 <p>Now, let&apos;s modify it to use the plugin!</p>
-<pre><code class="lang-rust"><span class="hljs-keyword">use</span> actix_web::{App, HttpServer};
+<pre><code class="lang-rust"><span class="hljs-keyword">use</span> actix_web::{App, HttpServer, Error};
 <span class="hljs-keyword">use</span> paperclip::actix::{
     <span class="hljs-comment">// extension trait for actix_web::App and proc-macro attributes</span>
     OpenApiExt, Apiv2Schema, api_v2_operation,
@@ -327,7 +329,7 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
 <span class="hljs-meta">#[api_v2_operation]</span>
 <span class="hljs-comment">// Add the next line if you want to use the macro syntax</span>
 <span class="hljs-comment">// #[post(&quot;/pets&quot;)]</span>
-async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">echo_pet</span></span>(body: Json&lt;Pet&gt;) -&gt; <span class="hljs-built_in">Result</span>&lt;Json&lt;Pet&gt;, ()&gt; {
+async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span class="hljs-title">echo_pet</span></span>(body: Json&lt;Pet&gt;) -&gt; <span class="hljs-built_in">Result</span>&lt;Json&lt;Pet&gt;, Error&gt; {
     <span class="hljs-literal">Ok</span>(body)
 }
 
@@ -351,7 +353,10 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
 
         <span class="hljs-comment">// .with_raw_json_spec(|app, spec| {</span>
         <span class="hljs-comment">//     app.route(&quot;/api/spec&quot;, web::get().to(move || {</span>
-        <span class="hljs-comment">//         actix_web::HttpResponse::Ok().json(&amp;spec)</span>
+        <span class="hljs-comment">//         let spec = spec.clone();</span>
+        <span class="hljs-comment">//         async move {</span>
+        <span class="hljs-comment">//             paperclip::actix::HttpResponseWrapper(actix_web::HttpResponse::Ok().json(&amp;spec))</span>
+        <span class="hljs-comment">//         }</span>
         <span class="hljs-comment">//     }))</span>
         <span class="hljs-comment">// })</span>
 
@@ -373,10 +378,12 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
 </ul>
 <p>Note that we never touched the service, resources, routes or anything else! This means that our original actix-web flow is unchanged.</p>
 <p>Now you can check the API with the following <strong>cURL</strong> command:</p>
-<pre><code>curl -X POST http://localhost:8080/pets -H &quot;Content-Type: application/json&quot; -d &apos;{&quot;id&quot;:1,&quot;name&quot;:&quot;Felix&quot;}&apos;
-</code></pre><p>And see the specs with this:</p>
-<pre><code>curl http://localhost:8080/api/spec/v2
-</code></pre><p>... we get the swagger spec as a JSON!</p>
+<pre><code class="lang-sh">curl -X POST http://localhost:8080/pets -H <span class="hljs-string">&quot;Content-Type: application/json&quot;</span> <span class="hljs-_">-d</span> <span class="hljs-string">&apos;{&quot;id&quot;:1,&quot;name&quot;:&quot;Felix&quot;}&apos;</span>
+</code></pre>
+<p>And see the specs with this:</p>
+<pre><code class="lang-sh">curl http://localhost:8080/api/spec/v2
+</code></pre>
+<p>... we get the swagger spec as a JSON!</p>
 <pre><code class="lang-js"><span class="hljs-comment">// <span class="hljs-doctag">NOTE:</span> Formatted for clarity</span>
 {
   <span class="hljs-string">&quot;swagger&quot;</span>: <span class="hljs-string">&quot;2.0&quot;</span>,
@@ -405,16 +412,16 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
               <span class="hljs-string">&quot;$ref&quot;</span>: <span class="hljs-string">&quot;#/definitions/Pet&quot;</span>
             }
           }
-        }
-      },
-      <span class="hljs-string">&quot;parameters&quot;</span>: [{
-        <span class="hljs-string">&quot;in&quot;</span>: <span class="hljs-string">&quot;body&quot;</span>,
-        <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;body&quot;</span>,
-        <span class="hljs-string">&quot;required&quot;</span>: <span class="hljs-literal">true</span>,
-        <span class="hljs-string">&quot;schema&quot;</span>: {
-          <span class="hljs-string">&quot;$ref&quot;</span>: <span class="hljs-string">&quot;#/definitions/Pet&quot;</span>
-        }
-      }]
+        },
+        <span class="hljs-string">&quot;parameters&quot;</span>: [{
+          <span class="hljs-string">&quot;in&quot;</span>: <span class="hljs-string">&quot;body&quot;</span>,
+          <span class="hljs-string">&quot;name&quot;</span>: <span class="hljs-string">&quot;body&quot;</span>,
+          <span class="hljs-string">&quot;required&quot;</span>: <span class="hljs-literal">true</span>,
+          <span class="hljs-string">&quot;schema&quot;</span>: {
+            <span class="hljs-string">&quot;$ref&quot;</span>: <span class="hljs-string">&quot;#/definitions/Pet&quot;</span>
+          }
+        }]
+      }
     }
   },
   <span class="hljs-string">&quot;info&quot;</span>: {
@@ -495,7 +502,7 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Actix-web plugin","level":"1.4","depth":1,"next":{"title":"Adding operation metadata","level":"1.4.1","depth":2,"path":"actix-operation-meta.md","ref":"actix-operation-meta.md","articles":[]},"previous":{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"actix-plugin.md","mtime":"2022-03-05T21:22:40.810Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-03-05T21:25:38.639Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Actix-web plugin","level":"1.4","depth":1,"next":{"title":"Adding operation metadata","level":"1.4.1","depth":2,"path":"actix-operation-meta.md","ref":"actix-operation-meta.md","articles":[]},"previous":{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"actix-plugin.md","mtime":"2022-03-14T14:12:45.643Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-03-14T14:15:51.316Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
