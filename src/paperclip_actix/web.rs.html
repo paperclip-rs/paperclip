@@ -763,7 +763,6 @@
 <span id="758">758</span>
 <span id="759">759</span>
 <span id="760">760</span>
-<span id="761">761</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
 <span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).</span>
@@ -1516,15 +1515,14 @@
         <span class="self">self</span>
     }
 
-    <span class="doccomment">/// Proxy for [`actix_web::web::ServiceConfig::app_data`](https://docs.rs/actix-web/3.3.2/actix_web/web/struct.ServiceConfig.html#method.app_data).</span>
+    <span class="doccomment">/// Proxy for [`actix_web::web::ServiceConfig::app_data`](https://docs.rs/actix-web/4.0.1/actix_web/web/struct.ServiceConfig.html#method.app_data).</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3&quot;</span>)]</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">app_data</span><span class="op">&lt;</span><span class="ident">U</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">U</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="self">Self</span> {
         <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">app_data</span>(<span class="ident">data</span>);
         <span class="self">self</span>
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (e95b10ba4 2022-03-13)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (285fa7ecd 2022-03-14)" ></div>
 </body></html>
