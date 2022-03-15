@@ -750,10 +750,9 @@ impl<'a> ServiceConfig<'a> {
         self
     }
 
-    /// Proxy for [`actix_web::web::ServiceConfig::app_data`](https://docs.rs/actix-web/3.3.2/actix_web/web/struct.ServiceConfig.html#method.app_data).
+    /// Proxy for [`actix_web::web::ServiceConfig::app_data`](https://docs.rs/actix-web/4.0.1/actix_web/web/struct.ServiceConfig.html#method.app_data).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    #[cfg(any(feature = "actix3", feature = "actix4"))]
     pub fn app_data<U: 'static>(&mut self, data: U) -> &mut Self {
         self.inner.app_data(data);
         self
