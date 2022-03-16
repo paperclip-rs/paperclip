@@ -486,7 +486,7 @@ where
                 op.set_parameter_names_from_path_template(&p);
             }
 
-            if let Some(mut existing) = self.path_map.get_mut(&p){
+            if let Some(existing) = self.path_map.get_mut(&p){
                 existing.methods.append(&mut map.methods);
                 existing.parameters.append(&mut map.parameters);
             } else {

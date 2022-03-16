@@ -3343,7 +3343,7 @@ fn test_method_macro_subscope() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(scope("/v0/pets")
+                .service(web::scope("/v0/pets")
                 .service(get_pets)
                 .service(put_pet)
                 .service(post_pet)
