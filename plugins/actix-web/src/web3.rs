@@ -486,7 +486,13 @@ where
                 op.set_parameter_names_from_path_template(&p);
             }
 
-            self.path_map.insert(p.clone(), map);
+            if let Some(mut existing) = self.path_map.get_mut(&p){
+                existing.methods.append(&mut map.methods);
+                existing.parameters.append(&mut map.parameters);
+            } else {
+                self.path_map.insert(p.clone(), map);
+            }
+
         }
 
         SecurityScheme::append_map(factory.security_definitions(), &mut self.security);
