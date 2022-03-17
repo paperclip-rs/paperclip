@@ -9,7 +9,13 @@ impl From<v2::Info> for openapiv3::Info {
             contact: v2.contact.map(|c| c.into()),
             license: v2.license.map(From::from),
             version: v2.version,
-            extensions: indexmap::IndexMap::new(),
+            extensions: v2.extensions.into_iter().fold(
+                indexmap::IndexMap::new(),
+                |mut i, (k, v)| {
+                    i.insert(k, v);
+                    i
+                },
+            ),
         }
     }
 }

@@ -1,7 +1,9 @@
 # Paperclip
 
-[![Build Status](https://api.travis-ci.org/wafflespeanut/paperclip.svg?branch=master)](https://travis-ci.org/wafflespeanut/paperclip)
-[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip)
+![Build Status](https://github.com/paperclip-rs/paperclip/actions/workflows/cicd.yml/badge.svg)
+![Linter Status](https://github.com/paperclip-rs/paperclip/actions/workflows/linter.yml/badge.svg)
+[![Usage docs](https://img.shields.io/badge/quickstart-blue.svg)](https://paperclip-rs.github.io/paperclip)
+[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip-rs.github.io/paperclip/paperclip)
 [![Crates.io](https://img.shields.io/crates/v/paperclip.svg)](https://crates.io/crates/paperclip)
 
 Paperclip offers tooling for the [OpenAPI specification](https://github.com/OAI/OpenAPI-Specification/). Once complete, it will provide:
@@ -14,9 +16,9 @@ It's currently under active development and may not be ready for production use 
 
 You may be interested in:
 
- - [Examples and Usage](https://paperclip.waffles.space/).
- - [Features being worked on](https://github.com/wafflespeanut/paperclip/projects).
- - [API documentation](https://paperclip.waffles.space/paperclip).
+ - [Examples and Usage](https://paperclip-rs.github.io/paperclip).
+ - [Features being worked on](https://github.com/paperclip-rs/paperclip/projects).
+ - [API documentation](https://paperclip-rs.github.io/paperclip/paperclip).
 
 ## Developing locally
 
@@ -58,7 +60,7 @@ Folks who have sponsored for the development of this project:
 
 I don't think proc macros are the right way to go for REST APIs. We need to be able to **see** the generated code somehow to identify names, fields, supported methods, etc. With proc macros, you sorta have to guess.
 
-This doesn't mean you can't generate APIs in compile-time. The only difference is that you'll be using [build scripts](https://paperclip.waffles.space/build-script.html) instead and `include!` the relevant code. That said, [we're using proc-macros](./macros) for other things.
+This doesn't mean you can't generate APIs in compile-time. The only difference is that you'll be using [build scripts](https://paperclip-rs.github.io/paperclip/build-script.html) instead and `include!` the relevant code. That said, [we're using proc-macros](./macros) for other things.
 
 > The error thrown at compile-time doesn't look like it's very useful. Isn't there a better way to do this?
 

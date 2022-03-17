@@ -38,7 +38,7 @@ reqwest = { version = "0.10", features = ["stream", "json"] }
 paperclip = { version = "0.5", features = ["v2", "codegen"] }
 ```
 
-- Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/wafflespeanut/paperclip/master/tests/pet-v2.yaml).
+- Add `my-spec.yaml` to the project root with contents from [this file](https://raw.githubusercontent.com/paperclip-rs/paperclip/master/tests/pet-v2.yaml).
 
 - Now, add `build.rs` to the project root with the following:
 

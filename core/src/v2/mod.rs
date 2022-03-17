@@ -14,6 +14,9 @@ pub use self::actix::{
     AcceptedJson, CreatedJson, NoContent, OperationModifier, ResponderWrapper, ResponseWrapper,
 };
 
+#[cfg(feature = "actix4")]
+pub use self::actix::HttpResponseWrapper;
+
 pub use self::{
     models::{DefaultSchema, ResolvableApi},
     schema::Schema,
@@ -60,6 +63,7 @@ impl<S: Schema + Default> ResolvableApi<S> {
             security: self.security,
             security_definitions: self.security_definitions,
             tags: self.tags,
+            extensions: self.extensions,
         })
     }
 }

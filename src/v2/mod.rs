@@ -26,7 +26,6 @@
 //! [kube-spec]: https://github.com/kubernetes/kubernetes/tree/afd928b8bc81cea385eba4c94558373df7aeae75/api/openapi-spec
 //!
 //! ```rust,no_run
-//! #[macro_use] extern crate paperclip;
 //! #[macro_use] extern crate serde_derive; // NOTE: We're using serde for decoding stuff.
 //!
 //! use paperclip::v2::{self, ResolvableApi};
@@ -44,7 +43,7 @@
 //!     Other,
 //! }
 //!
-//! #[api_v2_schema]
+//! #[paperclip::api_v2_schema]
 //! #[derive(Debug, Deserialize)]
 //! struct K8sSchema {
 //!     #[serde(rename = "x-kubernetes-patch-strategy")]
@@ -66,13 +65,16 @@
 //! and add them to the known map of definitions.
 //!
 //! ```rust,no_run
+//! #[cfg(feature = "codegen")] {
 //! # use paperclip::v2::{self, ResolvableApi, DefaultSchema};
 //! # let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //!
 //! let resolved = api.resolve().unwrap();
+//! }
 //! ```
 //!
 //! ```rust,no_run
+//! #[cfg(feature = "codegen")] {
 //! # use paperclip::v2::{self, ResolvableApi, DefaultSchema};
 //! # let api: ResolvableApi<DefaultSchema> = v2::from_reader(&mut std::io::Cursor::new(vec![])).unwrap();
 //! use paperclip::v2::{DefaultEmitter, EmitterState, Emitter};
@@ -81,6 +83,7 @@
 //! state.working_dir = "/path/to/my/crate".into();
 //! let emitter = DefaultEmitter::from(state);
 //! emitter.generate(&api).unwrap(); // generate code!
+//! }
 //! ```
 
 #[cfg(feature = "codegen")]

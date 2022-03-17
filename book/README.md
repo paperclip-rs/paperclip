@@ -1,4 +1,4 @@
-[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip.waffles.space/paperclip)
+[![API docs](https://img.shields.io/badge/docs-latest-blue.svg)](https://paperclip-rs.github.io/paperclip/paperclip)
 [![Crates.io](https://img.shields.io/crates/v/paperclip.svg)](https://crates.io/crates/paperclip)
 
 # Paperclip

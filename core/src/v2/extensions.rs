@@ -1,6 +1,7 @@
 use serde::{Deserialize, Deserializer, Serialize, Serializer};
 
 use once_cell::sync::Lazy;
+
 use std::{
     cmp::Ordering,
     collections::BTreeMap,
@@ -64,7 +65,7 @@ pub struct Coders(BTreeMap<MediaRange, Arc<Coder>>);
 impl Coders {
     /// Returns the matching coder for the given media range (if any).
     ///
-    /// Matching algorithm from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126
+    /// Matching algorithm from <https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126>
     pub fn matching_coder(&self, ty: &MediaRange) -> Option<Arc<Coder>> {
         self.0
             .get(ty)
@@ -204,5 +205,60 @@ impl<'de> Deserialize<'de> for Coders {
         D: Deserializer<'de>,
     {
         Ok(Coders(BTreeMap::deserialize(deserializer)?))
+    }
+}
+
+/// Method used by openapiv3 crate.
+/// Works when deserializing but one could still add keys that don't start with "x-".
+/// todo: add own extensions map type that enforces "x-".
+pub(crate) fn deserialize_extensions<'de, D>(
+    deserializer: D,
+) -> Result<BTreeMap<String, serde_json::Value>, D::Error>
+where
+    D: Deserializer<'de>,
+{
+    deserializer.deserialize_map(PredicateVisitor(
+        |key: &String| key.starts_with("x-"),
+        std::marker::PhantomData,
+    ))
+}
+
+/// Modified to BTreeMap from openapiv3 crate
+/// Used to deserialize IndexMap<K, V> that are flattened within other structs.
+/// This only adds keys that satisfy the given predicate.
+pub(crate) struct PredicateVisitor<F, K, V>(pub F, pub std::marker::PhantomData<(K, V)>);
+
+impl<'de, F, K, V> serde::de::Visitor<'de> for PredicateVisitor<F, K, V>
+where
+    F: Fn(&K) -> bool,
+    K: Deserialize<'de> + Eq + std::hash::Hash + std::cmp::Ord,
+    V: Deserialize<'de>,
+{
+    type Value = BTreeMap<K, V>;
+
+    fn expecting(&self, formatter: &mut std::fmt::Formatter) -> std::fmt::Result {
+        formatter.write_str("a map whose fields obey a predicate")
+    }
+
+    fn visit_map<A>(self, mut map: A) -> Result<Self::Value, A::Error>
+    where
+        A: serde::de::MapAccess<'de>,
+    {
+        let mut ret = Self::Value::default();
+
+        loop {
+            match map.next_key::<K>() {
+                Err(_) => (),
+                Ok(None) => break,
+                Ok(Some(key)) if self.0(&key) => {
+                    let _ = ret.insert(key, map.next_value()?);
+                }
+                Ok(Some(_)) => {
+                    let _ = map.next_value::<serde::de::IgnoredAny>()?;
+                }
+            }
+        }
+
+        Ok(ret)
     }
 }

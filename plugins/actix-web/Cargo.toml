@@ -1,30 +1,34 @@
 [package]
 name = "paperclip-actix"
-version = "0.3.0"
+version = "0.4.2"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "Paperclip OpenAPI plugin for actix-web framework"
-documentation = "https://paperclip.waffles.space/paperclip_actix"
+documentation = "https://paperclip-rs.github.io/paperclip/paperclip_actix"
 license = "MIT OR Apache-2.0"
-homepage = "https://github.com/wafflespeanut/paperclip"
-repository = "https://github.com/wafflespeanut/paperclip"
+homepage = "https://github.com/paperclip-rs/paperclip"
+repository = "https://github.com/paperclip-rs/paperclip"
 
 [dependencies]
+paperclip-core = { path = "../../core", version = "0.4.0", optional = true }
+paperclip-macros = { path = "../../macros", version = "0.5.0", features = ["actix"] }
 futures = "0.3"
-actix-service = "1.0"
+actix-service1 = { version = "1", package = "actix-service" }
+actix-service2 = { version = "2", package = "actix-service" }
 actix-web2 = { version = "2", default-features = false, optional = true, package = "actix-web" }
 actix-web3 = { version = "3", default-features = false, optional = true, package = "actix-web" }
-paperclip-core = { path = "../../core", version = "0.3.0", optional = true }
-paperclip-macros = { path = "../../macros", version = "0.4.0", features = ["actix"] }
-parking_lot = ">=0.10,<0.12"
+actix-web4 = { version = "4", default-features = false, optional = true, package = "actix-web" }
+parking_lot = ">=0.10, <0.13"
 serde_json = "1.0"
 once_cell = "1.4"
-openapiv3 = { version = "0.4.0", optional = true }
+openapiv3 = { version = "1.0.0-beta.5", optional = true }
+include_dir = { version = "0.7.2", optional = true }
 
 [features]
-actix = ["actix3"]
 actix2 = ["actix-web2", "paperclip-core/actix2"]
 actix3 = ["actix-web3", "paperclip-core/actix3"]
+actix4 = ["actix-web4", "paperclip-core/actix4"]
 nightly = ["paperclip-core/nightly"]
 normalize = []
 v3 = ["openapiv3"]
+swagger-ui = ["include_dir"]

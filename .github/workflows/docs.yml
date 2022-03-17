@@ -1,0 +1,40 @@
+name: Deploy Docs to GitHub Pages
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  docs:
+    name: GitHub Pages
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        rust:
+          - nightly
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          submodules: recursive
+      - uses: actions-rs/toolchain@v1
+        with:
+          components: rustfmt, rust-src
+          toolchain: ${{ matrix.rust }}
+          override: true
+
+      - uses: actions-rs/cargo@v1
+        with:
+          command: doc
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3" --no-deps
+
+      - name: Setup GitBook
+        run: |
+          npx gitbook-cli@2.2.0 build book/
+          cp -r book/_book/* target/doc/
+
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          personal_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: ./target/doc

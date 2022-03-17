@@ -15,22 +15,26 @@ prepare:
 
 check:
 	cargo +nightly fmt --all
-	cargo clippy --all --features "actix" -- -D clippy::all
+	cargo clippy --all --features "actix4" -- -D clippy::all
 
 check_nightly:
 	cargo +nightly fmt --all
-	cargo +nightly clippy --all --features "actix" -- -D clippy::all
+	cargo +nightly clippy --all --features "actix4" -- -D clippy::all
 
 doc:
 	cargo doc --all --all-features --no-deps
 
 build:
 	cargo build
-	cargo build --features actix
+	cargo build --features actix4
 	cargo build --features cli
 
 test:
-	cargo test --all --features "actix cli chrono uuid"
+	cargo test --all --features "actix4 cli chrono uuid swagger-ui"
+
+	# We test this one seperately as it affects the generated spec, which'd fail the other tests
+	cargo test test_module_path_in_definition_name --features "actix4 cli chrono uuid swagger-ui path-in-definition"
+
 	# Compile the code generated through tests.
 	cd tests/test_pet && cargo check
 	cd tests/test_pet/cli && CARGO_TARGET_DIR=../target cargo check

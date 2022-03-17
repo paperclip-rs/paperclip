@@ -217,6 +217,9 @@ impl_type_simple!(
     DataTypeFormat::Float
 );
 
+#[cfg(feature = "url")]
+impl_type_simple!(url::Url, DataType::String, DataTypeFormat::Url);
+
 #[cfg(feature = "uuid")]
 impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
@@ -240,12 +243,16 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::Date<T> {
     }
 }
 
+impl_type_simple!(std::net::IpAddr, DataType::String, DataTypeFormat::Ip);
+impl_type_simple!(std::net::Ipv4Addr, DataType::String, DataTypeFormat::IpV4);
+impl_type_simple!(std::net::Ipv6Addr, DataType::String, DataTypeFormat::IpV6);
+
 /// Represents a OpenAPI v2 schema object convertible. This is auto-implemented by
 /// framework-specific macros:
 ///
-/// - [`Apiv2Schema`](https://paperclip.waffles.space/paperclip_actix/derive.Apiv2Schema.html)
+/// - [`Apiv2Schema`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Schema.html)
 /// for schema objects.
-/// - [`Apiv2Security`](https://paperclip.waffles.space/paperclip_actix/derive.Apiv2Security.html)
+/// - [`Apiv2Security`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)
 /// for security scheme objects.
 ///
 /// This is implemented for primitive types by default.
@@ -479,7 +486,7 @@ impl_schema_map!(BTreeMap<K, V>);
 /// Represents a OpenAPI v2 operation convertible. This is auto-implemented by
 /// framework-specific macros:
 ///
-/// - [`paperclip_actix::api_v2_operation`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_operation.html).
+/// - [`paperclip_actix::api_v2_operation`](https://paperclip-rs.github.io/paperclip/paperclip_actix/attr.api_v2_operation.html).
 ///
 /// **NOTE:** The type parameters specified here aren't used by the trait itself,
 /// but *can* be used for constraining stuff in framework-related impls.
@@ -497,7 +504,7 @@ pub trait Apiv2Operation {
 /// Represents a OpenAPI v2 error convertible. This is auto-implemented by
 /// framework-specific macros:
 ///
-/// - [`paperclip_actix::api_v2_errors`](https://paperclip.waffles.space/paperclip_actix/attr.api_v2_errors.html).
+/// - [`paperclip_actix::api_v2_errors`](https://paperclip-rs.github.io/paperclip/paperclip_actix/attr.api_v2_errors.html).
 pub trait Apiv2Errors {
     const ERROR_MAP: &'static [(u16, &'static str)] = &[];
     fn update_error_definitions(_op: &mut DefaultOperationRaw) {}

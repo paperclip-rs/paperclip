@@ -27,14 +27,11 @@ impl From<OperationResponse<'_>> for openapiv3::Response {
                             .response
                             .schema
                             .as_ref()
-                            .map(|s| s.data_type.clone().map(|d| d == v2::DataType::File))
-                            .flatten()
+                            .and_then(|s| s.data_type.map(|d| d == v2::DataType::File))
                             .unwrap_or_default();
                         let media = openapiv3::MediaType {
                             schema: Some(response.into()),
-                            example: None,
-                            examples: indexmap::IndexMap::new(),
-                            encoding: indexmap::IndexMap::new(),
+                            ..Default::default()
                         };
 
                         let mut map = indexmap::IndexMap::new();
@@ -79,9 +76,7 @@ impl From<OperationEitherResponse<'_>> for openapiv3::ReferenceOr<openapiv3::Res
                     content: {
                         let media = openapiv3::MediaType {
                             schema: Some(reference.into()),
-                            example: None,
-                            examples: indexmap::IndexMap::new(),
-                            encoding: indexmap::IndexMap::new(),
+                            ..Default::default()
                         };
                         let mut map = indexmap::IndexMap::new();
                         match v2.operation.produces.as_ref() {

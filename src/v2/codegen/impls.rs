@@ -5,7 +5,7 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{CollectionFormat, ParameterIn, JSON_CODER, JSON_MIME};
-use heck::{CamelCase, KebabCase, SnakeCase};
+use heck::{ToKebabCase, ToSnakeCase};
 
 use std::{
     fmt::{self, Display, Write},
@@ -14,7 +14,7 @@ use std::{
 };
 
 // Using Debug directly to escape/format strings (so they can be put safely in a YAML property) is broken in Rust < 1.53.0
-// See https://github.com/wafflespeanut/paperclip/pull/315#issuecomment-823918807
+// See https://github.com/paperclip-rs/paperclip/pull/315#issuecomment-823918807
 // See https://github.com/rust-lang/rust/issues/83046
 // The following code:
 //   - tests (once) if this issue exists in the current context (depends on which version of rustc was used)
@@ -110,7 +110,7 @@ impl ApiObject {
             } else {
                 Some(main_builder)
             })
-            .filter_map(|b| b)
+            .flatten()
             .chain(path_iter)
             .collect::<Vec<_>>()
             .into(),
@@ -181,7 +181,7 @@ impl<'a> ApiObjectImpl<'a> {
             f.write_str("\n        \"")?;
             f.write_str(&name)?;
             f.write_str("\" => {\n            let builder = ")?;
-            f.write_str(&builder.helper_module_prefix)?;
+            f.write_str(builder.helper_module_prefix)?;
             f.write_str(&self.inner.path)?;
             f.write_str("::")?;
             builder.write_name(f)?;
@@ -283,12 +283,12 @@ impl<'a> ApiObjectImpl<'a> {
                         }
 
                         f.write_str("_")?;
-                        f.write_str(&object::to_snake_case(&field.name))?;
+                        f.write_str(&object::to_snake_case(field.name))?;
                         f.write_str(": core::marker::PhantomData,")?;
                     // If we have a container, then we store parameters inside that.
                     } else if field.prop.is_parameter() && !needs_container {
                         f.write_str("\n            param_")?;
-                        f.write_str(&object::to_snake_case(&field.name))?;
+                        f.write_str(&object::to_snake_case(field.name))?;
                         f.write_str(": None,")?;
                     }
 
@@ -408,7 +408,7 @@ where
         let mut phantom = String::new();
         self.0.struct_fields_iter().try_for_each(|field| {
             let (sk, kk) = (
-                object::to_snake_case(&field.name),
+                object::to_snake_case(field.name),
                 field.name.to_kebab_case(),
             );
             if field.prop.is_required() {
@@ -512,7 +512,7 @@ where
 
                     f.write_str(self.0.helper_module_prefix)?;
                     f.write_str("generics::")?;
-                    f.write_str(&object::to_camel_case(&n))?;
+                    f.write_str(&object::to_pascal_case(n))?;
                     f.write_str("Exists")
                 })?;
 
@@ -564,7 +564,7 @@ where
     where
         F: Write,
     {
-        let field_name = object::to_snake_case(&field.name);
+        let field_name = object::to_snake_case(field.name);
         let (prop_is_parameter, prop_is_required, needs_container) = (
             field.prop.is_parameter(),
             field.prop.is_required(),
@@ -589,7 +589,7 @@ where
         if field.needs_file {
             f.write_str("impl AsRef<std::path::Path>")?;
         } else {
-            self.write_builder_ty(&field.ty, &field.strict_child_fields, field.needs_any, f)?;
+            self.write_builder_ty(field.ty, field.strict_child_fields, field.needs_any, f)?;
         }
 
         f.write_str(") -> ")?;
@@ -809,7 +809,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
                 f.write_str("(&self) -> Option<")?;
                 ApiObjectBuilder::write_wrapped_ty(
-                    &self.builder.helper_module_prefix,
+                    self.builder.helper_module_prefix,
                     &header.ty_path,
                     &header.delimiting,
                     f,
@@ -874,7 +874,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     /// Handle field for a path parameter.
     fn handle_path_param(&mut self, field: StructField) {
         let _ = write!(self.path_items, ", {}=self.", &field.name);
-        let name = object::to_snake_case(&field.name);
+        let name = object::to_snake_case(field.name);
         if self.needs_container {
             self.path_items.push_str("inner.");
         }
@@ -889,7 +889,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     /// Handle field for a header parameter.
     fn handle_header_param(&mut self, field: StructField) {
         let is_required = field.prop.is_required();
-        let name = object::to_snake_case(&field.name);
+        let name = object::to_snake_case(field.name);
         let mut param_ref = String::from("&self.");
         if self.needs_container {
             param_ref.push_str("inner.");
@@ -925,7 +925,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
     /// Handle field for a form data parameter.
     fn handle_form_param(&mut self, field: StructField) {
-        let name = object::to_snake_case(&field.name);
+        let name = object::to_snake_case(field.name);
         if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
             let _ = write!(
                 self.form,
@@ -987,7 +987,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
 
     /// Handle field for an URL query parameter.
     fn handle_query_param(&mut self, field: StructField) {
-        let name = object::to_snake_case(&field.name);
+        let name = object::to_snake_case(field.name);
         if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
             self.multi_value_query.push(format!(
                 "
@@ -1003,7 +1003,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         }
 
         if !self.query.is_empty() {
-            self.query.push_str(",");
+            self.query.push(',');
         }
 
         let _ = write!(self.query, "\n            ({:?}, self.", &field.name);
@@ -1024,10 +1024,10 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         F: Write,
     {
         f.write_str("\n\n    fn modify(&self, req: Client::Request) -> Result<Client::Request, ")?;
-        f.write_str(&self.builder.helper_module_prefix)?;
+        f.write_str(self.builder.helper_module_prefix)?;
         f.write_str("client::ApiError<Client::Response>> {")?;
         f.write_str("\n        use ")?;
-        f.write_str(&self.builder.helper_module_prefix)?;
+        f.write_str(self.builder.helper_module_prefix)?;
         f.write_str("client::Request;")?;
 
         if !self.headers.is_empty() {

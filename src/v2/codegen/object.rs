@@ -10,14 +10,13 @@ use super::{
     RUST_KEYWORDS,
 };
 use crate::v2::models::{Coder, CollectionFormat, HttpMethod, ParameterIn};
-use heck::{CamelCase, SnakeCase};
+use heck::{ToPascalCase, ToSnakeCase};
 use once_cell::sync::Lazy;
 use regex::{Captures, Regex};
 
 use std::{
     collections::{BTreeMap, HashSet},
     fmt::{self, Display, Write},
-    iter,
     sync::Arc,
 };
 
@@ -102,10 +101,7 @@ pub enum ObjectContainer {
 impl ObjectContainer {
     /// Returns whether this object is an enum.
     pub fn is_enum(&self) -> bool {
-        match self {
-            ObjectContainer::Enum { .. } => true,
-            _ => false,
-        }
+        matches!(self, ObjectContainer::Enum { .. })
     }
 
     /// Returns whether this enum is to represent a string.
@@ -241,9 +237,9 @@ pub fn to_snake_case(name: &str) -> String {
     new_name.to_snake_case()
 }
 
-pub fn to_camel_case(name: &str) -> String {
+pub fn to_pascal_case(name: &str) -> String {
     let new_name = AT_REGEX.replace(name, "at_");
-    new_name.to_camel_case()
+    new_name.to_pascal_case()
 }
 
 impl ApiObject {
@@ -276,7 +272,7 @@ impl ApiObject {
         F: Write,
         S: AsRef<str>,
     {
-        let indent = iter::repeat(' ').take(levels * 4).collect::<String>();
+        let indent = " ".repeat(levels * 4);
         if let Some(desc) = stuff.as_ref() {
             desc.as_ref().split('\n').try_for_each(|line| {
                 f.write_str("\n")?;
@@ -288,7 +284,7 @@ impl ApiObject {
 
                 f.write_str(" ")?;
                 f.write_str(
-                    &DOC_REGEX
+                    DOC_REGEX
                         .replace_all(line, |c: &Captures| match &c[0] {
                             "[" => "\\[",
                             "]" => "\\]",
@@ -396,26 +392,17 @@ pub(super) enum Property {
 impl Property {
     /// Whether this property is required.
     pub(super) fn is_required(self) -> bool {
-        match self {
-            Property::RequiredField | Property::RequiredParam => true,
-            _ => false,
-        }
+        matches!(self, Property::RequiredField | Property::RequiredParam)
     }
 
     /// Checks whether this property is a parameter.
     pub(super) fn is_parameter(self) -> bool {
-        match self {
-            Property::RequiredParam | Property::OptionalParam => true,
-            _ => false,
-        }
+        matches!(self, Property::RequiredParam | Property::OptionalParam)
     }
 
     /// Checks whether this property is a field.
     pub(super) fn is_field(self) -> bool {
-        match self {
-            Property::RequiredField | Property::OptionalField => true,
-            _ => false,
-        }
+        matches!(self, Property::RequiredField | Property::OptionalField)
     }
 }
 
@@ -542,7 +529,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     }))
                 }
             })
-            .filter_map(|p| p);
+            .flatten();
 
         let mut fields = vec![];
         // Check parameter-field collisions.
@@ -571,7 +558,7 @@ impl<'a> ApiObjectBuilder<'a> {
     where
         F: Write,
     {
-        f.write_str(&self.object)?;
+        f.write_str(self.object)?;
         if let Some(method) = self.method {
             write!(f, "{}", method)?;
         }
@@ -615,14 +602,14 @@ impl<'a> ApiObjectBuilder<'a> {
                     TypeParameters::ChangeOne(n) if field.name == n => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&to_camel_case(&field.name))?;
+                        f.write_str(&to_pascal_case(field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be changed to `{Name}Exists`
                     TypeParameters::ChangeAll => {
                         f.write_str(self.helper_module_prefix)?;
                         f.write_str("generics::")?;
-                        f.write_str(&to_camel_case(&field.name))?;
+                        f.write_str(&to_pascal_case(field.name))?;
                         return f.write_str("Exists");
                     }
                     // All names should be reset to `Missing{Name}`
@@ -634,7 +621,7 @@ impl<'a> ApiObjectBuilder<'a> {
                     _ => (),
                 }
 
-                f.write_str(&to_camel_case(&field.name))
+                f.write_str(&to_pascal_case(field.name))
             })?;
 
         if self.needs_any {
@@ -723,11 +710,7 @@ impl<'a> ApiObjectBuilder<'a> {
             delim_idx -= 1;
             new_ty.push_str(&ty[..idx]);
             new_ty.push_str(", ");
-            write!(
-                &mut new_ty,
-                "{}util::{:?}",
-                module_prefix, delims[delim_idx]
-            )?;
+            write!(new_ty, "{}util::{:?}", module_prefix, delims[delim_idx])?;
             new_ty.push('>');
             if idx == ty.len() - 1 {
                 break;
@@ -748,7 +731,7 @@ impl<'a> ApiObjectBuilder<'a> {
             // We address with 'self::' because it's possible for body type
             // to collide with type parameters (if any).
             f.write_str("\n    body: self::")?;
-            f.write_str(&self.object)?;
+            f.write_str(self.object)?;
             if self.needs_any {
                 ApiObject::write_any_generic(f)?;
             }
@@ -776,7 +759,7 @@ impl<'a> ApiObjectBuilder<'a> {
         }
 
         f.write_str("\n    param_")?;
-        f.write_str(&name)?;
+        f.write_str(name)?;
         f.write_str(": Option<")?;
         if ty == FILE_MARKER {
             f.write_str("std::path::PathBuf")?;
@@ -793,23 +776,23 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         f.write_str("/// Builder ")?;
         if let (Some(name), Some(m)) = (self.constructor_fn_name(), self.method) {
             f.write_str("created by [`")?;
-            f.write_str(&self.object)?;
+            f.write_str(self.object)?;
             f.write_str("::")?;
             f.write_str(&name)?;
             f.write_str("`](./struct.")?;
-            f.write_str(&self.object)?;
+            f.write_str(self.object)?;
             f.write_str(".html#method.")?;
             f.write_str(&name)?;
             f.write_str(") method for a `")?;
             f.write_str(&m.to_string().to_uppercase())?;
             f.write_str("` operation associated with `")?;
-            f.write_str(&self.object)?;
+            f.write_str(self.object)?;
             f.write_str("`.\n")?;
         } else {
             f.write_str("for [`")?;
-            f.write_str(&self.object)?;
+            f.write_str(self.object)?;
             f.write_str("`](./struct.")?;
-            f.write_str(&self.object)?;
+            f.write_str(self.object)?;
             f.write_str(".html) object.\n")?;
         }
 
@@ -858,13 +841,13 @@ impl<'a> Display for ApiObjectBuilder<'a> {
         // Write struct fields and the associated markers if needed.
         self.struct_fields_iter()
             .try_for_each::<_, fmt::Result>(|field| {
-                let (cc, sk) = (to_camel_case(field.name), to_snake_case(field.name));
+                let (cc, sk) = (to_pascal_case(field.name), to_snake_case(field.name));
                 if needs_container {
                     self.write_parameter_if_required(
                         field.prop,
                         &sk,
                         field.ty,
-                        &field.delimiting,
+                        field.delimiting,
                         &mut container,
                     )?;
                 } else {
@@ -872,7 +855,7 @@ impl<'a> Display for ApiObjectBuilder<'a> {
                         field.prop,
                         &sk,
                         field.ty,
-                        &field.delimiting,
+                        field.delimiting,
                         f,
                     )?;
                 }

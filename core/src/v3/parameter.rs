@@ -1,4 +1,4 @@
-use super::{invalid_referenceor, v2};
+use super::v2;
 
 /// helper function to convert a default raw parameter when we already know it's not part of a body
 pub(crate) fn non_body_parameter_to_v3_parameter(
@@ -131,12 +131,7 @@ pub(crate) fn non_body_parameter_to_v3_parameter(
                 v2::DataType::Boolean => openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
                 v2::DataType::Array => {
                     openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
-                        items: {
-                            match &v2.items {
-                                Some(items) => items.clone().into(),
-                                None => invalid_referenceor("Array with 0 items!".into()),
-                            }
-                        },
+                        items: v2.items.as_ref().map(|items| items.clone().into()),
                         min_items: v2.min_items.map(|v| v as usize),
                         max_items: v2.max_items.map(|v| v as usize),
                         unique_items: v2.unique_items,

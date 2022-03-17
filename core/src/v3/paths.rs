@@ -27,6 +27,8 @@ impl From<v2::DefaultPathItemRaw> for openapiv3::PathItem {
                 .parameters
             },
             extensions: indexmap::IndexMap::new(),
+            description: None,
+            summary: None,
         }
     }
 }

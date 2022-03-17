@@ -6,13 +6,30 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
-- Add support for actix-web-macros methods routing [PR#289](https://github.com/wafflespeanut/paperclip/pull/289)
+- Add openapi component rename attribute [PR#367](https://github.com/paperclip-rs/paperclip/pull/367)
+- Allow automatically adding the module path to the openapi component name, via a feature "path-in-definition" [PR#373](https://github.com/paperclip-rs/paperclip/pull/373)
+- Add missing ip, ipv4 and ipv6 string format types
+- Add support for actix-web 4
+
+### Fixed
+- Add more tuple sizes for web::Path for OperationModifier impl [PR#379](https://github.com/paperclip-rs/paperclip/pull/379)
+- Add missing extensions to openapi v2 Info
+
+## [0.6.1] - 2021-10-15
+### Fixed
+- Actix2 plugin: fix compilation error `ReqData` not found
+
+## [0.6.0] - 2021-10-13
+### Added
+- Add support for actix-web-macros methods routing [PR#289](https://github.com/paperclip-rs/paperclip/pull/289)
 - Actix plugin: add an empty impl for actix-web `ReqData<T>`
 - Add support for the `#[serde(skip)]` attribute in structs and enums.
 - Expose openapi v3 spec through `with_json_spec_v3_at` and `with_raw_json_spec_v3` - this is done through a conversion from
  the v2 types to v3 and so all existing code should be valid. It also means that we're not yet exposing any specific
  v3 features.
 - Added new method `trim_base_path` to trim the api base path from all method paths.
+- `Apiv2Schema` supports `url` [PR#334](https://github.com/paperclip-rs/paperclip/pull/334)
+- Add [swagger-ui](https://swagger.io/tools/swagger-ui/) for visualization/test of API via `with_swagger_ui_at` [PR#331](https://github.com/paperclip-rs/paperclip/pull/331).
 
 ### Changed
 - Actix plugin: `#[api_v2_errors]` macro now supports adding different error schemes per response code.
@@ -158,10 +175,10 @@ and `operation_id` in macro.
 - Loading OpenAPI v2 schema from JSON/YAML
 - Workspace, README, LICENSE, Makefile, CI config, etc.
 
-[Unreleased]: https://github.com/wafflespeanut/paperclip/compare/v0.5.0...HEAD
-[0.5.0]: https://github.com/wafflespeanut/paperclip/compare/v0.4.1...v0.5.0
-[0.4.1]: https://github.com/wafflespeanut/paperclip/compare/v0.4.0...v0.4.1
-[0.4.0]: https://github.com/wafflespeanut/paperclip/compare/v0.3.0...v0.4.0
-[0.3.0]: https://github.com/wafflespeanut/paperclip/compare/v0.2.0...v0.3.0
-[0.2.0]: https://github.com/wafflespeanut/paperclip/compare/v0.1.0...v0.2.0
-[0.1.0]: https://github.com/wafflespeanut/paperclip/releases/tag/v0.1.0
+[Unreleased]: https://github.com/paperclip-rs/paperclip/compare/v0.5.0...HEAD
+[0.5.0]: https://github.com/paperclip-rs/paperclip/compare/v0.4.1...v0.5.0
+[0.4.1]: https://github.com/paperclip-rs/paperclip/compare/v0.4.0...v0.4.1
+[0.4.0]: https://github.com/paperclip-rs/paperclip/compare/v0.3.0...v0.4.0
+[0.3.0]: https://github.com/paperclip-rs/paperclip/compare/v0.2.0...v0.3.0
+[0.2.0]: https://github.com/paperclip-rs/paperclip/compare/v0.1.0...v0.2.0
+[0.1.0]: https://github.com/paperclip-rs/paperclip/releases/tag/v0.1.0

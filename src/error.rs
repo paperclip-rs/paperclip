@@ -33,11 +33,11 @@ pub enum PaperClipError {
     MissingParametersInPath(String, HashSet<String>),
     /// Invalid host for URL.
     #[error("Cannot parse host {:?}: {}", _0, _1)]
-    InvalidHost(String, url::ParseError),
+    InvalidHost(String, url_dep::ParseError),
     /// Invalid base path URL.
     #[error("Cannot set URL {:?}: {}", _0, _1)]
     #[allow(clippy::upper_case_acronyms)]
-    InvalidBasePathURL(String, url::ParseError),
+    InvalidBasePathURL(String, url_dep::ParseError),
     /// The given schema object is an array, but the `items` field is missing.
     #[error("Mising item schema for array: {:?}", _0)]
     MissingArrayItem(Option<String>),
