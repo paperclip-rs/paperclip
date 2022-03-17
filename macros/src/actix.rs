@@ -756,8 +756,8 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         let type_names = quote! {
             vec![#(#type_params::name()),*]
                 .iter()
-                .filter(|n| n.is_some())
-                .map(|n| n.as_ref().unwrap().clone()).collect::<Vec<String>>()
+                .filter_map(|n| n.to_owned())
+                .collect::<Vec<String>>()
                 .join(", ")
         };
         quote! { format!("{}<{}>", #base_name, #type_names) }
