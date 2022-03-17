@@ -3393,21 +3393,21 @@ fn test_schema_with_generics() {
         /// So we can find her/him when we need to
         pub(crate) id: Option<i64>,
         /// The attributes unique to this type of pet
-        pub(crate) inner: T
+        pub(crate) inner: T,
     }
 
     /// An affectionate (but noisy) best friend
     #[derive(Apiv2Schema, Deserialize, Serialize)]
     pub(crate) struct Dog {
         /// The voice that we love and hate
-        pub(crate) bark: String
+        pub(crate) bark: String,
     }
-    
+
     /// A lovely cat who loves to eat!
     #[derive(Apiv2Schema, Deserialize, Serialize)]
     pub(crate) struct Cat {
         /// Mmmmmmmmmm
-        pub(crate) food_pref: String
+        pub(crate) food_pref: String,
     }
 
     #[post("/dogs")]
@@ -3415,7 +3415,7 @@ fn test_schema_with_generics() {
     pub(crate) async fn echo_dogs(body: web::Json<Pet<Dog>>) -> Result<web::Json<Pet<Dog>>, Error> {
         Ok(body)
     }
-    
+
     #[post("/cats")]
     #[api_v2_operation]
     pub(crate) async fn echo_cats(body: web::Json<Pet<Cat>>) -> Result<web::Json<Pet<Cat>>, Error> {
