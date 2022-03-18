@@ -497,6 +497,28 @@
 <span id="492">492</span>
 <span id="493">493</span>
 <span id="494">494</span>
+<span id="495">495</span>
+<span id="496">496</span>
+<span id="497">497</span>
+<span id="498">498</span>
+<span id="499">499</span>
+<span id="500">500</span>
+<span id="501">501</span>
+<span id="502">502</span>
+<span id="503">503</span>
+<span id="504">504</span>
+<span id="505">505</span>
+<span id="506">506</span>
+<span id="507">507</span>
+<span id="508">508</span>
+<span id="509">509</span>
+<span id="510">510</span>
+<span id="511">511</span>
+<span id="512">512</span>
+<span id="513">513</span>
+<span id="514">514</span>
+<span id="515">515</span>
+<span id="516">516</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::models</span>::{
@@ -757,13 +779,19 @@
 <span class="doccomment">/// This is implemented for primitive types by default.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Apiv2Schema</span> {
     <span class="doccomment">/// Name of this schema. This is the name to which the definition of the object is mapped.</span>
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span>
+    }
 
     <span class="doccomment">/// Description of this schema. In case the trait is derived, uses the documentation on the type.</span>
-    <span class="kw">const</span> <span class="ident">DESCRIPTION</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;&quot;</span>;
+    <span class="kw">fn</span> <span class="ident">description</span>() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span> {
+        <span class="string">&quot;&quot;</span>
+    }
 
     <span class="doccomment">/// Indicates the requirement of this schema.</span>
-    <span class="kw">const</span> <span class="ident">REQUIRED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">true</span>;
+    <span class="kw">fn</span> <span class="ident">required</span>() -&gt; <span class="ident">bool</span> {
+        <span class="bool-val">true</span>
+    }
 
     <span class="doccomment">/// Returns the raw schema for this object.</span>
     <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
@@ -785,13 +813,13 @@
     <span class="doccomment">/// so it won&#39;t affect the incoming requests at all.</span>
     <span class="kw">fn</span> <span class="ident">schema_with_ref</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::raw_schema</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::NAME</span> {
-            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
+        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::name</span>() {
+            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">n</span>);
         } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">def</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>() {
             <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
         }
-        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::DESCRIPTION</span>.<span class="ident">is_empty</span>() {
-            <span class="ident">def</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::DESCRIPTION</span>.<span class="ident">to_owned</span>());
+        <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::description</span>().<span class="ident">is_empty</span>() {
+            <span class="ident">def</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::description</span>().<span class="ident">to_owned</span>());
         }
 
         <span class="ident">def</span>
@@ -819,8 +847,13 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">default</span> <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-    <span class="ident">default</span> <span class="kw">const</span> <span class="ident">REQUIRED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span>
+    }
+
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">required</span>() -&gt; <span class="ident">bool</span> {
+        <span class="bool-val">false</span>
+    }
 
     <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="ident">Default::default</span>()
@@ -832,8 +865,13 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T::NAME</span>;
-    <span class="kw">const</span> <span class="ident">REQUIRED</span>: <span class="ident">bool</span> <span class="op">=</span> <span class="bool-val">false</span>;
+    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="ident">T::name</span>()
+    }
+
+    <span class="kw">fn</span> <span class="ident">required</span>() -&gt; <span class="ident">bool</span> {
+        <span class="bool-val">false</span>
+    }
 
     <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="ident">T::raw_schema</span>()
@@ -846,7 +884,9 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="ident">default</span> <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span>
+    }
 
     <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="ident">Default::default</span>()
@@ -858,7 +898,9 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T::NAME</span>;
+    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="ident">T::name</span>()
+    }
 
     <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="ident">T::raw_schema</span>()
@@ -870,7 +912,9 @@
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">std::borrow::Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">const</span> <span class="ident">NAME</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">T::NAME</span>;
+    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="ident">T::name</span>()
+    }
 
     <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="ident">T::raw_schema</span>()
@@ -992,5 +1036,5 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> <span class="ident">actix_web::Error</span> {}
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (285fa7ecd 2022-03-14)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (58f11791a 2022-03-17)" ></div>
 </body></html>
