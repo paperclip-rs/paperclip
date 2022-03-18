@@ -748,7 +748,20 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         ),
     };
 
-    let schema_name = extract_rename(&item_ast.attrs).unwrap_or_else(|| name.to_string());
+    let base_name = extract_rename(&item_ast.attrs).unwrap_or_else(|| name.to_string());
+    let type_params: Vec<&Ident> = generics.type_params().map(|p| &p.ident).collect();
+    let schema_name = if type_params.is_empty() {
+        quote! { #base_name }
+    } else {
+        let type_names = quote! {
+            vec![#(#type_params::name()),*]
+                .iter()
+                .filter_map(|n| n.to_owned())
+                .collect::<Vec<String>>()
+                .join(", ")
+        };
+        quote! { format!("{}<{}>", #base_name, #type_names) }
+    };
     let props_gen_empty = props_gen.is_empty();
 
     #[cfg(not(feature = "path-in-definition"))]
@@ -788,7 +801,9 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
 
     #[cfg(not(feature = "path-in-definition"))]
     let const_name_def = quote! {
-        const NAME: Option<&'static str> = Some(#schema_name);
+        fn name() -> Option<String> {
+            Some(#schema_name.to_string())
+        }
     };
 
     #[cfg(feature = "path-in-definition")]
@@ -811,7 +826,9 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
 
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             #const_name_def
-            const DESCRIPTION: &'static str = #docs;
+            fn description() -> &'static str {
+                #docs
+            }
 
             fn raw_schema() -> paperclip::v2::models::DefaultSchemaRaw {
                 use paperclip::v2::models::{DataType, DataTypeFormat, DefaultSchemaRaw};
@@ -997,7 +1014,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
                         description: #quoted_description,
                     })
                 }),
-                Some(quote!(Some(#alias))),
+                Some(quote!(Some(#alias.to_string()))),
             )
         }
         (None, Some(parent)) => {
@@ -1012,7 +1029,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
                     scheme.scopes = oauth2_scopes;
                     Some(scheme)
                 }),
-                Some(quote!(<#parent_ident as paperclip::v2::schema::Apiv2Schema>::NAME)),
+                Some(quote!(<#parent_ident as paperclip::v2::schema::Apiv2Schema>::name())),
             )
         }
         (Some(_), Some(_)) => {
@@ -1034,7 +1051,9 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
     let gen = if let (Some(def_block), Some(def_name)) = (security_def, security_def_name) {
         quote! {
             impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-                const NAME: Option<&'static str> = #def_name;
+                fn name() -> Option<String> {
+                    #def_name
+                }
 
                 fn security_scheme() -> Option<paperclip::v2::models::SecurityScheme> {
                     #def_block
@@ -1138,7 +1157,7 @@ fn handle_unnamed_field_struct(
             };
 
             gen.extend(quote! {
-                if #ty_ref::REQUIRED {
+                if #ty_ref::required() {
                     schema.required.insert(#inner_field_id.to_string());
                 }
             });
@@ -1251,7 +1270,7 @@ fn handle_field_struct(
         };
 
         gen.extend(quote! {
-            if #ty_ref::REQUIRED {
+            if #ty_ref::required() {
                 schema.required.insert(#field_name.into());
             }
         });

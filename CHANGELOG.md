@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Allow automatically adding the module path to the openapi component name, via a feature "path-in-definition" [PR#373](https://github.com/paperclip-rs/paperclip/pull/373)
 - Add missing ip, ipv4 and ipv6 string format types
 - Add support for actix-web 4
+- Add support for Schemas wrapping Generic types (e.g. `DataResponse<T>` where `T` also derives
+`Apiv2Schema`) [PR#332](https://github.com/paperclip-rs/paperclip/pull/332)
 
 ### Fixed
 - Add more tuple sizes for web::Path for OperationModifier impl [PR#379](https://github.com/paperclip-rs/paperclip/pull/379)
 - Add missing extensions to openapi v2 Info
+- Schemas that enclose Generics are no longer conflicting/overwritten
 
 ## [0.6.1] - 2021-10-15
 ### Fixed
