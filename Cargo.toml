@@ -115,4 +115,4 @@ required-features = ["v2", "codegen"]
 
 [[test]]
 name = "test_app"
-required-features = ["cli", "actix-base", "uuid", "chrono", "swagger-ui", "actix3-validator"]
+required-features = ["cli", "actix-base", "uuid", "chrono", "swagger-ui", "actix4-validator"]
