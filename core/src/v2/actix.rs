@@ -352,7 +352,9 @@ any(feature = "actix4-validator", feature = "actix3-validator"),
 feature = "nightly"
 ))]
 impl<T> Apiv2Schema for ValidatedJson<T> {
-    default const NAME: Option<&'static str> = None;
+    fn name() -> Option<String> {
+        None
+    }
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -361,7 +363,9 @@ impl<T> Apiv2Schema for ValidatedJson<T> {
 
 #[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
 impl<T: Apiv2Schema> Apiv2Schema for ValidatedJson<T> {
-    const NAME: Option<&'static str> = T::NAME;
+    fn name() -> Option<String> {
+        T::name()
+    }
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
