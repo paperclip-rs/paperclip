@@ -30,7 +30,7 @@ build:
 	cargo build --features cli
 
 test:
-	cargo test --all --features "actix4 cli chrono uuid swagger-ui"
+	cargo test --all --features "actix4 cli chrono uuid swagger-ui actix4-validator"
 
 	# We test this one seperately as it affects the generated spec, which'd fail the other tests
 	cargo test test_module_path_in_definition_name --features "actix4 cli chrono uuid swagger-ui path-in-definition"

@@ -1,3 +1,8 @@
+#[cfg(feature = "actix3-validator")]
+extern crate actix_web_validator2 as actix_web_validator;
+#[cfg(feature = "actix4-validator")]
+extern crate actix_web_validator3 as actix_web_validator;
+
 #[cfg(feature = "actix-multipart")]
 use super::schema::TypedData;
 use super::{
@@ -23,6 +28,11 @@ use actix_web::{
 
 use pin_project::pin_project;
 
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+use actix_web_validator::{
+    Json as ValidatedJson, Path as ValidatedPath, QsQuery as ValidatedQsQuery,
+    Query as ValidatedQuery,
+};
 use serde::Serialize;
 #[cfg(feature = "serde_qs")]
 use serde_qs::actix::QsQuery;
@@ -333,6 +343,64 @@ where
     }
 }
 
+#[cfg(all(
+any(feature = "actix4-validator", feature = "actix3-validator"),
+feature = "nightly"
+))]
+impl<T> Apiv2Schema for ValidatedJson<T> {
+    default const NAME: Option<&'static str> = None;
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
+}
+
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl<T: Apiv2Schema> Apiv2Schema for ValidatedJson<T> {
+    const NAME: Option<&'static str> = T::NAME;
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        T::raw_schema()
+    }
+}
+
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl<T> OperationModifier for ValidatedJson<T>
+    where
+        T: Apiv2Schema,
+{
+    fn update_parameter(op: &mut DefaultOperationRaw) {
+        op.parameters.push(Either::Right(Parameter {
+            description: None,
+            in_: ParameterIn::Body,
+            name: "body".into(),
+            required: true,
+            schema: Some({
+                let mut def = T::schema_with_ref();
+                def.retain_ref();
+                def
+            }),
+            ..Default::default()
+        }));
+    }
+
+    fn update_response(op: &mut DefaultOperationRaw) {
+        op.responses.insert(
+            "200".into(),
+            Either::Right(Response {
+                // TODO: Support configuring other 2xx codes using macro attribute.
+                description: Some("OK".into()),
+                schema: Some({
+                    let mut def = T::schema_with_ref();
+                    def.retain_ref();
+                    def
+                }),
+                ..Default::default()
+            }),
+        );
+    }
+}
+
 #[cfg(feature = "actix-multipart")]
 impl OperationModifier for actix_multipart::Multipart {
     fn update_parameter(op: &mut DefaultOperationRaw) {
@@ -439,8 +507,59 @@ impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
 #[cfg(feature = "serde_qs")]
 impl_param_extractor!(QsQuery<T> => Query);
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl_param_extractor!(ValidatedPath<T> => Path);
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl_param_extractor!(ValidatedQuery<T> => Query);
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl_param_extractor!(ValidatedQsQuery<T> => Query);
 
 macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
+    #[cfg(all(any(feature = "actix4-validator", feature = "actix3-validator"), feature = "nightly"))]
+    impl<$($ty,)+> Apiv2Schema for ValidatedPath<($($ty,)+)> {}
+
+    #[cfg(all(not(feature = "nightly"), any(feature = "actix4-validator", feature = "actix3-validator")))]
+    impl<$($ty: Apiv2Schema,)+> Apiv2Schema for ValidatedPath<($($ty,)+)> {}
+
+    #[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+    impl<$($ty,)+> OperationModifier for ValidatedPath<($($ty,)+)>
+        where $($ty: Apiv2Schema,)+
+    {
+        fn update_parameter(op: &mut DefaultOperationRaw) {
+            $(
+                let def = $ty::raw_schema();
+                if def.properties.is_empty() {
+                    op.parameters.push(Either::Right(Parameter {
+                        // NOTE: We're setting empty name, because we don't know
+                        // the name in this context. We'll get it when we add services.
+                        name: String::new(),
+                        in_: ParameterIn::Path,
+                        required: true,
+                        data_type: def.data_type,
+                        format: def.format,
+                        enum_: def.enum_,
+                        description: def.description,
+                        ..Default::default()
+                    }));
+                }
+                for (k, v) in def.properties {
+                    op.parameters.push(Either::Right(Parameter {
+                        in_: ParameterIn::Path,
+                        required: def.required.contains(&k),
+                        data_type: v.data_type,
+                        format: v.format,
+                        enum_: v.enum_,
+                        description: v.description,
+                        collection_format: None, // this defaults to csv
+                        items: v.items.as_deref().map(map_schema_to_items),
+                        name: k,
+                        ..Default::default()
+                    }));
+                }
+            )+
+        }
+    }
+
     #[cfg(feature = "nightly")]
     impl<$($ty,)+> Apiv2Schema for Path<($($ty,)+)> {}
 

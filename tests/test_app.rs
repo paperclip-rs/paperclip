@@ -3,6 +3,16 @@ extern crate serde;
 #[macro_use]
 extern crate serde_json;
 
+#[cfg(feature = "actix3-validator")]
+extern crate actix_web_validator2 as actix_web_validator;
+#[cfg(feature = "actix4-validator")]
+extern crate actix_web_validator3 as actix_web_validator;
+
+#[cfg(feature = "actix3-validator")]
+extern crate validator12 as validator;
+#[cfg(feature = "actix4-validator")]
+extern crate validator14 as validator;
+
 #[cfg(not(feature = "actix4"))]
 extern crate actix_service1 as actix_service;
 #[cfg(feature = "actix4")]
@@ -29,6 +39,7 @@ use actix_web::{
     dev::{Payload, ServiceRequest, ServiceResponse},
     App, Error, FromRequest, HttpRequest, HttpServer, Responder,
 };
+use actix_web_validator::{Json as ValidatedJson, Path as ValidatedPath, Query as ValidatedQuery};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::{
@@ -39,6 +50,7 @@ use paperclip::{
     v2::models::{DefaultApiRaw, Info, Tag},
 };
 use parking_lot::Mutex;
+use validator::Validate;
 
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
@@ -381,7 +393,7 @@ fn test_simple_app() {
 #[test]
 #[allow(dead_code)]
 fn test_params() {
-    #[derive(Deserialize, Apiv2Schema)]
+    #[derive(Deserialize, Apiv2Schema, Validate)]
     struct KnownResourceBadge {
         resource: String,
         name: String,
@@ -404,13 +416,19 @@ fn test_params() {
         pub String,
     );
 
-    #[derive(Deserialize, Apiv2Schema)]
+    /// KnownBadge Id4 Doc
+    #[derive(Serialize, Deserialize, Apiv2Schema, Validate)]
+    struct KnownBadgeId4 {
+        id: String,
+    }
+
+    #[derive(Deserialize, Apiv2Schema, Validate)]
     struct BadgeParams {
         res: Option<u16>,
         colors: Vec<String>,
     }
 
-    #[derive(Deserialize, Apiv2Schema)]
+    #[derive(Deserialize, Apiv2Schema, Validate)]
     struct BadgeBody {
         /// JSON value
         json: Option<serde_json::Value>,
@@ -444,6 +462,13 @@ fn test_params() {
         app: web::Data<AppState>,
         _req_data: Option<web::ReqData<bool>>, // this should compile and change nothing
     ) -> web::Json<bool> {
+        web::Json(is_data_empty(app.get_ref()).await)
+    }
+
+    // Use dumb check_data_ref_async function for actix2 instead of real one
+    #[cfg(feature = "actix2")]
+    #[api_v2_operation]
+    async fn check_data_ref_async(app: web::Data<AppState>) -> web::Json<bool> {
         web::Json(is_data_empty(app.get_ref()).await)
     }
 
@@ -491,6 +516,11 @@ fn test_params() {
     }
 
     #[api_v2_operation]
+    fn get_known_badge_5(_p1: ValidatedPath<KnownBadgeId4>) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[api_v2_operation]
     fn post_badge_1(
         _p: web::Path<KnownResourceBadge>,
         _q: web::Query<BadgeParams>,
@@ -519,6 +549,22 @@ fn test_params() {
     fn patch_badge_3(
         _p: web::Path<u32>,
         _b: web::Json<BadgeBodyPatch>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[api_v2_operation]
+    fn post_badge_4(
+        _p: web::Path<u32>,
+        _b: ValidatedJson<BadgeBody>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[api_v2_operation]
+    fn patch_badge_4(
+        _p: ValidatedPath<KnownResourceBadge>,
+        _q: ValidatedQuery<BadgeParams>,
     ) -> impl Future<Output = &'static str> {
         ready("")
     }
@@ -552,9 +598,18 @@ fn test_params() {
                                         .route(web::get().to(get_known_badge_4)),
                                 )
                                 .service(
+                                    web::resource("/v/{id}/{id2}/{id3}/{id4}/{id5}")
+                                        .route(web::get().to(get_known_badge_5)),
+                                )
+                                .service(
                                     web::resource("/v")
                                         .route(web::post().to(post_badge_3))
                                         .route(web::patch().to(patch_badge_3)),
+                                )
+                                .service(
+                                    web::resource("/v_")
+                                        .route(web::post().to(post_badge_4))
+                                        .route(web::patch().to(patch_badge_4)),
                                 )
                                 .service(
                                     web::resource("/foo").route(web::get().to(get_resource_2)),
@@ -962,6 +1017,20 @@ fn test_params() {
                                 }
                             }
                         },
+                        "/api/v2/{resource}/v/{id}/{id2}/{id3}/{id4}/{id5}": {
+                            "get": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "id5",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
                         "/api/v2/{resource}/v/{name}": {
                             "get": {
                                 "parameters": [
@@ -1011,6 +1080,62 @@ fn test_params() {
                                         "name": "name",
                                         "required": true,
                                         "type": "string"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/BadgeBody"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            }
+                        },
+                        "/api/v2/{resource}/v_": {
+                            "patch": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "query",
+                                        "items": {
+                                            "type": "string"
+                                        },
+                                        "name": "colors",
+                                        "required": true,
+                                        "type": "array"
+                                    },
+                                    {
+                                        "format": "int32",
+                                        "in": "query",
+                                        "name": "res",
+                                        "type": "integer"
+                                    }
+                                ],
+                                "responses": {
+                                }
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "format": "int32",
+                                        "in": "path",
+                                        "name": "resource",
+                                        "required": true,
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "body",
