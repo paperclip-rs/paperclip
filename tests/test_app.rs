@@ -3509,6 +3509,204 @@ mod module_path_in_definition_name {
 }
 
 #[test]
+fn test_schema_with_generics() {
+    /// Our non-human family member
+    #[derive(Apiv2Schema, Deserialize, Serialize)]
+    pub(crate) struct Pet<T> {
+        /// Fluffy or Fido or...
+        pub(crate) name: String,
+        /// So we can find her/him when we need to
+        pub(crate) id: Option<i64>,
+        /// The attributes unique to this type of pet
+        pub(crate) inner: T,
+    }
+
+    /// An affectionate (but noisy) best friend
+    #[derive(Apiv2Schema, Deserialize, Serialize)]
+    pub(crate) struct Dog {
+        /// The voice that we love and hate
+        pub(crate) bark: String,
+    }
+
+    /// A lovely cat who loves to eat!
+    #[derive(Apiv2Schema, Deserialize, Serialize)]
+    pub(crate) struct Cat {
+        /// Mmmmmmmmmm
+        pub(crate) food_pref: String,
+    }
+
+    #[post("/dogs")]
+    #[api_v2_operation]
+    pub(crate) async fn echo_dogs(body: web::Json<Pet<Dog>>) -> Result<web::Json<Pet<Dog>>, Error> {
+        Ok(body)
+    }
+
+    #[post("/cats")]
+    #[api_v2_operation]
+    pub(crate) async fn echo_cats(body: web::Json<Pet<Cat>>) -> Result<web::Json<Pet<Cat>>, Error> {
+        Ok(body)
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(echo_dogs)
+                .service(echo_cats)
+                .with_raw_json_spec(|app, spec| {
+                    app.route(
+                        "/api/spec",
+                        web::get().to(move || {
+                            #[cfg(feature = "actix4")]
+                            {
+                                let spec = spec.clone();
+                                async move {
+                                    paperclip::actix::HttpResponseWrapper(
+                                        actix_web::HttpResponse::Ok().json(&spec),
+                                    )
+                                }
+                            }
+
+                            #[cfg(not(feature = "actix4"))]
+                            actix_web::HttpResponse::Ok().json(&spec)
+                        }),
+                    )
+                })
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet<Cat>": {
+                            "description": "Our non-human family member",
+                            "properties": {
+                                "id": {
+                                    "description": "So we can find her/him when we need to",
+                                    "format": "int64",
+                                    "type": "integer",
+                                },
+                                "inner": {
+                                    "description": "The attributes unique to this type of pet",
+                                    "properties": {
+                                        "food_pref": {
+                                            "description": "Mmmmmmmmmm",
+                                            "type": "string",
+                                        },
+                                    },
+                                    "required": [
+                                        "food_pref",
+                                    ],
+                                    "type": "object",
+                                },
+                                "name": {
+                                    "description": "Fluffy or Fido or...",
+                                    "type": "string",
+                                },
+                            },
+                            "required": [
+                                "inner",
+                                "name",
+                            ],
+                            "type":"object",
+                        },
+                        "Pet<Dog>": {
+                            "description": "Our non-human family member",
+                            "properties": {
+                                "id": {
+                                    "description": "So we can find her/him when we need to",
+                                    "format": "int64",
+                                    "type": "integer",
+                                },
+                                "inner": {
+                                    "description": "The attributes unique to this type of pet",
+                                    "properties": {
+                                        "bark": {
+                                            "description": "The voice that we love and hate",
+                                            "type": "string",
+                                        },
+                                    },
+                                    "required": [
+                                        "bark",
+                                    ],
+                                    "type": "object",
+                                },
+                                "name": {
+                                    "description": "Fluffy or Fido or...",
+                                    "type": "string",
+                                },
+                            },
+                            "required": [
+                                "inner",
+                                "name",
+                            ],
+                            "type":"object",
+                        },
+                    },
+                    "info": {
+                        "title":"",
+                        "version":"",
+                    },
+                    "paths": {
+                        "/cats": {
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet<Cat>",
+                                        },
+                                    },
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet<Cat>",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                        "/dogs": {
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet<Dog>",
+                                        },
+                                    },
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet<Dog>",
+                                        },
+                                    },
+                                },
+                            },
+                        },
+                    },
+                    "swagger": "2.0",
+                }),
+            );
+        },
+    );
+}
+
+#[test]
 #[cfg(feature = "path-in-definition")]
 fn test_module_path_in_definition_name() {
     use paperclip::actix::{api_v2_operation, web, OpenApiExt};

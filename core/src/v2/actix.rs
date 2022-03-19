@@ -291,7 +291,9 @@ impl<T: chrono::TimeZone> OperationModifier for chrono::DateTime<T> {}
 
 #[cfg(feature = "nightly")]
 impl<T> Apiv2Schema for Json<T> {
-    default const NAME: Option<&'static str> = None;
+    default fn name() -> Option<String> {
+        None
+    }
 
     default fn raw_schema() -> DefaultSchemaRaw {
         Default::default()
@@ -300,7 +302,9 @@ impl<T> Apiv2Schema for Json<T> {
 
 /// JSON needs specialization because it updates the global definitions.
 impl<T: Apiv2Schema> Apiv2Schema for Json<T> {
-    const NAME: Option<&'static str> = T::NAME;
+    fn name() -> Option<String> {
+        T::name()
+    }
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
@@ -429,7 +433,9 @@ impl OperationModifier for actix_files::NamedFile {
 macro_rules! impl_param_extractor ({ $ty:ty => $container:ident } => {
     #[cfg(feature = "nightly")]
     impl<T> Apiv2Schema for $ty {
-        default const NAME: Option<&'static str> = None;
+        default fn name() -> Option<String> {
+            None
+        }
 
         default fn raw_schema() -> DefaultSchemaRaw {
             Default::default()
@@ -495,7 +501,9 @@ fn map_schema_to_items(schema: &DefaultSchemaRaw) -> Items {
 /// `formData` can refer to the global definitions.
 #[cfg(feature = "nightly")]
 impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
-    const NAME: Option<&'static str> = T::NAME;
+    fn name() -> Option<String> {
+        T::name()
+    }
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
@@ -624,7 +632,9 @@ pub struct ResponderWrapper<T>(pub T);
 
 #[cfg(feature = "nightly")]
 impl<T: Responder> Apiv2Schema for ResponderWrapper<T> {
-    default const NAME: Option<&'static str> = None;
+    default fn name() -> Option<String> {
+        None
+    }
 
     default fn raw_schema() -> DefaultSchemaRaw {
         DefaultSchemaRaw::default()
@@ -752,10 +762,10 @@ fn update_security<T>(op: &mut DefaultOperationRaw)
 where
     T: Apiv2Schema,
 {
-    if let (Some(name), Some(scheme)) = (T::NAME, T::security_scheme()) {
+    if let (Some(name), Some(scheme)) = (T::name(), T::security_scheme()) {
         let mut security_map = BTreeMap::new();
         let scopes = scheme.scopes.keys().map(String::clone).collect();
-        security_map.insert(name.into(), scopes);
+        security_map.insert(name, scopes);
         op.security.push(security_map);
     }
 }
@@ -765,8 +775,8 @@ fn update_security_definitions<T>(map: &mut BTreeMap<String, SecurityScheme>)
 where
     T: Apiv2Schema,
 {
-    if let (Some(name), Some(new)) = (T::NAME, T::security_scheme()) {
-        new.update_definitions(name, map);
+    if let (Some(name), Some(new)) = (T::name(), T::security_scheme()) {
+        new.update_definitions(&name, map);
     }
 }
 
@@ -839,7 +849,9 @@ macro_rules! json_with_status {
         where
             T: Serialize + Apiv2Schema,
         {
-            const NAME: Option<&'static str> = T::NAME;
+            fn name() -> Option<String> {
+                T::name()
+            }
 
             fn raw_schema() -> DefaultSchemaRaw {
                 T::raw_schema()

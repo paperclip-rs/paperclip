@@ -6,6 +6,7 @@ pub(crate) fn invalid_referenceor<T>(message: String) -> openapiv3::ReferenceOr<
 }
 
 impl<T> From<v2::Reference> for openapiv3::ReferenceOr<T> {
+    #[allow(clippy::only_used_in_recursion)]
     fn from(v2: v2::Reference) -> Self {
         Self::from(&v2)
     }
