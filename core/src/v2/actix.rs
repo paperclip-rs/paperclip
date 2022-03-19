@@ -348,8 +348,8 @@ where
 }
 
 #[cfg(all(
-any(feature = "actix4-validator", feature = "actix3-validator"),
-feature = "nightly"
+    any(feature = "actix4-validator", feature = "actix3-validator"),
+    feature = "nightly"
 ))]
 impl<T> Apiv2Schema for ValidatedJson<T> {
     fn name() -> Option<String> {
@@ -374,8 +374,8 @@ impl<T: Apiv2Schema> Apiv2Schema for ValidatedJson<T> {
 
 #[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
 impl<T> OperationModifier for ValidatedJson<T>
-    where
-        T: Apiv2Schema,
+where
+    T: Apiv2Schema,
 {
     fn update_parameter(op: &mut DefaultOperationRaw) {
         op.parameters.push(Either::Right(Parameter {
