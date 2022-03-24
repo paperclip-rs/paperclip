@@ -13,8 +13,8 @@ repository = "https://github.com/paperclip-rs/paperclip"
 paperclip-core = { path = "../../core", version = "0.4.0", optional = true }
 paperclip-macros = { path = "../../macros", version = "0.5.0", features = ["actix"] }
 futures = "0.3"
-actix-service1 = { version = "1", package = "actix-service" }
-actix-service2 = { version = "2", package = "actix-service" }
+actix-service1 = { version = "1", package = "actix-service", optional = true }
+actix-service2 = { version = "2", package = "actix-service", optional = true }
 actix-web2 = { version = "2", default-features = false, optional = true, package = "actix-web" }
 actix-web3 = { version = "3", default-features = false, optional = true, package = "actix-web" }
 actix-web4 = { version = "4", default-features = false, optional = true, package = "actix-web" }
@@ -25,9 +25,9 @@ openapiv3 = { version = "1.0.0-beta.5", optional = true }
 include_dir = { version = "0.7.2", optional = true }
 
 [features]
-actix2 = ["actix-web2", "paperclip-core/actix2"]
-actix3 = ["actix-web3", "paperclip-core/actix3"]
-actix4 = ["actix-web4", "paperclip-core/actix4"]
+actix2 = ["actix-web2", "actix-service1", "paperclip-core/actix2"]
+actix3 = ["actix-web3", "actix-service1", "paperclip-core/actix3"]
+actix4 = ["actix-web4", "actix-service2", "paperclip-core/actix4"]
 nightly = ["paperclip-core/nightly"]
 normalize = []
 v3 = ["openapiv3"]
