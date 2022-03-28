@@ -490,13 +490,6 @@ fn test_params() {
         web::Json(is_data_empty(app.get_ref()).await)
     }
 
-    // Use dumb check_data_ref_async function for actix2 instead of real one
-    #[cfg(feature = "actix2")]
-    #[api_v2_operation]
-    async fn check_data_ref_async(app: web::Data<AppState>) -> web::Json<bool> {
-        web::Json(is_data_empty(app.get_ref()).await)
-    }
-
     #[api_v2_operation]
     fn get_resource_2(_p: web::Path<u32>) -> impl Future<Output = &'static str> {
         ready("")
