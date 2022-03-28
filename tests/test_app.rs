@@ -396,7 +396,10 @@ fn test_simple_app() {
 #[allow(dead_code)]
 fn test_params() {
     #[derive(Deserialize, Apiv2Schema)]
-    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
+    #[cfg_attr(
+        any(feature = "actix3-validator", feature = "actix4-validator"),
+        derive(Validate)
+    )]
     struct KnownResourceBadge {
         resource: String,
         name: String,
@@ -421,20 +424,29 @@ fn test_params() {
 
     /// KnownBadge Id4 Doc
     #[derive(Serialize, Deserialize, Apiv2Schema)]
-    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
+    #[cfg_attr(
+        any(feature = "actix3-validator", feature = "actix4-validator"),
+        derive(Validate)
+    )]
     struct KnownBadgeId4 {
         id: String,
     }
 
     #[derive(Deserialize, Apiv2Schema)]
-    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
+    #[cfg_attr(
+        any(feature = "actix3-validator", feature = "actix4-validator"),
+        derive(Validate)
+    )]
     struct BadgeParams {
         res: Option<u16>,
         colors: Vec<String>,
     }
 
     #[derive(Deserialize, Apiv2Schema)]
-    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
+    #[cfg_attr(
+        any(feature = "actix3-validator", feature = "actix4-validator"),
+        derive(Validate)
+    )]
     struct BadgeBody {
         /// JSON value
         json: Option<serde_json::Value>,
