@@ -39,6 +39,7 @@ use actix_web::{
     dev::{Payload, ServiceRequest, ServiceResponse},
     App, Error, FromRequest, HttpRequest, HttpServer, Responder,
 };
+#[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
 use actix_web_validator::{Json as ValidatedJson, Path as ValidatedPath, Query as ValidatedQuery};
 use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
@@ -50,6 +51,7 @@ use paperclip::{
     v2::models::{DefaultApiRaw, Info, Tag},
 };
 use parking_lot::Mutex;
+#[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
 use validator::Validate;
 
 use std::{
@@ -393,7 +395,8 @@ fn test_simple_app() {
 #[test]
 #[allow(dead_code)]
 fn test_params() {
-    #[derive(Deserialize, Apiv2Schema, Validate)]
+    #[derive(Deserialize, Apiv2Schema)]
+    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
     struct KnownResourceBadge {
         resource: String,
         name: String,
@@ -417,18 +420,21 @@ fn test_params() {
     );
 
     /// KnownBadge Id4 Doc
-    #[derive(Serialize, Deserialize, Apiv2Schema, Validate)]
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
     struct KnownBadgeId4 {
         id: String,
     }
 
-    #[derive(Deserialize, Apiv2Schema, Validate)]
+    #[derive(Deserialize, Apiv2Schema)]
+    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
     struct BadgeParams {
         res: Option<u16>,
         colors: Vec<String>,
     }
 
-    #[derive(Deserialize, Apiv2Schema, Validate)]
+    #[derive(Deserialize, Apiv2Schema)]
+    #[cfg_attr(any(feature = "actix3-validator", feature = "actix4-validator"), derive(Validate))]
     struct BadgeBody {
         /// JSON value
         json: Option<serde_json::Value>,
@@ -515,8 +521,15 @@ fn test_params() {
         ready("")
     }
 
+    #[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
     #[api_v2_operation]
     fn get_known_badge_5(_p1: ValidatedPath<KnownBadgeId4>) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[cfg(not(any(feature = "actix3-validator", feature = "actix4-validator")))]
+    #[api_v2_operation]
+    fn get_known_badge_5(_p1: web::Path<KnownBadgeId4>) -> impl Future<Output = &'static str> {
         ready("")
     }
 
@@ -553,6 +566,7 @@ fn test_params() {
         ready("")
     }
 
+    #[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
     #[api_v2_operation]
     fn post_badge_4(
         _p: web::Path<u32>,
@@ -561,10 +575,29 @@ fn test_params() {
         ready("")
     }
 
+    #[cfg(not(any(feature = "actix3-validator", feature = "actix4-validator")))]
+    #[api_v2_operation]
+    fn post_badge_4(
+        _p: web::Path<u32>,
+        _b: web::Json<BadgeBody>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
     #[api_v2_operation]
     fn patch_badge_4(
         _p: ValidatedPath<KnownResourceBadge>,
         _q: ValidatedQuery<BadgeParams>,
+    ) -> impl Future<Output = &'static str> {
+        ready("")
+    }
+
+    #[cfg(not(any(feature = "actix3-validator", feature = "actix4-validator")))]
+    #[api_v2_operation]
+    fn patch_badge_4(
+        _p: web::Path<KnownResourceBadge>,
+        _q: web::Query<BadgeParams>,
     ) -> impl Future<Output = &'static str> {
         ready("")
     }
