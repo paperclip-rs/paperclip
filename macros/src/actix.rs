@@ -1148,6 +1148,9 @@ fn handle_unnamed_field_struct(
                         s.description = Some(#docs.to_string());
                     }
                     schema.properties.insert(#inner_field_id.to_string(), s.into());
+                    if #ty_ref::required() {
+                        schema.required.insert(#inner_field_id.to_string());
+                    }
                 })
             } else {
                 quote!({
@@ -1156,11 +1159,11 @@ fn handle_unnamed_field_struct(
                 })
             };
 
-            gen.extend(quote! {
-                if #ty_ref::required() {
-                    schema.required.insert(#inner_field_id.to_string());
-                }
-            });
+            // gen.extend(quote! {
+            //     if #ty_ref::required() {
+            //         schema.required.insert(#inner_field_id.to_string());
+            //     }
+            // });
 
             props_gen.extend(gen);
         }
@@ -1261,6 +1264,10 @@ fn handle_field_struct(
                     s.description = Some(#docs.to_string());
                 }
                 schema.properties.insert(#field_name.into(), s.into());
+
+                if #ty_ref::required() {
+                    schema.required.insert(#field_name.into());
+                }
             })
         } else {
             quote!({
@@ -1269,11 +1276,11 @@ fn handle_field_struct(
             })
         };
 
-        gen.extend(quote! {
-            if #ty_ref::required() {
-                schema.required.insert(#field_name.into());
-            }
-        });
+        // gen.extend(quote! {
+        //     if #ty_ref::required() {
+        //         schema.required.insert(#field_name.into());
+        //     }
+        // });
 
         props_gen.extend(gen);
     }

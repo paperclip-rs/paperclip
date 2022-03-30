@@ -1268,10 +1268,36 @@ fn test_serde_flatten() {
         name: Option<String>,
     }
 
+    /// Image author info
+    #[derive(Deserialize, Apiv2Schema)]
+    struct Author {
+        name: String,
+        address: Option<String>,
+        age: Option<u8>,
+    }
+
+    /// Image to persist
+    #[derive(Deserialize, Apiv2Schema)]
+    struct ImagePayload {
+        data: String,
+        id: Uuid,
+        #[serde(flatten)]
+        author: Author
+    }
+
     #[api_v2_operation]
     async fn some_images(_filter: web::Query<ImagesQuery>) -> Result<web::Json<Images>, Error> {
         #[allow(unreachable_code)]
         if _filter.paging.offset.is_some() && _filter.name.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    #[api_v2_operation]
+    async fn add_images(_content: web::Json<ImagePayload>) -> Result<NoContent, Error> {
+        #[allow(unreachable_code)]
+        if _content.author.address.is_some() {
             unimplemented!()
         }
         unimplemented!()
@@ -1282,7 +1308,11 @@ fn test_serde_flatten() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::resource("/images").route(web::get().to(some_images)))
+                .service(
+                    web::resource("/images")
+                        .route(web::get().to(some_images))
+                        .route(web::post().to(add_images)),
+                )
                 .build()
         },
         |addr| {
@@ -1295,6 +1325,34 @@ fn test_serde_flatten() {
                 resp,
                 json!({
                     "definitions": {
+                          "ImagePayload": {
+                            "description": "Image to persist",
+                            "properties": {
+                              "address": {
+                                "type": "string"
+                              },
+                              "age": {
+                                "format": "int32",
+                                "type": "integer"
+                              },
+                              "data": {
+                                "type": "string"
+                              },
+                              "id": {
+                                "format": "uuid",
+                                "type": "string"
+                              },
+                              "name": {
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "data",
+                              "id",
+                              "name"
+                            ],
+                            "type": "object"
+                          },
                         "Images": {
                           "description": "Images response with paging information embedded",
                           "properties": {
@@ -1379,6 +1437,23 @@ fn test_serde_flatten() {
                                 "schema": {
                                   "$ref": "#/definitions/Images"
                                 }
+                              }
+                            }
+                          },
+                          "post": {
+                            "parameters": [
+                              {
+                                "in": "body",
+                                "name": "body",
+                                "required": true,
+                                "schema": {
+                                  "$ref": "#/definitions/ImagePayload"
+                                }
+                              }
+                            ],
+                            "responses": {
+                              "204": {
+                                "description": "No Content"
                               }
                             }
                           }
