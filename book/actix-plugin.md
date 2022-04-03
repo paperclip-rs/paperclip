@@ -138,8 +138,7 @@ curl http://localhost:8080/api/spec/v2
 
 ... we get the swagger spec as a JSON!
 
-```js
-// NOTE: Formatted for clarity
+```json
 {
   "swagger": "2.0",
   "definitions": {
@@ -197,10 +196,10 @@ Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T
 
 At the time of this writing, this plugin didn't support a few OpenAPI v2 features:
 
-Affected entity | Missing feature(s)
---------------- | ---------------
-[Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc.
-[Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Headers as parameters.
+| Affected entity                                                                                        | Missing feature(s)                                                                                 |
+|--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
+| [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc. |
+| [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Headers as parameters.                                                                             |
 
 #### Performance implications?
 
