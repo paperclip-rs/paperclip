@@ -270,7 +270,13 @@
 <ul>
 <li>Paperclip CLI can generate API client library (which checks some usage at <a href="compile-checks.html">compile-time</a>) or a console for your API (which checks usage at <a href="cli.html#runtime-checks">runtime</a>).</li>
 <li>API client code can also be generated using <a href="build-script.html">build scripts</a> which will then check parameters usage in your library at compile time.</li>
-<li><a href="actix-plugin.html">Acix-web plugin</a> can be used to host the API spec for your <code>actix-web</code> application.</li>
+<li><a href="actix-plugin.html">Acix-web plugin</a> can be used to host the API spec for your <code>actix-web</code> application.<ul>
+<li>Actix Web 4 support has been added through actix4 feature flag.<ul>
+<li>Non-<code>BoxBody</code> response payload types not fully supported yet. Consider using <code>actix_web::middleware::Compat</code> as a workaround.</li>
+</ul>
+</li>
+</ul>
+</li>
 </ul>
 <h3 id="design">Design</h3>
 <p>TODO</p>
@@ -313,7 +319,7 @@
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Overview","level":"1.1","depth":1,"next":{"title":"CLI","level":"1.2","depth":1,"path":"cli.md","ref":"cli.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"README.md","mtime":"2022-04-03T13:29:43.503Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-03T13:32:52.497Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Overview","level":"1.1","depth":1,"next":{"title":"CLI","level":"1.2","depth":1,"path":"cli.md","ref":"cli.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"README.md","mtime":"2022-04-03T16:23:59.074Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-04-03T16:26:34.190Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>
