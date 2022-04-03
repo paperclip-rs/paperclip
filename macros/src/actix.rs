@@ -1569,12 +1569,13 @@ impl super::Method {
         let variant: proc_macro2::TokenStream = self.variant().parse()?;
         let handler_name_str = handler_name.to_string();
 
-        let uri = uri.to_string()
-            .replace("\"", ""); // The uri is a string lit, which contains quotes, remove them
+        let uri = uri.to_string().replace('\"', ""); // The uri is a string lit, which contains quotes, remove them
 
-        let uri_fmt = if !uri.starts_with("/") {
+        let uri_fmt = if !uri.starts_with('/') {
             format!("/{}", uri)
-        } else { uri };
+        } else {
+            uri
+        };
 
         Ok(quote! {
             #[allow(non_camel_case_types, missing_docs)]

@@ -119,7 +119,6 @@ impl Responder for Pet {
 
 #[test]
 fn test_simple_app() {
-
     #[api_v2_operation]
     fn echo_pet(body: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
         fut_ok(body)
