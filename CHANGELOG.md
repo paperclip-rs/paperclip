@@ -4,14 +4,17 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased]
+## [0.7.0] - 2022-04-03
 ### Added
 - Add openapi component rename attribute [PR#367](https://github.com/paperclip-rs/paperclip/pull/367)
 - Allow automatically adding the module path to the openapi component name, via a feature "path-in-definition" [PR#373](https://github.com/paperclip-rs/paperclip/pull/373)
 - Add missing ip, ipv4 and ipv6 string format types
 - Add support for actix-web 4
+  - Middleware support does not support non-`BoxBody` response payload types. 
+    As a workaround you can use `actix-web::middlware::Compat`.
 - Add support for Schemas wrapping Generic types (e.g. `DataResponse<T>` where `T` also derives
 `Apiv2Schema`) [PR#332](https://github.com/paperclip-rs/paperclip/pull/332)
+- Add support for actix-web validator [PR#403](https://github.com/paperclip-rs/paperclip/pull/403)
 
 ### Fixed
 - Add more tuple sizes for web::Path for OperationModifier impl [PR#379](https://github.com/paperclip-rs/paperclip/pull/379)
