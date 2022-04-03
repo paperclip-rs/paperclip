@@ -817,7 +817,84 @@
 <span id="812">812</span>
 <span id="813">813</span>
 <span id="814">814</span>
-</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-multipart&quot;</span>)]</span>
+<span id="815">815</span>
+<span id="816">816</span>
+<span id="817">817</span>
+<span id="818">818</span>
+<span id="819">819</span>
+<span id="820">820</span>
+<span id="821">821</span>
+<span id="822">822</span>
+<span id="823">823</span>
+<span id="824">824</span>
+<span id="825">825</span>
+<span id="826">826</span>
+<span id="827">827</span>
+<span id="828">828</span>
+<span id="829">829</span>
+<span id="830">830</span>
+<span id="831">831</span>
+<span id="832">832</span>
+<span id="833">833</span>
+<span id="834">834</span>
+<span id="835">835</span>
+<span id="836">836</span>
+<span id="837">837</span>
+<span id="838">838</span>
+<span id="839">839</span>
+<span id="840">840</span>
+<span id="841">841</span>
+<span id="842">842</span>
+<span id="843">843</span>
+<span id="844">844</span>
+<span id="845">845</span>
+<span id="846">846</span>
+<span id="847">847</span>
+<span id="848">848</span>
+<span id="849">849</span>
+<span id="850">850</span>
+<span id="851">851</span>
+<span id="852">852</span>
+<span id="853">853</span>
+<span id="854">854</span>
+<span id="855">855</span>
+<span id="856">856</span>
+<span id="857">857</span>
+<span id="858">858</span>
+<span id="859">859</span>
+<span id="860">860</span>
+<span id="861">861</span>
+<span id="862">862</span>
+<span id="863">863</span>
+<span id="864">864</span>
+<span id="865">865</span>
+<span id="866">866</span>
+<span id="867">867</span>
+<span id="868">868</span>
+<span id="869">869</span>
+<span id="870">870</span>
+<span id="871">871</span>
+<span id="872">872</span>
+<span id="873">873</span>
+<span id="874">874</span>
+<span id="875">875</span>
+<span id="876">876</span>
+<span id="877">877</span>
+<span id="878">878</span>
+<span id="879">879</span>
+<span id="880">880</span>
+<span id="881">881</span>
+<span id="882">882</span>
+<span id="883">883</span>
+<span id="884">884</span>
+<span id="885">885</span>
+<span id="886">886</span>
+</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>)]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web_validator2</span> <span class="kw">as</span> <span class="ident">actix_web_validator</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>)]</span>
+<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web_validator3</span> <span class="kw">as</span> <span class="ident">actix_web_validator</span>;
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-multipart&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::schema::TypedData</span>;
 <span class="kw">use</span> <span class="kw">super</span>::{
     <span class="ident">models</span>::{
@@ -842,6 +919,11 @@
 
 <span class="kw">use</span> <span class="ident">pin_project::pin_project</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="kw">use</span> <span class="ident">actix_web_validator</span>::{
+    <span class="ident">Json</span> <span class="kw">as</span> <span class="ident">ValidatedJson</span>, <span class="ident">Path</span> <span class="kw">as</span> <span class="ident">ValidatedPath</span>, <span class="ident">QsQuery</span> <span class="kw">as</span> <span class="ident">ValidatedQsQuery</span>,
+    <span class="ident">Query</span> <span class="kw">as</span> <span class="ident">ValidatedQuery</span>,
+};
 <span class="kw">use</span> <span class="ident">serde::Serialize</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde_qs&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident">serde_qs::actix::QsQuery</span>;
@@ -1156,6 +1238,45 @@
     }
 }
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
+    <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>),
+    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>
+))]</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedJson</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="prelude-val">None</span>
+    }
+
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">Default::default</span>()
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedJson</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
+    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+        <span class="ident">T::name</span>()
+    }
+
+    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
+        <span class="ident">T::raw_schema</span>()
+    }
+}
+
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">ValidatedJson</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
+<span class="kw">where</span>
+    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+{
+    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
+        <span class="ident">Json</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::update_parameter</span>(<span class="ident">op</span>);
+    }
+
+    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
+        <span class="ident">Json</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::update_response</span>(<span class="ident">op</span>);
+    }
+}
+
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-multipart&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">actix_multipart::Multipart</span> {
     <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
@@ -1266,8 +1387,31 @@
 <span class="macro">impl_param_extractor!</span>(<span class="ident">Form</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">FormData</span>);
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde_qs&quot;</span>)]</span>
 <span class="macro">impl_param_extractor!</span>(<span class="ident">QsQuery</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="macro">impl_param_extractor!</span>(<span class="ident">ValidatedPath</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Path</span>);
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="macro">impl_param_extractor!</span>(<span class="ident">ValidatedQuery</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="macro">impl_param_extractor!</span>(<span class="ident">ValidatedQsQuery</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
 
 <span class="macro">macro_rules!</span> <span class="ident">impl_path_tuple</span> ({ $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ident</span>),<span class="op">+</span> } =&gt; {
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>), <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
+    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedPath</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>), <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>)))]</span>
+    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">Apiv2Schema</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedPath</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
+
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">ValidatedPath</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span>
+        <span class="kw">where</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">Apiv2Schema</span>,)<span class="op">+</span>
+    {
+        <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
+            $(
+                <span class="ident">Path</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span><span class="ident">::update_parameter</span>(<span class="ident">op</span>);
+            )<span class="op">+</span>
+        }
+    }
+
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
     <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Path</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
 
@@ -1632,5 +1776,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (9f4dc0b4d 2022-03-23)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (76d770ac2 2022-04-02)" ></div>
 </body></html>
