@@ -170,13 +170,20 @@ fn test_simple_app() {
         NoContent
     }
 
+    #[api_v2_operation]
+    #[paperclip::actix::post("no-slash")]
+    async fn path_without_slash() -> NoContent {
+        NoContent
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
             .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
             .service(web::resource("/async_echo_2").route(web::post().to(echo_pet_async_2)))
             .service(web::resource("/adopt").route(web::post().to(adopt_pet)))
             .service(web::resource("/nothing").route(web::get().to(nothing)))
-            .service(web::resource("/random").to(some_pet));
+            .service(web::resource("/random").to(some_pet))
+            .service(path_without_slash);
     }
 
     run_and_check_app(
@@ -384,6 +391,15 @@ fn test_simple_app() {
                         }
                       }
                     },
+                    "/api/no-slash": {
+                      "post": {
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
+                          }
+                        }
+                      }
+                    }
                   },
                   "swagger": "2.0"
                 }),
