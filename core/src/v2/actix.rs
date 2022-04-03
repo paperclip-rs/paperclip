@@ -1,3 +1,8 @@
+#[cfg(feature = "actix3-validator")]
+extern crate actix_web_validator2 as actix_web_validator;
+#[cfg(feature = "actix4-validator")]
+extern crate actix_web_validator3 as actix_web_validator;
+
 #[cfg(feature = "actix-multipart")]
 use super::schema::TypedData;
 use super::{
@@ -23,6 +28,11 @@ use actix_web::{
 
 use pin_project::pin_project;
 
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+use actix_web_validator::{
+    Json as ValidatedJson, Path as ValidatedPath, QsQuery as ValidatedQsQuery,
+    Query as ValidatedQuery,
+};
 use serde::Serialize;
 #[cfg(feature = "serde_qs")]
 use serde_qs::actix::QsQuery;
@@ -337,6 +347,45 @@ where
     }
 }
 
+#[cfg(all(
+    any(feature = "actix4-validator", feature = "actix3-validator"),
+    feature = "nightly"
+))]
+impl<T> Apiv2Schema for ValidatedJson<T> {
+    fn name() -> Option<String> {
+        None
+    }
+
+    default fn raw_schema() -> DefaultSchemaRaw {
+        Default::default()
+    }
+}
+
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl<T: Apiv2Schema> Apiv2Schema for ValidatedJson<T> {
+    fn name() -> Option<String> {
+        T::name()
+    }
+
+    fn raw_schema() -> DefaultSchemaRaw {
+        T::raw_schema()
+    }
+}
+
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl<T> OperationModifier for ValidatedJson<T>
+where
+    T: Apiv2Schema,
+{
+    fn update_parameter(op: &mut DefaultOperationRaw) {
+        Json::<T>::update_parameter(op);
+    }
+
+    fn update_response(op: &mut DefaultOperationRaw) {
+        Json::<T>::update_response(op);
+    }
+}
+
 #[cfg(feature = "actix-multipart")]
 impl OperationModifier for actix_multipart::Multipart {
     fn update_parameter(op: &mut DefaultOperationRaw) {
@@ -447,8 +496,31 @@ impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
 #[cfg(feature = "serde_qs")]
 impl_param_extractor!(QsQuery<T> => Query);
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl_param_extractor!(ValidatedPath<T> => Path);
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl_param_extractor!(ValidatedQuery<T> => Query);
+#[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+impl_param_extractor!(ValidatedQsQuery<T> => Query);
 
 macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
+    #[cfg(all(any(feature = "actix4-validator", feature = "actix3-validator"), feature = "nightly"))]
+    impl<$($ty,)+> Apiv2Schema for ValidatedPath<($($ty,)+)> {}
+
+    #[cfg(all(not(feature = "nightly"), any(feature = "actix4-validator", feature = "actix3-validator")))]
+    impl<$($ty: Apiv2Schema,)+> Apiv2Schema for ValidatedPath<($($ty,)+)> {}
+
+    #[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
+    impl<$($ty,)+> OperationModifier for ValidatedPath<($($ty,)+)>
+        where $($ty: Apiv2Schema,)+
+    {
+        fn update_parameter(op: &mut DefaultOperationRaw) {
+            $(
+                Path::<$ty>::update_parameter(op);
+            )+
+        }
+    }
+
     #[cfg(feature = "nightly")]
     impl<$($ty,)+> Apiv2Schema for Path<($($ty,)+)> {}
 

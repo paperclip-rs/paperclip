@@ -49,6 +49,8 @@ indexmap = { version = "1.0", features = ["serde-1", "std"], optional = true }
 actix-rt1 = { version = "1.0", package = "actix-rt" }
 actix-service1 = { version = "1", package = "actix-service" }
 actix-service2 = { version = "2", package = "actix-service" }
+actix-web-validator2 = { version = "2.2", package = "actix-web-validator" }
+actix-web-validator3 = { version = "3.0", package = "actix-web-validator" }
 actix-web2 = { version = "2", default-features = false, package = "actix-web" }
 actix-web3 = { version = "3", default-features = false, package = "actix-web" }
 actix-web4 = { version = "4", default-features = false, package = "actix-web" }
@@ -59,6 +61,8 @@ reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
 insta = "1.0"
 env_logger = "0.8"
+validator12 = { version = "0.12", features = ["derive"], package = "validator" }
+validator14 = { version = "0.14", features = ["derive"], package = "validator" }
 
 [features]
 # actix-web support
@@ -85,6 +89,8 @@ v3 = ["openapiv3", "indexmap", "v2", "paperclip-core/v3", "paperclip-actix/v3"]
 actix-multipart = ["paperclip-core/actix-multipart"]
 actix-session = ["paperclip-core/actix-session"]
 actix-files = ["paperclip-core/actix-files"]
+actix3-validator = ["paperclip-core/actix3-validator"]
+actix4-validator = ["paperclip-core/actix4-validator"]
 chrono = ["paperclip-core/chrono"]
 rust_decimal = ["paperclip-core/rust_decimal"]
 url = ["paperclip-core/url"]
