@@ -293,9 +293,9 @@ pub trait Apiv2Schema {
     fn schema_with_ref() -> DefaultSchemaRaw {
         let mut def = Self::raw_schema();
         if let Some(n) = Self::name() {
-            def.reference = Some(String::from("#/definitions/") + &n);
+            def.reference = Some(String::from("#/definitions/") + &n.replace('<', "%3C").replace('>', "%3E"));
         } else if let Some(n) = def.name.as_ref() {
-            def.reference = Some(String::from("#/definitions/") + n);
+            def.reference = Some(String::from("#/definitions/") + &n.replace('<', "%3C").replace('>', "%3E"));
         }
         if !Self::description().is_empty() {
             def.description = Some(Self::description().to_owned());
