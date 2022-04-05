@@ -3716,7 +3716,7 @@ fn test_schema_with_generics() {
                                         "name": "body",
                                         "required": true,
                                         "schema": {
-                                            "$ref": "#/definitions/Pet<Cat>",
+                                            "$ref": "#/definitions/Pet%3CCat%3E",
                                         },
                                     },
                                 ],
@@ -3724,7 +3724,7 @@ fn test_schema_with_generics() {
                                     "200": {
                                         "description": "OK",
                                         "schema": {
-                                            "$ref": "#/definitions/Pet<Cat>",
+                                            "$ref": "#/definitions/Pet%3CCat%3E",
                                         },
                                     },
                                 },
@@ -3738,7 +3738,7 @@ fn test_schema_with_generics() {
                                         "name": "body",
                                         "required": true,
                                         "schema": {
-                                            "$ref": "#/definitions/Pet<Dog>",
+                                            "$ref": "#/definitions/Pet%3CDog%3E",
                                         },
                                     },
                                 ],
@@ -3746,7 +3746,7 @@ fn test_schema_with_generics() {
                                     "200": {
                                         "description": "OK",
                                         "schema": {
-                                            "$ref": "#/definitions/Pet<Dog>",
+                                            "$ref": "#/definitions/Pet%3CDog%3E",
                                         },
                                     },
                                 },
