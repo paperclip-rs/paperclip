@@ -519,6 +519,8 @@
 <span id="514">514</span>
 <span id="515">515</span>
 <span id="516">516</span>
+<span id="517">517</span>
+<span id="518">518</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::models</span>::{
@@ -814,9 +816,11 @@
     <span class="kw">fn</span> <span class="ident">schema_with_ref</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::raw_schema</span>();
         <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident"><span class="self">Self</span>::name</span>() {
-            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">n</span>);
+            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span>
+                <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">n</span>.<span class="ident">replace</span>(<span class="string">&#39;&lt;&#39;</span>, <span class="string">&quot;%3C&quot;</span>).<span class="ident">replace</span>(<span class="string">&#39;&gt;&#39;</span>, <span class="string">&quot;%3E&quot;</span>));
         } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">def</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>() {
-            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="ident">n</span>);
+            <span class="ident">def</span>.<span class="ident">reference</span> <span class="op">=</span>
+                <span class="prelude-val">Some</span>(<span class="ident">String::from</span>(<span class="string">&quot;#/definitions/&quot;</span>) <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">n</span>.<span class="ident">replace</span>(<span class="string">&#39;&lt;&#39;</span>, <span class="string">&quot;%3C&quot;</span>).<span class="ident">replace</span>(<span class="string">&#39;&gt;&#39;</span>, <span class="string">&quot;%3E&quot;</span>));
         }
         <span class="kw">if</span> <span class="op">!</span><span class="ident"><span class="self">Self</span>::description</span>().<span class="ident">is_empty</span>() {
             <span class="ident">def</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::description</span>().<span class="ident">to_owned</span>());
@@ -1036,5 +1040,5 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> <span class="ident">actix_web::Error</span> {}
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.61.0-nightly (76d770ac2 2022-04-02)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (60e50fc1c 2022-04-04)" ></div>
 </body></html>
