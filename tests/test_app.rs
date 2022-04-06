@@ -1282,7 +1282,16 @@ fn test_serde_flatten() {
         data: String,
         id: Uuid,
         #[serde(flatten)]
-        author: Author
+        author: Author,
+    }
+
+    /// Image to persist
+    #[derive(Deserialize, Apiv2Schema)]
+    struct Article {
+        description: String,
+        id: Uuid,
+        #[serde(flatten)]
+        author: Option<Author>,
     }
 
     #[api_v2_operation]
@@ -1303,6 +1312,15 @@ fn test_serde_flatten() {
         unimplemented!()
     }
 
+    #[api_v2_operation]
+    async fn add_article(_content: web::Json<Article>) -> Result<NoContent, Error> {
+        #[allow(unreachable_code)]
+        if _content.author.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -1313,6 +1331,7 @@ fn test_serde_flatten() {
                         .route(web::get().to(some_images))
                         .route(web::post().to(add_images)),
                 )
+                .service(web::resource("/article").route(web::get().to(add_article)))
                 .build()
         },
         |addr| {
@@ -1324,35 +1343,62 @@ fn test_serde_flatten() {
             check_json(
                 resp,
                 json!({
-                    "definitions": {
-                          "ImagePayload": {
-                            "description": "Image to persist",
-                            "properties": {
-                              "address": {
-                                "type": "string"
-                              },
-                              "age": {
-                                "format": "int32",
-                                "type": "integer"
-                              },
-                              "data": {
-                                "type": "string"
-                              },
-                              "id": {
-                                "format": "uuid",
-                                "type": "string"
-                              },
-                              "name": {
-                                "type": "string"
-                              }
+                      "definitions": {
+                        "Article": {
+                          "description": "Image to persist",
+                          "properties": {
+                            "address": {
+                              "type": "string"
                             },
-                            "required": [
-                              "data",
-                              "id",
-                              "name"
-                            ],
-                            "type": "object"
+                            "age": {
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
                           },
+                          "required": [
+                            "description",
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        "ImagePayload": {
+                          "description": "Image to persist",
+                          "properties": {
+                            "address": {
+                              "type": "string"
+                            },
+                            "age": {
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "data": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "data",
+                            "id",
+                            "name"
+                          ],
+                          "type": "object"
+                        },
                         "Images": {
                           "description": "Images response with paging information embedded",
                           "properties": {
@@ -1376,7 +1422,7 @@ fn test_serde_flatten() {
                                   "id",
                                   "time"
                                 ],
-                                 "type":"object"
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -1398,9 +1444,11 @@ fn test_serde_flatten() {
                           },
                           "required": [
                             "data",
-                            "paging"
+                            "offset",
+                            "size",
+                            "total"
                           ],
-                          "type":"object"
+                          "type": "object"
                         }
                       },
                       "info": {
@@ -1408,6 +1456,25 @@ fn test_serde_flatten() {
                         "version": ""
                       },
                       "paths": {
+                        "/article": {
+                          "get": {
+                            "parameters": [
+                              {
+                                "in": "body",
+                                "name": "body",
+                                "required": true,
+                                "schema": {
+                                  "$ref": "#/definitions/Article"
+                                }
+                              }
+                            ],
+                            "responses": {
+                              "204": {
+                                "description": "No Content"
+                              }
+                            }
+                          }
+                        },
                         "/images": {
                           "get": {
                             "parameters": [

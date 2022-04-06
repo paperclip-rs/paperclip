@@ -1163,12 +1163,6 @@ fn handle_unnamed_field_struct(
                 })
             };
 
-            // gen.extend(quote! {
-            //     if #ty_ref::required() {
-            //         schema.required.insert(#inner_field_id.to_string());
-            //     }
-            // });
-
             props_gen.extend(gen);
         }
     }
@@ -1283,12 +1277,6 @@ fn handle_field_struct(
                 }
             })
         };
-
-        // gen.extend(quote! {
-        //     if #ty_ref::required() {
-        //         schema.required.insert(#field_name.into());
-        //     }
-        // });
 
         props_gen.extend(gen);
     }
