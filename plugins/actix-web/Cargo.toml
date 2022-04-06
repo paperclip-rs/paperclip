@@ -1,6 +1,6 @@
 [package]
 name = "paperclip-actix"
-version = "0.4.2"
+version = "0.5.0"
 authors = ["Ravi Shankar <wafflespeanut@gmail.com>"]
 edition = "2018"
 description = "Paperclip OpenAPI plugin for actix-web framework"
@@ -10,8 +10,8 @@ homepage = "https://github.com/paperclip-rs/paperclip"
 repository = "https://github.com/paperclip-rs/paperclip"
 
 [dependencies]
-paperclip-core = { path = "../../core", version = "0.4.0", optional = true }
-paperclip-macros = { path = "../../macros", version = "0.5.0", features = ["actix"] }
+paperclip-core = { path = "../../core", version = "0.5.1", optional = true }
+paperclip-macros = { path = "../../macros", version = "0.6.0", features = ["actix"] }
 futures = "0.3"
 actix-service1 = { version = "1", package = "actix-service", optional = true }
 actix-service2 = { version = "2", package = "actix-service", optional = true }
@@ -30,5 +30,5 @@ actix3 = ["actix-web3", "actix-service1", "paperclip-core/actix3"]
 actix4 = ["actix-web4", "actix-service2", "paperclip-core/actix4"]
 nightly = ["paperclip-core/nightly"]
 normalize = []
-v3 = ["openapiv3"]
+v3 = ["openapiv3", "paperclip-core/v3"]
 swagger-ui = ["include_dir"]
