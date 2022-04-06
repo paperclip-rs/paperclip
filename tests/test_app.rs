@@ -3343,11 +3343,13 @@ fn test_method_macro_subscope() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::scope("/v0/pets")
-                .service(get_pets)
-                .service(put_pet)
-                .service(post_pet)
-                .service(delete_pet))
+                .service(
+                    web::scope("/v0/pets")
+                        .service(get_pets)
+                        .service(put_pet)
+                        .service(post_pet)
+                        .service(delete_pet),
+                )
                 .build()
         },
         |addr| {
@@ -3488,7 +3490,6 @@ fn test_method_macro_subscope() {
         },
     );
 }
-
 
 #[cfg(feature = "actix4")]
 fn run_and_check_app<F, G, T, B, U>(factory: F, check: G) -> U
