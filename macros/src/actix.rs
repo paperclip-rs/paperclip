@@ -1156,6 +1156,10 @@ fn handle_unnamed_field_struct(
                 quote!({
                     let s = #ty_ref::raw_schema();
                     schema.properties.extend(s.properties);
+
+                    if #ty_ref::required() {
+                        schema.required.extend(s.required);
+                    }
                 })
             };
 
@@ -1273,6 +1277,10 @@ fn handle_field_struct(
             quote!({
                 let s = #ty_ref::raw_schema();
                 schema.properties.extend(s.properties);
+
+                if #ty_ref::required() {
+                    schema.required.extend(s.required);
+                }
             })
         };
 
