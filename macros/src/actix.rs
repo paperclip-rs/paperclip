@@ -1572,6 +1572,14 @@ impl super::Method {
         let variant: proc_macro2::TokenStream = self.variant().parse()?;
         let handler_name_str = handler_name.to_string();
 
+        let uri = uri.to_string().replace('\"', ""); // The uri is a string lit, which contains quotes, remove them
+
+        let uri_fmt = if !uri.starts_with('/') {
+            format!("/{}", uri)
+        } else {
+            uri
+        };
+
         Ok(quote! {
             #[allow(non_camel_case_types, missing_docs)]
             pub struct #handler_name;
@@ -1579,7 +1587,7 @@ impl super::Method {
             impl #handler_name {
                 fn resource() -> paperclip::actix::web::Resource {
                     #handler_fn
-                    paperclip::actix::web::Resource::new(#uri)
+                    paperclip::actix::web::Resource::new(#uri_fmt)
                         .name(#handler_name_str)
                         .guard(actix_web::guard::#variant())
                         .route(paperclip::actix::web::#method().to(#handler_name))
@@ -1594,7 +1602,7 @@ impl super::Method {
 
             impl paperclip::actix::Mountable for #handler_name {
                 fn path(&self) -> &str {
-                    #uri
+                    #uri_fmt
                 }
 
                 fn operations(
