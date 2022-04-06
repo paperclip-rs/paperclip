@@ -1524,7 +1524,7 @@ fn test_serde_flatten() {
                 json!({
                       "definitions": {
                         "Article": {
-                          "description": "Image to persist",
+                          "description": "Article to persist",
                           "properties": {
                             "address": {
                               "type": "string"
