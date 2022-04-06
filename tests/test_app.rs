@@ -1285,7 +1285,7 @@ fn test_serde_flatten() {
         author: Author,
     }
 
-    /// Image to persist
+    /// Article to persist
     #[derive(Deserialize, Apiv2Schema)]
     struct Article {
         description: String,
