@@ -3419,7 +3419,7 @@ fn test_method_macro_subscope() {
                         "version":""
                     },
                     "paths": {
-                        "/v0/pets": {
+                        "/v0/pets/": {
                             "get": {
                                 "responses": {
                                     "200": {
