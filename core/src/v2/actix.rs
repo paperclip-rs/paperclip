@@ -23,7 +23,7 @@ use actix_web::{body::BoxBody, ResponseError};
 use actix_web::{
     http::StatusCode,
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
-    HttpRequest, HttpResponse, Responder,
+    HttpRequest, HttpResponse, Responder, FromRequest
 };
 
 use pin_project::pin_project;
@@ -489,6 +489,15 @@ impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
 
     fn raw_schema() -> DefaultSchemaRaw {
         T::raw_schema()
+    }
+}
+
+impl<T: FromRequest> FromRequest for HeaderParameter<T> {
+    type Error = T::Error;
+    type Future = T::Future;
+
+    fn from_request(req: &HttpRequest, payload: &mut actix_web4::dev::Payload) -> Self::Future {
+        T::from_request(req, payload)
     }
 }
 
