@@ -1137,7 +1137,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     }
 
     let quoted_description = quote_option(parameter_attrs.get("description"));
-    let quoted_name = parameter_attrs.get("name"); //@todo handle error if not present ? Fallback on type name ?
+    let name_string = name.to_string();
+    let quoted_name = parameter_attrs.get("name").unwrap_or_else(|| &name_string);
 
     let quoted_format = if let Some(format) = parameter_attrs.get("format") {
         match &*format.clone() {

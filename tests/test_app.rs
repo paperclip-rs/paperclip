@@ -3174,7 +3174,7 @@ fn test_header_parameter_app() {
     }
 
     #[derive(Apiv2Header, Deserialize)]
-    #[openapi(name = "X-Slug", description = "User organization slug")]
+    #[openapi(description = "User organization slug")]
     struct Slug;
 
     impl FromRequest for Slug {
@@ -3302,7 +3302,7 @@ fn test_header_parameter_app() {
                           {
                             "description": "User organization slug",
                             "in": "header",
-                            "name": "X-Slug",
+                            "name": "Slug",
                             "required": true,
                             "type": "string"
                           },
