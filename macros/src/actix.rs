@@ -971,14 +971,6 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
         }
     }
 
-    fn quote_option(value: Option<&String>) -> proc_macro2::TokenStream {
-        if let Some(value) = value {
-            quote! { Some(#value.to_string()) }
-        } else {
-            quote! { None }
-        }
-    }
-
     let scopes_stream = scopes
         .iter()
         .fold(proc_macro2::TokenStream::new(), |mut stream, scope| {
@@ -1069,14 +1061,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
     gen.into()
 }
 
-/// #[derive(Clone, Debug, Apiv2Header)]
-/// #[openapi(
-///   name = "X-RequestId",
-///   description = "`X-RequestId` header contains the request id"
-/// )]
-/// pub struct RequestId {
-///   pub value: String,
-/// }
+/// Actual parser and emitter for `Apiv2Header` derive macro.
 pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
         Ok(i) => i,
@@ -1101,11 +1086,12 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
 
     let mut parameter_attrs = HashMap::new();
 
-    // @todo rethink about it
     let valid_attrs = vec!["description", "name", "format"];
-    let invalid_attr_msg = format!("Invalid macro attribute. Should be named attribute {:?}", valid_attrs);
+    let invalid_attr_msg = format!(
+        "Invalid macro attribute. Should be named attribute {:?}",
+        valid_attrs
+    );
 
-    // @todo update according to the above array
     // Read security params from openapi attr.
     for nested in extract_openapi_attrs(&item_ast.attrs) {
         for nested_attr in nested {
@@ -1150,28 +1136,49 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         }
     }
 
-    fn quote_option(value: Option<&String>) -> proc_macro2::TokenStream {
-        if let Some(value) = value {
-            quote! { Some(#value.to_string()) }
-        } else {
-            quote! { None }
-        }
-    }
-
     let quoted_description = quote_option(parameter_attrs.get("description"));
     let quoted_name = parameter_attrs.get("name"); //@todo handle error if not present ? Fallback on type name ?
-    let quoted_format = quote_option(parameter_attrs.get("format")); //@todo handle format with DataTypeFormat
 
-    let def_block =
-        quote! {
-            Some(paperclip::v2::models::Parameter::<paperclip::v2::models::DefaultSchemaRaw> {
-                name: #quoted_name,
-                in_: paperclip::v2::models::ParameterIn::Header,
-                description: #quoted_description,
-                // format: #quoted_format
-                ..Default::default()
-            })
-        };
+    let quoted_format = if let Some(format) = parameter_attrs.get("format") {
+        match &*format.clone() {
+            "int32" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int32) },
+            "int64" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int64) },
+            "float" => quote! { Some(paperclip::v2::models::DataTypeFormat::Float) },
+            "double" => quote! { Some(paperclip::v2::models::DataTypeFormat::Double) },
+            "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
+            "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
+            "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
+            "datetime" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
+            "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
+            "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
+            "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
+            "ip" => quote! { Some(paperclip::v2::models::DataTypeFormat::Ip) },
+            "ipv4" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV4) },
+            "ipv6" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV6) },
+            "other" => quote! { Some(paperclip::v2::models::DataTypeFormat::Other) },
+            v => {
+                emit_error!(
+                    format.span().unwrap(),
+                    format!("Invalid format attribute value. Got {}", v)
+                );
+                quote! { None }
+            }
+        }
+    } else {
+        quote! { None }
+    };
+
+    let def_block = quote! {
+        Some(paperclip::v2::models::Parameter::<paperclip::v2::models::DefaultSchemaRaw> {
+            name: #quoted_name.to_owned(),
+            in_: paperclip::v2::models::ParameterIn::Header,
+            description: #quoted_description,
+            data_type: Some(paperclip::v2::models::DataType::String),
+            format: #quoted_format,
+            required: Self::required(),
+            ..Default::default()
+        })
+    };
 
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
@@ -1184,6 +1191,14 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     };
 
     gen.into()
+}
+
+fn quote_option(value: Option<&String>) -> proc_macro2::TokenStream {
+    if let Some(value) = value {
+        quote! { Some(#value.to_string()) }
+    } else {
+        quote! { None }
+    }
 }
 
 #[cfg(feature = "nightly")]

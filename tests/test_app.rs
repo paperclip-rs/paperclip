@@ -46,7 +46,7 @@ use once_cell::sync::Lazy;
 use paperclip::{
     actix::{
         api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, web,
-        Apiv2Schema, Apiv2Security, Apiv2Header, CreatedJson, NoContent, OpenApiExt,
+        Apiv2Header, Apiv2Schema, Apiv2Security, CreatedJson, NoContent, OpenApiExt,
     },
     v2::models::{DefaultApiRaw, Info, Tag},
 };
@@ -3156,12 +3156,28 @@ fn test_security_app() {
 fn test_header_parameter_app() {
     #[derive(Apiv2Header, Deserialize)]
     #[openapi(
-    name = "X-Request-ID",
-    description = "Allow to track request"
+        name = "X-Request-ID",
+        description = "Allow to track request",
+        format = "uuid"
     )]
     struct RequestId;
 
     impl FromRequest for RequestId {
+        type Error = Error;
+        type Future = Ready<Result<Self, Self::Error>>;
+        #[cfg(not(feature = "actix4"))]
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {}))
+        }
+    }
+
+    #[derive(Apiv2Header, Deserialize)]
+    #[openapi(name = "X-Slug", description = "User organization slug")]
+    struct Slug;
+
+    impl FromRequest for Slug {
         type Error = Error;
         type Future = Ready<Result<Self, Self::Error>>;
         #[cfg(not(feature = "actix4"))]
@@ -3177,8 +3193,14 @@ fn test_header_parameter_app() {
         body
     }
 
+    #[api_v2_operation]
+    async fn echo_pet_with_slug(_: Slug, body: web::Json<Pet>) -> web::Json<Pet> {
+        body
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
-        cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_request_id)));
+        cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_request_id)))
+            .service(web::resource("/echo2").route(web::post().to(echo_pet_with_slug)));
     }
 
     run_and_check_app(
@@ -3198,13 +3220,20 @@ fn test_header_parameter_app() {
             check_json(
                 resp,
                 json!({
-                  "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
                       "description": "Pets are awesome!",
                       "properties": {
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "class": {
-                          "enum": ["dog", "cat", "other"],
+                          "enum": [
+                            "dog",
+                            "cat",
+                            "other"
+                          ],
                           "type": "string"
                         },
                         "id": {
@@ -3213,10 +3242,6 @@ fn test_header_parameter_app() {
                         },
                         "name": {
                           "description": "Pick a good one.",
-                          "type": "string"
-                        },
-                        "birthday": {
-                          "format": "date",
                           "type": "string"
                         },
                         "updatedOn": {
@@ -3228,78 +3253,77 @@ fn test_header_parameter_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"],
-                      "type":"object"
+                      "required": [
+                        "birthday",
+                        "class",
+                        "name"
+                      ],
+                      "type": "object"
                     }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
                   },
                   "paths": {
                     "/api/echo1": {
                       "post": {
-                        "parameters": [{
+                        "parameters": [
+                          {
+                            "description": "Allow to track request",
+                            "format": "uuid",
+                            "in": "header",
+                            "name": "X-Request-ID",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
                             "in": "body",
                             "name": "body",
                             "required": true,
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
-                          }],
+                          }
+                        ],
                         "responses": {
                           "200": {
                             "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
-                          },
-                        },
-                        "security": [
-                          {
-                            "JWT": []
                           }
-                        ]
+                        }
                       }
                     },
                     "/api/echo2": {
                       "post": {
-                        "parameters": [{
+                        "parameters": [
+                          {
+                            "description": "User organization slug",
+                            "in": "header",
+                            "name": "X-Slug",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
                             "in": "body",
                             "name": "body",
                             "required": true,
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
-                          }],
+                          }
+                        ],
                         "responses": {
                           "200": {
                             "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
-                          },
-                        },
-                        "security": [
-                          {
-                            "MyOAuth2": ["pets.read", "pets.write"]
                           }
-                        ]
+                        }
                       }
-                    },
-                  },
-                  "securityDefinitions": {
-                    "JWT": {
-                        "description":"Use format 'Bearer TOKEN'",
-                        "in": "header",
-                        "name": "Authorization",
-                        "type": "apiKey"
-                    },
-                    "MyOAuth2": {
-                        "scopes": {
-                          "pets.read": "pets.read",
-                          "pets.write": "pets.write"
-                        },
-                        "type": "oauth2",
-                        "authorizationUrl": "http://example.com/",
-                        "tokenUrl": "http://example.com/token",
-                        "flow": "password"
                     }
                   },
                   "swagger": "2.0"
