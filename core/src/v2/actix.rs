@@ -23,7 +23,7 @@ use actix_web::{body::BoxBody, ResponseError};
 use actix_web::{
     http::StatusCode,
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
-    HttpRequest, HttpResponse, Responder, FromRequest
+    HttpRequest, HttpResponse, Responder
 };
 
 use pin_project::pin_project;
@@ -44,13 +44,14 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
-use crate::v2::models::HeaderParameter;
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.
 pub trait OperationModifier: Apiv2Schema + Sized {
     /// Update the parameters list in the given operation (if needed).
-    fn update_parameter(_op: &mut DefaultOperationRaw) {}
+    fn update_parameter(op: &mut DefaultOperationRaw) {
+        update_parameter::<Self>(op);
+    }
 
     /// Update the responses map in the given operation (if needed).
     fn update_response(_op: &mut DefaultOperationRaw) {}
@@ -77,7 +78,9 @@ impl<T> OperationModifier for T
 where
     T: Apiv2Schema,
 {
-    default fn update_parameter(_op: &mut DefaultOperationRaw) {}
+    default fn update_parameter(op: &mut DefaultOperationRaw) {
+        update_parameter::<Self>(op);
+    }
 
     default fn update_response(_op: &mut DefaultOperationRaw) {}
 
@@ -492,19 +495,9 @@ impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
     }
 }
 
-impl<T: FromRequest> FromRequest for HeaderParameter<T> {
-    type Error = T::Error;
-    type Future = T::Future;
-
-    fn from_request(req: &HttpRequest, payload: &mut actix_web4::dev::Payload) -> Self::Future {
-        T::from_request(req, payload)
-    }
-}
-
 impl_param_extractor!(Path<T> => Path);
 impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
-impl_param_extractor!(HeaderParameter<T> => Header);
 #[cfg(feature = "serde_qs")]
 impl_param_extractor!(QsQuery<T> => Query);
 #[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]
@@ -718,6 +711,15 @@ where
         }
 
         break;
+    }
+}
+
+fn update_parameter<T>(op: &mut DefaultOperationRaw)
+    where
+        T: Apiv2Schema,
+{
+    if let Some(parameter) = T::header_parameter_schema() {
+        op.parameters.push(Either::Right(parameter))
     }
 }
 
