@@ -254,6 +254,8 @@ impl_type_simple!(std::net::Ipv6Addr, DataType::String, DataTypeFormat::IpV6);
 /// for schema objects.
 /// - [`Apiv2Security`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)
 /// for security scheme objects.
+/// - [`Apiv2Header`]()
+/// for header parameters objects.
 ///
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {

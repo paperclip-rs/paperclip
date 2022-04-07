@@ -44,6 +44,7 @@ use std::{
     pin::Pin,
     task::{Context, Poll},
 };
+use crate::v2::models::HeaderParameter;
 
 /// Actix-specific trait for indicating that this entity can modify an operation
 /// and/or update the global map of definitions.
@@ -494,6 +495,7 @@ impl<T: Apiv2Schema> Apiv2Schema for Form<T> {
 impl_param_extractor!(Path<T> => Path);
 impl_param_extractor!(Query<T> => Query);
 impl_param_extractor!(Form<T> => FormData);
+impl_param_extractor!(HeaderParameter<T> => Header);
 #[cfg(feature = "serde_qs")]
 impl_param_extractor!(QsQuery<T> => Query);
 #[cfg(any(feature = "actix4-validator", feature = "actix3-validator"))]

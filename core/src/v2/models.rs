@@ -435,6 +435,15 @@ pub type ResolvableParameter<S> = Arc<RwLock<Parameter<Resolvable<S>>>>;
 /// Parameter with the default raw schema.
 pub type DefaultParameterRaw = Parameter<DefaultSchemaRaw>;
 
+pub struct HeaderParameter<T>(pub T);
+
+impl<T> HeaderParameter<T> {
+    /// Unwrap into inner `T` value.
+    pub fn into_inner(self) -> T {
+        self.0
+    }
+}
+
 /// Request parameter object.
 ///
 /// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject>
