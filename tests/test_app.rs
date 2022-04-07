@@ -46,7 +46,7 @@ use once_cell::sync::Lazy;
 use paperclip::{
     actix::{
         api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, web,
-        Apiv2Schema, Apiv2Security, CreatedJson, NoContent, OpenApiExt,
+        Apiv2Schema, Apiv2Security, Apiv2Header, CreatedJson, NoContent, OpenApiExt,
     },
     v2::models::{DefaultApiRaw, Info, Tag},
 };
@@ -3022,6 +3022,163 @@ fn test_security_app() {
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_jwt)))
             .service(web::resource("/echo2").route(web::post().to(echo_pet_with_petstore)));
+    }
+
+    run_and_check_app(
+        move || {
+            App::new()
+                .wrap_api()
+                .service(web::scope("/api").configure(config))
+                .with_json_spec_at("/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "info":{"title":"","version":""},
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "class": {
+                          "enum": ["dog", "cat", "other"],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        },
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "required":["birthday", "class", "name"],
+                      "type":"object"
+                    }
+                  },
+                  "paths": {
+                    "/api/echo1": {
+                      "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                        },
+                        "security": [
+                          {
+                            "JWT": []
+                          }
+                        ]
+                      }
+                    },
+                    "/api/echo2": {
+                      "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                        },
+                        "security": [
+                          {
+                            "MyOAuth2": ["pets.read", "pets.write"]
+                          }
+                        ]
+                      }
+                    },
+                  },
+                  "securityDefinitions": {
+                    "JWT": {
+                        "description":"Use format 'Bearer TOKEN'",
+                        "in": "header",
+                        "name": "Authorization",
+                        "type": "apiKey"
+                    },
+                    "MyOAuth2": {
+                        "scopes": {
+                          "pets.read": "pets.read",
+                          "pets.write": "pets.write"
+                        },
+                        "type": "oauth2",
+                        "authorizationUrl": "http://example.com/",
+                        "tokenUrl": "http://example.com/token",
+                        "flow": "password"
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_header_parameter_app() {
+    #[derive(Apiv2Header, Deserialize)]
+    #[openapi(
+    name = "X-Request-ID",
+    description = "Allow to track request"
+    )]
+    struct RequestId;
+
+    impl FromRequest for RequestId {
+        type Error = Error;
+        type Future = Ready<Result<Self, Self::Error>>;
+        #[cfg(not(feature = "actix4"))]
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {}))
+        }
+    }
+
+    #[api_v2_operation]
+    async fn echo_pet_with_request_id(_: RequestId, body: web::Json<Pet>) -> web::Json<Pet> {
+        body
+    }
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_request_id)));
     }
 
     run_and_check_app(

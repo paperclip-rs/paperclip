@@ -313,7 +313,9 @@ pub trait Apiv2Schema {
         None
     }
 
-    fn header_parameter_schema<T>() -> Option<Parameter<T>> { None } //@todo find a way to fill it now
+    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
+        None
+    }
 }
 
 impl Apiv2Schema for () {}
@@ -348,7 +350,7 @@ impl<T> Apiv2Schema for Option<T> {
         None
     }
 
-    default fn header_parameter_schema<S>() -> Option<Parameter<S>> {
+    default fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
         None
     }
 }
@@ -370,7 +372,7 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
         T::security_scheme()
     }
 
-    fn header_parameter_schema<S>() -> Option<Parameter<S>> {
+    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
         T::header_parameter_schema()
     }
 }
@@ -389,7 +391,7 @@ impl<T, E> Apiv2Schema for Result<T, E> {
         Default::default()
     }
 
-    default fn header_parameter_schema<S>() -> Option<Parameter<S>> {
+    default fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
         Default::default()
     }
 }
@@ -407,7 +409,7 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
         T::security_scheme()
     }
 
-    fn header_parameter_schema<S>() -> Option<Parameter<S>> {
+    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
         T::header_parameter_schema()
     }
 }
@@ -425,7 +427,7 @@ impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
         T::security_scheme()
     }
 
-    fn header_parameter_schema<S>() -> Option<Parameter<S>> {
+    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
         T::header_parameter_schema()
     }
 }
@@ -464,8 +466,8 @@ macro_rules! impl_schema_map {
     };
 }
 
-use std::collections::*;
 use crate::v2::models::Parameter;
+use std::collections::*;
 
 impl_schema_array!(Vec<T>);
 impl_schema_array!(HashSet<T>);

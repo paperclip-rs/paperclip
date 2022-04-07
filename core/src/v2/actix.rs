@@ -23,7 +23,7 @@ use actix_web::{body::BoxBody, ResponseError};
 use actix_web::{
     http::StatusCode,
     web::{Bytes, Data, Form, Json, Path, Payload, Query},
-    HttpRequest, HttpResponse, Responder
+    HttpRequest, HttpResponse, Responder,
 };
 
 use pin_project::pin_project;
@@ -715,8 +715,8 @@ where
 }
 
 fn update_parameter<T>(op: &mut DefaultOperationRaw)
-    where
-        T: Apiv2Schema,
+where
+    T: Apiv2Schema,
 {
     if let Some(parameter) = T::header_parameter_schema() {
         op.parameters.push(Either::Right(parameter))

@@ -33,7 +33,7 @@ pub use self::{
 };
 pub use paperclip_macros::{
     api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, Apiv2Schema,
-    Apiv2Security,
+    Apiv2Security, Apiv2Header
 };
 
 use paperclip_core::v2::models::{
