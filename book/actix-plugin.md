@@ -200,7 +200,7 @@ At the time of this writing, this plugin didn't support a few OpenAPI v2 feature
 |--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc. |
 
-In addition, only basic support is implemented ofr Headers as parameters. Only headers with type string are currently supported.
+In addition, only basic support is implemented for Headers as parameters. Only headers with type string are currently supported.
 
 #### Performance implications?
 
