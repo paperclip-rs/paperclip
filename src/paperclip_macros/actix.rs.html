@@ -1694,6 +1694,9 @@
 <span id="1689">1689</span>
 <span id="1690">1690</span>
 <span id="1691">1691</span>
+<span id="1692">1692</span>
+<span id="1693">1693</span>
+<span id="1694">1694</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)</span>
 <span class="doccomment">//! OpenAPI plugin (exposed by paperclip with `actix` feature).</span>
 
@@ -2844,19 +2847,20 @@
                         <span class="ident">s</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">docs</span>.<span class="ident">to_string</span>());
                     }
                     <span class="ident">schema</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(#<span class="ident">inner_field_id</span>.<span class="ident">to_string</span>(), <span class="ident">s</span>.<span class="ident">into</span>());
+                    <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
+                        <span class="ident">schema</span>.<span class="ident">required</span>.<span class="ident">insert</span>(#<span class="ident">inner_field_id</span>.<span class="ident">to_string</span>());
+                    }
                 })
             } <span class="kw">else</span> {
                 <span class="macro">quote!</span>({
                     <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> #<span class="ident">ty_ref::raw_schema</span>();
                     <span class="ident">schema</span>.<span class="ident">properties</span>.<span class="ident">extend</span>(<span class="ident">s</span>.<span class="ident">properties</span>);
+
+                    <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
+                        <span class="ident">schema</span>.<span class="ident">required</span>.<span class="ident">extend</span>(<span class="ident">s</span>.<span class="ident">required</span>);
+                    }
                 })
             };
-
-            <span class="ident">gen</span>.<span class="ident">extend</span>(<span class="macro">quote!</span> {
-                <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
-                    <span class="ident">schema</span>.<span class="ident">required</span>.<span class="ident">insert</span>(#<span class="ident">inner_field_id</span>.<span class="ident">to_string</span>());
-                }
-            });
 
             <span class="ident">props_gen</span>.<span class="ident">extend</span>(<span class="ident">gen</span>);
         }
@@ -2957,19 +2961,21 @@
                     <span class="ident">s</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">docs</span>.<span class="ident">to_string</span>());
                 }
                 <span class="ident">schema</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(#<span class="ident">field_name</span>.<span class="ident">into</span>(), <span class="ident">s</span>.<span class="ident">into</span>());
+
+                <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
+                    <span class="ident">schema</span>.<span class="ident">required</span>.<span class="ident">insert</span>(#<span class="ident">field_name</span>.<span class="ident">into</span>());
+                }
             })
         } <span class="kw">else</span> {
             <span class="macro">quote!</span>({
                 <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> #<span class="ident">ty_ref::raw_schema</span>();
                 <span class="ident">schema</span>.<span class="ident">properties</span>.<span class="ident">extend</span>(<span class="ident">s</span>.<span class="ident">properties</span>);
+
+                <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
+                    <span class="ident">schema</span>.<span class="ident">required</span>.<span class="ident">extend</span>(<span class="ident">s</span>.<span class="ident">required</span>);
+                }
             })
         };
-
-        <span class="ident">gen</span>.<span class="ident">extend</span>(<span class="macro">quote!</span> {
-            <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
-                <span class="ident">schema</span>.<span class="ident">required</span>.<span class="ident">insert</span>(#<span class="ident">field_name</span>.<span class="ident">into</span>());
-            }
-        });
 
         <span class="ident">props_gen</span>.<span class="ident">extend</span>(<span class="ident">gen</span>);
     }
