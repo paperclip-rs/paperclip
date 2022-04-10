@@ -766,8 +766,6 @@
 <span id="761">761</span>
 <span id="762">762</span>
 <span id="763">763</span>
-<span id="764">764</span>
-<span id="765">765</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
 <span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).</span>
@@ -785,6 +783,7 @@
 <span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::Mountable</span>;
 <span class="kw">use</span> <span class="ident">actix_service::ServiceFactory</span>;
 <span class="kw">use</span> <span class="ident">actix_web</span>::{
+    <span class="ident">body::MessageBody</span>,
     <span class="ident">dev</span>::{<span class="ident">AppService</span>, <span class="ident">Handler</span>, <span class="ident">HttpServiceFactory</span>, <span class="ident">ServiceRequest</span>, <span class="ident">ServiceResponse</span>, <span class="ident">Transform</span>},
     <span class="ident">guard::Guard</span>,
     <span class="ident">http::Method</span>,
@@ -833,15 +832,16 @@
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">HttpServiceFactory</span> <span class="kw">for</span> <span class="ident">Resource</span><span class="op">&lt;</span><span class="ident">actix_web::Resource</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
+<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">B</span><span class="op">&gt;</span> <span class="ident">HttpServiceFactory</span> <span class="kw">for</span> <span class="ident">Resource</span><span class="op">&lt;</span><span class="ident">actix_web::Resource</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
 <span class="kw">where</span>
     <span class="ident">T</span>: <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
             <span class="ident">ServiceRequest</span>,
             <span class="ident">Config</span> <span class="op">=</span> (),
-            <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span>,
+            <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
             <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
             <span class="ident">InitError</span> <span class="op">=</span> (),
         <span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+    <span class="ident">B</span>: <span class="ident">MessageBody</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
 {
     <span class="kw">fn</span> <span class="ident">register</span>(<span class="self">self</span>, <span class="ident">config</span>: <span class="kw-2">&amp;mut</span> <span class="ident">AppService</span>) {
         <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">register</span>(<span class="ident">config</span>)
@@ -868,13 +868,7 @@
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Resource</span><span class="op">&lt;</span><span class="ident">actix_web::Resource</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
-        <span class="ident">ServiceRequest</span>,
-        <span class="ident">Config</span> <span class="op">=</span> (),
-        <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span>,
-        <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
-        <span class="ident">InitError</span> <span class="op">=</span> (),
-    <span class="op">&gt;</span>,
+    <span class="ident">T</span>: <span class="ident">ServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceRequest</span>, <span class="ident">Config</span> <span class="op">=</span> (), <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>, <span class="ident">InitError</span> <span class="op">=</span> ()<span class="op">&gt;</span>,
 {
     <span class="doccomment">/// Proxy for [`actix_web::Resource::name`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.name).</span>
     <span class="doccomment">///</span>
@@ -927,7 +921,7 @@
     <span class="doccomment">/// Proxy for [`actix_web::web::Resource::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap).</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span><span class="op">&lt;</span><span class="ident">M</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span><span class="op">&lt;</span><span class="ident">M</span>, <span class="ident">B</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">mw</span>: <span class="ident">M</span>,
     ) -&gt; <span class="ident">Resource</span><span class="op">&lt;</span>
@@ -935,17 +929,18 @@
             <span class="kw">impl</span> <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
                 <span class="ident">ServiceRequest</span>,
                 <span class="ident">Config</span> <span class="op">=</span> (),
-                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span>,
+                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
                 <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
                 <span class="ident">InitError</span> <span class="op">=</span> (),
             <span class="op">&gt;</span>,
         <span class="op">&gt;</span>,
     <span class="op">&gt;</span>
     <span class="kw">where</span>
+        <span class="ident">B</span>: <span class="ident">MessageBody</span>,
         <span class="ident">M</span>: <span class="ident">Transform</span><span class="op">&lt;</span>
                 <span class="ident">T::Service</span>,
                 <span class="ident">ServiceRequest</span>,
-                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span>,
+                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
                 <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
                 <span class="ident">InitError</span> <span class="op">=</span> (),
             <span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
@@ -962,7 +957,7 @@
     <span class="doccomment">/// Proxy for [`actix_web::web::Resource::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap_fn).</span>
     <span class="doccomment">///</span>
     <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap_fn</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span><span class="op">&gt;</span>(
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap_fn</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span>, <span class="ident">B</span><span class="op">&gt;</span>(
         <span class="self">self</span>,
         <span class="ident">mw</span>: <span class="ident">F</span>,
     ) -&gt; <span class="ident">Resource</span><span class="op">&lt;</span>
@@ -970,15 +965,16 @@
             <span class="kw">impl</span> <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
                 <span class="ident">ServiceRequest</span>,
                 <span class="ident">Config</span> <span class="op">=</span> (),
-                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span>,
+                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
                 <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
                 <span class="ident">InitError</span> <span class="op">=</span> (),
             <span class="op">&gt;</span>,
         <span class="op">&gt;</span>,
     <span class="op">&gt;</span>
     <span class="kw">where</span>
+        <span class="ident">B</span>: <span class="ident">MessageBody</span>,
         <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">ServiceRequest</span>, <span class="kw-2">&amp;</span><span class="ident">T::Service</span>) -&gt; <span class="ident">R</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">R</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ServiceResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+        <span class="ident">R</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     {
         <span class="ident">Resource</span> {
             <span class="ident">path</span>: <span class="self">self</span>.<span class="ident">path</span>,
