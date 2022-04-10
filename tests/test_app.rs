@@ -1447,10 +1447,54 @@ fn test_serde_flatten() {
         name: Option<String>,
     }
 
+    /// Image author info
+    #[derive(Deserialize, Apiv2Schema)]
+    struct Author {
+        name: String,
+        address: Option<String>,
+        age: Option<u8>,
+    }
+
+    /// Image to persist
+    #[derive(Deserialize, Apiv2Schema)]
+    struct ImagePayload {
+        data: String,
+        id: Uuid,
+        #[serde(flatten)]
+        author: Author,
+    }
+
+    /// Article to persist
+    #[derive(Deserialize, Apiv2Schema)]
+    struct Article {
+        description: String,
+        id: Uuid,
+        #[serde(flatten)]
+        author: Option<Author>,
+    }
+
     #[api_v2_operation]
     async fn some_images(_filter: web::Query<ImagesQuery>) -> Result<web::Json<Images>, Error> {
         #[allow(unreachable_code)]
         if _filter.paging.offset.is_some() && _filter.name.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    #[api_v2_operation]
+    async fn add_images(_content: web::Json<ImagePayload>) -> Result<NoContent, Error> {
+        #[allow(unreachable_code)]
+        if _content.author.address.is_some() {
+            unimplemented!()
+        }
+        unimplemented!()
+    }
+
+    #[api_v2_operation]
+    async fn add_article(_content: web::Json<Article>) -> Result<NoContent, Error> {
+        #[allow(unreachable_code)]
+        if _content.author.is_some() {
             unimplemented!()
         }
         unimplemented!()
@@ -1461,7 +1505,12 @@ fn test_serde_flatten() {
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
-                .service(web::resource("/images").route(web::get().to(some_images)))
+                .service(
+                    web::resource("/images")
+                        .route(web::get().to(some_images))
+                        .route(web::post().to(add_images)),
+                )
+                .service(web::resource("/article").route(web::get().to(add_article)))
                 .build()
         },
         |addr| {
@@ -1473,7 +1522,62 @@ fn test_serde_flatten() {
             check_json(
                 resp,
                 json!({
-                    "definitions": {
+                      "definitions": {
+                        "Article": {
+                          "description": "Article to persist",
+                          "properties": {
+                            "address": {
+                              "type": "string"
+                            },
+                            "age": {
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "description": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "description",
+                            "id"
+                          ],
+                          "type": "object"
+                        },
+                        "ImagePayload": {
+                          "description": "Image to persist",
+                          "properties": {
+                            "address": {
+                              "type": "string"
+                            },
+                            "age": {
+                              "format": "int32",
+                              "type": "integer"
+                            },
+                            "data": {
+                              "type": "string"
+                            },
+                            "id": {
+                              "format": "uuid",
+                              "type": "string"
+                            },
+                            "name": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "data",
+                            "id",
+                            "name"
+                          ],
+                          "type": "object"
+                        },
                         "Images": {
                           "description": "Images response with paging information embedded",
                           "properties": {
@@ -1497,7 +1601,7 @@ fn test_serde_flatten() {
                                   "id",
                                   "time"
                                 ],
-                                 "type":"object"
+                                "type": "object"
                               },
                               "type": "array"
                             },
@@ -1519,9 +1623,11 @@ fn test_serde_flatten() {
                           },
                           "required": [
                             "data",
-                            "paging"
+                            "offset",
+                            "size",
+                            "total"
                           ],
-                          "type":"object"
+                          "type": "object"
                         }
                       },
                       "info": {
@@ -1529,6 +1635,25 @@ fn test_serde_flatten() {
                         "version": ""
                       },
                       "paths": {
+                        "/article": {
+                          "get": {
+                            "parameters": [
+                              {
+                                "in": "body",
+                                "name": "body",
+                                "required": true,
+                                "schema": {
+                                  "$ref": "#/definitions/Article"
+                                }
+                              }
+                            ],
+                            "responses": {
+                              "204": {
+                                "description": "No Content"
+                              }
+                            }
+                          }
+                        },
                         "/images": {
                           "get": {
                             "parameters": [
@@ -1558,6 +1683,23 @@ fn test_serde_flatten() {
                                 "schema": {
                                   "$ref": "#/definitions/Images"
                                 }
+                              }
+                            }
+                          },
+                          "post": {
+                            "parameters": [
+                              {
+                                "in": "body",
+                                "name": "body",
+                                "required": true,
+                                "schema": {
+                                  "$ref": "#/definitions/ImagePayload"
+                                }
+                              }
+                            ],
+                            "responses": {
+                              "204": {
+                                "description": "No Content"
                               }
                             }
                           }
@@ -3422,6 +3564,185 @@ fn test_method_macro() {
                     },
                     "paths": {
                         "/v0/pets": {
+                            "get": {
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "items": {
+                                                "$ref": "#/definitions/Pet"
+                                            },
+                                            "type": "array"
+                                        }
+                                    }
+                                },
+                            },
+                            "post": {
+                                "parameters": [
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        },
+                        "/v0/pets/{name}": {
+                            "delete": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                        }
+                                    }
+                                },
+                            },
+                            "put": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            }
+                        }
+                    },
+                    "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_method_macro_subscope() {
+    #[get("")]
+    #[api_v2_operation]
+    fn get_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        futures::future::ready(Ok(web::Json(Default::default())))
+    }
+    #[put("/{name}")]
+    #[api_v2_operation]
+    fn put_pet(
+        _name: web::Path<String>,
+        pet: web::Json<Pet>,
+    ) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
+        futures::future::ready(Ok(pet))
+    }
+    #[post("")]
+    #[api_v2_operation]
+    fn post_pet(pet: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
+        futures::future::ready(Ok(pet))
+    }
+    #[delete("/{name}")]
+    #[api_v2_operation]
+    fn delete_pet(_name: web::Path<String>) -> impl Future<Output = Result<web::Json<()>, Error>> {
+        futures::future::ready(Ok(web::Json(())))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(
+                    web::scope("/v0/pets")
+                        .service(get_pets)
+                        .service(put_pet)
+                        .service(post_pet)
+                        .service(delete_pet),
+                )
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                    "definitions": {
+                        "Pet": {
+                            "description": "Pets are awesome!",
+                            "properties": {
+                                "class": {
+                                "enum": ["dog", "cat", "other"],
+                                    "type":"string"
+                                },
+                                "id": {
+                                    "format": "int64",
+                                    "type": "integer"
+                                },
+                                "name": {
+                                    "description": "Pick a good one.",
+                                    "type": "string"
+                                },
+                                "birthday": {
+                                  "format": "date",
+                                  "type": "string"
+                                },
+                                "updatedOn": {
+                                    "format": "date-time",
+                                    "type": "string"
+                                },
+                                "uuid":{
+                                    "format": "uuid",
+                                    "type": "string"
+                                }
+                            },
+                            "required":[
+                                "birthday",
+                                "class",
+                                "name"
+                            ],
+                            "type":"object"
+                        }
+                    },
+                    "info": {
+                        "title":"",
+                        "version":""
+                    },
+                    "paths": {
+                        "/v0/pets/": {
                             "get": {
                                 "responses": {
                                     "200": {
