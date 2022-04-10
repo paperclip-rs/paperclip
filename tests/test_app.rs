@@ -4012,7 +4012,7 @@ fn test_wrap() {
                 .wrap_api()
                 .service(
                     web::resource("/pets")
-                        .wrap(actix_web_httpauth4::middleware::HttpAuthentication::bearer(
+                        .wrap(actix_web_httpauth::middleware::HttpAuthentication::bearer(
                             |req, _credentials| async { Ok(req) },
                         ))
                         .route(web::get().to(echo_pets)),
