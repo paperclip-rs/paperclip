@@ -73,16 +73,9 @@ impl<T> OpenApiExt<T> for actix_web::App<T> {
     }
 }
 
-impl<T, B> App<T>
+impl<T> App<T>
 where
-    B: MessageBody,
-    T: ServiceFactory<
-        ServiceRequest,
-        Config = (),
-        Response = ServiceResponse<B>,
-        Error = Error,
-        InitError = (),
-    >,
+    T: ServiceFactory<ServiceRequest, Config = (), Error = Error, InitError = ()>,
 {
     /// Proxy for [`actix_web::App::data_factory`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.data_factory).
     ///
@@ -173,14 +166,14 @@ where
     /// Proxy for [`actix_web::web::App::wrap`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn wrap<M, B1>(
+    pub fn wrap<M, B>(
         mut self,
         mw: M,
     ) -> App<
         impl ServiceFactory<
             ServiceRequest,
             Config = (),
-            Response = ServiceResponse<B1>,
+            Response = ServiceResponse<B>,
             Error = Error,
             InitError = (),
         >,
@@ -189,11 +182,11 @@ where
         M: Transform<
                 T::Service,
                 ServiceRequest,
-                Response = ServiceResponse<B1>,
+                Response = ServiceResponse<B>,
                 Error = Error,
                 InitError = (),
             > + 'static,
-        B1: MessageBody,
+        B: MessageBody,
     {
         App {
             spec: self.spec,
@@ -208,22 +201,22 @@ where
     /// Proxy for [`actix_web::web::App::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap_fn).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn wrap_fn<B1, F, R>(
+    pub fn wrap_fn<F, R, B>(
         mut self,
         mw: F,
     ) -> App<
         impl ServiceFactory<
             ServiceRequest,
             Config = (),
-            Response = ServiceResponse<B1>,
+            Response = ServiceResponse<B>,
             Error = Error,
             InitError = (),
         >,
     >
     where
-        B1: MessageBody,
         F: Fn(ServiceRequest, &T::Service) -> R + Clone + 'static,
-        R: Future<Output = Result<ServiceResponse<B1>, Error>>,
+        R: Future<Output = Result<ServiceResponse<B>, Error>>,
+        B: MessageBody,
     {
         App {
             spec: self.spec,

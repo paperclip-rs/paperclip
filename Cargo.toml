@@ -63,6 +63,8 @@ insta = "1.0"
 env_logger = "0.8"
 validator12 = { version = "0.12", features = ["derive"], package = "validator" }
 validator14 = { version = "0.14", features = ["derive"], package = "validator" }
+actix-web-httpauth3 = { version = "0.5", package = "actix-web-httpauth" }
+actix-web-httpauth4 = { version = "0.6", package = "actix-web-httpauth" }
 
 [features]
 # actix-web support

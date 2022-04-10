@@ -4305,3 +4305,90 @@ fn test_ipvx() {
         },
     );
 }
+
+#[cfg(any(feature = "actix3", feature = "actix4"))]
+#[test]
+fn test_wrap() {
+    #[cfg(not(feature = "actix4"))]
+    extern crate actix_web_httpauth3 as actix_web_httpauth;
+    #[cfg(feature = "actix4")]
+    extern crate actix_web_httpauth4 as actix_web_httpauth;
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[serde(rename_all = "camelCase")]
+    /// Pets are awesome!
+    struct Pet {
+        /// Pick a good one.
+        name: String,
+    }
+
+    #[api_v2_operation]
+    fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(
+                    web::resource("/pets")
+                        .wrap(actix_web_httpauth::middleware::HttpAuthentication::bearer(
+                            |req, _credentials| async { Ok(req) },
+                        ))
+                        .route(web::get().to(echo_pets)),
+                )
+                .with_json_spec_at("/api/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/pets": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
