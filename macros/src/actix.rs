@@ -1092,7 +1092,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         valid_attrs
     );
 
-    // Read security params from openapi attr.
+    // Read header params from openapi attr.
     for nested in extract_openapi_attrs(&item_ast.attrs) {
         for nested_attr in nested {
             let span = nested_attr.span().unwrap();
