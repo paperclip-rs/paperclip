@@ -718,7 +718,7 @@ fn update_parameter<T>(op: &mut DefaultOperationRaw)
 where
     T: Apiv2Schema,
 {
-    if let Some(parameter) = T::header_parameter_schema() {
+    for parameter in T::header_parameter_schema() {
         op.parameters.push(Either::Right(parameter))
     }
 }

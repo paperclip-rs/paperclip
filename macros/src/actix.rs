@@ -1084,7 +1084,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     let opt_impl = add_optional_impl(name, &generics);
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
-    let mut parameter_attrs = HashMap::new();
+    let mut header_definitions = vec![];
 
     let valid_attrs = vec!["description", "name", "format"];
     let invalid_attr_msg = format!(
@@ -1092,99 +1092,137 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         valid_attrs
     );
 
-    // Read header params from openapi attr.
-    for nested in extract_openapi_attrs(&item_ast.attrs) {
-        for nested_attr in nested {
-            let span = nested_attr.span().unwrap();
-            match &nested_attr {
-                // Read named attribute.
-                NestedMeta::Meta(Meta::NameValue(name_value)) => {
-                    let attr_name = name_value.path.get_ident().map(|id| id.to_string());
-                    let attr_value = &name_value.lit;
+    let struct_ast = match &item_ast.data {
+        Data::Struct(struct_ast) => struct_ast,
+        Data::Enum(_) | Data::Union(_) => {
+            emit_error!(
+                item_ast.span(),
+                format!("Invalid data type. Apiv2Header should be defined on a struct")
+            );
+            return quote!().into();
+        }
+    };
+    for field in &struct_ast.fields {
+        let mut parameter_attrs = HashMap::new();
+        let field_name = &field.ident;
+        // Read header params from openapi attr.
+        for nested in extract_openapi_attrs(&field.attrs) {
+            for nested_attr in nested {
+                let span = nested_attr.span().unwrap();
+                match &nested_attr {
+                    // Read named attribute.
+                    NestedMeta::Meta(Meta::NameValue(name_value)) => {
+                        let attr_name = name_value.path.get_ident().map(|id| id.to_string());
+                        let attr_value = &name_value.lit;
 
-                    if let Some(attr_name) = attr_name {
-                        if valid_attrs.contains(&attr_name.as_str()) {
-                            if let Lit::Str(attr_value) = attr_value {
-                                if parameter_attrs
-                                    .insert(attr_name.clone(), attr_value.value())
-                                    .is_some()
-                                {
+                        if let Some(attr_name) = attr_name {
+                            if valid_attrs.contains(&attr_name.as_str()) {
+                                if let Lit::Str(attr_value) = attr_value {
+                                    if parameter_attrs
+                                        .insert(attr_name.clone(), attr_value.value())
+                                        .is_some()
+                                    {
+                                        emit_warning!(
+                                            span,
+                                            "Attribute {} defined multiple times.",
+                                            attr_name
+                                        );
+                                    }
+                                } else {
                                     emit_warning!(
                                         span,
-                                        "Attribute {} defined multiple times.",
+                                        "Invalid value for named attribute: {}",
                                         attr_name
                                     );
                                 }
                             } else {
-                                emit_warning!(
-                                    span,
-                                    "Invalid value for named attribute: {}",
-                                    attr_name
-                                );
+                                emit_warning!(span, invalid_attr_msg);
                             }
                         } else {
-                            emit_warning!(span, invalid_attr_msg);
+                            emit_error!(span, invalid_attr_msg);
                         }
-                    } else {
+                    }
+                    _ => {
                         emit_error!(span, invalid_attr_msg);
                     }
                 }
-                _ => {
-                    emit_error!(span, invalid_attr_msg);
+            }
+        }
+
+        let quoted_description = quote_option(parameter_attrs.get("description"));
+        let name_string = field_name.as_ref().map(|name| name.to_string());
+        let quoted_name = if let Some(name) = parameter_attrs.get("name").or(name_string.as_ref()) {
+            name
+        } else {
+            emit_error!(field.span(), "Missing name.");
+            return quote!().into();
+        };
+
+        let quoted_format = if let Some(format) = parameter_attrs.get("format") {
+            match &*format.clone() {
+                "int32" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int32) },
+                "int64" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int64) },
+                "float" => quote! { Some(paperclip::v2::models::DataTypeFormat::Float) },
+                "double" => quote! { Some(paperclip::v2::models::DataTypeFormat::Double) },
+                "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
+                "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
+                "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
+                "datetime" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
+                "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
+                "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
+                "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
+                "ip" => quote! { Some(paperclip::v2::models::DataTypeFormat::Ip) },
+                "ipv4" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV4) },
+                "ipv6" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV6) },
+                "other" => quote! { Some(paperclip::v2::models::DataTypeFormat::Other) },
+                v => {
+                    emit_error!(
+                        format.span().unwrap(),
+                        format!("Invalid format attribute value. Got {}", v)
+                    );
+                    quote! { None }
                 }
             }
-        }
+        } else {
+            quote! { None }
+        };
+
+        let def_block = quote! {
+            paperclip::v2::models::Parameter::<paperclip::v2::models::DefaultSchemaRaw> {
+                name: #quoted_name.to_owned(),
+                in_: paperclip::v2::models::ParameterIn::Header,
+                description: #quoted_description,
+                data_type: Some(paperclip::v2::models::DataType::String),
+                format: #quoted_format,
+                required: Self::required(),
+                ..Default::default()
+            }
+        };
+
+        header_definitions.push(def_block);
     }
 
-    let quoted_description = quote_option(parameter_attrs.get("description"));
-    let name_string = name.to_string();
-    let quoted_name = parameter_attrs.get("name").unwrap_or(&name_string);
-
-    let quoted_format = if let Some(format) = parameter_attrs.get("format") {
-        match &*format.clone() {
-            "int32" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int32) },
-            "int64" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int64) },
-            "float" => quote! { Some(paperclip::v2::models::DataTypeFormat::Float) },
-            "double" => quote! { Some(paperclip::v2::models::DataTypeFormat::Double) },
-            "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
-            "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
-            "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
-            "datetime" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
-            "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
-            "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
-            "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
-            "ip" => quote! { Some(paperclip::v2::models::DataTypeFormat::Ip) },
-            "ipv4" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV4) },
-            "ipv6" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV6) },
-            "other" => quote! { Some(paperclip::v2::models::DataTypeFormat::Other) },
-            v => {
-                emit_error!(
-                    format.span().unwrap(),
-                    format!("Invalid format attribute value. Got {}", v)
-                );
-                quote! { None }
+    eprintln!(
+        "{}",
+        quote! {
+            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
+                fn header_parameter_schema() -> Vec<paperclip::v2::models::Parameter<paperclip::v2::models::DefaultSchemaRaw>> {
+                    let mut headers = vec![];
+                    #(headers.push(#header_definitions));*;
+                    headers
+                }
             }
-        }
-    } else {
-        quote! { None }
-    };
 
-    let def_block = quote! {
-        Some(paperclip::v2::models::Parameter::<paperclip::v2::models::DefaultSchemaRaw> {
-            name: #quoted_name.to_owned(),
-            in_: paperclip::v2::models::ParameterIn::Header,
-            description: #quoted_description,
-            data_type: Some(paperclip::v2::models::DataType::String),
-            format: #quoted_format,
-            required: Self::required(),
-            ..Default::default()
-        })
-    };
+            #opt_impl
+        }
+    );
 
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-            fn header_parameter_schema() -> Option<paperclip::v2::models::Parameter<paperclip::v2::models::DefaultSchemaRaw>> {
-                #def_block
+            fn header_parameter_schema() -> Vec<paperclip::v2::models::Parameter<paperclip::v2::models::DefaultSchemaRaw>> {
+                let mut headers = vec![];
+                #(headers.push(#header_definitions));*;
+                headers
             }
         }
 

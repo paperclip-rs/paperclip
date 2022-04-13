@@ -313,8 +313,8 @@ pub trait Apiv2Schema {
         None
     }
 
-    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
-        None
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        vec![]
     }
 }
 
@@ -350,8 +350,8 @@ impl<T> Apiv2Schema for Option<T> {
         None
     }
 
-    default fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
-        None
+    default fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        vec![]
     }
 }
 
@@ -372,7 +372,7 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
         T::security_scheme()
     }
 
-    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
         T::header_parameter_schema()
     }
 }
@@ -391,7 +391,7 @@ impl<T, E> Apiv2Schema for Result<T, E> {
         Default::default()
     }
 
-    default fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
+    default fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
         Default::default()
     }
 }
@@ -409,7 +409,7 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
         T::security_scheme()
     }
 
-    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
         T::header_parameter_schema()
     }
 }
@@ -427,7 +427,7 @@ impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
         T::security_scheme()
     }
 
-    fn header_parameter_schema() -> Option<Parameter<DefaultSchemaRaw>> {
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
         T::header_parameter_schema()
     }
 }

@@ -3297,52 +3297,38 @@ fn test_security_app() {
 #[test]
 fn test_header_parameter_app() {
     #[derive(Apiv2Header, Deserialize)]
-    #[openapi(
-        name = "X-Request-ID",
-        description = "Allow to track request",
-        format = "uuid"
-    )]
-    struct RequestId;
+    struct RequestHeaders {
+        #[openapi(
+            name = "X-Request-ID",
+            description = "Allow to track request",
+            format = "uuid"
+        )]
+        pub request_id: Uuid,
+        #[openapi(description = "User organization slug")]
+        pub slug: String,
+    }
 
-    impl FromRequest for RequestId {
+    impl FromRequest for RequestHeaders {
         type Error = Error;
         type Future = Ready<Result<Self, Self::Error>>;
         #[cfg(not(feature = "actix4"))]
         type Config = ();
 
         fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
-            ready(Ok(Self {}))
-        }
-    }
-
-    #[derive(Apiv2Header, Deserialize)]
-    #[openapi(description = "User organization slug")]
-    struct Slug;
-
-    impl FromRequest for Slug {
-        type Error = Error;
-        type Future = Ready<Result<Self, Self::Error>>;
-        #[cfg(not(feature = "actix4"))]
-        type Config = ();
-
-        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
-            ready(Ok(Self {}))
+            ready(Ok(Self {
+                request_id: Uuid::default(),
+                slug: "abc".to_owned(),
+            }))
         }
     }
 
     #[api_v2_operation]
-    async fn echo_pet_with_request_id(_: RequestId, body: web::Json<Pet>) -> web::Json<Pet> {
-        body
-    }
-
-    #[api_v2_operation]
-    async fn echo_pet_with_slug(_: Slug, body: web::Json<Pet>) -> web::Json<Pet> {
+    async fn echo_pet_with_headers(_: RequestHeaders, body: web::Json<Pet>) -> web::Json<Pet> {
         body
     }
 
     fn config(cfg: &mut web::ServiceConfig) {
-        cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_request_id)))
-            .service(web::resource("/echo2").route(web::post().to(echo_pet_with_slug)));
+        cfg.service(web::resource("/echo").route(web::post().to(echo_pet_with_headers)));
     }
 
     run_and_check_app(
@@ -3408,7 +3394,7 @@ fn test_header_parameter_app() {
                     "version": ""
                   },
                   "paths": {
-                    "/api/echo1": {
+                    "/api/echo": {
                       "post": {
                         "parameters": [
                           {
@@ -3420,31 +3406,9 @@ fn test_header_parameter_app() {
                             "type": "string"
                           },
                           {
-                            "in": "body",
-                            "name": "body",
-                            "required": true,
-                            "schema": {
-                              "$ref": "#/definitions/Pet"
-                            }
-                          }
-                        ],
-                        "responses": {
-                          "200": {
-                            "description": "OK",
-                            "schema": {
-                              "$ref": "#/definitions/Pet"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "/api/echo2": {
-                      "post": {
-                        "parameters": [
-                          {
                             "description": "User organization slug",
                             "in": "header",
-                            "name": "Slug",
+                            "name": "slug",
                             "required": true,
                             "type": "string"
                           },
