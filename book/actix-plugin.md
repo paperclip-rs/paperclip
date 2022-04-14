@@ -200,8 +200,6 @@ At the time of this writing, this plugin didn't support a few OpenAPI v2 feature
 |--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc. |
 
-In addition, only basic support is implemented for Headers as parameters. Only headers with type string are currently supported.
-
 #### Performance implications?
 
 Even though we use some wrappers and generate schema structs for building the spec, we do this only once i.e., until the `.build()` function call. At runtime, it's basically a pointer read, which is quite fast!
