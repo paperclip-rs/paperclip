@@ -3298,14 +3298,12 @@ fn test_security_app() {
 fn test_header_parameter_app() {
     #[derive(Apiv2Header, Deserialize)]
     struct RequestHeaders {
-        #[openapi(
-            name = "X-Request-ID",
-            description = "Allow to track request",
-            format = "uuid"
-        )]
+        #[openapi(name = "X-Request-ID", description = "Allow to track request")]
         pub request_id: Uuid,
         #[openapi(description = "User organization slug")]
         pub slug: String,
+        #[openapi(description = "User ip", format = "ip")]
+        pub request_ip: String,
     }
 
     impl FromRequest for RequestHeaders {
@@ -3318,12 +3316,31 @@ fn test_header_parameter_app() {
             ready(Ok(Self {
                 request_id: Uuid::default(),
                 slug: "abc".to_owned(),
+                request_ip: "127.1".to_owned(),
             }))
         }
     }
 
+    #[derive(Apiv2Header, Deserialize)]
+    struct RefererHeader(#[openapi(name = "X-Referer-slug")] String);
+
+    impl FromRequest for RefererHeader {
+        type Error = Error;
+        type Future = Ready<Result<Self, Self::Error>>;
+        #[cfg(not(feature = "actix4"))]
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self("www.paperclip.rs".to_owned())))
+        }
+    }
+
     #[api_v2_operation]
-    async fn echo_pet_with_headers(_: RequestHeaders, body: web::Json<Pet>) -> web::Json<Pet> {
+    async fn echo_pet_with_headers(
+        _: RequestHeaders,
+        _: RefererHeader,
+        body: web::Json<Pet>,
+    ) -> web::Json<Pet> {
         body
     }
 
@@ -3409,6 +3426,20 @@ fn test_header_parameter_app() {
                             "description": "User organization slug",
                             "in": "header",
                             "name": "slug",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "User ip",
+                            "format": "ip",
+                            "in": "header",
+                            "name": "request_ip",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "in": "header",
+                            "name": "X-Referer-slug",
                             "required": true,
                             "type": "string"
                           },

@@ -1092,6 +1092,33 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         valid_attrs
     );
 
+    fn quote_format(format: String) -> proc_macro2::TokenStream {
+        match &*format {
+            "int32" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int32) },
+            "int64" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int64) },
+            "float" => quote! { Some(paperclip::v2::models::DataTypeFormat::Float) },
+            "double" => quote! { Some(paperclip::v2::models::DataTypeFormat::Double) },
+            "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
+            "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
+            "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
+            "datetime" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
+            "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
+            "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
+            "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
+            "ip" => quote! { Some(paperclip::v2::models::DataTypeFormat::Ip) },
+            "ipv4" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV4) },
+            "ipv6" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV6) },
+            "other" => quote! { Some(paperclip::v2::models::DataTypeFormat::Other) },
+            v => {
+                emit_error!(
+                    format.span().unwrap(),
+                    format!("Invalid format attribute value. Got {}", v)
+                );
+                quote! { None }
+            }
+        }
+    }
+
     let struct_ast = match &item_ast.data {
         Data::Struct(struct_ast) => struct_ast,
         Data::Enum(_) | Data::Union(_) => {
@@ -1154,37 +1181,34 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         let quoted_name = if let Some(name) = parameter_attrs.get("name").or(name_string.as_ref()) {
             name
         } else {
-            emit_error!(field.span(), "Missing name.");
+            emit_error!(
+                field.span(),
+                "Missing header name. Either add a name using the openapi attribute or use named struct parameter"
+            );
             return quote!().into();
         };
 
-        let quoted_format = if let Some(format) = parameter_attrs.get("format") {
-            match &*format.clone() {
-                "int32" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int32) },
-                "int64" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int64) },
-                "float" => quote! { Some(paperclip::v2::models::DataTypeFormat::Float) },
-                "double" => quote! { Some(paperclip::v2::models::DataTypeFormat::Double) },
-                "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
-                "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
-                "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
-                "datetime" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
-                "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
-                "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
-                "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
-                "ip" => quote! { Some(paperclip::v2::models::DataTypeFormat::Ip) },
-                "ipv4" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV4) },
-                "ipv6" => quote! { Some(paperclip::v2::models::DataTypeFormat::IpV6) },
-                "other" => quote! { Some(paperclip::v2::models::DataTypeFormat::Other) },
-                v => {
-                    emit_error!(
-                        format.span().unwrap(),
-                        format!("Invalid format attribute value. Got {}", v)
-                    );
-                    quote! { None }
-                }
-            }
+        let (quoted_type, quoted_format) = if let Some(ty_ref) = get_field_type(field) {
+            (
+                quote! { {
+                    use paperclip::v2::schema::TypedData;
+                    Some(#ty_ref::data_type())
+                } },
+                quote! { {
+                    use paperclip::v2::schema::TypedData;
+                    #ty_ref::format()
+                } },
+            )
         } else {
-            quote! { None }
+            (quote! { None }, quote! { None })
+        };
+
+        let (quoted_type, quoted_format) = if let Some(format) = parameter_attrs.get("format") {
+            let quoted_format = quote_format(format.clone());
+            let quoted_type = quote! { #quoted_format.map(|format| format.into()) };
+            (quoted_type, quoted_format)
+        } else {
+            (quoted_type, quoted_format)
         };
 
         let def_block = quote! {
@@ -1192,7 +1216,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
                 name: #quoted_name.to_owned(),
                 in_: paperclip::v2::models::ParameterIn::Header,
                 description: #quoted_description,
-                data_type: Some(paperclip::v2::models::DataType::String),
+                data_type: #quoted_type,
                 format: #quoted_format,
                 required: Self::required(),
                 ..Default::default()
@@ -1201,21 +1225,6 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
 
         header_definitions.push(def_block);
     }
-
-    eprintln!(
-        "{}",
-        quote! {
-            impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
-                fn header_parameter_schema() -> Vec<paperclip::v2::models::Parameter<paperclip::v2::models::DefaultSchemaRaw>> {
-                    let mut headers = vec![];
-                    #(headers.push(#header_definitions));*;
-                    headers
-                }
-            }
-
-            #opt_impl
-        }
-    );
 
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
@@ -1309,7 +1318,7 @@ fn handle_unnamed_field_struct(
             let docs = extract_documentation(&field.attrs);
             let docs = docs.trim();
 
-            let mut gen = if !SerdeFlatten::exists(&field.attrs) {
+            let gen = if !SerdeFlatten::exists(&field.attrs) {
                 // this is really not what we'd want to do because that's not how the
                 // deserialized struct will be like, ideally we want an actual tuple
                 // this type should therefore not be used for anything else than `Path`
@@ -1426,7 +1435,7 @@ fn handle_field_struct(
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
 
-        let mut gen = if !SerdeFlatten::exists(&field.attrs) {
+        let gen = if !SerdeFlatten::exists(&field.attrs) {
             quote!({
                 let mut s = #ty_ref::raw_schema();
                 if !#docs.is_empty() {

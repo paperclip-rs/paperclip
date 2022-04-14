@@ -108,6 +108,28 @@ impl ToString for DataTypeFormat {
     }
 }
 
+impl Into<DataType> for DataTypeFormat {
+    fn into(self) -> DataType {
+        match self {
+            DataTypeFormat::Int32 => DataType::Integer,
+            DataTypeFormat::Int64 => DataType::Integer,
+            DataTypeFormat::Float => DataType::Number,
+            DataTypeFormat::Double => DataType::Number,
+            DataTypeFormat::Byte => DataType::String,
+            DataTypeFormat::Binary => DataType::String,
+            DataTypeFormat::Date => DataType::String,
+            DataTypeFormat::DateTime => DataType::String,
+            DataTypeFormat::Password => DataType::String,
+            DataTypeFormat::Url => DataType::String,
+            DataTypeFormat::Uuid => DataType::String,
+            DataTypeFormat::Ip => DataType::String,
+            DataTypeFormat::IpV4 => DataType::String,
+            DataTypeFormat::IpV6 => DataType::String,
+            DataTypeFormat::Other => DataType::Object,
+        }
+    }
+}
+
 /// OpenAPI v2 spec which can be traversed and resolved for codegen.
 pub type ResolvableApi<S> = Api<ResolvableParameter<S>, ResolvableResponse<S>, Resolvable<S>>;
 
