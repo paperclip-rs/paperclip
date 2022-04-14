@@ -1132,6 +1132,9 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     for field in &struct_ast.fields {
         let mut parameter_attrs = HashMap::new();
         let field_name = &field.ident;
+        let docs = extract_documentation(&field.attrs);
+        let docs = docs.trim();
+
         // Read header params from openapi attr.
         for nested in extract_openapi_attrs(&field.attrs) {
             for nested_attr in nested {
@@ -1188,7 +1191,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             continue;
         }
 
-        let quoted_description = quote_option(parameter_attrs.get("description"));
+        let docs = (!docs.is_empty()).then(|| docs.to_owned());
+        let quoted_description = quote_option(parameter_attrs.get("description").or_else(|| docs.as_ref()));
         let name_string = field_name.as_ref().map(|name| name.to_string());
         let quoted_name = if let Some(name) = parameter_attrs.get("name").or(name_string.as_ref()) {
             name
