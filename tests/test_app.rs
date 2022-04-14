@@ -3304,6 +3304,8 @@ fn test_header_parameter_app() {
         pub slug: String,
         #[openapi(description = "User ip", format = "ip")]
         pub request_ip: String,
+        #[openapi(skip)]
+        pub another_field: String,
     }
 
     impl FromRequest for RequestHeaders {
@@ -3317,6 +3319,7 @@ fn test_header_parameter_app() {
                 request_id: Uuid::default(),
                 slug: "abc".to_owned(),
                 request_ip: "127.1".to_owned(),
+                another_field: "".to_owned()
             }))
         }
     }

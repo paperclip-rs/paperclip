@@ -1137,6 +1137,14 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             for nested_attr in nested {
                 let span = nested_attr.span().unwrap();
                 match &nested_attr {
+                    // Read bare attribute (support for skip attribute)
+                    NestedMeta::Meta(Meta::Path(attr_path)) => {
+                        if let Some(attr) = attr_path.get_ident() {
+                            if attr.to_string() == "skip" {
+                                parameter_attrs.insert("skip".to_owned(), "".to_owned());
+                            }
+                        }
+                    }
                     // Read named attribute.
                     NestedMeta::Meta(Meta::NameValue(name_value)) => {
                         let attr_name = name_value.path.get_ident().map(|id| id.to_string());
@@ -1174,6 +1182,10 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
                     }
                 }
             }
+        }
+
+        if parameter_attrs.contains_key("skip") {
+            continue;
         }
 
         let quoted_description = quote_option(parameter_attrs.get("description"));
