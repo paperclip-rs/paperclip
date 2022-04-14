@@ -1192,7 +1192,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         }
 
         let docs = (!docs.is_empty()).then(|| docs.to_owned());
-        let quoted_description = quote_option(parameter_attrs.get("description").or_else(|| docs.as_ref()));
+        let quoted_description =
+            quote_option(parameter_attrs.get("description").or(docs.as_ref()));
         let name_string = field_name.as_ref().map(|name| name.to_string());
         let quoted_name = if let Some(name) = parameter_attrs.get("name").or(name_string.as_ref()) {
             name

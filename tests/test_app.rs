@@ -3371,113 +3371,113 @@ fn test_header_parameter_app() {
             check_json(
                 resp,
                 json!({
-  "definitions": {
-    "Pet": {
-      "description": "Pets are awesome!",
-      "properties": {
-        "birthday": {
-          "format": "date",
-          "type": "string"
-        },
-        "class": {
-          "enum": [
-            "dog",
-            "cat",
-            "other"
-          ],
-          "type": "string"
-        },
-        "id": {
-          "format": "int64",
-          "type": "integer"
-        },
-        "name": {
-          "description": "Pick a good one.",
-          "type": "string"
-        },
-        "updatedOn": {
-          "format": "date-time",
-          "type": "string"
-        },
-        "uuid": {
-          "format": "uuid",
-          "type": "string"
-        }
-      },
-      "required": [
-        "birthday",
-        "class",
-        "name"
-      ],
-      "type": "object"
-    }
-  },
-  "info": {
-    "title": "",
-    "version": ""
-  },
-  "paths": {
-    "/api/echo": {
-      "post": {
-        "parameters": [
-          {
-            "description": "Allow to track request",
-            "format": "uuid",
-            "in": "header",
-            "name": "X-Request-ID",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "description": "User organization slug",
-            "in": "header",
-            "name": "slug",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "description": "User ip",
-            "format": "ip",
-            "in": "header",
-            "name": "request_ip",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "description": "Origin of the request",
-            "in": "header",
-            "name": "origin",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "in": "header",
-            "name": "X-Referer-slug",
-            "required": true,
-            "type": "string"
-          },
-          {
-            "in": "body",
-            "name": "body",
-            "required": true,
-            "schema": {
-              "$ref": "#/definitions/Pet"
-            }
-          }
-        ],
-        "responses": {
-          "200": {
-            "description": "OK",
-            "schema": {
-              "$ref": "#/definitions/Pet"
-            }
-          }
-        }
-      }
-    }
-  },
-  "swagger": "2.0"
-}),
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
+                        "class": {
+                          "enum": [
+                            "dog",
+                            "cat",
+                            "other"
+                          ],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "birthday",
+                        "class",
+                        "name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/api/echo": {
+                      "post": {
+                        "parameters": [
+                          {
+                            "description": "Allow to track request",
+                            "format": "uuid",
+                            "in": "header",
+                            "name": "X-Request-ID",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "User organization slug",
+                            "in": "header",
+                            "name": "slug",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "User ip",
+                            "format": "ip",
+                            "in": "header",
+                            "name": "request_ip",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "Origin of the request",
+                            "in": "header",
+                            "name": "origin",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "in": "header",
+                            "name": "X-Referer-slug",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        ],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
             );
         },
     );
