@@ -108,24 +108,24 @@ impl ToString for DataTypeFormat {
     }
 }
 
-impl Into<DataType> for DataTypeFormat {
-    fn into(self) -> DataType {
-        match self {
-            DataTypeFormat::Int32 => DataType::Integer,
-            DataTypeFormat::Int64 => DataType::Integer,
-            DataTypeFormat::Float => DataType::Number,
-            DataTypeFormat::Double => DataType::Number,
-            DataTypeFormat::Byte => DataType::String,
-            DataTypeFormat::Binary => DataType::String,
-            DataTypeFormat::Date => DataType::String,
-            DataTypeFormat::DateTime => DataType::String,
-            DataTypeFormat::Password => DataType::String,
-            DataTypeFormat::Url => DataType::String,
-            DataTypeFormat::Uuid => DataType::String,
-            DataTypeFormat::Ip => DataType::String,
-            DataTypeFormat::IpV4 => DataType::String,
-            DataTypeFormat::IpV6 => DataType::String,
-            DataTypeFormat::Other => DataType::Object,
+impl From<DataTypeFormat> for DataType {
+    fn from(src: DataTypeFormat) -> Self {
+        match src {
+            DataTypeFormat::Int32 => Self::Integer,
+            DataTypeFormat::Int64 => Self::Integer,
+            DataTypeFormat::Float => Self::Number,
+            DataTypeFormat::Double => Self::Number,
+            DataTypeFormat::Byte => Self::String,
+            DataTypeFormat::Binary => Self::String,
+            DataTypeFormat::Date => Self::String,
+            DataTypeFormat::DateTime => Self::String,
+            DataTypeFormat::Password => Self::String,
+            DataTypeFormat::Url => Self::String,
+            DataTypeFormat::Uuid => Self::String,
+            DataTypeFormat::Ip => Self::String,
+            DataTypeFormat::IpV4 => Self::String,
+            DataTypeFormat::IpV6 => Self::String,
+            DataTypeFormat::Other => Self::Object,
         }
     }
 }

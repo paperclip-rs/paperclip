@@ -3319,7 +3319,7 @@ fn test_header_parameter_app() {
                 request_id: Uuid::default(),
                 slug: "abc".to_owned(),
                 request_ip: "127.1".to_owned(),
-                another_field: "".to_owned()
+                another_field: "".to_owned(),
             }))
         }
     }

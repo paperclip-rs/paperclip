@@ -1140,7 +1140,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
                     // Read bare attribute (support for skip attribute)
                     NestedMeta::Meta(Meta::Path(attr_path)) => {
                         if let Some(attr) = attr_path.get_ident() {
-                            if attr.to_string() == "skip" {
+                            if *attr == "skip" {
                                 parameter_attrs.insert("skip".to_owned(), "".to_owned());
                             }
                         }
