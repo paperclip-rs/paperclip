@@ -766,6 +766,10 @@
 <span id="761">761</span>
 <span id="762">762</span>
 <span id="763">763</span>
+<span id="764">764</span>
+<span id="765">765</span>
+<span id="766">766</span>
+<span id="767">767</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
 <span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).</span>
@@ -1218,7 +1222,11 @@
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">path_map</span> <span class="op">=</span> <span class="ident">BTreeMap::new</span>();
         <span class="ident">factory</span>.<span class="ident">update_operations</span>(<span class="kw-2">&amp;mut</span> <span class="ident">path_map</span>);
         <span class="kw">for</span> (<span class="ident">path</span>, <span class="kw-2">mut</span> <span class="ident">map</span>) <span class="kw">in</span> <span class="ident">path_map</span> {
-            <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">path</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">path</span>;
+            <span class="kw">let</span> <span class="ident">p</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">path</span>.<span class="ident">ends_with</span>(<span class="string">&#39;/&#39;</span>) <span class="op">&amp;&amp;</span> <span class="op">!</span><span class="ident">path</span>.<span class="ident">starts_with</span>(<span class="string">&#39;/&#39;</span>) {
+                <span class="self">self</span>.<span class="ident">path</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="string">&quot;/&quot;</span> <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">path</span>
+            } <span class="kw">else</span> {
+                <span class="self">self</span>.<span class="ident">path</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="kw-2">&amp;</span><span class="ident">path</span>
+            };
             <span class="kw">for</span> <span class="ident">op</span> <span class="kw">in</span> <span class="ident">map</span>.<span class="ident">methods</span>.<span class="ident">values_mut</span>() {
                 <span class="ident">op</span>.<span class="ident">set_parameter_names_from_path_template</span>(<span class="kw-2">&amp;</span><span class="ident">p</span>);
             }
@@ -1530,5 +1538,5 @@
     }
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (8bf93e9b6 2022-04-09)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (ec77f2524 2022-04-17)" ></div>
 </body></html>
