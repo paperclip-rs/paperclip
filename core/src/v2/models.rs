@@ -93,7 +93,7 @@ impl ToString for DataTypeFormat {
             DataTypeFormat::Double => "double",
             DataTypeFormat::Byte => "byte",
             DataTypeFormat::Binary => "binary",
-            DataTypeFormat::Date => "data",
+            DataTypeFormat::Date => "date",
             DataTypeFormat::DateTime => "datetime",
             DataTypeFormat::Password => "password",
             DataTypeFormat::Url => "url",

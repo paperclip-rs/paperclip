@@ -1100,7 +1100,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             "double" => quote! { Some(paperclip::v2::models::DataTypeFormat::Double) },
             "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
             "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
-            "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
+            "date" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
             "datetime" | "date-time" => {
                 quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) }
             }
@@ -1131,6 +1131,15 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             return quote!().into();
         }
     };
+
+    if extract_openapi_attrs(&item_ast.attrs).peekable().peek().is_some() {
+        emit_error!(
+            item_ast.span(),
+            format!("Invalid openapi attribute. openapi attribute should be defined at struct fields level")
+        );
+        return quote!().into();
+    }
+
     for field in &struct_ast.fields {
         let mut parameter_attrs = HashMap::new();
         let field_name = &field.ident;
