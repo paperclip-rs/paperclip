@@ -189,7 +189,8 @@ Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T
 
 #### Known limitations
 
-- **Enums:** OpenAPI (v2) itself supports using simple enums (i.e., with unit variants), but Rust and serde has support for variants with fields and tuples. I still haven't looked deep enough either to say whether this can/cannot be done in OpenAPI or find an elegant way to represent this in OpenAPI.
+- **Tuples:** Tuples with more than one field are currently not supported.
+- **Enums:** Enums with fields will be serialized [according to serde](https://serde.rs/enum-representations.html). Enum variants with unnamed (tuple) fields are currently not supported though.
 - **Functions returning abstractions:** The plugin has no way to obtain any useful information from functions returning abstractions such as `HttpResponse`, `impl Responder` or containers such as `Result<T, E>` containing those abstractions. So currently, the plugin silently ignores these types, which results in an empty value in your hosted specification.
 
 #### Missing features

@@ -54,6 +54,16 @@ pub trait Schema: Sized {
     /// - `serde_json::Value` works for both JSON and YAML.
     fn enum_variants(&self) -> Option<&[serde_json::Value]>;
 
+    /// More complex enum variants, where each has it's own schema.
+    fn any_of(&self) -> Option<&Vec<Resolvable<Self>>>;
+
+    /// A constant value for this schema. It's `serde_json::Value`
+    /// because:
+    ///
+    /// - Constants are allowed to have any value.
+    /// - `serde_json::Value` works for both JSON and YAML.
+    fn const_value(&self) -> Option<&serde_json::Value>;
+
     /// Returns whether this definition "is" or "has" `Any` type.
     fn contains_any(&self) -> bool {
         _schema_contains_any(self, vec![])

@@ -182,6 +182,20 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
                     Some(&self.enum_)
                 }
             }
+
+            #[inline]
+            fn any_of(&self) -> Option<&Vec<paperclip::v2::models::Resolvable<Self>>> {
+                if self.any_of.is_empty() {
+                    None
+                } else {
+                    Some(&self.any_of)
+                }
+            }
+
+            #[inline]
+            fn const_value(&self) -> Option<&serde_json::Value> {
+                self.const_.as_ref()
+            }
         }
     });
 
@@ -306,6 +320,18 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     gen.extend(quote!(
         #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
         pub enum_: Vec<serde_json::Value>,
+    ));
+
+    gen.extend(quote!(
+        #[serde(default, rename = "anyOf", skip_serializing_if = "Vec::is_empty")]
+        pub any_of: Vec<
+    ));
+    add_self(&mut gen);
+    gen.extend(quote!(>,));
+
+    gen.extend(quote!(
+        #[serde(default, rename="const", skip_serializing_if = "Option::is_none")]
+        pub const_: Option<serde_json::Value>,
     ));
 
     gen.extend(quote!(
