@@ -1101,7 +1101,9 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
             "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
             "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
-            "datetime" | "date-time" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
+            "datetime" | "date-time" => {
+                quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) }
+            }
             "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
             "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
             "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
