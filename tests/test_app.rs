@@ -176,6 +176,11 @@ fn test_simple_app() {
         NoContent
     }
 
+    #[api_v2_operation]
+    async fn path_with_param_without_slash(_p: web::Path<u32>) -> NoContent {
+        NoContent
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo").route(web::post().to(echo_pet)))
             .service(web::resource("/async_echo").route(web::post().to(echo_pet_async)))
@@ -183,7 +188,10 @@ fn test_simple_app() {
             .service(web::resource("/adopt").route(web::post().to(adopt_pet)))
             .service(web::resource("/nothing").route(web::get().to(nothing)))
             .service(web::resource("/random").to(some_pet))
-            .service(path_without_slash);
+            .service(path_without_slash)
+            .service(web::scope("/test").service(
+                web::resource("{id}").route(web::get().to(path_with_param_without_slash)),
+            ));
     }
 
     run_and_check_app(
@@ -203,13 +211,20 @@ fn test_simple_app() {
             check_json(
                 resp,
                 json!({
-                  "info":{"title":"","version":""},
                   "definitions": {
                     "Pet": {
-                      "description":"Pets are awesome!",
+                      "description": "Pets are awesome!",
                       "properties": {
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "class": {
-                          "enum": ["dog", "cat", "other"],
+                          "enum": [
+                            "dog",
+                            "cat",
+                            "other"
+                          ],
                           "type": "string"
                         },
                         "id": {
@@ -218,10 +233,6 @@ fn test_simple_app() {
                         },
                         "name": {
                           "description": "Pick a good one.",
-                          "type": "string"
-                        },
-                        "birthday": {
-                          "format": "date",
                           "type": "string"
                         },
                         "updatedOn": {
@@ -233,24 +244,24 @@ fn test_simple_app() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"],
-                      "type":"object"
+                      "required": [
+                        "birthday",
+                        "class",
+                        "name"
+                      ],
+                      "type": "object"
                     }
                   },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
                   "paths": {
-                    "/api/echo": {
-                    "post": {
-                        "parameters": [{
-                            "in": "body",
-                            "name": "body",
-                            "required": true,
-                            "schema": {
-                            "$ref": "#/definitions/Pet"
-                            }
-                        }],
+                    "/api/adopt": {
+                      "post": {
                         "responses": {
-                          "200": {
-                            "description": "OK",
+                          "201": {
+                            "description": "Created",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
@@ -260,14 +271,16 @@ fn test_simple_app() {
                     },
                     "/api/async_echo": {
                       "post": {
-                        "parameters": [{
+                        "parameters": [
+                          {
                             "in": "body",
                             "name": "body",
                             "required": true,
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
-                          }],
+                          }
+                        ],
                         "responses": {
                           "200": {
                             "description": "OK",
@@ -280,20 +293,62 @@ fn test_simple_app() {
                     },
                     "/api/async_echo_2": {
                       "post": {
-                        "parameters": [{
+                        "parameters": [
+                          {
                             "in": "body",
                             "name": "body",
                             "required": true,
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
-                          }],
+                          }
+                        ],
                         "responses": {
                           "200": {
                             "description": "OK",
                             "schema": {
                               "$ref": "#/definitions/Pet"
                             }
+                          }
+                        }
+                      }
+                    },
+                    "/api/echo": {
+                      "post": {
+                        "parameters": [
+                          {
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        ],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/api/no-slash": {
+                      "post": {
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
+                          }
+                        }
+                      }
+                    },
+                    "/api/nothing": {
+                      "get": {
+                        "responses": {
+                          "204": {
+                            "description": "No Content"
                           }
                         }
                       }
@@ -370,29 +425,17 @@ fn test_simple_app() {
                         }
                       }
                     },
-                    "/api/adopt": {
-                      "post": {
-                        "responses": {
-                          "201": {
-                            "description": "Created",
-                            "schema": {
-                              "$ref": "#/definitions/Pet"
-                            }
-                          }
-                        }
-                      }
-                    },
-                    "/api/nothing": {
+                    "/api/test/{id}": {
                       "get": {
-                        "responses": {
-                          "204": {
-                            "description": "No Content"
+                        "parameters": [
+                          {
+                            "format": "int32",
+                            "in": "path",
+                            "name": "id",
+                            "required": true,
+                            "type": "integer"
                           }
-                        }
-                      }
-                    },
-                    "/api/no-slash": {
-                      "post": {
+                        ],
                         "responses": {
                           "204": {
                             "description": "No Content"

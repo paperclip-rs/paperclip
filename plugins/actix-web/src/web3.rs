@@ -481,7 +481,11 @@ where
         let mut path_map = BTreeMap::new();
         factory.update_operations(&mut path_map);
         for (path, mut map) in path_map {
-            let p = self.path.clone() + &path;
+            let p = if !self.path.ends_with('/') && !path.starts_with('/') {
+                self.path.clone() + "/" + &path
+            } else {
+                self.path.clone() + &path
+            };
             for op in map.methods.values_mut() {
                 op.set_parameter_names_from_path_template(&p);
             }
