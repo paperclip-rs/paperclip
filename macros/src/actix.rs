@@ -1245,9 +1245,9 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     let gen = quote! {
         impl #impl_generics paperclip::v2::schema::Apiv2Schema for #name #ty_generics #where_clause {
             fn header_parameter_schema() -> Vec<paperclip::v2::models::Parameter<paperclip::v2::models::DefaultSchemaRaw>> {
-                let mut headers = vec![];
-                #(headers.push(#header_definitions));*;
-                headers
+                vec![
+                    #(#header_definitions),*
+                ]
             }
         }
 
