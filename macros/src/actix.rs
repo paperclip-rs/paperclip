@@ -1092,8 +1092,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         valid_attrs
     );
 
-    fn quote_format(format: String) -> proc_macro2::TokenStream {
-        match &*format {
+    fn quote_format(format: &str) -> proc_macro2::TokenStream {
+        match format {
             "int32" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int32) },
             "int64" => quote! { Some(paperclip::v2::models::DataTypeFormat::Int64) },
             "float" => quote! { Some(paperclip::v2::models::DataTypeFormat::Float) },
@@ -1101,7 +1101,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             "byte" => quote! { Some(paperclip::v2::models::DataTypeFormat::Byte) },
             "binary" => quote! { Some(paperclip::v2::models::DataTypeFormat::Binary) },
             "data" => quote! { Some(paperclip::v2::models::DataTypeFormat::Date) },
-            "datetime" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
+            "datetime" | "date-time" => quote! { Some(paperclip::v2::models::DataTypeFormat::DateTime) },
             "password" => quote! { Some(paperclip::v2::models::DataTypeFormat::Password) },
             "url" => quote! { Some(paperclip::v2::models::DataTypeFormat::Url) },
             "uuid" => quote! { Some(paperclip::v2::models::DataTypeFormat::Uuid) },
@@ -1220,7 +1220,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         };
 
         let (quoted_type, quoted_format) = if let Some(format) = parameter_attrs.get("format") {
-            let quoted_format = quote_format(format.clone());
+            let quoted_format = quote_format(&*format);
             let quoted_type = quote! { #quoted_format.map(|format| format.into()) };
             (quoted_type, quoted_format)
         } else {
