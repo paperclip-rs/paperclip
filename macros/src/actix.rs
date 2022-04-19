@@ -1132,7 +1132,11 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         }
     };
 
-    if extract_openapi_attrs(&item_ast.attrs).peekable().peek().is_some() {
+    if extract_openapi_attrs(&item_ast.attrs)
+        .peekable()
+        .peek()
+        .is_some()
+    {
         emit_error!(
             item_ast.span(),
             format!("Invalid openapi attribute. openapi attribute should be defined at struct fields level")
