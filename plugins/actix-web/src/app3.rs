@@ -9,12 +9,14 @@ extern crate actix_service1 as actix_service;
 
 #[cfg(feature = "swagger-ui")]
 use super::SWAGGER_DIST;
+#[cfg(feature = "rapidoc")]
+use super::RAPIDOC_DIST;
 use super::{
     web::{Route, RouteWrapper, ServiceConfig},
     Mountable,
 };
 use actix_service1::ServiceFactory;
-#[cfg(feature = "swagger-ui")]
+#[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
 use actix_web::web::HttpRequest;
 use actix_web::{
     dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform},
@@ -32,7 +34,7 @@ pub struct App<T, B> {
     spec: Arc<RwLock<DefaultApiRaw>>,
     #[cfg(feature = "v3")]
     spec_v3: Option<Arc<RwLock<openapiv3::OpenAPI>>>,
-    #[cfg(feature = "swagger-ui")]
+    #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
     spec_path: Option<String>,
     inner: Option<actix_web::App<T, B>>,
 }
@@ -59,7 +61,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
             #[cfg(feature = "v3")]
             spec_v3: None,
-            #[cfg(feature = "swagger-ui")]
+            #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
             spec_path: None,
             inner: Some(self),
         }
@@ -70,7 +72,7 @@ impl<T, B> OpenApiExt<T, B> for actix_web::App<T, B> {
             spec: Arc::new(RwLock::new(spec)),
             #[cfg(feature = "v3")]
             spec_v3: None,
-            #[cfg(feature = "swagger-ui")]
+            #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
             spec_path: None,
             inner: Some(self),
         }
@@ -212,7 +214,7 @@ where
             spec: self.spec,
             #[cfg(feature = "v3")]
             spec_v3: self.spec_v3,
-            #[cfg(feature = "swagger-ui")]
+            #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
             spec_path: None,
             inner: self.inner.take().map(|a| a.wrap(mw)),
         }
@@ -243,7 +245,7 @@ where
             spec: self.spec,
             #[cfg(feature = "v3")]
             spec_v3: self.spec_v3,
-            #[cfg(feature = "swagger-ui")]
+            #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
             spec_path: None,
             inner: self.inner.take().map(|a| a.wrap_fn(mw)),
         }
@@ -253,7 +255,7 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_at(mut self, path: &str) -> Self {
-        #[cfg(feature = "swagger-ui")]
+        #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
         {
             self.spec_path = Some(path.to_owned());
         }
@@ -346,6 +348,45 @@ where
                         } else {
                             HttpResponse::Ok().body(
                                 SWAGGER_DIST
+                                    .get_file(filename)
+                                    .unwrap_or_else(|| panic!("Failed to get file {}", filename))
+                                    .contents(),
+                            )
+                        }
+                    }),
+                ),
+            )
+        });
+        self
+    }
+
+    /// Exposes the previously built JSON specification with RapiDoc at the given path
+    ///
+    /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
+    #[cfg(feature = "rapidoc")]
+    pub fn with_rapidoc_at(mut self, path: &str) -> Self {
+        let spec_path = self.spec_path.clone().expect(
+            "Specification not set, be sure to call `with_json_spec_at` before this function",
+        );
+
+        let path: String = path.into();
+        // Grab any file request from the documentation UI path and fetch it from SWAGGER_DIST
+        // E.g: js, html, svg and etc.
+        let regex_path = format!("{}/{{filename:.*}}", path);
+
+        self.inner = self.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource([regex_path.to_owned(), path.clone()]).route(
+                    actix_web::web::get().to(move |request: HttpRequest| {
+                        let filename = request.match_info().query("filename");
+                        if filename.is_empty() && request.query_string().is_empty() {
+                            let redirect_url = format!("{}/index.html?url={}", path, spec_path);
+                            HttpResponse::PermanentRedirect()
+                                .header("Location", redirect_url)
+                                .finish()
+                        } else {
+                            HttpResponse::Ok().body(
+                                RAPIDOC_DIST
                                     .get_file(filename)
                                     .unwrap_or_else(|| panic!("Failed to get file {}", filename))
                                     .contents(),
