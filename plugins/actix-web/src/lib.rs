@@ -45,7 +45,7 @@ use std::collections::BTreeMap;
 #[cfg(feature = "swagger-ui")]
 static SWAGGER_DIST: Dir = include_dir!("$CARGO_MANIFEST_DIR/swagger-ui/dist");
 #[cfg(feature = "rapidoc")]
-static RAPIDOC: &str = include_str!("../../rapidoc/index.html");
+static RAPIDOC: &str = include_str!("$CARGO_MANIFEST_DIR/rapidoc/index.html");
 
 /// Indicates that this thingmabob has a path and a bunch of definitions and operations.
 pub trait Mountable {
