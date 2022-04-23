@@ -3906,6 +3906,134 @@ fn test_rename() {
     );
 }
 
+#[test]
+fn test_example() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[openapi(example = r#"{ "name": "Rex", "age": 8 }"#)]
+    /// Pets are awesome!
+    struct Pet {
+        /// Pick a good one.
+        name: String,
+        /// 7 time yours
+        age: u8,
+    }
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct Car {
+        /// Pick a good one.
+        #[openapi(example = "whatever")]
+        name: String,
+    }
+
+    #[api_v2_operation]
+    fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    #[api_v2_operation]
+    fn echo_cars() -> impl Future<Output = Result<web::Json<Vec<Car>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .route("/pets", web::get().to(echo_pets))
+                .route("/cars", web::get().to(echo_cars))
+                .with_json_spec_at("/api/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "definitions": {
+                    "Car": {
+                      "properties": {
+                        "name": {
+                          "description": "Pick a good one.",
+                          "example": "whatever",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "type": "object"
+                    },
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "example": {
+                        "age": 8,
+                        "name": "Rex"
+                      },
+                      "properties": {
+                        "age": {
+                          "description": "7 time yours",
+                          "format": "int32",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "age",
+                        "name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/cars": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Car"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/pets": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
 mod module_path_in_definition_name {
     pub mod foo {
         pub mod bar {
