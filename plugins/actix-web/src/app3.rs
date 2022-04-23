@@ -382,11 +382,10 @@ where
         ) -> Result<HttpResponse, Error> {
             let data = data.into_inner();
             let (tmpl, spec_path) = data.as_ref();
+            let spec_path = format!("/{}", spec_path);
             let ctx = json!({ "spec_url": spec_path });
             let s = tmpl.render("index.html", &ctx).map_err(|_| {
-                actix_web::error::ErrorInternalServerError(
-                    "Error rendering rapidoc documentation",
-                )
+                actix_web::error::ErrorInternalServerError("Error rendering RapiDoc documentation")
             })?;
             Ok(HttpResponse::Ok().content_type("text/html").body(s))
         }
@@ -394,7 +393,8 @@ where
         self.inner = self.inner.take().map(|a| {
             a.app_data(actix_web::web::Data::new((tt, spec_path)))
                 .service(
-                    actix_web::web::resource(format!("{}/index.html", path)).route(actix_web::web::get().to(rapidoc_handler)),
+                    actix_web::web::resource(format!("{}/index.html", path))
+                        .route(actix_web::web::get().to(rapidoc_handler)),
                 )
         });
         self
