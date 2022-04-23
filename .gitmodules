@@ -1,6 +1,3 @@
 [submodule "plugins/swagger-ui"]
 	path = plugins/swagger-ui
 	url = https://github.com/swagger-api/swagger-ui
-[submodule "plugins/RapiDoc"]
-	path = plugins/RapiDoc
-	url = https://github.com/mrin9/RapiDoc

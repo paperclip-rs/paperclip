@@ -3,10 +3,10 @@
 extern crate actix_service2 as actix_service;
 extern crate actix_web4 as actix_web;
 
+#[cfg(feature = "rapidoc")]
+use super::RAPIDOC;
 #[cfg(feature = "swagger-ui")]
 use super::SWAGGER_DIST;
-#[cfg(feature = "rapidoc")]
-use super::RAPIDOC_DIST;
 use super::{
     web::{Route, RouteWrapper, ServiceConfig},
     Mountable,
@@ -22,7 +22,11 @@ use actix_web::{
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{DefaultApiRaw, SecurityScheme};
 use parking_lot::RwLock;
+#[cfg(feature = "rapidoc")]
+use tinytemplate::TinyTemplate;
 
+use crate::web;
+use serde_json::json;
 use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
@@ -345,8 +349,6 @@ where
         self
     }
 
-
-
     /// Exposes the previously built JSON specification with RapiDoc at the given path
     ///
     /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
@@ -357,37 +359,29 @@ where
         );
 
         let path: String = path.into();
-        // Grab any file request from the documentation UI path and fetch it from RAPIDOC_DIST
-        // E.g: js, html, svg and etc.
-        let regex_path = format!("{}/{{filename:.*}}", path);
+
+        let mut tt = TinyTemplate::new();
+        tt.add_template("index.html", RAPIDOC).unwrap();
+
+        async fn rapidoc_handler(
+            data: web::Data<(TinyTemplate<'_>, String)>,
+        ) -> Result<HttpResponse, Error> {
+            let data = data.into_inner();
+            let (tmpl, spec_path) = data.as_ref();
+            let ctx = json!({ "spec_url": spec_path });
+            let s = tmpl.render("index.html", &ctx).map_err(|_| {
+                actix_web::error::ErrorInternalServerError(
+                    "Error rendering rapidoc documentation",
+                )
+            })?;
+            Ok(HttpResponse::Ok().content_type("text/html").body(s))
+        }
 
         self.inner = self.inner.take().map(|a| {
-            a.service(
-                actix_web::web::resource([regex_path.to_owned(), path.clone()]).route(
-                    actix_web::web::get().to(move |request: HttpRequest| {
-                        let path = path.clone();
-                        let spec_path = spec_path.clone();
-                        async move {
-                            let filename = request.match_info().query("filename");
-                            if filename.is_empty() && request.query_string().is_empty() {
-                                let redirect_url = format!("{}/index.html?url={}", path, spec_path);
-                                HttpResponse::PermanentRedirect()
-                                    .append_header(("Location", redirect_url))
-                                    .finish()
-                            } else {
-                                HttpResponse::Ok().body(
-                                    RAPIDOC_DIST
-                                        .get_file(filename)
-                                        .unwrap_or_else(|| {
-                                            panic!("Failed to get file {}", filename)
-                                        })
-                                        .contents(),
-                                )
-                            }
-                        }
-                    }),
-                ),
-            )
+            a.app_data(web::Data::new((tt, spec_path)))
+                .service(
+                    actix_web::web::resource(path).route(actix_web::web::get().to(rapidoc_handler)),
+                )
         });
         self
     }
