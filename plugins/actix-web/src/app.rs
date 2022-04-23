@@ -25,9 +25,7 @@ use parking_lot::RwLock;
 #[cfg(feature = "rapidoc")]
 use tinytemplate::TinyTemplate;
 
-use crate::web;
 use serde_json::json;
-use std::fmt::format;
 use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
@@ -365,7 +363,7 @@ where
         tt.add_template("index.html", RAPIDOC).unwrap();
 
         async fn rapidoc_handler(
-            data: web::Data<(TinyTemplate<'_>, String)>,
+            data: actix_web::web::Data<(TinyTemplate<'_>, String)>,
         ) -> Result<HttpResponse, Error> {
             let data = data.into_inner();
             let (tmpl, spec_path) = data.as_ref();
@@ -378,7 +376,7 @@ where
         }
 
         self.inner = self.inner.take().map(|a| {
-            a.app_data(web::Data::new((tt, spec_path))).service(
+            a.app_data(actix_web::web::Data::new((tt, spec_path))).service(
                 actix_web::web::resource(format!("{}/index.html", path))
                     .route(actix_web::web::get().to(rapidoc_handler)),
             )
