@@ -8,7 +8,7 @@ extern crate actix_web3 as actix_web;
 extern crate actix_service1 as actix_service;
 
 #[cfg(feature = "rapidoc")]
-use super::RAPIDOC_DIST;
+use super::RAPIDOC;
 #[cfg(feature = "swagger-ui")]
 use super::SWAGGER_DIST;
 use super::{
@@ -26,7 +26,10 @@ use actix_web::{
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{DefaultApiRaw, SecurityScheme};
 use parking_lot::RwLock;
+#[cfg(feature = "rapidoc")]
+use tinytemplate::TinyTemplate;
 
+use serde_json::json;
 use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
@@ -375,7 +378,7 @@ where
         tt.add_template("index.html", RAPIDOC).unwrap();
 
         async fn rapidoc_handler(
-            data: web::Data<(TinyTemplate<'_>, String)>,
+            data: actix_web::web::Data<(TinyTemplate<'_>, String)>,
         ) -> Result<HttpResponse, Error> {
             let data = data.into_inner();
             let (tmpl, spec_path) = data.as_ref();
@@ -389,9 +392,9 @@ where
         }
 
         self.inner = self.inner.take().map(|a| {
-            a.app_data(web::Data::new((tt, spec_path)))
+            a.app_data(actix_web::web::Data::new((tt, spec_path)))
                 .service(
-                    actix_web::web::resource(path).route(actix_web::web::get().to(rapidoc_handler)),
+                    actix_web::web::resource(format!("{}/index.html", path)).route(actix_web::web::get().to(rapidoc_handler)),
                 )
         });
         self

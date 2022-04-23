@@ -380,7 +380,7 @@ where
         self.inner = self.inner.take().map(|a| {
             a.app_data(web::Data::new((tt, spec_path)))
                 .service(
-                    actix_web::web::resource(path).route(actix_web::web::get().to(rapidoc_handler)),
+                    actix_web::web::resource(format!("{}/index.html", path)).route(actix_web::web::get().to(rapidoc_handler)),
                 )
         });
         self
