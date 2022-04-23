@@ -8,7 +8,7 @@ extern crate actix_web3 as actix_web;
 #[cfg(feature = "actix4")]
 extern crate actix_web4 as actix_web;
 
-#[cfg(feature = "swagger-ui")]
+#[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
 use include_dir::{include_dir, Dir};
 
 #[cfg(feature = "actix4")]
