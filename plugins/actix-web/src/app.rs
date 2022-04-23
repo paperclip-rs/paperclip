@@ -376,10 +376,11 @@ where
         }
 
         self.inner = self.inner.take().map(|a| {
-            a.app_data(actix_web::web::Data::new((tt, spec_path))).service(
-                actix_web::web::resource(format!("{}/index.html", path))
-                    .route(actix_web::web::get().to(rapidoc_handler)),
-            )
+            a.app_data(actix_web::web::Data::new((tt, spec_path)))
+                .service(
+                    actix_web::web::resource(format!("{}/index.html", path))
+                        .route(actix_web::web::get().to(rapidoc_handler)),
+                )
         });
         self
     }
