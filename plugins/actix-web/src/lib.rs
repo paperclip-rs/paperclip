@@ -8,7 +8,7 @@ extern crate actix_web3 as actix_web;
 #[cfg(feature = "actix4")]
 extern crate actix_web4 as actix_web;
 
-#[cfg(feature = "swagger-ui")]
+#[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
 use include_dir::{include_dir, Dir};
 
 #[cfg(feature = "actix4")]
@@ -45,7 +45,7 @@ use std::collections::BTreeMap;
 #[cfg(feature = "swagger-ui")]
 static SWAGGER_DIST: Dir = include_dir!("$CARGO_MANIFEST_DIR/swagger-ui/dist");
 #[cfg(feature = "rapidoc")]
-static RAPIDOC: &str = include_str!("../../rapidoc/index.html");
+static RAPIDOC: Dir = include_dir!("$CARGO_MANIFEST_DIR/rapidoc");
 
 /// Indicates that this thingmabob has a path and a bunch of definitions and operations.
 pub trait Mountable {

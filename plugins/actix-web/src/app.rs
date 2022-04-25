@@ -359,8 +359,12 @@ where
 
         let path: String = path.into();
 
+        let rapidoc = RAPIDOC
+            .get_file("index.html")
+            .and_then(|file| file.contents_utf8())
+            .unwrap_or_else(|| panic!("Failed to get file RapiDoc UI"));
         let mut tt = TinyTemplate::new();
-        tt.add_template("index.html", RAPIDOC).unwrap();
+        tt.add_template("index.html", rapidoc).unwrap();
 
         async fn rapidoc_handler(
             data: actix_web::web::Data<(TinyTemplate<'_>, String)>,

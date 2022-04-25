@@ -31,6 +31,7 @@ use tinytemplate::TinyTemplate;
 
 use serde_json::json;
 use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
+use std::fmt::format;
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
@@ -374,8 +375,12 @@ where
 
         let path: String = path.into();
 
+        let rapidoc = RAPIDOC
+            .get_file("index.html")
+            .and_then(|file| file.contents_utf8())
+            .unwrap_or_else(|| panic!("Failed to get file RapiDoc UI"));
         let mut tt = TinyTemplate::new();
-        tt.add_template("index.html", RAPIDOC).unwrap();
+        tt.add_template("index.html", rapidoc).unwrap();
 
         async fn rapidoc_handler(
             data: actix_web::web::Data<(TinyTemplate<'_>, String)>,
