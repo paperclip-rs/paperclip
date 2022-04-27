@@ -2620,6 +2620,27 @@ fn test_operations_macro_attributes() {
         futures::future::err(actix_web::error::ErrorInternalServerError(""))
     }
 
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    pub struct Car {
+        brand: String
+    }
+
+    /// List all cars (in summary)
+    ///
+    /// This route will not appear in openapi.json
+    #[api_v2_operation(skip)]
+    fn get_cars(
+        _data: web::Data<String>,
+        _q: web::Query<Params>,
+    ) -> impl Future<Output = Result<web::Json<Vec<Car>>, Error>> {
+        if true {
+            // test for return in wrapper blocks (#75)
+            return futures::future::err(actix_web::error::ErrorInternalServerError(""));
+        }
+
+        futures::future::err(actix_web::error::ErrorInternalServerError(""))
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -2627,6 +2648,7 @@ fn test_operations_macro_attributes() {
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/").route(web::get().to(index)))
                 .service(web::resource("/pets").route(web::get().to(get_pets)))
+                .service(web::resource("/cars").route(web::get().to(get_cars)))
                 .build()
         },
         |addr| {

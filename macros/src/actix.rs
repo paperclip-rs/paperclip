@@ -138,6 +138,29 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     // Initialize operation parameters from macro attributes
     let (mut op_params, mut op_values) = parse_operation_attrs(attrs);
 
+    if op_params.iter().any(|i| *i == "skip") {
+        return quote!(
+            #struct_definition
+
+            #item_ast
+
+            impl #impl_generics paperclip::v2::schema::Apiv2Operation for #unit_struct #ty_generics #where_clause {
+                fn operation() -> paperclip::v2::models::DefaultOperationRaw {
+                    Default::default()
+                }
+
+                #[allow(unused_mut)]
+                fn security_definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::SecurityScheme> {
+                    Default::default()
+                }
+
+                fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
+                    Default::default()
+                }
+            }
+        ).into();
+    }
+
     // Optionally extract summary and description from doc comments
     if !op_params.iter().any(|i| *i == "summary") {
         let (summary, description) = extract_fn_documentation(&item_ast);
@@ -244,88 +267,101 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
     let mut params = Vec::new();
     let mut values = Vec::new();
     for attr in attrs.0 {
-        if let NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. })) = &attr {
-            if let Some(ident) = path.get_ident() {
-                match ident.to_string().as_str() {
-                    "summary" | "description" | "operation_id" => {
-                        if let Lit::Str(val) = lit {
-                            params.push(ident.clone());
-                            values.push(quote!(Some(#val.to_string())));
-                        } else {
-                            emit_error!(lit.span(), "Expected string literal: {:?}", lit)
-                        }
+        match &attr {
+            NestedMeta::Meta(Meta::Path(attr_path)) => {
+                if let Some(attr_) = attr_path.get_ident() {
+                    if attr_.to_string() == "skip" {
+                        params.push(attr_.clone());
+                    } else {
+                        emit_error!(attr_.span(), "Not supported bare attribute {:?}", attr_)
                     }
-                    "consumes" | "produces" => {
-                        if let Lit::Str(mimes) = lit {
-                            let mut mime_types = Vec::new();
-                            for val in mimes.value().split(',') {
-                                let val = val.trim();
-                                if let Err(err) = val.parse::<mime::Mime>() {
-                                    emit_error!(
-                                        lit.span(),
-                                        "Value {} does not parse as mime type: {}",
-                                        val,
-                                        err
-                                    );
-                                } else {
-                                    mime_types.push(quote!(paperclip::v2::models::MediaRange(#val.parse().unwrap())));
-                                }
-                            }
-                            if !mime_types.is_empty() {
-                                params.push(ident.clone());
-                                values.push(quote!({
-                                    let mut tmp = std::collections::BTreeSet::new();
-                                    #(
-                                        tmp.insert(#mime_types);
-                                    )*
-                                    Some(tmp)
-                                }));
-                            }
-                        } else {
-                            emit_error!(
-                                lit.span(),
-                                "Expected comma separated values in string literal: {:?}",
-                                lit
-                            )
-                        }
-                    }
-                    x => emit_error!(ident.span(), "Unknown attribute {}", x),
                 }
-            } else {
-                emit_error!(
-                    path.span(),
-                    "Expected single identifier, got path {:?}",
-                    path
-                )
             }
-        } else if let NestedMeta::Meta(Meta::List(MetaList { path, nested, .. })) = &attr {
-            if let Some(ident) = path.get_ident() {
-                match ident.to_string().as_str() {
-                    "tags" => {
-                        let mut tags = Vec::new();
-                        for meta in nested.pairs().map(|pair| pair.into_value()) {
-                            if let NestedMeta::Meta(Meta::Path(Path { segments, .. })) = meta {
-                                tags.push(segments[0].ident.to_string());
-                            } else if let NestedMeta::Lit(Lit::Str(lit)) = meta {
-                                tags.push(lit.value());
+            NestedMeta::Meta(Meta::NameValue(MetaNameValue { path, lit, .. })) => {
+                if let Some(ident) = path.get_ident() {
+                    match ident.to_string().as_str() {
+                        "summary" | "description" | "operation_id" => {
+                            if let Lit::Str(val) = lit {
+                                params.push(ident.clone());
+                                values.push(quote!(Some(# val.to_string())));
+                            } else {
+                                emit_error!(lit.span(), "Expected string literal: {:?}", lit)
+                            }
+                        }
+                        "consumes" | "produces" => {
+                            if let Lit::Str(mimes) = lit {
+                                let mut mime_types = Vec::new();
+                                for val in mimes.value().split(',') {
+                                    let val = val.trim();
+                                    if let Err(err) = val.parse::<mime::Mime>() {
+                                        emit_error!(
+                                            lit.span(),
+                                            "Value {} does not parse as mime type: {}",
+                                            val,
+                                            err
+                                        );
+                                    } else {
+                                        mime_types.push(quote!(paperclip::v2::models::MediaRange( # val.parse().unwrap())));
+                                    }
+                                }
+                                if !mime_types.is_empty() {
+                                    params.push(ident.clone());
+                                    values.push(quote!({
+                                    let mut tmp = std::collections::BTreeSet::new();
+                                    # (
+                                    tmp.insert(# mime_types);
+                                    ) *
+                                    Some(tmp)
+                                    }));
+                                }
                             } else {
                                 emit_error!(
-                                    meta.span(),
-                                    "Expected comma separated list of tags idents: {:?}",
-                                    meta
+                                    lit.span(),
+                                    "Expected comma separated values in string literal: {:?}",
+                                    lit
                                 )
                             }
                         }
-                        if !tags.is_empty() {
-                            params.push(ident.clone());
-                            values.push(quote!(vec![ #( #tags.to_string() ),* ]));
-                        }
+                        x => emit_error!(ident.span(), "Unknown attribute {}", x),
                     }
-                    x => emit_error!(ident.span(), "Unknown list ident {}", x),
+                } else {
+                    emit_error!(
+                        path.span(),
+                        "Expected single identifier, got path {:?}",
+                        path
+                    )
                 }
             }
-        } else {
-            emit_error!(attr.span(), "Not supported attribute type {:?}", attr)
+            NestedMeta::Meta(Meta::List(MetaList { path, nested, .. })) => {
+                if let Some(ident) = path.get_ident() {
+                    match ident.to_string().as_str() {
+                        "tags" => {
+                            let mut tags = Vec::new();
+                            for meta in nested.pairs().map(|pair| pair.into_value()) {
+                                if let NestedMeta::Meta(Meta::Path(Path { segments, .. })) = meta {
+                                    tags.push(segments[0].ident.to_string());
+                                } else if let NestedMeta::Lit(Lit::Str(lit)) = meta {
+                                    tags.push(lit.value());
+                                } else {
+                                    emit_error!(
+                                        meta.span(),
+                                        "Expected comma separated list of tags idents: {:?}",
+                                        meta
+                                    )
+                                }
+                            }
+                            if !tags.is_empty() {
+                                params.push(ident.clone());
+                                values.push(quote!(vec![ #( #tags.to_string() ),* ]));
+                            }
+                        }
+                        x => emit_error!(ident.span(), "Unknown list ident {}", x),
+                    }
+                }
+            }
+            _ => {
+                emit_error!(attr.span(), "Not supported attribute type {:?}", attr)
+            }
         }
     }
     (params, values)
