@@ -4,8 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.7.1] - 2022-04-10
+## [Unreleased]
+### Added
+- Add support for [RapiDoc UI](https://mrin9.github.io/RapiDoc/index.html). [PR#420](https://github.com/paperclip-rs/paperclip/pull/420)
+- Add example support for derived `Apiv2Schema`. [PR#421](https://github.com/paperclip-rs/paperclip/pull/421)
+- Add support for `PATCH` methods. [PR#422](https://github.com/paperclip-rs/paperclip/pull/422)
+
 ### Fixed
+- Fix missing slash between url parts [PR#416](https://github.com/paperclip-rs/paperclip/pull/416)
 - Properly support non-BoxBody response payload types [PR#414](https://github.com/paperclip-rs/paperclip/pull/414)
 - Fix required fields definition when using serde flatten [PR#412](https://github.com/paperclip-rs/paperclip/pull/412)
 - Fix reference urls not being RFC3986-compliant [PR#411](https://github.com/paperclip-rs/paperclip/pull/411)

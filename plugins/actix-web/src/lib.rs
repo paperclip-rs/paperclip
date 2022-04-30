@@ -32,8 +32,8 @@ pub use self::{
     web::{Resource, Route, Scope},
 };
 pub use paperclip_macros::{
-    api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, Apiv2Schema,
-    Apiv2Security,
+    api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, patch, post, put,
+    Apiv2Schema, Apiv2Security,
 };
 
 use paperclip_core::v2::models::{

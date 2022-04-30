@@ -45,7 +45,7 @@ use futures::future::{ok as fut_ok, ready, Future, Ready};
 use once_cell::sync::Lazy;
 use paperclip::{
     actix::{
-        api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, web,
+        api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, patch, post, put, web,
         Apiv2Schema, Apiv2Security, CreatedJson, NoContent, OpenApiExt,
     },
     v2::models::{DefaultApiRaw, Info, Tag},
@@ -3352,6 +3352,14 @@ fn test_method_macro() {
     ) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
         futures::future::ready(Ok(pet))
     }
+    #[patch("/v0/pets/{name}")]
+    #[api_v2_operation]
+    fn patch_pet(
+        _name: web::Path<String>,
+        pet: web::Json<Pet>,
+    ) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
+        futures::future::ready(Ok(pet))
+    }
     #[post("/v0/pets")]
     #[api_v2_operation]
     fn post_pet(pet: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
@@ -3370,6 +3378,7 @@ fn test_method_macro() {
                 .with_json_spec_at("/api/spec")
                 .service(get_pets)
                 .service(put_pet)
+                .service(patch_pet)
                 .service(post_pet)
                 .service(delete_pet)
                 .build()
@@ -3479,6 +3488,32 @@ fn test_method_macro() {
                                 },
                             },
                             "put": {
+                                "parameters": [
+                                    {
+                                        "in": "path",
+                                        "name": "name",
+                                        "required": true,
+                                        "type": "string"
+                                    },
+                                    {
+                                        "in": "body",
+                                        "name": "body",
+                                        "required": true,
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                ],
+                                "responses": {
+                                    "200": {
+                                        "description": "OK",
+                                        "schema": {
+                                            "$ref": "#/definitions/Pet"
+                                        }
+                                    }
+                                },
+                            },
+                            "patch": {
                                 "parameters": [
                                     {
                                         "in": "path",
