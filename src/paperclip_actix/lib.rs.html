@@ -75,6 +75,8 @@
 <span id="70">70</span>
 <span id="71">71</span>
 <span id="72">72</span>
+<span id="73">73</span>
+<span id="74">74</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix2&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
 <span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
@@ -85,7 +87,7 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web4</span> <span class="kw">as</span> <span class="ident">actix_web</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">include_dir</span>::{<span class="ident">include_dir</span>, <span class="ident">Dir</span>};
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
@@ -121,6 +123,8 @@
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
 <span class="kw">static</span> <span class="ident">SWAGGER_DIST</span>: <span class="ident">Dir</span> <span class="op">=</span> <span class="macro">include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/swagger-ui/dist&quot;</span>);
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
+<span class="kw">static</span> <span class="ident">RAPIDOC</span>: <span class="ident">Dir</span> <span class="op">=</span> <span class="macro">include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/rapidoc&quot;</span>);
 
 <span class="doccomment">/// Indicates that this thingmabob has a path and a bunch of definitions and operations.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Mountable</span> {

@@ -422,11 +422,59 @@
 <span id="417">417</span>
 <span id="418">418</span>
 <span id="419">419</span>
+<span id="420">420</span>
+<span id="421">421</span>
+<span id="422">422</span>
+<span id="423">423</span>
+<span id="424">424</span>
+<span id="425">425</span>
+<span id="426">426</span>
+<span id="427">427</span>
+<span id="428">428</span>
+<span id="429">429</span>
+<span id="430">430</span>
+<span id="431">431</span>
+<span id="432">432</span>
+<span id="433">433</span>
+<span id="434">434</span>
+<span id="435">435</span>
+<span id="436">436</span>
+<span id="437">437</span>
+<span id="438">438</span>
+<span id="439">439</span>
+<span id="440">440</span>
+<span id="441">441</span>
+<span id="442">442</span>
+<span id="443">443</span>
+<span id="444">444</span>
+<span id="445">445</span>
+<span id="446">446</span>
+<span id="447">447</span>
+<span id="448">448</span>
+<span id="449">449</span>
+<span id="450">450</span>
+<span id="451">451</span>
+<span id="452">452</span>
+<span id="453">453</span>
+<span id="454">454</span>
+<span id="455">455</span>
+<span id="456">456</span>
+<span id="457">457</span>
+<span id="458">458</span>
+<span id="459">459</span>
+<span id="460">460</span>
+<span id="461">461</span>
+<span id="462">462</span>
+<span id="463">463</span>
+<span id="464">464</span>
+<span id="465">465</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_service2</span> <span class="kw">as</span> <span class="ident">actix_service</span>;
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web4</span> <span class="kw">as</span> <span class="ident">actix_web</span>;
 
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::RAPIDOC</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::SWAGGER_DIST</span>;
 <span class="kw">use</span> <span class="kw">super</span>::{
@@ -434,7 +482,7 @@
     <span class="ident">Mountable</span>,
 };
 <span class="kw">use</span> <span class="ident">actix_service::ServiceFactory</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">actix_web::HttpRequest</span>;
 <span class="kw">use</span> <span class="ident">actix_web</span>::{
     <span class="ident">body::MessageBody</span>,
@@ -444,7 +492,10 @@
 <span class="kw">use</span> <span class="ident">futures::future</span>::{<span class="ident">ok</span> <span class="kw">as</span> <span class="ident">fut_ok</span>, <span class="ident">Ready</span>};
 <span class="kw">use</span> <span class="ident">paperclip_core::v2::models</span>::{<span class="ident">DefaultApiRaw</span>, <span class="ident">SecurityScheme</span>};
 <span class="kw">use</span> <span class="ident">parking_lot::RwLock</span>;
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
+<span class="kw">use</span> <span class="ident">tinytemplate::TinyTemplate</span>;
 
+<span class="kw">use</span> <span class="ident">serde_json::json</span>;
 <span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::BTreeMap</span>, <span class="ident">fmt::Debug</span>, <span class="ident">future::Future</span>, <span class="ident">sync::Arc</span>};
 
 <span class="doccomment">/// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).</span>
@@ -452,7 +503,7 @@
     <span class="ident">spec</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">DefaultApiRaw</span><span class="op">&gt;</span><span class="op">&gt;</span>,
     <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
     <span class="ident">spec_v3</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">openapiv3::OpenAPI</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
     <span class="ident">spec_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
     <span class="ident">inner</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">actix_web::App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
 }
@@ -479,7 +530,7 @@
             <span class="ident">spec</span>: <span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="ident">DefaultApiRaw::default</span>())),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
             <span class="ident">spec_v3</span>: <span class="prelude-val">None</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
             <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
             <span class="ident">inner</span>: <span class="prelude-val">Some</span>(<span class="self">self</span>),
         }
@@ -490,7 +541,7 @@
             <span class="ident">spec</span>: <span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="ident">spec</span>)),
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
             <span class="ident">spec_v3</span>: <span class="prelude-val">None</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
             <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
             <span class="ident">inner</span>: <span class="prelude-val">Some</span>(<span class="self">self</span>),
         }
@@ -616,7 +667,7 @@
             <span class="ident">spec</span>: <span class="self">self</span>.<span class="ident">spec</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
             <span class="ident">spec_v3</span>: <span class="self">self</span>.<span class="ident">spec_v3</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
             <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
             <span class="ident">inner</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">wrap</span>(<span class="ident">mw</span>)),
         }
@@ -646,7 +697,7 @@
             <span class="ident">spec</span>: <span class="self">self</span>.<span class="ident">spec</span>,
             <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
             <span class="ident">spec_v3</span>: <span class="self">self</span>.<span class="ident">spec_v3</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
             <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
             <span class="ident">inner</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">wrap_fn</span>(<span class="ident">mw</span>)),
         }
@@ -656,7 +707,7 @@
     <span class="doccomment">/// recorded by the wrapper and serves them in the given path</span>
     <span class="doccomment">/// as a JSON.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_json_spec_at</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
         {
             <span class="self">self</span>.<span class="ident">spec_path</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">path</span>.<span class="ident">to_owned</span>());
         }
@@ -763,6 +814,47 @@
                     }),
                 ),
             )
+        });
+        <span class="self">self</span>
+    }
+
+    <span class="doccomment">/// Exposes the previously built JSON specification with RapiDoc at the given path</span>
+    <span class="doccomment">///</span>
+    <span class="doccomment">/// **NOTE:** you **MUST** call with_json_spec_at before calling this function</span>
+    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
+    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_rapidoc_at</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">let</span> <span class="ident">spec_path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">spec_path</span>.<span class="ident">clone</span>().<span class="ident">expect</span>(
+            <span class="string">&quot;Specification not set, be sure to call `with_json_spec_at` before this function&quot;</span>,
+        );
+
+        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">into</span>();
+
+        <span class="kw">let</span> <span class="ident">rapidoc</span> <span class="op">=</span> <span class="ident">RAPIDOC</span>
+            .<span class="ident">get_file</span>(<span class="string">&quot;index.html&quot;</span>)
+            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">file</span><span class="op">|</span> <span class="ident">file</span>.<span class="ident">contents_utf8</span>())
+            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;Failed to get file RapiDoc UI&quot;</span>));
+        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tt</span> <span class="op">=</span> <span class="ident">TinyTemplate::new</span>();
+        <span class="ident">tt</span>.<span class="ident">add_template</span>(<span class="string">&quot;index.html&quot;</span>, <span class="ident">rapidoc</span>).<span class="ident">unwrap</span>();
+
+        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">rapidoc_handler</span>(
+            <span class="ident">data</span>: <span class="ident">actix_web::web::Data</span><span class="op">&lt;</span>(<span class="ident">TinyTemplate</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
+        ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
+            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">into_inner</span>();
+            <span class="kw">let</span> (<span class="ident">tmpl</span>, <span class="ident">spec_path</span>) <span class="op">=</span> <span class="ident">data</span>.<span class="ident">as_ref</span>();
+            <span class="kw">let</span> <span class="ident">spec_path</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, <span class="ident">spec_path</span>);
+            <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="macro">json!</span>({ <span class="string">&quot;spec_url&quot;</span>: <span class="ident">spec_path</span> });
+            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">tmpl</span>.<span class="ident">render</span>(<span class="string">&quot;index.html&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">ctx</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
+                <span class="ident">actix_web::error::ErrorInternalServerError</span>(<span class="string">&quot;Error rendering RapiDoc documentation&quot;</span>)
+            })<span class="question-mark">?</span>;
+            <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">content_type</span>(<span class="string">&quot;text/html&quot;</span>).<span class="ident">body</span>(<span class="ident">s</span>))
+        }
+
+        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
+            <span class="ident">a</span>.<span class="ident">app_data</span>(<span class="ident">actix_web::web::Data::new</span>((<span class="ident">tt</span>, <span class="ident">spec_path</span>)))
+                .<span class="ident">service</span>(
+                    <span class="ident">actix_web::web::resource</span>(<span class="macro">format!</span>(<span class="string">&quot;{}/index.html&quot;</span>, <span class="ident">path</span>))
+                        .<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">rapidoc_handler</span>)),
+                )
         });
         <span class="self">self</span>
     }
