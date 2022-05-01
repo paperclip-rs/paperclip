@@ -1697,6 +1697,52 @@
 <span id="1692">1692</span>
 <span id="1693">1693</span>
 <span id="1694">1694</span>
+<span id="1695">1695</span>
+<span id="1696">1696</span>
+<span id="1697">1697</span>
+<span id="1698">1698</span>
+<span id="1699">1699</span>
+<span id="1700">1700</span>
+<span id="1701">1701</span>
+<span id="1702">1702</span>
+<span id="1703">1703</span>
+<span id="1704">1704</span>
+<span id="1705">1705</span>
+<span id="1706">1706</span>
+<span id="1707">1707</span>
+<span id="1708">1708</span>
+<span id="1709">1709</span>
+<span id="1710">1710</span>
+<span id="1711">1711</span>
+<span id="1712">1712</span>
+<span id="1713">1713</span>
+<span id="1714">1714</span>
+<span id="1715">1715</span>
+<span id="1716">1716</span>
+<span id="1717">1717</span>
+<span id="1718">1718</span>
+<span id="1719">1719</span>
+<span id="1720">1720</span>
+<span id="1721">1721</span>
+<span id="1722">1722</span>
+<span id="1723">1723</span>
+<span id="1724">1724</span>
+<span id="1725">1725</span>
+<span id="1726">1726</span>
+<span id="1727">1727</span>
+<span id="1728">1728</span>
+<span id="1729">1729</span>
+<span id="1730">1730</span>
+<span id="1731">1731</span>
+<span id="1732">1732</span>
+<span id="1733">1733</span>
+<span id="1734">1734</span>
+<span id="1735">1735</span>
+<span id="1736">1736</span>
+<span id="1737">1737</span>
+<span id="1738">1738</span>
+<span id="1739">1739</span>
+<span id="1740">1740</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)</span>
 <span class="doccomment">//! OpenAPI plugin (exposed by paperclip with `actix` feature).</span>
 
@@ -2387,6 +2433,29 @@
     <span class="prelude-val">None</span>
 }
 
+<span class="kw">fn</span> <span class="ident">extract_example</span>(<span class="ident">attrs</span>: <span class="kw-2">&amp;</span>[<span class="ident">Attribute</span>]) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
+    <span class="kw">let</span> <span class="ident">attrs</span> <span class="op">=</span> <span class="ident">extract_openapi_attrs</span>(<span class="ident">attrs</span>);
+    <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="ident">attrs</span>.<span class="ident">flat_map</span>(<span class="op">|</span><span class="ident">attr</span><span class="op">|</span> <span class="ident">attr</span>.<span class="ident">into_iter</span>()) {
+        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::NameValue</span>(<span class="ident">nv</span>)) <span class="op">=</span> <span class="ident">attr</span> {
+            <span class="kw">if</span> <span class="ident">nv</span>.<span class="ident">path</span>.<span class="ident">is_ident</span>(<span class="string">&quot;example&quot;</span>) {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Lit::Str</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">nv</span>.<span class="ident">lit</span> {
+                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>.<span class="ident">value</span>());
+                } <span class="kw">else</span> {
+                    <span class="macro">emit_error!</span>(
+                        <span class="ident">nv</span>.<span class="ident">lit</span>.<span class="ident">span</span>().<span class="ident">unwrap</span>(),
+                        <span class="macro">format!</span>(
+                            <span class="string">&quot;`#[{}(example = \&quot;...\&quot;)]` expects a string argument&quot;</span>,
+                            <span class="ident">SCHEMA_MACRO_ATTR</span>
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
+    <span class="prelude-val">None</span>
+}
+
 <span class="doccomment">/// Actual parser and emitter for `api_v2_schema` macro.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">emit_v2_definition</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="kw">let</span> <span class="ident">item_ast</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident"><span class="kw">crate</span>::expect_struct_or_enum</span>(<span class="ident">input</span>) {
@@ -2400,6 +2469,17 @@
 
     <span class="kw">let</span> <span class="ident">docs</span> <span class="op">=</span> <span class="ident">extract_documentation</span>(<span class="kw-2">&amp;</span><span class="ident">item_ast</span>.<span class="ident">attrs</span>);
     <span class="kw">let</span> <span class="ident">docs</span> <span class="op">=</span> <span class="ident">docs</span>.<span class="ident">trim</span>();
+
+    <span class="kw">let</span> <span class="ident">example</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">example</span>) <span class="op">=</span> <span class="ident">extract_example</span>(<span class="kw-2">&amp;</span><span class="ident">item_ast</span>.<span class="ident">attrs</span>) {
+        <span class="comment">// allow to parse escaped json string or single str value</span>
+        <span class="macro">quote!</span>(
+            <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>(#<span class="ident">example</span>).<span class="ident">ok</span>().<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Some</span>(#<span class="ident">example</span>.<span class="ident">into</span>()))
+        )
+    } <span class="kw">else</span> {
+        <span class="macro">quote!</span>(<span class="prelude-val">None</span>)
+    };
+
+    <span class="macro">eprintln!</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">example</span>);
 
     <span class="kw">let</span> <span class="ident">props</span> <span class="op">=</span> <span class="ident">SerdeProps::from_item_attrs</span>(<span class="kw-2">&amp;</span><span class="ident">item_ast</span>.<span class="ident">attrs</span>);
 
@@ -2467,6 +2547,7 @@
     <span class="kw">let</span> <span class="ident">default_schema_raw_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="ident">DefaultSchemaRaw</span> {
             <span class="ident">name</span>: <span class="prelude-val">Some</span>(#<span class="ident">schema_name</span>.<span class="ident">into</span>()),
+            <span class="ident">example</span>: #<span class="ident">example</span>,
             ..<span class="ident">Default::default</span>()
         };
     };
@@ -2475,6 +2556,7 @@
     <span class="kw">let</span> <span class="ident">default_schema_raw_def</span> <span class="op">=</span> <span class="macro">quote!</span> {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="ident">DefaultSchemaRaw</span> {
             <span class="ident">name</span>: <span class="prelude-val">Some</span>(<span class="ident"><span class="self">Self</span>::__paperclip_schema_name</span>()), <span class="comment">// Add name for later use.</span>
+            <span class="ident">example</span>: #<span class="ident">example</span>,
             .. <span class="ident">Default::default</span>()
         };
     };
@@ -2954,12 +3036,22 @@
         <span class="kw">let</span> <span class="ident">docs</span> <span class="op">=</span> <span class="ident">extract_documentation</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">attrs</span>);
         <span class="kw">let</span> <span class="ident">docs</span> <span class="op">=</span> <span class="ident">docs</span>.<span class="ident">trim</span>();
 
+        <span class="kw">let</span> <span class="ident">example</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">example</span>) <span class="op">=</span> <span class="ident">extract_example</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">attrs</span>) {
+            <span class="comment">// allow to parse escaped json string or single str value</span>
+            <span class="macro">quote!</span>({
+                <span class="ident">s</span>.<span class="ident">example</span> <span class="op">=</span> <span class="ident">serde_json::from_str</span>::<span class="op">&lt;</span><span class="ident">serde_json::Value</span><span class="op">&gt;</span>(#<span class="ident">example</span>).<span class="ident">ok</span>().<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="prelude-val">Some</span>(#<span class="ident">example</span>.<span class="ident">into</span>()));
+            })
+        } <span class="kw">else</span> {
+            <span class="macro">quote!</span>({})
+        };
+
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">gen</span> <span class="op">=</span> <span class="kw">if</span> <span class="op">!</span><span class="ident">SerdeFlatten::exists</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">attrs</span>) {
             <span class="macro">quote!</span>({
                 <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> #<span class="ident">ty_ref::raw_schema</span>();
                 <span class="kw">if</span> <span class="op">!</span>#<span class="ident">docs</span>.<span class="ident">is_empty</span>() {
                     <span class="ident">s</span>.<span class="ident">description</span> <span class="op">=</span> <span class="prelude-val">Some</span>(#<span class="ident">docs</span>.<span class="ident">to_string</span>());
                 }
+                #<span class="ident">example</span>;
                 <span class="ident">schema</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(#<span class="ident">field_name</span>.<span class="ident">into</span>(), <span class="ident">s</span>.<span class="ident">into</span>());
 
                 <span class="kw">if</span> #<span class="ident">ty_ref::required</span>() {
@@ -3392,5 +3484,5 @@ trait actix_web::Responder.
     };
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (ec77f2524 2022-04-17)" ></div>
+</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (7c4b47696 2022-04-30)" ></div>
 </body></html>
