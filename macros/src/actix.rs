@@ -688,6 +688,29 @@ fn extract_rename(attrs: &[Attribute]) -> Option<String> {
     None
 }
 
+fn extract_example(attrs: &[Attribute]) -> Option<String> {
+    let attrs = extract_openapi_attrs(attrs);
+    for attr in attrs.flat_map(|attr| attr.into_iter()) {
+        if let NestedMeta::Meta(Meta::NameValue(nv)) = attr {
+            if nv.path.is_ident("example") {
+                if let Lit::Str(s) = nv.lit {
+                    return Some(s.value());
+                } else {
+                    emit_error!(
+                        nv.lit.span().unwrap(),
+                        format!(
+                            "`#[{}(example = \"...\")]` expects a string argument",
+                            SCHEMA_MACRO_ATTR
+                        ),
+                    );
+                }
+            }
+        }
+    }
+
+    None
+}
+
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
@@ -701,6 +724,17 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
 
     let docs = extract_documentation(&item_ast.attrs);
     let docs = docs.trim();
+
+    let example = if let Some(example) = extract_example(&item_ast.attrs) {
+        // allow to parse escaped json string or single str value
+        quote!(
+            serde_json::from_str::<serde_json::Value>(#example).ok().or_else(|| Some(#example.into()))
+        )
+    } else {
+        quote!(None)
+    };
+
+    eprintln!("{}", example);
 
     let props = SerdeProps::from_item_attrs(&item_ast.attrs);
 
@@ -768,6 +802,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let default_schema_raw_def = quote! {
         let mut schema = DefaultSchemaRaw {
             name: Some(#schema_name.into()),
+            example: #example,
             ..Default::default()
         };
     };
@@ -776,6 +811,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let default_schema_raw_def = quote! {
         let mut schema = DefaultSchemaRaw {
             name: Some(Self::__paperclip_schema_name()), // Add name for later use.
+            example: #example,
             .. Default::default()
         };
     };
@@ -1255,12 +1291,22 @@ fn handle_field_struct(
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
 
+        let example = if let Some(example) = extract_example(&field.attrs) {
+            // allow to parse escaped json string or single str value
+            quote!({
+                s.example = serde_json::from_str::<serde_json::Value>(#example).ok().or_else(|| Some(#example.into()));
+            })
+        } else {
+            quote!({})
+        };
+
         let mut gen = if !SerdeFlatten::exists(&field.attrs) {
             quote!({
                 let mut s = #ty_ref::raw_schema();
                 if !#docs.is_empty() {
                     s.description = Some(#docs.to_string());
                 }
+                #example;
                 schema.properties.insert(#field_name.into(), s.into());
 
                 if #ty_ref::required() {
