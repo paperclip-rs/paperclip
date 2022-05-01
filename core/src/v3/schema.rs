@@ -25,11 +25,7 @@ impl From<v2::DefaultSchemaRaw> for openapiv3::ReferenceOr<openapiv3::Schema> {
                         write_only: false,
                         deprecated: false,
                         external_docs: None,
-                        example: if let Some(example) = v2.example {
-                            serde_json::from_str(&example).ok()
-                        } else {
-                            None
-                        },
+                        example: v2.example,
                         title: v2.title,
                         description: v2.description,
                         discriminator: None,
