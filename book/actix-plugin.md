@@ -199,7 +199,6 @@ At the time of this writing, this plugin didn't support a few OpenAPI v2 feature
 | Affected entity                                                                                        | Missing feature(s)                                                                                 |
 |--------------------------------------------------------------------------------------------------------|----------------------------------------------------------------------------------------------------|
 | [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Non-body parameters allowing validations like `allowEmptyValue`, `collectionFormat`, `items`, etc. |
-| [Parameter](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameter-object) | Headers as parameters.                                                                             |
 
 #### Performance implications?
 

@@ -23,7 +23,7 @@ pub mod actix {
 
     pub use paperclip_actix::{
         api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, post, put, web,
-        Apiv2Schema, Apiv2Security, App, Mountable, OpenApiExt,
+        Apiv2Header, Apiv2Schema, Apiv2Security, App, Mountable, OpenApiExt,
     };
     pub use paperclip_core::v2::{
         AcceptedJson, CreatedJson, NoContent, OperationModifier, ResponderWrapper, ResponseWrapper,

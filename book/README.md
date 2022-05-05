@@ -13,7 +13,6 @@ It's currently under active development and may not be ready for production use 
 - API client code can also be generated using [build scripts](build-script.md) which will then check parameters usage in your library at compile time.
 - [Acix-web plugin](actix-plugin.md) can be used to host the API spec for your `actix-web` application.
   - Actix Web 4 support has been added through actix4 feature flag.
-    - Non-`BoxBody` response payload types not fully supported yet. Consider using `actix_web::middleware::Compat` as a workaround.
 
 ### Design
 

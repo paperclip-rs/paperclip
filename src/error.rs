@@ -39,7 +39,7 @@ pub enum PaperClipError {
     #[allow(clippy::upper_case_acronyms)]
     InvalidBasePathURL(String, url_dep::ParseError),
     /// The given schema object is an array, but the `items` field is missing.
-    #[error("Mising item schema for array: {:?}", _0)]
+    #[error("Missing item schema for array: {:?}", _0)]
     MissingArrayItem(Option<String>),
     /// The name for the given definition is invalid.
     #[error("Invalid name for definition: '{0}'")]
