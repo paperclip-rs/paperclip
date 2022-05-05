@@ -990,6 +990,28 @@
 <span id="985">985</span>
 <span id="986">986</span>
 <span id="987">987</span>
+<span id="988">988</span>
+<span id="989">989</span>
+<span id="990">990</span>
+<span id="991">991</span>
+<span id="992">992</span>
+<span id="993">993</span>
+<span id="994">994</span>
+<span id="995">995</span>
+<span id="996">996</span>
+<span id="997">997</span>
+<span id="998">998</span>
+<span id="999">999</span>
+<span id="1000">1000</span>
+<span id="1001">1001</span>
+<span id="1002">1002</span>
+<span id="1003">1003</span>
+<span id="1004">1004</span>
+<span id="1005">1005</span>
+<span id="1006">1006</span>
+<span id="1007">1007</span>
+<span id="1008">1008</span>
+<span id="1009">1009</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.</span>
 
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::extensions</span>::{
@@ -1085,7 +1107,7 @@
             <span class="ident">DataTypeFormat::Double</span> =&gt; <span class="string">&quot;double&quot;</span>,
             <span class="ident">DataTypeFormat::Byte</span> =&gt; <span class="string">&quot;byte&quot;</span>,
             <span class="ident">DataTypeFormat::Binary</span> =&gt; <span class="string">&quot;binary&quot;</span>,
-            <span class="ident">DataTypeFormat::Date</span> =&gt; <span class="string">&quot;data&quot;</span>,
+            <span class="ident">DataTypeFormat::Date</span> =&gt; <span class="string">&quot;date&quot;</span>,
             <span class="ident">DataTypeFormat::DateTime</span> =&gt; <span class="string">&quot;datetime&quot;</span>,
             <span class="ident">DataTypeFormat::Password</span> =&gt; <span class="string">&quot;password&quot;</span>,
             <span class="ident">DataTypeFormat::Url</span> =&gt; <span class="string">&quot;url&quot;</span>,
@@ -1097,6 +1119,28 @@
             <span class="ident">DataTypeFormat::Other</span> =&gt; <span class="string">&quot;other&quot;</span>,
         }
         .<span class="ident">to_string</span>()
+    }
+}
+
+<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">DataTypeFormat</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">DataType</span> {
+    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">src</span>: <span class="ident">DataTypeFormat</span>) -&gt; <span class="self">Self</span> {
+        <span class="kw">match</span> <span class="ident">src</span> {
+            <span class="ident">DataTypeFormat::Int32</span> =&gt; <span class="ident"><span class="self">Self</span>::Integer</span>,
+            <span class="ident">DataTypeFormat::Int64</span> =&gt; <span class="ident"><span class="self">Self</span>::Integer</span>,
+            <span class="ident">DataTypeFormat::Float</span> =&gt; <span class="ident"><span class="self">Self</span>::Number</span>,
+            <span class="ident">DataTypeFormat::Double</span> =&gt; <span class="ident"><span class="self">Self</span>::Number</span>,
+            <span class="ident">DataTypeFormat::Byte</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Binary</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Date</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::DateTime</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Password</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Url</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Uuid</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Ip</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::IpV4</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::IpV6</span> =&gt; <span class="ident"><span class="self">Self</span>::String</span>,
+            <span class="ident">DataTypeFormat::Other</span> =&gt; <span class="ident"><span class="self">Self</span>::Object</span>,
+        }
     }
 }
 
@@ -1978,5 +2022,5 @@
     <span class="op">!</span><span class="kw-2">*</span><span class="ident">val</span>
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (7c4b47696 2022-04-30)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (4c60a0ea5 2022-05-04)" ></div>
 </body></html>

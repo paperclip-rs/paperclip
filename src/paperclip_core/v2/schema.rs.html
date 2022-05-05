@@ -521,6 +521,33 @@
 <span id="516">516</span>
 <span id="517">517</span>
 <span id="518">518</span>
+<span id="519">519</span>
+<span id="520">520</span>
+<span id="521">521</span>
+<span id="522">522</span>
+<span id="523">523</span>
+<span id="524">524</span>
+<span id="525">525</span>
+<span id="526">526</span>
+<span id="527">527</span>
+<span id="528">528</span>
+<span id="529">529</span>
+<span id="530">530</span>
+<span id="531">531</span>
+<span id="532">532</span>
+<span id="533">533</span>
+<span id="534">534</span>
+<span id="535">535</span>
+<span id="536">536</span>
+<span id="537">537</span>
+<span id="538">538</span>
+<span id="539">539</span>
+<span id="540">540</span>
+<span id="541">541</span>
+<span id="542">542</span>
+<span id="543">543</span>
+<span id="544">544</span>
+<span id="545">545</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.</span>
 
 <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::models</span>::{
@@ -777,6 +804,8 @@
 <span class="doccomment">/// for schema objects.</span>
 <span class="doccomment">/// - [`Apiv2Security`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)</span>
 <span class="doccomment">/// for security scheme objects.</span>
+<span class="doccomment">/// - [`Apiv2Header`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)</span>
+<span class="doccomment">/// for header parameters objects.</span>
 <span class="doccomment">///</span>
 <span class="doccomment">/// This is implemented for primitive types by default.</span>
 <span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">Apiv2Schema</span> {
@@ -833,6 +862,10 @@
     <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
+
+    <span class="kw">fn</span> <span class="ident">header_parameter_schema</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="macro">vec!</span>[]
+    }
 }
 
 <span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> () {}
@@ -866,6 +899,10 @@
     <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="prelude-val">None</span>
     }
+
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">header_parameter_schema</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="macro">vec!</span>[]
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
@@ -884,6 +921,10 @@
     <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="ident">T::security_scheme</span>()
     }
+
+    <span class="kw">fn</span> <span class="ident">header_parameter_schema</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">T::header_parameter_schema</span>()
+    }
 }
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
@@ -897,6 +938,10 @@
     }
 
     <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
+        <span class="ident">Default::default</span>()
+    }
+
+    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">header_parameter_schema</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> {
         <span class="ident">Default::default</span>()
     }
 }
@@ -913,6 +958,10 @@
     <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="ident">T::security_scheme</span>()
     }
+
+    <span class="kw">fn</span> <span class="ident">header_parameter_schema</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">T::header_parameter_schema</span>()
+    }
 }
 
 <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span> <span class="op">+</span> <span class="ident">Clone</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">std::borrow::Cow</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span>, <span class="ident">T</span><span class="op">&gt;</span> {
@@ -926,6 +975,10 @@
 
     <span class="kw">fn</span> <span class="ident">security_scheme</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
         <span class="ident">T::security_scheme</span>()
+    }
+
+    <span class="kw">fn</span> <span class="ident">header_parameter_schema</span>() -&gt; <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Parameter</span><span class="op">&lt;</span><span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> {
+        <span class="ident">T::header_parameter_schema</span>()
     }
 }
 
@@ -963,6 +1016,7 @@
     };
 }
 
+<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::v2::models::Parameter</span>;
 <span class="kw">use</span> <span class="ident">std::collections</span>::<span class="kw-2">*</span>;
 
 <span class="macro">impl_schema_array!</span>(<span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>);
@@ -1040,5 +1094,5 @@
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
 <span class="kw">impl</span> <span class="ident">Apiv2Errors</span> <span class="kw">for</span> <span class="ident">actix_web::Error</span> {}
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (7c4b47696 2022-04-30)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (4c60a0ea5 2022-05-04)" ></div>
 </body></html>

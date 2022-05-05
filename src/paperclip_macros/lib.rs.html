@@ -131,6 +131,14 @@
 <span id="126">126</span>
 <span id="127">127</span>
 <span id="128">128</span>
+<span id="129">129</span>
+<span id="130">130</span>
+<span id="131">131</span>
+<span id="132">132</span>
+<span id="133">133</span>
+<span id="134">134</span>
+<span id="135">135</span>
+<span id="136">136</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for [paperclip](https://github.com/paperclip-rs/paperclip).</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! You shouldn&#39;t need to depend on this, because the stuff here is</span>
@@ -190,6 +198,14 @@
 <span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Apiv2Security</span>, <span class="ident">attributes</span>(<span class="ident">openapi</span>))]</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">api_v2_security</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
     <span class="ident"><span class="self">self</span>::actix::emit_v2_security</span>(<span class="ident">input</span>)
+}
+
+<span class="doccomment">/// Derive attribute for indicating that a type is an OpenAPI v2 compatible header parameter.</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix&quot;</span>)]</span>
+<span class="attribute">#[<span class="ident">proc_macro_error</span>]</span>
+<span class="attribute">#[<span class="ident">proc_macro_derive</span>(<span class="ident">Apiv2Header</span>, <span class="ident">attributes</span>(<span class="ident">openapi</span>))]</span>
+<span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">api_v2_header</span>(<span class="ident">input</span>: <span class="ident">TokenStream</span>) -&gt; <span class="ident">TokenStream</span> {
+    <span class="ident"><span class="self">self</span>::actix::emit_v2_header</span>(<span class="ident">input</span>)
 }
 
 <span class="doccomment">/// Marker attribute for indicating that the marked object can represent non-2xx (error)</span>
@@ -260,5 +276,5 @@
     <span class="ident">Delete</span>, <span class="ident">delete</span>,
 }
 </code></pre></div>
-</section><section id="search" class="content hidden"></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (7c4b47696 2022-04-30)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (4c60a0ea5 2022-05-04)" ></div>
 </body></html>
