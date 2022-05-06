@@ -46,7 +46,7 @@ use once_cell::sync::Lazy;
 use paperclip::{
     actix::{
         api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, patch, post, put, web,
-        Apiv2Schema, Apiv2Security, CreatedJson, NoContent, OpenApiExt,
+        Apiv2Header, Apiv2Schema, Apiv2Security, CreatedJson, NoContent, OpenApiExt,
     },
     v2::models::{DefaultApiRaw, Info, Tag},
 };
@@ -1308,6 +1308,9 @@ fn test_map_in_out() {
             #[cfg(feature = "swagger-ui")]
             let app = app.with_swagger_ui_at("/swagger");
 
+            #[cfg(feature = "rapidoc")]
+            let app = app.with_swagger_ui_at("/rapidoc");
+
             app.service(web::resource("/images").route(web::get().to(some_images)))
                 .service(web::resource("/catalogue").route(web::post().to(catalogue)))
                 .build()
@@ -1438,6 +1441,16 @@ fn test_map_in_out() {
             {
                 let resp = CLIENT
                     .get(&format!("http://{}/swagger", addr))
+                    .send()
+                    .expect("request failed?");
+
+                assert_eq!(resp.status().as_u16(), 200);
+            }
+
+            #[cfg(feature = "rapidoc")]
+            {
+                let resp = CLIENT
+                    .get(&format!("http://{}/rapidoc", addr))
                     .send()
                     .expect("request failed?");
 
@@ -3338,6 +3351,195 @@ fn test_security_app() {
 }
 
 #[test]
+fn test_header_parameter_app() {
+    #[derive(Apiv2Header, Deserialize)]
+    struct RequestHeaders {
+        #[openapi(name = "X-Request-ID", description = "Allow to track request")]
+        request_id: Uuid,
+        #[openapi(description = "User organization slug")]
+        slug: String,
+        #[openapi(description = "User ip", format = "ip")]
+        request_ip: String,
+        /// Origin of the request
+        origin: String,
+        #[openapi(skip)]
+        another_field: String,
+    }
+
+    impl FromRequest for RequestHeaders {
+        type Error = Error;
+        type Future = Ready<Result<Self, Self::Error>>;
+        #[cfg(not(feature = "actix4"))]
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {
+                request_id: Uuid::default(),
+                slug: "abc".to_owned(),
+                request_ip: "127.1".to_owned(),
+                origin: "test.com".to_owned(),
+                another_field: "".to_owned(),
+            }))
+        }
+    }
+
+    #[derive(Apiv2Header, Deserialize)]
+    struct RefererHeader(#[openapi(name = "X-Referer-slug")] String);
+
+    impl FromRequest for RefererHeader {
+        type Error = Error;
+        type Future = Ready<Result<Self, Self::Error>>;
+        #[cfg(not(feature = "actix4"))]
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self("www.paperclip.rs".to_owned())))
+        }
+    }
+
+    #[api_v2_operation]
+    async fn echo_pet_with_headers(
+        _: RequestHeaders,
+        _: RefererHeader,
+        body: web::Json<Pet>,
+    ) -> web::Json<Pet> {
+        body
+    }
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(web::resource("/echo").route(web::post().to(echo_pet_with_headers)));
+    }
+
+    run_and_check_app(
+        move || {
+            App::new()
+                .wrap_api()
+                .service(web::scope("/api").configure(config))
+                .with_json_spec_at("/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
+                        "class": {
+                          "enum": [
+                            "dog",
+                            "cat",
+                            "other"
+                          ],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "birthday",
+                        "class",
+                        "name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/api/echo": {
+                      "post": {
+                        "parameters": [
+                          {
+                            "description": "Allow to track request",
+                            "format": "uuid",
+                            "in": "header",
+                            "name": "X-Request-ID",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "User organization slug",
+                            "in": "header",
+                            "name": "slug",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "User ip",
+                            "format": "ip",
+                            "in": "header",
+                            "name": "request_ip",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "description": "Origin of the request",
+                            "in": "header",
+                            "name": "origin",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "in": "header",
+                            "name": "X-Referer-slug",
+                            "required": true,
+                            "type": "string"
+                          },
+                          {
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        ],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
 fn test_method_macro() {
     #[get("/v0/pets")]
     #[api_v2_operation]
@@ -3935,6 +4137,134 @@ fn test_rename() {
                         }
                     },
                     "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
+fn test_example() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    #[openapi(example = r#"{ "name": "Rex", "age": 8 }"#)]
+    /// Pets are awesome!
+    struct Pet {
+        /// Pick a good one.
+        name: String,
+        /// 7 time yours
+        age: u8,
+    }
+
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct Car {
+        /// Pick a good one.
+        #[openapi(example = "whatever")]
+        name: String,
+    }
+
+    #[api_v2_operation]
+    fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    #[api_v2_operation]
+    fn echo_cars() -> impl Future<Output = Result<web::Json<Vec<Car>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .route("/pets", web::get().to(echo_pets))
+                .route("/cars", web::get().to(echo_cars))
+                .with_json_spec_at("/api/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "definitions": {
+                    "Car": {
+                      "properties": {
+                        "name": {
+                          "description": "Pick a good one.",
+                          "example": "whatever",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "type": "object"
+                    },
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "example": {
+                        "age": 8,
+                        "name": "Rex"
+                      },
+                      "properties": {
+                        "age": {
+                          "description": "7 time yours",
+                          "format": "int32",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "age",
+                        "name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/cars": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Car"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "/pets": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
                 }),
             );
         },

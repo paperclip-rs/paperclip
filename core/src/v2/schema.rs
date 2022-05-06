@@ -254,6 +254,8 @@ impl_type_simple!(std::net::Ipv6Addr, DataType::String, DataTypeFormat::IpV6);
 /// for schema objects.
 /// - [`Apiv2Security`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)
 /// for security scheme objects.
+/// - [`Apiv2Header`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)
+/// for header parameters objects.
 ///
 /// This is implemented for primitive types by default.
 pub trait Apiv2Schema {
@@ -310,6 +312,10 @@ pub trait Apiv2Schema {
     fn security_scheme() -> Option<SecurityScheme> {
         None
     }
+
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        vec![]
+    }
 }
 
 impl Apiv2Schema for () {}
@@ -343,6 +349,10 @@ impl<T> Apiv2Schema for Option<T> {
     default fn security_scheme() -> Option<SecurityScheme> {
         None
     }
+
+    default fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        vec![]
+    }
 }
 
 impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
@@ -361,6 +371,10 @@ impl<T: Apiv2Schema> Apiv2Schema for Option<T> {
     fn security_scheme() -> Option<SecurityScheme> {
         T::security_scheme()
     }
+
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        T::header_parameter_schema()
+    }
 }
 
 #[cfg(feature = "nightly")]
@@ -374,6 +388,10 @@ impl<T, E> Apiv2Schema for Result<T, E> {
     }
 
     default fn security_scheme() -> Option<SecurityScheme> {
+        Default::default()
+    }
+
+    default fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
         Default::default()
     }
 }
@@ -390,6 +408,10 @@ impl<T: Apiv2Schema, E> Apiv2Schema for Result<T, E> {
     fn security_scheme() -> Option<SecurityScheme> {
         T::security_scheme()
     }
+
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        T::header_parameter_schema()
+    }
 }
 
 impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
@@ -403,6 +425,10 @@ impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
 
     fn security_scheme() -> Option<SecurityScheme> {
         T::security_scheme()
+    }
+
+    fn header_parameter_schema() -> Vec<Parameter<DefaultSchemaRaw>> {
+        T::header_parameter_schema()
     }
 }
 
@@ -440,6 +466,7 @@ macro_rules! impl_schema_map {
     };
 }
 
+use crate::v2::models::Parameter;
 use std::collections::*;
 
 impl_schema_array!(Vec<T>);

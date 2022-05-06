@@ -8,7 +8,7 @@ extern crate actix_web3 as actix_web;
 #[cfg(feature = "actix4")]
 extern crate actix_web4 as actix_web;
 
-#[cfg(feature = "swagger-ui")]
+#[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
 use include_dir::{include_dir, Dir};
 
 #[cfg(feature = "actix4")]
@@ -33,7 +33,7 @@ pub use self::{
 };
 pub use paperclip_macros::{
     api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, patch, post, put,
-    Apiv2Schema, Apiv2Security,
+    Apiv2Header, Apiv2Schema, Apiv2Security,
 };
 
 use paperclip_core::v2::models::{
@@ -44,6 +44,8 @@ use std::collections::BTreeMap;
 
 #[cfg(feature = "swagger-ui")]
 static SWAGGER_DIST: Dir = include_dir!("$CARGO_MANIFEST_DIR/swagger-ui/dist");
+#[cfg(feature = "rapidoc")]
+static RAPIDOC: Dir = include_dir!("$CARGO_MANIFEST_DIR/rapidoc");
 
 /// Indicates that this thingmabob has a path and a bunch of definitions and operations.
 pub trait Mountable {
