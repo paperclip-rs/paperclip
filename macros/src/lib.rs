@@ -133,4 +133,5 @@ rest_methods! {
     Post,   post,
     Put,    put,
     Delete, delete,
+    Patch,  patch,
 }

@@ -6,6 +6,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 ### Added
+- Add support for `PATCH` methods. [PR#422](https://github.com/paperclip-rs/paperclip/pull/422)
 - Add support for header parameters through the newly introduced `Apiv2Header` derive macro. [PR#413](https://github.com/paperclip-rs/paperclip/pull/413)
 - Add support for [RapiDoc UI](https://mrin9.github.io/RapiDoc/index.html). [PR#420](https://github.com/paperclip-rs/paperclip/pull/420)
 - Add example support for derived `Apiv2Schema`. [PR#421](https://github.com/paperclip-rs/paperclip/pull/421)
