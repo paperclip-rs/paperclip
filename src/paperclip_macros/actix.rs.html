@@ -1952,6 +1952,46 @@
 <span id="1947">1947</span>
 <span id="1948">1948</span>
 <span id="1949">1949</span>
+<span id="1950">1950</span>
+<span id="1951">1951</span>
+<span id="1952">1952</span>
+<span id="1953">1953</span>
+<span id="1954">1954</span>
+<span id="1955">1955</span>
+<span id="1956">1956</span>
+<span id="1957">1957</span>
+<span id="1958">1958</span>
+<span id="1959">1959</span>
+<span id="1960">1960</span>
+<span id="1961">1961</span>
+<span id="1962">1962</span>
+<span id="1963">1963</span>
+<span id="1964">1964</span>
+<span id="1965">1965</span>
+<span id="1966">1966</span>
+<span id="1967">1967</span>
+<span id="1968">1968</span>
+<span id="1969">1969</span>
+<span id="1970">1970</span>
+<span id="1971">1971</span>
+<span id="1972">1972</span>
+<span id="1973">1973</span>
+<span id="1974">1974</span>
+<span id="1975">1975</span>
+<span id="1976">1976</span>
+<span id="1977">1977</span>
+<span id="1978">1978</span>
+<span id="1979">1979</span>
+<span id="1980">1980</span>
+<span id="1981">1981</span>
+<span id="1982">1982</span>
+<span id="1983">1983</span>
+<span id="1984">1984</span>
+<span id="1985">1985</span>
+<span id="1986">1986</span>
+<span id="1987">1987</span>
+<span id="1988">1988</span>
+<span id="1989">1989</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)</span>
 <span class="doccomment">//! OpenAPI plugin (exposed by paperclip with `actix` feature).</span>
 
@@ -2092,6 +2132,33 @@
     <span class="comment">// Initialize operation parameters from macro attributes</span>
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">op_params</span>, <span class="kw-2">mut</span> <span class="ident">op_values</span>) <span class="op">=</span> <span class="ident">parse_operation_attrs</span>(<span class="ident">attrs</span>);
 
+    <span class="kw">if</span> <span class="ident">op_params</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">i</span> <span class="op">==</span> <span class="string">&quot;skip&quot;</span>) {
+        <span class="kw">return</span> <span class="macro">quote!</span>(
+            #<span class="ident">struct_definition</span>
+
+            #<span class="ident">item_ast</span>
+
+            <span class="kw">impl</span> #<span class="ident">impl_generics</span> <span class="ident">paperclip::v2::schema::Apiv2Operation</span> <span class="kw">for</span> #<span class="ident">unit_struct</span> #<span class="ident">ty_generics</span> #<span class="ident">where_clause</span> {
+                <span class="kw">fn</span> <span class="ident">operation</span>() -&gt; <span class="ident">paperclip::v2::models::DefaultOperationRaw</span> {
+                    <span class="ident">Default::default</span>()
+                }
+
+                <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">unused_mut</span>)]</span>
+                <span class="kw">fn</span> <span class="ident">security_definitions</span>() -&gt; <span class="ident">std::collections::BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">paperclip::v2::models::SecurityScheme</span><span class="op">&gt;</span> {
+                    <span class="ident">Default::default</span>()
+                }
+
+                <span class="kw">fn</span> <span class="ident">definitions</span>() -&gt; <span class="ident">std::collections::BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">paperclip::v2::models::DefaultSchemaRaw</span><span class="op">&gt;</span> {
+                    <span class="ident">Default::default</span>()
+                }
+
+                <span class="kw">fn</span> <span class="ident">is_visible</span>() -&gt; <span class="ident">bool</span> {
+                    <span class="bool-val">false</span>
+                }
+            }
+        ).<span class="ident">into</span>();
+    }
+
     <span class="comment">// Optionally extract summary and description from doc comments</span>
     <span class="kw">if</span> <span class="op">!</span><span class="ident">op_params</span>.<span class="ident">iter</span>().<span class="ident">any</span>(<span class="op">|</span><span class="ident">i</span><span class="op">|</span> <span class="kw-2">*</span><span class="ident">i</span> <span class="op">==</span> <span class="string">&quot;summary&quot;</span>) {
         <span class="kw">let</span> (<span class="ident">summary</span>, <span class="ident">description</span>) <span class="op">=</span> <span class="ident">extract_fn_documentation</span>(<span class="kw-2">&amp;</span><span class="ident">item_ast</span>);
@@ -2198,88 +2265,101 @@
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">params</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
     <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">values</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
     <span class="kw">for</span> <span class="ident">attr</span> <span class="kw">in</span> <span class="ident">attrs</span>.<span class="number">0</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::NameValue</span>(<span class="ident">MetaNameValue</span> { <span class="ident">path</span>, <span class="ident">lit</span>, .. })) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ident</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get_ident</span>() {
-                <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
-                    <span class="string">&quot;summary&quot;</span> <span class="op">|</span> <span class="string">&quot;description&quot;</span> <span class="op">|</span> <span class="string">&quot;operation_id&quot;</span> =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Lit::Str</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">lit</span> {
-                            <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">ident</span>.<span class="ident">clone</span>());
-                            <span class="ident">values</span>.<span class="ident">push</span>(<span class="macro">quote!</span>(<span class="prelude-val">Some</span>(#<span class="ident">val</span>.<span class="ident">to_string</span>())));
-                        } <span class="kw">else</span> {
-                            <span class="macro">emit_error!</span>(<span class="ident">lit</span>.<span class="ident">span</span>(), <span class="string">&quot;Expected string literal: {:?}&quot;</span>, <span class="ident">lit</span>)
-                        }
+        <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">attr</span> {
+            <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::Path</span>(<span class="ident">attr_path</span>)) =&gt; {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">attr_</span>) <span class="op">=</span> <span class="ident">attr_path</span>.<span class="ident">get_ident</span>() {
+                    <span class="kw">if</span> <span class="kw-2">*</span><span class="ident">attr_</span> <span class="op">==</span> <span class="string">&quot;skip&quot;</span> {
+                        <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">attr_</span>.<span class="ident">clone</span>());
+                    } <span class="kw">else</span> {
+                        <span class="macro">emit_error!</span>(<span class="ident">attr_</span>.<span class="ident">span</span>(), <span class="string">&quot;Not supported bare attribute {:?}&quot;</span>, <span class="ident">attr_</span>)
                     }
-                    <span class="string">&quot;consumes&quot;</span> <span class="op">|</span> <span class="string">&quot;produces&quot;</span> =&gt; {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Lit::Str</span>(<span class="ident">mimes</span>) <span class="op">=</span> <span class="ident">lit</span> {
-                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mime_types</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                            <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="ident">mimes</span>.<span class="ident">value</span>().<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>) {
-                                <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">trim</span>();
-                                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">mime::Mime</span><span class="op">&gt;</span>() {
-                                    <span class="macro">emit_error!</span>(
-                                        <span class="ident">lit</span>.<span class="ident">span</span>(),
-                                        <span class="string">&quot;Value {} does not parse as mime type: {}&quot;</span>,
-                                        <span class="ident">val</span>,
-                                        <span class="ident">err</span>
-                                    );
-                                } <span class="kw">else</span> {
-                                    <span class="ident">mime_types</span>.<span class="ident">push</span>(<span class="macro">quote!</span>(<span class="ident">paperclip::v2::models::MediaRange</span>(#<span class="ident">val</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())));
-                                }
-                            }
-                            <span class="kw">if</span> <span class="op">!</span><span class="ident">mime_types</span>.<span class="ident">is_empty</span>() {
-                                <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">ident</span>.<span class="ident">clone</span>());
-                                <span class="ident">values</span>.<span class="ident">push</span>(<span class="macro">quote!</span>({
-                                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="ident">std::collections::BTreeSet::new</span>();
-                                    #(
-                                        <span class="ident">tmp</span>.<span class="ident">insert</span>(#<span class="ident">mime_types</span>);
-                                    )<span class="op">*</span>
-                                    <span class="prelude-val">Some</span>(<span class="ident">tmp</span>)
-                                }));
-                            }
-                        } <span class="kw">else</span> {
-                            <span class="macro">emit_error!</span>(
-                                <span class="ident">lit</span>.<span class="ident">span</span>(),
-                                <span class="string">&quot;Expected comma separated values in string literal: {:?}&quot;</span>,
-                                <span class="ident">lit</span>
-                            )
-                        }
-                    }
-                    <span class="ident">x</span> =&gt; <span class="macro">emit_error!</span>(<span class="ident">ident</span>.<span class="ident">span</span>(), <span class="string">&quot;Unknown attribute {}&quot;</span>, <span class="ident">x</span>),
                 }
-            } <span class="kw">else</span> {
-                <span class="macro">emit_error!</span>(
-                    <span class="ident">path</span>.<span class="ident">span</span>(),
-                    <span class="string">&quot;Expected single identifier, got path {:?}&quot;</span>,
-                    <span class="ident">path</span>
-                )
             }
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::List</span>(<span class="ident">MetaList</span> { <span class="ident">path</span>, <span class="ident">nested</span>, .. })) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">attr</span> {
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ident</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get_ident</span>() {
-                <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
-                    <span class="string">&quot;tags&quot;</span> =&gt; {
-                        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tags</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
-                        <span class="kw">for</span> <span class="ident">meta</span> <span class="kw">in</span> <span class="ident">nested</span>.<span class="ident">pairs</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">pair</span><span class="op">|</span> <span class="ident">pair</span>.<span class="ident">into_value</span>()) {
-                            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::Path</span>(<span class="ident">Path</span> { <span class="ident">segments</span>, .. })) <span class="op">=</span> <span class="ident">meta</span> {
-                                <span class="ident">tags</span>.<span class="ident">push</span>(<span class="ident">segments</span>[<span class="number">0</span>].<span class="ident">ident</span>.<span class="ident">to_string</span>());
-                            } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Lit</span>(<span class="ident">Lit::Str</span>(<span class="ident">lit</span>)) <span class="op">=</span> <span class="ident">meta</span> {
-                                <span class="ident">tags</span>.<span class="ident">push</span>(<span class="ident">lit</span>.<span class="ident">value</span>());
+            <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::NameValue</span>(<span class="ident">MetaNameValue</span> { <span class="ident">path</span>, <span class="ident">lit</span>, .. })) =&gt; {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ident</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get_ident</span>() {
+                    <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
+                        <span class="string">&quot;summary&quot;</span> <span class="op">|</span> <span class="string">&quot;description&quot;</span> <span class="op">|</span> <span class="string">&quot;operation_id&quot;</span> =&gt; {
+                            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Lit::Str</span>(<span class="ident">val</span>) <span class="op">=</span> <span class="ident">lit</span> {
+                                <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">ident</span>.<span class="ident">clone</span>());
+                                <span class="ident">values</span>.<span class="ident">push</span>(<span class="macro">quote!</span>(<span class="prelude-val">Some</span>(# <span class="ident">val</span>.<span class="ident">to_string</span>())));
+                            } <span class="kw">else</span> {
+                                <span class="macro">emit_error!</span>(<span class="ident">lit</span>.<span class="ident">span</span>(), <span class="string">&quot;Expected string literal: {:?}&quot;</span>, <span class="ident">lit</span>)
+                            }
+                        }
+                        <span class="string">&quot;consumes&quot;</span> <span class="op">|</span> <span class="string">&quot;produces&quot;</span> =&gt; {
+                            <span class="kw">if</span> <span class="kw">let</span> <span class="ident">Lit::Str</span>(<span class="ident">mimes</span>) <span class="op">=</span> <span class="ident">lit</span> {
+                                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mime_types</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+                                <span class="kw">for</span> <span class="ident">val</span> <span class="kw">in</span> <span class="ident">mimes</span>.<span class="ident">value</span>().<span class="ident">split</span>(<span class="string">&#39;,&#39;</span>) {
+                                    <span class="kw">let</span> <span class="ident">val</span> <span class="op">=</span> <span class="ident">val</span>.<span class="ident">trim</span>();
+                                    <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Err</span>(<span class="ident">err</span>) <span class="op">=</span> <span class="ident">val</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">mime::Mime</span><span class="op">&gt;</span>() {
+                                        <span class="macro">emit_error!</span>(
+                                            <span class="ident">lit</span>.<span class="ident">span</span>(),
+                                            <span class="string">&quot;Value {} does not parse as mime type: {}&quot;</span>,
+                                            <span class="ident">val</span>,
+                                            <span class="ident">err</span>
+                                        );
+                                    } <span class="kw">else</span> {
+                                        <span class="ident">mime_types</span>.<span class="ident">push</span>(<span class="macro">quote!</span>(<span class="ident">paperclip::v2::models::MediaRange</span>( # <span class="ident">val</span>.<span class="ident">parse</span>().<span class="ident">unwrap</span>())));
+                                    }
+                                }
+                                <span class="kw">if</span> <span class="op">!</span><span class="ident">mime_types</span>.<span class="ident">is_empty</span>() {
+                                    <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">ident</span>.<span class="ident">clone</span>());
+                                    <span class="ident">values</span>.<span class="ident">push</span>(<span class="macro">quote!</span>({
+                                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tmp</span> <span class="op">=</span> <span class="ident">std::collections::BTreeSet::new</span>();
+                                    # (
+                                    <span class="ident">tmp</span>.<span class="ident">insert</span>(# <span class="ident">mime_types</span>);
+                                    ) <span class="op">*</span>
+                                    <span class="prelude-val">Some</span>(<span class="ident">tmp</span>)
+                                    }));
+                                }
                             } <span class="kw">else</span> {
                                 <span class="macro">emit_error!</span>(
-                                    <span class="ident">meta</span>.<span class="ident">span</span>(),
-                                    <span class="string">&quot;Expected comma separated list of tags idents: {:?}&quot;</span>,
-                                    <span class="ident">meta</span>
+                                    <span class="ident">lit</span>.<span class="ident">span</span>(),
+                                    <span class="string">&quot;Expected comma separated values in string literal: {:?}&quot;</span>,
+                                    <span class="ident">lit</span>
                                 )
                             }
                         }
-                        <span class="kw">if</span> <span class="op">!</span><span class="ident">tags</span>.<span class="ident">is_empty</span>() {
-                            <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">ident</span>.<span class="ident">clone</span>());
-                            <span class="ident">values</span>.<span class="ident">push</span>(<span class="macro">quote!</span>(<span class="macro">vec!</span>[ #( #<span class="ident">tags</span>.<span class="ident">to_string</span>() ),<span class="op">*</span> ]));
-                        }
+                        <span class="ident">x</span> =&gt; <span class="macro">emit_error!</span>(<span class="ident">ident</span>.<span class="ident">span</span>(), <span class="string">&quot;Unknown attribute {}&quot;</span>, <span class="ident">x</span>),
                     }
-                    <span class="ident">x</span> =&gt; <span class="macro">emit_error!</span>(<span class="ident">ident</span>.<span class="ident">span</span>(), <span class="string">&quot;Unknown list ident {}&quot;</span>, <span class="ident">x</span>),
+                } <span class="kw">else</span> {
+                    <span class="macro">emit_error!</span>(
+                        <span class="ident">path</span>.<span class="ident">span</span>(),
+                        <span class="string">&quot;Expected single identifier, got path {:?}&quot;</span>,
+                        <span class="ident">path</span>
+                    )
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="macro">emit_error!</span>(<span class="ident">attr</span>.<span class="ident">span</span>(), <span class="string">&quot;Not supported attribute type {:?}&quot;</span>, <span class="ident">attr</span>)
+            <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::List</span>(<span class="ident">MetaList</span> { <span class="ident">path</span>, <span class="ident">nested</span>, .. })) =&gt; {
+                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ident</span>) <span class="op">=</span> <span class="ident">path</span>.<span class="ident">get_ident</span>() {
+                    <span class="kw">match</span> <span class="ident">ident</span>.<span class="ident">to_string</span>().<span class="ident">as_str</span>() {
+                        <span class="string">&quot;tags&quot;</span> =&gt; {
+                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tags</span> <span class="op">=</span> <span class="ident">Vec::new</span>();
+                            <span class="kw">for</span> <span class="ident">meta</span> <span class="kw">in</span> <span class="ident">nested</span>.<span class="ident">pairs</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">pair</span><span class="op">|</span> <span class="ident">pair</span>.<span class="ident">into_value</span>()) {
+                                <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Meta</span>(<span class="ident">Meta::Path</span>(<span class="ident">Path</span> { <span class="ident">segments</span>, .. })) <span class="op">=</span> <span class="ident">meta</span> {
+                                    <span class="ident">tags</span>.<span class="ident">push</span>(<span class="ident">segments</span>[<span class="number">0</span>].<span class="ident">ident</span>.<span class="ident">to_string</span>());
+                                } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="ident">NestedMeta::Lit</span>(<span class="ident">Lit::Str</span>(<span class="ident">lit</span>)) <span class="op">=</span> <span class="ident">meta</span> {
+                                    <span class="ident">tags</span>.<span class="ident">push</span>(<span class="ident">lit</span>.<span class="ident">value</span>());
+                                } <span class="kw">else</span> {
+                                    <span class="macro">emit_error!</span>(
+                                        <span class="ident">meta</span>.<span class="ident">span</span>(),
+                                        <span class="string">&quot;Expected comma separated list of tags idents: {:?}&quot;</span>,
+                                        <span class="ident">meta</span>
+                                    )
+                                }
+                            }
+                            <span class="kw">if</span> <span class="op">!</span><span class="ident">tags</span>.<span class="ident">is_empty</span>() {
+                                <span class="ident">params</span>.<span class="ident">push</span>(<span class="ident">ident</span>.<span class="ident">clone</span>());
+                                <span class="ident">values</span>.<span class="ident">push</span>(<span class="macro">quote!</span>(<span class="macro">vec!</span>[ #( #<span class="ident">tags</span>.<span class="ident">to_string</span>() ),<span class="op">*</span> ]));
+                            }
+                        }
+                        <span class="ident">x</span> =&gt; <span class="macro">emit_error!</span>(<span class="ident">ident</span>.<span class="ident">span</span>(), <span class="string">&quot;Unknown list ident {}&quot;</span>, <span class="ident">x</span>),
+                    }
+                }
+            }
+            <span class="kw">_</span> =&gt; {
+                <span class="macro">emit_error!</span>(<span class="ident">attr</span>.<span class="ident">span</span>(), <span class="string">&quot;Not supported attribute type {:?}&quot;</span>, <span class="ident">attr</span>)
+            }
         }
     }
     (<span class="ident">params</span>, <span class="ident">values</span>)
@@ -3902,5 +3982,5 @@ trait actix_web::Responder.
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (4c60a0ea5 2022-05-04)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (77652b9ef 2022-05-06)" ></div>
 </body></html>

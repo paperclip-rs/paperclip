@@ -770,6 +770,10 @@
 <span id="765">765</span>
 <span id="766">766</span>
 <span id="767">767</span>
+<span id="768">768</span>
+<span id="769">769</span>
+<span id="770">770</span>
+<span id="771">771</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
 <span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).</span>
@@ -1014,13 +1018,15 @@
         <span class="ident">U</span>: <span class="ident">Apiv2Operation</span>,
     {
         <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">op</span> <span class="op">=</span> <span class="ident">U::operation</span>();
-        <span class="ident">op</span>.<span class="ident">set_parameter_names_from_path_template</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>);
-        <span class="kw">for</span> <span class="ident">method</span> <span class="kw">in</span> <span class="ident">METHODS</span> {
-            <span class="self">self</span>.<span class="ident">operations</span>.<span class="ident">insert</span>(<span class="ident">method</span>.<span class="ident">into</span>(), <span class="ident">op</span>.<span class="ident">clone</span>());
-        }
+        <span class="kw">if</span> <span class="ident">U::is_visible</span>() {
+            <span class="ident">op</span>.<span class="ident">set_parameter_names_from_path_template</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">path</span>);
+            <span class="kw">for</span> <span class="ident">method</span> <span class="kw">in</span> <span class="ident">METHODS</span> {
+                <span class="self">self</span>.<span class="ident">operations</span>.<span class="ident">insert</span>(<span class="ident">method</span>.<span class="ident">into</span>(), <span class="ident">op</span>.<span class="ident">clone</span>());
+            }
 
-        <span class="self">self</span>.<span class="ident">definitions</span>.<span class="ident">extend</span>(<span class="ident">U::definitions</span>().<span class="ident">into_iter</span>());
-        <span class="ident">SecurityScheme::append_map</span>(<span class="ident">U::security_definitions</span>(), <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">security</span>);
+            <span class="self">self</span>.<span class="ident">definitions</span>.<span class="ident">extend</span>(<span class="ident">U::definitions</span>().<span class="ident">into_iter</span>());
+            <span class="ident">SecurityScheme::append_map</span>(<span class="ident">U::security_definitions</span>(), <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">security</span>);
+        }
     }
 }
 
@@ -1334,9 +1340,11 @@
         <span class="ident">F::Output</span>: <span class="ident">Responder</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
         <span class="ident">F::Future</span>: <span class="ident">Apiv2Operation</span>,
     {
-        <span class="self">self</span>.<span class="ident">operation</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">F::Future::operation</span>());
-        <span class="self">self</span>.<span class="ident">definitions</span> <span class="op">=</span> <span class="ident">F::Future::definitions</span>();
-        <span class="self">self</span>.<span class="ident">security</span> <span class="op">=</span> <span class="ident">F::Future::security_definitions</span>();
+        <span class="kw">if</span> <span class="ident">F::Future::is_visible</span>() {
+            <span class="self">self</span>.<span class="ident">operation</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">F::Future::operation</span>());
+            <span class="self">self</span>.<span class="ident">definitions</span> <span class="op">=</span> <span class="ident">F::Future::definitions</span>();
+            <span class="self">self</span>.<span class="ident">security</span> <span class="op">=</span> <span class="ident">F::Future::security_definitions</span>();
+        }
         <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">to</span>(<span class="ident">handler</span>);
         <span class="self">self</span>
     }
@@ -1538,5 +1546,5 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (4c60a0ea5 2022-05-04)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (77652b9ef 2022-05-06)" ></div>
 </body></html>

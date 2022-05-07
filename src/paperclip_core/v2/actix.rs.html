@@ -902,6 +902,10 @@
 <span id="897">897</span>
 <span id="898">898</span>
 <span id="899">899</span>
+<span id="900">900</span>
+<span id="901">901</span>
+<span id="902">902</span>
+<span id="903">903</span>
 </pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>)]</span>
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web_validator2</span> <span class="kw">as</span> <span class="ident">actix_web_validator</span>;
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>)]</span>
@@ -1594,6 +1598,10 @@
     <span class="kw">fn</span> <span class="ident">definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span> {
         <span class="ident">H::definitions</span>()
     }
+
+    <span class="kw">fn</span> <span class="ident">is_visible</span>() -&gt; <span class="ident">bool</span> {
+        <span class="ident">H::is_visible</span>()
+    }
 }
 
 <span class="doccomment">/// Given the schema type, recursively update the map of definitions.</span>
@@ -1802,5 +1810,5 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (4c60a0ea5 2022-05-04)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.62.0-nightly (77652b9ef 2022-05-06)" ></div>
 </body></html>
