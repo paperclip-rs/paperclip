@@ -66,9 +66,12 @@ pub trait Mountable {
     /// **NOTE:** Overriding implementations must ensure that the `PathItem`
     /// is normalized before updating the input map.
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
-        let op_map = map
-            .entry(self.path().into())
-            .or_insert_with(Default::default);
-        op_map.methods.extend(self.operations().into_iter());
+        let operations = self.operations();
+        if !operations.is_empty() {
+            let op_map = map
+                .entry(self.path().into())
+                .or_insert_with(Default::default);
+            op_map.methods.extend(operations.into_iter());
+        }
     }
 }

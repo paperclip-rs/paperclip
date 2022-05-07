@@ -1,5 +1,6 @@
 use std::{
     env,
+    fmt::Write as _,
     fs::File,
     io::{Read, Write},
     path::PathBuf,
@@ -53,12 +54,13 @@ mod template {
     for (name, file) in files {
         println!("cargo:rerun-if-changed={}", file);
         let thing = load_file(root.join(&file));
-        contents.push_str(&format!(
+        let _ = &write!(
+            contents,
             "
     pub const {}: &str = {:?};
 ",
             name, thing
-        ));
+        );
     }
 
     contents.push_str(
@@ -71,11 +73,12 @@ mod template {
     );
 
     for (name, _) in files {
-        contents.push_str(&format!(
+        let _ = &write!(
+            contents,
             "
             TEMPLATE::{name} => {name},",
             name = name
-        ));
+        );
     }
 
     contents.push_str(
