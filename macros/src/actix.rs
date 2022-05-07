@@ -274,7 +274,7 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
         match &attr {
             NestedMeta::Meta(Meta::Path(attr_path)) => {
                 if let Some(attr_) = attr_path.get_ident() {
-                    if attr_.to_string() == "skip" {
+                    if *attr_ == "skip" {
                         params.push(attr_.clone());
                     } else {
                         emit_error!(attr_.span(), "Not supported bare attribute {:?}", attr_)
