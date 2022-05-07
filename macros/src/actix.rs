@@ -157,6 +157,10 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 fn definitions() -> std::collections::BTreeMap<String, paperclip::v2::models::DefaultSchemaRaw> {
                     Default::default()
                 }
+
+                fn is_visible() -> bool {
+                    false
+                }
             }
         ).into();
     }

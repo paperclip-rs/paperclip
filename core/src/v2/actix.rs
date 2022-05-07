@@ -690,6 +690,10 @@ where
     fn definitions() -> BTreeMap<String, DefaultSchemaRaw> {
         H::definitions()
     }
+
+    fn is_visible() -> bool {
+        H::is_visible()
+    }
 }
 
 /// Given the schema type, recursively update the map of definitions.

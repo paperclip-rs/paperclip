@@ -2459,6 +2459,16 @@ fn test_operations_documentation() {
         limit: Option<u16>,
     }
 
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    struct Dog {
+        name: String,
+    }
+
+    #[derive(Serialize, Deserialize, Apiv2Schema)]
+    struct InvisibleDog {
+        name: String,
+    }
+
     /// List all pets
     ///
     /// Will provide list of all pets available for sale
@@ -2490,6 +2500,16 @@ fn test_operations_documentation() {
         Pet::default()
     }
 
+    #[api_v2_operation(description = "An invisible dog handler", skip)]
+    fn get_dogs() -> impl Future<Output = Result<web::Json<Vec<InvisibleDog>>, Error>> {
+        futures::future::err(actix_web::error::ErrorInternalServerError(""))
+    }
+
+    #[api_v2_operation(description = "A visible dog handler")]
+    fn get_dog() -> impl Future<Output = Result<web::Json<Dog>, Error>> {
+        futures::future::err(actix_web::error::ErrorInternalServerError(""))
+    }
+
     run_and_check_app(
         || {
             App::new()
@@ -2498,6 +2518,14 @@ fn test_operations_documentation() {
                 .service(web::resource("/").route(web::get().to(index)))
                 .service(web::resource("/pets").route(web::get().to(get_pets)))
                 .service(web::resource("/pet").route(web::get().to(get_pet)))
+                .service(web::resource("/dog").route(web::get().to(get_dogs)))
+                .service(
+                    web::scope("/dogs")
+                        .service(web::resource("").route(web::get().to(get_dogs)))
+                        .service(web::resource("{id}").route(web::get().to(get_dog)))
+                        .service(web::resource("{id}/another").to(get_dogs))
+                        .service(web::resource("{id}/another-visible").to(get_dog)),
+                )
                 .service(web::resource("/pet_async").route(web::get().to(get_pet_async)))
                 .build()
         },
@@ -2510,13 +2538,31 @@ fn test_operations_documentation() {
             check_json(
                 resp,
                 json!({
-                  "info":{"title":"","version":""},
                   "definitions": {
+                    "Dog": {
+                      "properties": {
+                        "name": {
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "name"
+                      ],
+                      "type": "object"
+                    },
                     "Pet": {
                       "description": "Pets are awesome!",
                       "properties": {
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
+                        },
                         "class": {
-                          "enum": ["dog", "cat", "other"],
+                          "enum": [
+                            "dog",
+                            "cat",
+                            "other"
+                          ],
                           "type": "string"
                         },
                         "id": {
@@ -2525,10 +2571,6 @@ fn test_operations_documentation() {
                         },
                         "name": {
                           "description": "Pick a good one.",
-                          "type": "string"
-                        },
-                        "birthday": {
-                          "format": "date",
                           "type": "string"
                         },
                         "updatedOn": {
@@ -2540,51 +2582,153 @@ fn test_operations_documentation() {
                           "type": "string"
                         }
                       },
-                      "required":["birthday", "class", "name"],
-                      "type":"object"
+                      "required": [
+                        "birthday",
+                        "class",
+                        "name"
+                      ],
+                      "type": "object"
                     }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
                   },
                   "paths": {
                     "/": {
                       "get": {
                         "responses": {},
-                        "summary":"Index call"
+                        "summary": "Index call"
                       }
                     },
-                    "/pets": {
+                    "/dogs/{id}": {
                       "get": {
-                        "description":"Will provide list of all pets available for sale",
+                        "description": "A visible dog handler",
                         "responses": {
                           "200": {
                             "description": "OK",
                             "schema": {
-                              "type": "array",
-                              "items": {
-                                "$ref": "#/definitions/Pet"
-                              }
+                              "$ref": "#/definitions/Dog"
                             }
                           }
-                        },
-                        "summary":"List all pets",
-                        "parameters": [{
-                            "format": "int32",
-                            "in": "query",
-                            "name": "limit",
-                            "type": "integer"
-                        }]
+                        }
+                      }
+                    },
+                    "/dogs/{id}/another-visible": {
+                      "delete": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
                       },
+                      "get": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
+                      },
+                      "head": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
+                      },
+                      "options": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
+                      },
+                      "patch": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
+                      },
+                      "post": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
+                      },
+                      "put": {
+                        "description": "A visible dog handler",
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Dog"
+                            }
+                          }
+                        }
+                      }
                     },
                     "/pet": {
                       "get": {
                         "responses": {},
-                        "summary":"Get pet info sync version"
+                        "summary": "Get pet info sync version"
                       }
                     },
                     "/pet_async": {
                       "get": {
+                        "description": "Will provide details on a pet",
                         "responses": {},
-                        "description":"Will provide details on a pet",
-                        "summary":"Get pet info"
+                        "summary": "Get pet info"
+                      }
+                    },
+                    "/pets": {
+                      "get": {
+                        "description": "Will provide list of all pets available for sale",
+                        "parameters": [
+                          {
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }
+                        ],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        },
+                        "summary": "List all pets"
                       }
                     }
                   },
@@ -2635,7 +2779,7 @@ fn test_operations_macro_attributes() {
 
     #[derive(Serialize, Deserialize, Apiv2Schema)]
     pub struct Car {
-        brand: String
+        brand: String,
     }
 
     /// List all cars (in summary)
