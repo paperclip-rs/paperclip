@@ -93,7 +93,7 @@ impl ToString for DataTypeFormat {
             DataTypeFormat::Double => "double",
             DataTypeFormat::Byte => "byte",
             DataTypeFormat::Binary => "binary",
-            DataTypeFormat::Date => "data",
+            DataTypeFormat::Date => "date",
             DataTypeFormat::DateTime => "datetime",
             DataTypeFormat::Password => "password",
             DataTypeFormat::Url => "url",
@@ -105,6 +105,28 @@ impl ToString for DataTypeFormat {
             DataTypeFormat::Other => "other",
         }
         .to_string()
+    }
+}
+
+impl From<DataTypeFormat> for DataType {
+    fn from(src: DataTypeFormat) -> Self {
+        match src {
+            DataTypeFormat::Int32 => Self::Integer,
+            DataTypeFormat::Int64 => Self::Integer,
+            DataTypeFormat::Float => Self::Number,
+            DataTypeFormat::Double => Self::Number,
+            DataTypeFormat::Byte => Self::String,
+            DataTypeFormat::Binary => Self::String,
+            DataTypeFormat::Date => Self::String,
+            DataTypeFormat::DateTime => Self::String,
+            DataTypeFormat::Password => Self::String,
+            DataTypeFormat::Url => Self::String,
+            DataTypeFormat::Uuid => Self::String,
+            DataTypeFormat::Ip => Self::String,
+            DataTypeFormat::IpV4 => Self::String,
+            DataTypeFormat::IpV6 => Self::String,
+            DataTypeFormat::Other => Self::Object,
+        }
     }
 }
 

@@ -59,6 +59,14 @@ pub fn api_v2_security(input: TokenStream) -> TokenStream {
     self::actix::emit_v2_security(input)
 }
 
+/// Derive attribute for indicating that a type is an OpenAPI v2 compatible header parameter.
+#[cfg(feature = "actix")]
+#[proc_macro_error]
+#[proc_macro_derive(Apiv2Header, attributes(openapi))]
+pub fn api_v2_header(input: TokenStream) -> TokenStream {
+    self::actix::emit_v2_header(input)
+}
+
 /// Marker attribute for indicating that the marked object can represent non-2xx (error)
 /// status codes with optional descriptions.
 #[cfg(feature = "actix")]
