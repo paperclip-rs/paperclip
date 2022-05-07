@@ -265,13 +265,15 @@ where
         U: Apiv2Operation,
     {
         let mut op = U::operation();
-        op.set_parameter_names_from_path_template(&self.path);
-        for method in METHODS {
-            self.operations.insert(method.into(), op.clone());
-        }
+        if U::is_visible() {
+            op.set_parameter_names_from_path_template(&self.path);
+            for method in METHODS {
+                self.operations.insert(method.into(), op.clone());
+            }
 
-        self.definitions.extend(U::definitions().into_iter());
-        SecurityScheme::append_map(U::security_definitions(), &mut self.security);
+            self.definitions.extend(U::definitions().into_iter());
+            SecurityScheme::append_map(U::security_definitions(), &mut self.security);
+        }
     }
 }
 
@@ -594,9 +596,11 @@ impl Route {
         R: Apiv2Operation + Future<Output = U> + 'static,
         U: Responder + 'static,
     {
-        self.operation = Some(R::operation());
-        self.definitions = R::definitions();
-        self.security = R::security_definitions();
+        if R::is_visible() {
+            self.operation = Some(R::operation());
+            self.definitions = R::definitions();
+            self.security = R::security_definitions();
+        }
         self.inner = self.inner.to(handler);
         self
     }

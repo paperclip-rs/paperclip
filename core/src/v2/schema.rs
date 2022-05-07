@@ -528,6 +528,10 @@ pub trait Apiv2Operation {
 
     /// Returns the definitions used by this operation.
     fn definitions() -> BTreeMap<String, DefaultSchemaRaw>;
+
+    fn is_visible() -> bool {
+        true
+    }
 }
 
 /// Represents a OpenAPI v2 error convertible. This is auto-implemented by
