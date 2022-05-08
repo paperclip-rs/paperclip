@@ -1476,7 +1476,7 @@ fn extract_deprecated(attrs: &[Attribute]) -> bool {
             .segments
             .into_iter()
             .any(|p| p.ident == "deprecated"),
-        _ => false
+        _ => false,
     })
 }
 
