@@ -2750,7 +2750,8 @@ fn test_operations_macro_attributes() {
         description = "Provides an empty value in response",
         operation_id = "getIndex",
         consumes = "application/json, text/plain",
-        produces = "text/plain"
+        produces = "text/plain",
+        deprecated
     )]
     fn index() -> impl Responder {
         ""
@@ -2764,8 +2765,26 @@ fn test_operations_macro_attributes() {
     /// List all pets (in summary)
     ///
     /// This doc comment will be used in description
+    #[deprecated(since = "1.0")]
     #[api_v2_operation(operation_id = "getPets")]
     fn get_pets(
+        _data: web::Data<String>,
+        _q: web::Query<Params>,
+    ) -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        if true {
+            // test for return in wrapper blocks (#75)
+            return futures::future::err(actix_web::error::ErrorInternalServerError(""));
+        }
+
+        futures::future::err(actix_web::error::ErrorInternalServerError(""))
+    }
+
+    /// List all pets (in summary)
+    ///
+    /// This doc comment will be used in description
+    #[api_v2_operation(operation_id = "getDogs")]
+    #[deprecated]
+    fn get_dogs(
         _data: web::Data<String>,
         _q: web::Query<Params>,
     ) -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
@@ -2800,11 +2819,13 @@ fn test_operations_macro_attributes() {
 
     run_and_check_app(
         || {
+            #[allow(deprecated)]
             App::new()
                 .wrap_api()
                 .with_json_spec_at("/api/spec")
                 .service(web::resource("/").route(web::get().to(index)))
                 .service(web::resource("/pets").route(web::get().to(get_pets)))
+                .service(web::resource("/dogs").route(web::get().to(get_dogs)))
                 .service(web::resource("/cars").route(web::get().to(get_cars)))
                 .build()
         },
@@ -2817,87 +2838,124 @@ fn test_operations_macro_attributes() {
             check_json(
                 resp,
                 json!({
-                    "definitions": {
-                        "Pet": {
-                            "description": "Pets are awesome!",
-                            "properties": {
-                                "class": {
-                                "enum": ["dog", "cat", "other"],
-                                    "type":"string"
-                                },
-                                "id": {
-                                    "format": "int64",
-                                    "type": "integer"
-                                },
-                                "name": {
-                                    "description": "Pick a good one.",
-                                    "type": "string"
-                                },
-                                "birthday": {
-                                  "format": "date",
-                                  "type": "string"
-                                },
-                                "updatedOn": {
-                                    "format": "date-time",
-                                    "type": "string"
-                                },
-                                "uuid":{
-                                    "format": "uuid",
-                                    "type": "string"
-                                }
-                            },
-                            "required":[
-                                "birthday",
-                                "class",
-                                "name"
-                            ],
-                            "type":"object"
-                        }
-                    },
-                    "info": {
-                        "title":"",
-                        "version":""
-                    },
-                    "paths": {
-                        "/": {
-                            "get": {
-                                "consumes": [
-                                    "application/json",
-                                    "text/plain"
-                                ],
-                                "description": "Provides an empty value in response",
-                                "operationId": "getIndex",
-                                "produces": [ "text/plain" ],
-                                "responses": {},
-                                "summary": "Root"
-                            }
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "birthday": {
+                          "format": "date",
+                          "type": "string"
                         },
-                        "/pets": {
-                            "get": {
-                                "description": "This doc comment will be used in description",
-                                "operationId": "getPets",
-                                "parameters":[{
-                                    "format":"int32",
-                                    "in":"query",
-                                    "name":"limit",
-                                    "type":"integer"
-                                }],
-                                "responses": {
-                                "200": {
-                                    "description": "OK",
-                                    "schema": {
-                                        "items": {
-                                            "$ref": "#/definitions/Pet"
-                                        },
-                                        "type": "array"
-                                    }
-                                }
-                                },
-                                "summary": "List all pets (in summary)"
-                            }
+                        "class": {
+                          "enum": [
+                            "dog",
+                            "cat",
+                            "other"
+                          ],
+                          "type": "string"
+                        },
+                        "id": {
+                          "format": "int64",
+                          "type": "integer"
+                        },
+                        "name": {
+                          "description": "Pick a good one.",
+                          "type": "string"
+                        },
+                        "updatedOn": {
+                          "format": "date-time",
+                          "type": "string"
+                        },
+                        "uuid": {
+                          "format": "uuid",
+                          "type": "string"
                         }
+                      },
+                      "required": [
+                        "birthday",
+                        "class",
+                        "name"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/": {
+                      "get": {
+                        "consumes": [
+                          "application/json",
+                          "text/plain"
+                        ],
+                        "deprecated": true,
+                        "description": "Provides an empty value in response",
+                        "operationId": "getIndex",
+                        "produces": [
+                          "text/plain"
+                        ],
+                        "responses": {},
+                        "summary": "Root"
+                      }
                     },
-                    "swagger": "2.0"
+                    "/dogs": {
+                      "get": {
+                        "deprecated": true,
+                        "description": "This doc comment will be used in description",
+                        "operationId": "getDogs",
+                        "parameters": [
+                          {
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }
+                        ],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        },
+                        "summary": "List all pets (in summary)"
+                      }
+                    },
+                    "/pets": {
+                      "get": {
+                        "deprecated": true,
+                        "description": "This doc comment will be used in description",
+                        "operationId": "getPets",
+                        "parameters": [
+                          {
+                            "format": "int32",
+                            "in": "query",
+                            "name": "limit",
+                            "type": "integer"
+                          }
+                        ],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        },
+                        "summary": "List all pets (in summary)"
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
                 }),
             );
         },
