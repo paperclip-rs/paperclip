@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add support for [RapiDoc UI](https://mrin9.github.io/RapiDoc/index.html). [PR#420](https://github.com/paperclip-rs/paperclip/pull/420)
 - Add example support for derived `Apiv2Schema`. [PR#421](https://github.com/paperclip-rs/paperclip/pull/421)
 - Add ability to not generate documentation for some operations through the skip attribute on api_v2_schema macro. [PR#423](https://github.com/paperclip-rs/paperclip/pull/423)
+- Add support for deprecated operations. [PR#424](https://github.com/paperclip-rs/paperclip/pull/424)
 
 ### Fixed
 - Fix missing slash between url parts [PR#416](https://github.com/paperclip-rs/paperclip/pull/416)

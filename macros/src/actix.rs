@@ -178,6 +178,11 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
         }
     }
 
+    if op_params.iter().any(|i| *i == "deprecated") || extract_deprecated(&item_ast.attrs) {
+        op_params.push(Ident::new("deprecated", item_ast.span()));
+        op_values.push(quote!(true))
+    }
+
     let modifiers = extract_fn_arguments_types(&item_ast);
 
     let operation_modifier = if is_responder {
@@ -274,7 +279,7 @@ fn parse_operation_attrs(attrs: TokenStream) -> (Vec<Ident>, Vec<proc_macro2::To
         match &attr {
             NestedMeta::Meta(Meta::Path(attr_path)) => {
                 if let Some(attr_) = attr_path.get_ident() {
-                    if *attr_ == "skip" {
+                    if *attr_ == "skip" || *attr_ == "deprecated" {
                         params.push(attr_.clone());
                     } else {
                         emit_error!(attr_.span(), "Not supported bare attribute {:?}", attr_)
@@ -1460,6 +1465,18 @@ fn extract_openapi_attrs(
     field_attrs.iter().filter_map(|a| match a.parse_meta() {
         Ok(Meta::List(list)) if list.path.is_ident(SCHEMA_MACRO_ATTR) => Some(list.nested),
         _ => None,
+    })
+}
+
+fn extract_deprecated(attrs: &[Attribute]) -> bool {
+    attrs.iter().any(|a| match a.parse_meta() {
+        Ok(Meta::Path(mp)) if mp.is_ident("deprecated") => true,
+        Ok(Meta::List(mml)) => mml
+            .path
+            .segments
+            .into_iter()
+            .any(|p| p.ident == "deprecated"),
+        _ => false,
     })
 }
 
