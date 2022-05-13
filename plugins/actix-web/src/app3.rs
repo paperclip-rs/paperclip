@@ -372,7 +372,7 @@ where
             "Specification not set, be sure to call `with_json_spec_at` before this function",
         );
 
-        let path: String = path.into();
+        let path: String = path.trim_end_matches('/').into();
 
         let rapidoc = RAPIDOC
             .get_file("index.html")
@@ -396,6 +396,10 @@ where
 
         self.inner = self.inner.take().map(|a| {
             a.app_data(actix_web::web::Data::new((tt, spec_path)))
+                .service(
+                    actix_web::web::resource(path)
+                        .route(actix_web::web::get().to(rapidoc_handler)),
+                        )
                 .service(
                     actix_web::web::resource(format!("{}/index.html", path))
                         .route(actix_web::web::get().to(rapidoc_handler)),
