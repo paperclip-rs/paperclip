@@ -707,7 +707,7 @@ impl<S> Operation<Parameter<S>, Response<S>> {
             .rev()
         {
             if let Some(n) = names.pop() {
-                p.name = n;
+                p.name = n.split_once(':').map(|t| t.0.to_string()).unwrap_or(n);
             } else {
                 break;
             }
