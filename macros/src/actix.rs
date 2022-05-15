@@ -825,7 +825,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         ),
     };
 
-    let base_name = extract_rename(&item_ast.attrs).unwrap_or_else(|| name.to_string());
+    let base_name = extract_rename(&item_ast.attrs).unwrap_or_else(|| name.to_string().strip_prefix("r#").map(|s| s.to_string()).unwrap_or(name.to_string()));
     let type_params: Vec<&Ident> = generics.type_params().map(|p| &p.ident).collect();
     let schema_name = if type_params.is_empty() {
         quote! { #base_name }
