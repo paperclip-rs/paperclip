@@ -1543,7 +1543,10 @@ fn handle_field_struct(
             .to_string();
 
         //Strip r# prefix if any
-        field_name = field_name.strip_prefix("r#").map(|n| n.to_string()).unwrap_or(field_name);
+        field_name = field_name
+            .strip_prefix("r#")
+            .map(|n| n.to_string())
+            .unwrap_or(field_name);
 
         if SerdeSkip::exists(&field.attrs) {
             continue;
