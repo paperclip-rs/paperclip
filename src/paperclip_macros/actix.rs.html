@@ -2011,6 +2011,12 @@
 <span id="2004">2004</span>
 <span id="2005">2005</span>
 <span id="2006">2006</span>
+<span id="2007">2007</span>
+<span id="2008">2008</span>
+<span id="2009">2009</span>
+<span id="2010">2010</span>
+<span id="2011">2011</span>
+<span id="2012">2012</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)</span>
 <span class="doccomment">//! OpenAPI plugin (exposed by paperclip with `actix` feature).</span>
 
@@ -3554,6 +3560,12 @@
             .<span class="ident">as_ref</span>()
             .<span class="ident">expect</span>(<span class="string">&quot;missing field name?&quot;</span>)
             .<span class="ident">to_string</span>();
+
+        <span class="comment">//Strip r# prefix if any</span>
+        <span class="ident">field_name</span> <span class="op">=</span> <span class="ident">field_name</span>
+            .<span class="ident">strip_prefix</span>(<span class="string">&quot;r#&quot;</span>)
+            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">n</span><span class="op">|</span> <span class="ident">n</span>.<span class="ident">to_string</span>())
+            .<span class="ident">unwrap_or</span>(<span class="ident">field_name</span>);
 
         <span class="kw">if</span> <span class="ident">SerdeSkip::exists</span>(<span class="kw-2">&amp;</span><span class="ident">field</span>.<span class="ident">attrs</span>) {
             <span class="kw">continue</span>;
