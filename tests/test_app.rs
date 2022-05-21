@@ -4516,6 +4516,22 @@ mod module_path_in_definition_name {
 }
 
 #[test]
+fn test_schema_with_r_literals() {
+    use paperclip::v2::schema::Apiv2Schema;
+    #[derive(paperclip::actix::Apiv2Schema, Deserialize, Serialize)]
+    pub(crate) struct Dog {
+        /// The voice that we love and hate
+        pub(crate) r#bark: String,
+    }
+
+    let dog = Dog::raw_schema();
+    assert_eq!(
+        "bark",
+        dog.properties.iter().next().map(|(k, v)| k).unwrap()
+    );
+}
+
+#[test]
 fn test_schema_with_generics() {
     /// Our non-human family member
     #[derive(Apiv2Schema, Deserialize, Serialize)]
