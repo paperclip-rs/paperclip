@@ -385,8 +385,7 @@ where
                         .route(actix_web::web::get().to(rapidoc_handler)),
                 )
                 .service(
-                    actix_web::web::resource(path)
-                        .route(actix_web::web::get().to(rapidoc_handler)),
+                    actix_web::web::resource(path).route(actix_web::web::get().to(rapidoc_handler)),
                 )
         });
         self
