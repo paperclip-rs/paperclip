@@ -469,6 +469,9 @@
 <span id="462">462</span>
 <span id="463">463</span>
 <span id="464">464</span>
+<span id="465">465</span>
+<span id="466">466</span>
+<span id="467">467</span>
 </pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
 
 <span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_service2</span> <span class="kw">as</span> <span class="ident">actix_service</span>;
@@ -483,7 +486,7 @@
     <span class="ident">Mountable</span>,
 };
 <span class="kw">use</span> <span class="ident">actix_service::ServiceFactory</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
+<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>))]</span>
 <span class="kw">use</span> <span class="ident">actix_web::HttpRequest</span>;
 <span class="kw">use</span> <span class="ident">actix_web</span>::{
     <span class="ident">body::MessageBody</span>,
@@ -827,7 +830,7 @@
             <span class="string">&quot;Specification not set, be sure to call `with_json_spec_at` before this function&quot;</span>,
         );
 
-        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">into</span>();
+        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">trim_end_matches</span>(<span class="string">&#39;/&#39;</span>).<span class="ident">into</span>();
 
         <span class="kw">let</span> <span class="ident">rapidoc</span> <span class="op">=</span> <span class="ident">RAPIDOC</span>
             .<span class="ident">get_file</span>(<span class="string">&quot;index.html&quot;</span>)
@@ -854,6 +857,9 @@
                 .<span class="ident">service</span>(
                     <span class="ident">actix_web::web::resource</span>(<span class="macro">format!</span>(<span class="string">&quot;{}/index.html&quot;</span>, <span class="ident">path</span>))
                         .<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">rapidoc_handler</span>)),
+                )
+                .<span class="ident">service</span>(
+                    <span class="ident">actix_web::web::resource</span>(<span class="ident">path</span>).<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">rapidoc_handler</span>)),
                 )
         });
         <span class="self">self</span>
