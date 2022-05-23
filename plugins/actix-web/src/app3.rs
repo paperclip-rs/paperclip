@@ -32,7 +32,7 @@ use tinytemplate::TinyTemplate;
 use serde_json::json;
 use std::{
     collections::BTreeMap,
-    fmt::{format, Debug},
+    fmt::Debug,
     future::Future,
     sync::Arc,
 };
