@@ -12,7 +12,7 @@ use super::{
     Mountable,
 };
 use actix_service::ServiceFactory;
-#[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
+#[cfg(any(feature = "swagger-ui"))]
 use actix_web::HttpRequest;
 use actix_web::{
     body::MessageBody,
