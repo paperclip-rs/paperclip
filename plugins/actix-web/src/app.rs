@@ -12,7 +12,7 @@ use super::{
     Mountable,
 };
 use actix_service::ServiceFactory;
-#[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
+#[cfg(any(feature = "swagger-ui"))]
 use actix_web::HttpRequest;
 use actix_web::{
     body::MessageBody,
@@ -356,7 +356,7 @@ where
             "Specification not set, be sure to call `with_json_spec_at` before this function",
         );
 
-        let path: String = path.into();
+        let path: String = path.trim_end_matches('/').into();
 
         let rapidoc = RAPIDOC
             .get_file("index.html")
@@ -383,6 +383,9 @@ where
                 .service(
                     actix_web::web::resource(format!("{}/index.html", path))
                         .route(actix_web::web::get().to(rapidoc_handler)),
+                )
+                .service(
+                    actix_web::web::resource(path).route(actix_web::web::get().to(rapidoc_handler)),
                 )
         });
         self
