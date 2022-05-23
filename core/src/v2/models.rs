@@ -718,7 +718,7 @@ impl<S> Operation<Parameter<S>, Response<S>> {
 /// Reference object.
 ///
 /// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject>
-#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
 pub struct Reference {
     #[serde(rename = "$ref")]
     pub reference: String,

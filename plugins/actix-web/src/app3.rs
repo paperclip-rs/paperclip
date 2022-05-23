@@ -30,12 +30,7 @@ use parking_lot::RwLock;
 use tinytemplate::TinyTemplate;
 
 use serde_json::json;
-use std::{
-    collections::BTreeMap,
-    fmt::{format, Debug},
-    future::Future,
-    sync::Arc,
-};
+use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T, B> {
