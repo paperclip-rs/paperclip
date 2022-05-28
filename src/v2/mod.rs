@@ -93,7 +93,7 @@ use crate::error::PaperClipError;
 use paperclip_core::v2::models::SpecFormat;
 use serde::Deserialize;
 
-use std::io::{Read};
+use std::io::Read;
 
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
