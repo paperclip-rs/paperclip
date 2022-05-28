@@ -112,11 +112,12 @@ where
     R: Read,
     for<'de> S: Deserialize<'de> + Schema,
 {
-    let mut buf = [0; 1];
-    reader.read_exact(&mut buf)?;
+    let mut buf = [b' '];
+    while &buf[0].is_ascii_whitespace() {
+        reader.read_exact(&mut buf)?;
+    }
     let reader = buf.as_ref().chain(reader);
 
-    // FIXME: Support whitespaces
     let (mut api, fmt) = if buf[0] == b'{' {
         (
             serde_json::from_reader::<_, ResolvableApi<S>>(reader)?,
