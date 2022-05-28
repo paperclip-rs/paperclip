@@ -113,7 +113,7 @@ where
     for<'de> S: Deserialize<'de> + Schema,
 {
     let mut buf = [b' '];
-    while &buf[0].is_ascii_whitespace() {
+    while buf[0].is_ascii_whitespace() {
         reader.read_exact(&mut buf)?;
     }
     let reader = buf.as_ref().chain(reader);
