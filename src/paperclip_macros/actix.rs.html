@@ -3224,7 +3224,7 @@
         <span class="ident">Data::Enum</span>(<span class="kw">_</span>) <span class="op">|</span> <span class="ident">Data::Union</span>(<span class="kw">_</span>) =&gt; {
             <span class="macro">emit_error!</span>(
                 <span class="ident">item_ast</span>.<span class="ident">span</span>(),
-                <span class="macro">format!</span>(<span class="string">&quot;Invalid data type. Apiv2Header should be defined on a struct&quot;</span>)
+                <span class="string">&quot;Invalid data type. Apiv2Header should be defined on a struct&quot;</span>
             );
             <span class="kw">return</span> <span class="macro">quote!</span>().<span class="ident">into</span>();
         }
@@ -3237,7 +3237,7 @@
     {
         <span class="macro">emit_error!</span>(
             <span class="ident">item_ast</span>.<span class="ident">span</span>(),
-            <span class="macro">format!</span>(<span class="string">&quot;Invalid openapi attribute. openapi attribute should be defined at struct fields level&quot;</span>)
+            <span class="string">&quot;Invalid openapi attribute. openapi attribute should be defined at struct fields level&quot;</span>
         );
         <span class="kw">return</span> <span class="macro">quote!</span>().<span class="ident">into</span>();
     }
@@ -4030,5 +4030,5 @@ trait actix_web::Responder.
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (c35035cef 2022-05-30)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (a6b8c6954 2022-06-03)" ></div>
 </body></html>

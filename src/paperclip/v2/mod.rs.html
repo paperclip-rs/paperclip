@@ -139,6 +139,7 @@
 <span id="132">132</span>
 <span id="133">133</span>
 <span id="134">134</span>
+<span id="135">135</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Utilities related to the [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).</span>
 <span class="doccomment">//!</span>
 <span class="doccomment">//! # Detailed example</span>
@@ -234,7 +235,7 @@
 <span class="kw">use</span> <span class="ident">paperclip_core::v2::models::SpecFormat</span>;
 <span class="kw">use</span> <span class="ident">serde::Deserialize</span>;
 
-<span class="kw">use</span> <span class="ident">std::io</span>::{<span class="ident">Read</span>, <span class="ident">Seek</span>, <span class="ident">SeekFrom</span>};
+<span class="kw">use</span> <span class="ident">std::io::Read</span>;
 
 <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
 <span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::codegen</span>::{<span class="ident">DefaultEmitter</span>, <span class="ident">Emitter</span>, <span class="ident">EmitterState</span>};
@@ -250,14 +251,15 @@
 <span class="doccomment">/// JSON and YAML formats.</span>
 <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">from_reader</span><span class="op">&lt;</span><span class="ident">R</span>, <span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="ident">reader</span>: <span class="ident">R</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ResolvableApi</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">PaperClipError</span><span class="op">&gt;</span>
 <span class="kw">where</span>
-    <span class="ident">R</span>: <span class="ident">Read</span> <span class="op">+</span> <span class="ident">Seek</span>,
+    <span class="ident">R</span>: <span class="ident">Read</span>,
     <span class="kw">for</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">S</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Schema</span>,
 {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="number">0</span>; <span class="number">1</span>];
-    <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
-    <span class="ident">reader</span>.<span class="ident">seek</span>(<span class="ident">SeekFrom::Start</span>(<span class="number">0</span>))<span class="question-mark">?</span>;
+    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">buf</span> <span class="op">=</span> [<span class="string">b&#39; &#39;</span>];
+    <span class="kw">while</span> <span class="ident">buf</span>[<span class="number">0</span>].<span class="ident">is_ascii_whitespace</span>() {
+        <span class="ident">reader</span>.<span class="ident">read_exact</span>(<span class="kw-2">&amp;mut</span> <span class="ident">buf</span>)<span class="question-mark">?</span>;
+    }
+    <span class="kw">let</span> <span class="ident">reader</span> <span class="op">=</span> <span class="ident">buf</span>.<span class="ident">as_ref</span>().<span class="ident">chain</span>(<span class="ident">reader</span>);
 
-    <span class="comment">// FIXME: Support whitespaces</span>
     <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">api</span>, <span class="ident">fmt</span>) <span class="op">=</span> <span class="kw">if</span> <span class="ident">buf</span>[<span class="number">0</span>] <span class="op">==</span> <span class="string">b&#39;{&#39;</span> {
         (
             <span class="ident">serde_json::from_reader</span>::<span class="op">&lt;</span><span class="kw">_</span>, <span class="ident">ResolvableApi</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>(<span class="ident">reader</span>)<span class="question-mark">?</span>,
@@ -274,5 +276,5 @@
     <span class="prelude-val">Ok</span>(<span class="ident">api</span>)
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (c35035cef 2022-05-30)" ></div>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.63.0-nightly (a6b8c6954 2022-06-03)" ></div>
 </body></html>
