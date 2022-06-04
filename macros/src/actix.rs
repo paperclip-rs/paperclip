@@ -1205,7 +1205,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         Data::Enum(_) | Data::Union(_) => {
             emit_error!(
                 item_ast.span(),
-                format!("Invalid data type. Apiv2Header should be defined on a struct")
+                "Invalid data type. Apiv2Header should be defined on a struct"
             );
             return quote!().into();
         }
@@ -1218,7 +1218,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
     {
         emit_error!(
             item_ast.span(),
-            format!("Invalid openapi attribute. openapi attribute should be defined at struct fields level")
+            "Invalid openapi attribute. openapi attribute should be defined at struct fields level"
         );
         return quote!().into();
     }

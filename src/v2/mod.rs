@@ -93,7 +93,7 @@ use crate::error::PaperClipError;
 use paperclip_core::v2::models::SpecFormat;
 use serde::Deserialize;
 
-use std::io::{Read, Seek, SeekFrom};
+use std::io::Read;
 
 #[cfg(feature = "codegen")]
 pub use self::codegen::{DefaultEmitter, Emitter, EmitterState};
@@ -109,14 +109,15 @@ pub use paperclip_core::{
 /// JSON and YAML formats.
 pub fn from_reader<R, S>(mut reader: R) -> Result<ResolvableApi<S>, PaperClipError>
 where
-    R: Read + Seek,
+    R: Read,
     for<'de> S: Deserialize<'de> + Schema,
 {
-    let mut buf = [0; 1];
-    reader.read_exact(&mut buf)?;
-    reader.seek(SeekFrom::Start(0))?;
+    let mut buf = [b' '];
+    while buf[0].is_ascii_whitespace() {
+        reader.read_exact(&mut buf)?;
+    }
+    let reader = buf.as_ref().chain(reader);
 
-    // FIXME: Support whitespaces
     let (mut api, fmt) = if buf[0] == b'{' {
         (
             serde_json::from_reader::<_, ResolvableApi<S>>(reader)?,
