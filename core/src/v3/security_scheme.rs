@@ -8,17 +8,15 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                 bearer_format: v2.bearer_format,
                 description: v2.description,
             },
-            "apiKey" => {
-                openapiv3::SecurityScheme::APIKey {
-                    location: match v2.in_.unwrap_or_default().as_str() {
-                        "query" => openapiv3::APIKeyLocation::Query,
-                        "header" => openapiv3::APIKeyLocation::Header,
-                        _ => openapiv3::APIKeyLocation::Query,
-                    },
-                    name: v2.name.unwrap_or_default(),
-                    description: v2.description,
-                }
-            }
+            "apiKey" => openapiv3::SecurityScheme::APIKey {
+                location: match v2.in_.unwrap_or_default().as_str() {
+                    "query" => openapiv3::APIKeyLocation::Query,
+                    "header" => openapiv3::APIKeyLocation::Header,
+                    _ => openapiv3::APIKeyLocation::Query,
+                },
+                name: v2.name.unwrap_or_default(),
+                description: v2.description,
+            },
             "oauth2" => {
                 let scopes = v2
                     .scopes

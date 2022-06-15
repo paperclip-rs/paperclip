@@ -1082,7 +1082,7 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
                         type_: #type_.to_string(),
                         name: #quoted_name,
                         in_: #quoted_in,
-                        scheme_: #quoted_scheme_,
+                        scheme_: #quoted_scheme,
                         bearer_format: #quoted_bearer_format,
                         flow: #quoted_flow,
                         auth_url: #quoted_auth_url,
