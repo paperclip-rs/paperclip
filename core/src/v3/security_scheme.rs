@@ -5,7 +5,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
         match v2.type_.as_str() {
             "http" => openapiv3::SecurityScheme::HTTP {
                 scheme: v2.scheme_.unwrap_or("basic".to_string()),
-                bearer_format: v2.scheme_.unwrap_or(None),
+                bearer_format: v2.bearer_format.unwrap_or_default(),
                 description: v2.description,
             },
             "apiKey" => {
