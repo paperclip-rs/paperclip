@@ -3376,6 +3376,27 @@ fn test_errors_app() {
 fn test_security_app() {
     #[derive(Apiv2Security, Deserialize)]
     #[openapi(
+        apiKey,
+        alias = "apiKeyToken",
+        in = "header",
+        name = "x-api-key",
+        description = "Use apiKey token"
+    )]
+    struct APIKeyToken;
+
+    impl FromRequest for APIKeyToken {
+        type Error = Error;
+        type Future = Ready<Result<Self, Self::Error>>;
+        #[cfg(not(feature = "actix4"))]
+        type Config = ();
+
+        fn from_request(_: &HttpRequest, _payload: &mut actix_web::dev::Payload) -> Self::Future {
+            ready(Ok(Self {}))
+        }
+    }
+
+    #[derive(Apiv2Security, Deserialize)]
+    #[openapi(
         http,
         alias = "JWT",
         in = "header",
@@ -3443,9 +3464,15 @@ fn test_security_app() {
         body
     }
 
+    #[api_v2_operation]
+    async fn echo_pet_with_apikey(_: APIKeyToken, body: web::Json<Pet>) -> web::Json<Pet> {
+        body
+    }
+
     fn config(cfg: &mut web::ServiceConfig) {
         cfg.service(web::resource("/echo1").route(web::post().to(echo_pet_with_jwt)))
             .service(web::resource("/echo2").route(web::post().to(echo_pet_with_petstore)));
+            .service(web::resource("/echo3").route(web::post().to(echo_pet_with_apikey)));
     }
 
     run_and_check_app(
@@ -3550,6 +3577,31 @@ fn test_security_app() {
                         ]
                       }
                     },
+                    "/api/echo2": {
+                      "post": {
+                        "parameters": [{
+                            "in": "body",
+                            "name": "body",
+                            "required": true,
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          }],
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "$ref": "#/definitions/Pet"
+                            }
+                          },
+                        },
+                        "security": [
+                          {
+                            "apiKeyToken": []
+                          }
+                        ]
+                      }
+                    },
                   },
                   "securityDefinitions": {
                     "JWT": {
@@ -3559,6 +3611,12 @@ fn test_security_app() {
                         "bearerFormat": "JWT",
                         "name": "Authorization",
                         "type": "http"
+                    },
+                    "apiKeyToken": {
+                        "description":"Use apiKey token",
+                        "in": "header",
+                        "name": "x-api-key",
+                        "type": "apiKey"
                     },
                     "MyOAuth2": {
                         "scopes": {
