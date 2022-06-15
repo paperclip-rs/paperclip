@@ -963,6 +963,8 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
         "description",
         "name",
         "in",
+        "scheme_",
+        "bearer_format",
         "flow",
         "auth_url",
         "token_url",
@@ -1068,6 +1070,8 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
             let quoted_description = quote_option(security_attrs.get("description"));
             let quoted_name = quote_option(security_attrs.get("name"));
             let quoted_in = quote_option(security_attrs.get("in"));
+            let quoted_scheme = quote_option(security_attrs.get("scheme"));
+            let quoted_bearer_format = quote_option(security_attrs.get("bearer_format"));
             let quoted_flow = quote_option(security_attrs.get("flow"));
             let quoted_auth_url = quote_option(security_attrs.get("auth_url"));
             let quoted_token_url = quote_option(security_attrs.get("token_url"));
@@ -1078,6 +1082,8 @@ pub fn emit_v2_security(input: TokenStream) -> TokenStream {
                         type_: #type_.to_string(),
                         name: #quoted_name,
                         in_: #quoted_in,
+                        scheme_: #quoted_scheme_,
+                        bearer_format: #quoted_bearer_format,
                         flow: #quoted_flow,
                         auth_url: #quoted_auth_url,
                         token_url: #quoted_token_url,

@@ -347,6 +347,8 @@ impl SecurityScheme {
                 existing.type_ = self.type_;
             }
             existing.in_ = existing.in_.take().or(self.in_);
+            existing.scheme_ = existing.scheme_.take().or(self.scheme_);
+            existing.bearer_format = existing.bearer_format.take().or(self.bearer_format);
             existing.flow = existing.flow.take().or(self.flow);
             existing.auth_url = existing.auth_url.take().or(self.auth_url);
             existing.token_url = existing.token_url.take().or(self.token_url);
