@@ -1293,6 +1293,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
 
         let docs = (!docs.is_empty()).then(|| docs.to_owned());
         let quoted_description = quote_option(parameter_attrs.get("description").or(docs.as_ref()));
+        let quoted_scheme = quote_option(parameter_attrs.get("scheme"));
+        let quoted_bearer_format = quote_option(parameter_attrs.get("bearer_format"));
         let name_string = field_name.as_ref().map(|name| name.to_string());
         let quoted_name = if let Some(name) = parameter_attrs.get("name").or(name_string.as_ref()) {
             name
@@ -1332,6 +1334,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
                 name: #quoted_name.to_owned(),
                 in_: paperclip::v2::models::ParameterIn::Header,
                 description: #quoted_description,
+                scheme: #quoted_scheme,
+                bearer_format: #quoted_bearer_format,
                 data_type: #quoted_type,
                 format: #quoted_format,
                 required: Self::required(),
