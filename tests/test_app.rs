@@ -3376,9 +3376,11 @@ fn test_errors_app() {
 fn test_security_app() {
     #[derive(Apiv2Security, Deserialize)]
     #[openapi(
-        apiKey,
+        http,
         alias = "JWT",
         in = "header",
+        scheme = "bearer",
+        bearer_format = "JWT"
         name = "Authorization",
         description = "Use format 'Bearer TOKEN'"
     )]
@@ -3553,8 +3555,10 @@ fn test_security_app() {
                     "JWT": {
                         "description":"Use format 'Bearer TOKEN'",
                         "in": "header",
+                        "scheme": "bearer",
+                        "bearerFormat": "JWT",
                         "name": "Authorization",
-                        "type": "apiKey"
+                        "type": "http"
                     },
                     "MyOAuth2": {
                         "scopes": {

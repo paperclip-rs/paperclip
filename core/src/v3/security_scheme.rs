@@ -4,7 +4,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
     fn from(v2: v2::SecurityScheme) -> Self {
         match v2.type_.as_str() {
             "http" => openapiv3::SecurityScheme::HTTP {
-                scheme: v2.scheme_.unwrap_or("basic".to_string()),
+                scheme: v2.scheme.unwrap_or("basic".to_string()),
                 bearer_format: v2.bearer_format,
                 description: v2.description,
             },

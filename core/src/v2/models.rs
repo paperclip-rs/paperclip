@@ -322,8 +322,8 @@ pub struct SecurityScheme {
     pub type_: String,
     #[serde(rename = "in", skip_serializing_if = "Option::is_none")]
     pub in_: Option<String>,
-    #[serde(rename = "scheme", skip_serializing_if = "Option::is_none")]
-    pub scheme_: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
+    pub scheme: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bearer_format: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
@@ -347,7 +347,7 @@ impl SecurityScheme {
                 existing.type_ = self.type_;
             }
             existing.in_ = existing.in_.take().or(self.in_);
-            existing.scheme_ = existing.scheme_.take().or(self.scheme_);
+            existing.scheme = existing.scheme.take().or(self.scheme);
             existing.bearer_format = existing.bearer_format.take().or(self.bearer_format);
             existing.flow = existing.flow.take().or(self.flow);
             existing.auth_url = existing.auth_url.take().or(self.auth_url);
