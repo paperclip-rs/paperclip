@@ -323,6 +323,8 @@ pub struct SecurityScheme {
     #[serde(rename = "in", skip_serializing_if = "Option::is_none")]
     pub in_: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
+    pub scheme_: Option<String>,
+    #[serde(skip_serializing_if = "Option::is_none")]
     pub flow: Option<String>,
     #[serde(rename = "authorizationUrl", skip_serializing_if = "Option::is_none")]
     pub auth_url: Option<String>,
