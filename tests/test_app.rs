@@ -3577,7 +3577,7 @@ fn test_security_app() {
                         ]
                       }
                     },
-                    "/api/echo2": {
+                    "/api/echo3": {
                       "post": {
                         "parameters": [{
                             "in": "body",
