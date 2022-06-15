@@ -322,7 +322,7 @@ pub struct SecurityScheme {
     pub type_: String,
     #[serde(rename = "in", skip_serializing_if = "Option::is_none")]
     pub in_: Option<String>,
-    #[serde(skip_serializing_if = "Option::is_none")]
+    #[serde(rename = "scheme", skip_serializing_if = "Option::is_none")]
     pub scheme_: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub bearer_format: Option<String>,
