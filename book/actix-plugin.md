@@ -66,6 +66,8 @@ use serde::{Serialize, Deserialize};
 // Mark containers (body, query, parameter, etc.) like so...
 #[derive(Serialize, Deserialize, Apiv2Schema)]
 struct Pet {
+    // You can optionaly add description for an individual property with the following line
+    /// Name of the pet
     name: String,
     id: Option<i64>,
 }
@@ -186,6 +188,8 @@ curl http://localhost:8080/api/spec/v2
 ```
 
 Similarly, if we were to use other extractors like `web::Query<T>`, `web::Form<T>` or `web::Path`, the plugin will emit the corresponding specification as expected.
+
+Description for an individual property uses Rust [doc comments](https://doc.rust-lang.org/reference/comments.html) technology.
 
 #### Known limitations
 
