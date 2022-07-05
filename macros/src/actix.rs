@@ -756,6 +756,39 @@ fn extract_example(attrs: &[Attribute]) -> Option<String> {
     None
 }
 
+fn extract_extensions(attrs: &[Attribute]) -> proc_macro2::TokenStream {
+    let mut ext_attrs = HashMap::new();
+    let attrs = extract_openapi_attrs(attrs);
+    for attr in attrs.flat_map(|attr| attr.into_iter()) {
+        if let NestedMeta::Meta(Meta::NameValue(nv)) = attr {
+            if let Some (id) = nv.path.get_ident() {
+                let s_id = id.to_string();
+                if  s_id.starts_with("x") {
+                    ext_attrs.insert( id.clone(),nv.lit);
+                }
+            }
+        }
+    }
+
+    if ext_attrs.is_empty() {
+        quote!{ std::collections::BTreeMap::new() }
+    }
+    else {
+        // ext_attrs
+        let mut items = quote!();
+        for (k,v) in ext_attrs {
+            let lit_key = syn::LitStr::new(&k.to_string().replace("_","-"), k.span());
+            items.extend(quote!((#lit_key.to_string(),serde_json::to_value(&#v).unwrap()),));
+        }
+
+        let gen = quote!{
+            std::collections::BTreeMap::from([#items]);
+        };
+
+        gen
+    }
+}
+
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
@@ -778,6 +811,8 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     } else {
         quote!(None)
     };
+
+    let extensions = extract_extensions(&item_ast.attrs);
 
     let props = SerdeProps::from_item_attrs(&item_ast.attrs);
 
@@ -846,8 +881,10 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         let mut schema = DefaultSchemaRaw {
             name: Some(#schema_name.into()),
             example: #example,
+            extensions:#extensions,
             ..Default::default()
         };
+        // schema.extensions.insert("Pulp Fiction".to_string(), serde_json::json!("hello world"));
     };
 
     #[cfg(feature = "path-in-definition")]
@@ -855,6 +892,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         let mut schema = DefaultSchemaRaw {
             name: Some(Self::__paperclip_schema_name()), // Add name for later use.
             example: #example,
+            extensions:#extensions,
             .. Default::default()
         };
     };
@@ -1572,12 +1610,19 @@ fn handle_field_struct(
             quote!({})
         };
 
+        let extensions = extract_extensions(&field.attrs);
+
         let gen = if !SerdeFlatten::exists(&field.attrs) {
             quote!({
                 let mut s = #ty_ref::raw_schema();
                 if !#docs.is_empty() {
                     s.description = Some(#docs.to_string());
                 }
+
+                s.extensions = #extensions;
+
+                // s.extensions.insert("Pulp Fiction".to_string(), serde_json::json!("hello world"));
+
                 #example;
                 schema.properties.insert(#field_name.into(), s.into());
 
@@ -1589,7 +1634,7 @@ fn handle_field_struct(
             quote!({
                 let s = #ty_ref::raw_schema();
                 schema.properties.extend(s.properties);
-
+                s.extensions = #extensions;
                 if #ty_ref::required() {
                     schema.required.extend(s.required);
                 }
