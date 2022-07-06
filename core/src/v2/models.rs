@@ -239,8 +239,8 @@ impl SpecFormat {
     /// The mime for this format.
     pub fn mime(self) -> &'static MediaRange {
         match self {
-            SpecFormat::Json => &*JSON_MIME,
-            SpecFormat::Yaml => &*YAML_MIME,
+            SpecFormat::Json => &JSON_MIME,
+            SpecFormat::Yaml => &YAML_MIME,
         }
     }
 }

@@ -595,7 +595,7 @@ where
             // be in its own module, which is identified by the initial parent name.
             if let Some(name) = self.def_anon_name(def, &ctx.parents) {
                 ty_path.push_str("::");
-                let parent = ctx.parents.get(0).expect("expected first parent name");
+                let parent = ctx.parents.first().expect("expected first parent name");
                 ty_path.push_str(&parent.to_snake_case());
                 ty_path.push_str("::");
                 ty_path.push_str(&name);
@@ -808,21 +808,18 @@ where
             }
         }
 
-        params = params
-            .into_iter()
-            .filter(|p| {
-                let skip = p.presence == ParameterIn::FormData && schema_path.is_some();
-                if skip {
-                    warn!(
-                        "Skipping form data parameter {:?} in path {:?} because \
+        params.retain(|p| {
+            let skip = p.presence == ParameterIn::FormData && schema_path.is_some();
+            if skip {
+                warn!(
+                    "Skipping form data parameter {:?} in path {:?} because \
                          the operation already has a body.",
-                        p.name, self.path
-                    );
-                }
+                    p.name, self.path
+                );
+            }
 
-                !skip
-            })
-            .collect();
+            !skip
+        });
 
         // If there's a matching object, add the params to its operation.
         if let Some(pat) = schema_path.as_ref() {
@@ -904,7 +901,7 @@ where
 
             if let Some(def) = p.schema.as_ref() {
                 // If a schema exists, then get its path for later use.
-                let pat = self.emitter.def_mod_path(&*def.read())?;
+                let pat = self.emitter.def_mod_path(&def.read())?;
                 if def_mods.get(&pat).is_some() {
                     schema_path = Some(pat);
                     continue;
