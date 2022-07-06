@@ -334,6 +334,8 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
 <span class="hljs-comment">// Mark containers (body, query, parameter, etc.) like so...</span>
 <span class="hljs-meta">#[derive(Serialize, Deserialize, Apiv2Schema)]</span>
 <span class="hljs-class"><span class="hljs-keyword">struct</span> <span class="hljs-title">Pet</span></span> {
+    <span class="hljs-comment">// You can optionaly add description for an individual property with the following line</span>
+    <span class="hljs-comment">/// Name of the pet</span>
     name: <span class="hljs-built_in">String</span>,
     id: <span class="hljs-built_in">Option</span>&lt;<span class="hljs-keyword">i64</span>&gt;,
 }
@@ -443,6 +445,7 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
 }
 </code></pre>
 <p>Similarly, if we were to use other extractors like <code>web::Query&lt;T&gt;</code>, <code>web::Form&lt;T&gt;</code> or <code>web::Path</code>, the plugin will emit the corresponding specification as expected.</p>
+<p>Description for an individual property uses Rust <a href="https://doc.rust-lang.org/reference/comments.html" target="_blank">doc comments</a> technology.</p>
 <h4 id="known-limitations">Known limitations</h4>
 <ul>
 <li><strong>Enums:</strong> OpenAPI (v2) itself supports using simple enums (i.e., with unit variants), but Rust and serde has support for variants with fields and tuples. I still haven&apos;t looked deep enough either to say whether this can/cannot be done in OpenAPI or find an elegant way to represent this in OpenAPI.</li>
@@ -510,7 +513,7 @@ async <span class="hljs-function"><span class="hljs-keyword">fn</span> <span cla
     <script>
         var gitbook = gitbook || [];
         gitbook.push(function() {
-            gitbook.page.hasChanged({"page":{"title":"Actix-web plugin","level":"1.4","depth":1,"next":{"title":"Adding operation metadata","level":"1.4.1","depth":2,"path":"actix-operation-meta.md","ref":"actix-operation-meta.md","articles":[]},"previous":{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"actix-plugin.md","mtime":"2022-06-04T23:22:35.869Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-06-04T23:26:44.113Z"},"basePath":".","book":{"language":""}});
+            gitbook.page.hasChanged({"page":{"title":"Actix-web plugin","level":"1.4","depth":1,"next":{"title":"Adding operation metadata","level":"1.4.1","depth":2,"path":"actix-operation-meta.md","ref":"actix-operation-meta.md","articles":[]},"previous":{"title":"Compile-time checks","level":"1.3.1","depth":2,"path":"compile-checks.md","ref":"compile-checks.md","articles":[]},"dir":"ltr"},"config":{"gitbook":"*","theme":"default","variables":{},"plugins":[],"pluginsConfig":{"highlight":{},"search":{},"lunr":{"maxIndexSize":1000000,"ignoreSpecialCharacters":false},"sharing":{"facebook":true,"twitter":true,"google":false,"weibo":false,"instapaper":false,"vk":false,"all":["facebook","google","twitter","weibo","instapaper"]},"fontsettings":{"theme":"white","family":"sans","size":2},"theme-default":{"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"},"showLevel":false}},"structure":{"langs":"LANGS.md","readme":"README.md","glossary":"GLOSSARY.md","summary":"SUMMARY.md"},"pdf":{"pageNumbers":true,"fontSize":12,"fontFamily":"Arial","paperSize":"a4","chapterMark":"pagebreak","pageBreaksBefore":"/","margin":{"right":62,"left":62,"top":56,"bottom":56}},"styles":{"website":"styles/website.css","pdf":"styles/pdf.css","epub":"styles/epub.css","mobi":"styles/mobi.css","ebook":"styles/ebook.css","print":"styles/print.css"}},"file":{"path":"actix-plugin.md","mtime":"2022-07-06T08:29:57.453Z","type":"markdown"},"gitbook":{"version":"3.2.3","time":"2022-07-06T08:33:06.734Z"},"basePath":".","book":{"language":""}});
         });
     </script>
 </div>

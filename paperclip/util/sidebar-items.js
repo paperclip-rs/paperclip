@@ -1,1 +1,1 @@
-initSidebarItems({"fn":[["ready","Unstabilized `ready` function."]],"struct":[["Ready","Unstabilized `Ready` future."]]});
+window.SIDEBAR_ITEMS = {"fn":[["ready","Unstabilized `ready` function."]],"struct":[["Ready","Unstabilized `Ready` future."]]};
