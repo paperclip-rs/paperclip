@@ -1254,8 +1254,8 @@
     <span class="doccomment">/// The mime for this format.</span>
     <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">mime</span>(<span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">MediaRange</span> {
         <span class="kw">match</span> <span class="self">self</span> {
-            <span class="ident">SpecFormat::Json</span> =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">JSON_MIME</span>,
-            <span class="ident">SpecFormat::Yaml</span> =&gt; <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">YAML_MIME</span>,
+            <span class="ident">SpecFormat::Json</span> =&gt; <span class="kw-2">&amp;</span><span class="ident">JSON_MIME</span>,
+            <span class="ident">SpecFormat::Yaml</span> =&gt; <span class="kw-2">&amp;</span><span class="ident">YAML_MIME</span>,
         }
     }
 }
