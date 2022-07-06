@@ -1,5 +1,5 @@
 use super::{invalid_referenceor, v2};
-use std::{ops::Deref, iter::FromIterator};
+use std::{iter::FromIterator, ops::Deref};
 
 impl From<v2::DefaultSchemaRaw> for openapiv3::ReferenceOr<Box<openapiv3::Schema>> {
     fn from(v2: v2::DefaultSchemaRaw) -> Self {
