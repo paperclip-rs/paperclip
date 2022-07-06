@@ -1314,7 +1314,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
         };
 
         let (quoted_type, quoted_format) = if let Some(format) = parameter_attrs.get("format") {
-            let quoted_format = quote_format(&*format);
+            let quoted_format = quote_format(format);
             let quoted_type = quote! { #quoted_format.map(|format| format.into()) };
             (quoted_type, quoted_format)
         } else {

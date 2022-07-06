@@ -853,7 +853,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
         {
             let (range, coder) = match self.builder.decoding {
                 Some(&(ref r, ref c)) => (r.as_str(), c),
-                None => ((*JSON_MIME).0.as_ref(), &*JSON_CODER),
+                None => ((JSON_MIME).0.as_ref(), &*JSON_CODER),
             };
 
             accepted_range = Some(range);

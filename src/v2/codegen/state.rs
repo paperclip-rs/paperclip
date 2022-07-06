@@ -297,7 +297,7 @@ pub mod util {
             TEMPLATE::CLIENT_MOD,
             &ClientModContext {
                 mod_prefix: &self.normalized_mod_prefix(),
-                media_coders: &*self.media_coders.borrow(),
+                media_coders: &self.media_coders.borrow(),
                 base_url: self.base_url.borrow().as_str(),
             },
         )?;
@@ -346,14 +346,14 @@ pub mod util {
 
             let cli_mod = root.with_file_name("cli.rs");
             self.write_contents(&base_content, &clap_yaml)?;
-            self.append_contents(&*self.cli_yaml.borrow(), &clap_yaml)?;
+            self.append_contents(&self.cli_yaml.borrow(), &clap_yaml)?;
 
             // CLI module
             let cli_content = template::render(
                 TEMPLATE::CLI_UTIL,
                 &CliUtilContext {
-                    match_arms: &*self.cli_match_arms.borrow(),
-                    media_coders: &*self.media_coders.borrow(),
+                    match_arms: &self.cli_match_arms.borrow(),
+                    media_coders: &self.media_coders.borrow(),
                 },
             )?;
 

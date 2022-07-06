@@ -490,7 +490,7 @@ impl<'a> ApiObjectBuilder<'a> {
             },
             boxed: field.boxed,
             desc: field.description.as_deref(),
-            strict_child_fields: &*field.child_req_fields,
+            strict_child_fields: &field.child_req_fields,
             param_loc: None,
             overridden: false,
             needs_any: field.needs_any,
