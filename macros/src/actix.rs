@@ -763,7 +763,7 @@ fn extract_extensions(attrs: &[Attribute]) -> proc_macro2::TokenStream {
         if let NestedMeta::Meta(Meta::NameValue(nv)) = attr {
             if let Some(id) = nv.path.get_ident() {
                 let s_id = id.to_string();
-                if s_id.starts_with("x") {
+                if s_id.starts_with('x') {
                     ext_attrs.insert(id.clone(), nv.lit);
                 }
             }
@@ -776,12 +776,12 @@ fn extract_extensions(attrs: &[Attribute]) -> proc_macro2::TokenStream {
         // ext_attrs
         let mut items = quote!();
         for (k, v) in ext_attrs {
-            let lit_key = syn::LitStr::new(&k.to_string().replace("_", "-"), k.span());
+            let lit_key = syn::LitStr::new(&k.to_string().replace('_', "-"), k.span());
             items.extend(quote!((#lit_key.to_string(),serde_json::to_value(&#v).unwrap()),));
         }
 
         let gen = quote! {
-            std::collections::BTreeMap::from([#items]);
+            std::collections::BTreeMap::from([#items])
         };
 
         gen
