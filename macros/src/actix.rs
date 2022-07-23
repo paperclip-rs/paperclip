@@ -1628,7 +1628,7 @@ fn handle_field_struct(
             })
         } else {
             quote!({
-                let s = #ty_ref::raw_schema();
+                let mut s = #ty_ref::raw_schema();
                 schema.properties.extend(s.properties);
                 s.extensions = #extensions;
                 if #ty_ref::required() {
