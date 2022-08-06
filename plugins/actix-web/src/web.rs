@@ -283,15 +283,16 @@ impl Scope {
     }
 }
 
-impl<T> HttpServiceFactory for Scope<actix_web::Scope<T>>
+impl<T, B> HttpServiceFactory for Scope<actix_web::Scope<T>>
 where
     T: ServiceFactory<
             ServiceRequest,
             Config = (),
-            Response = ServiceResponse,
+            Response = ServiceResponse<B>,
             Error = Error,
             InitError = (),
         > + 'static,
+    B: MessageBody + 'static,
 {
     fn register(self, config: &mut AppService) {
         if let Some(s) = self.inner {
@@ -302,13 +303,7 @@ where
 
 impl<T> Scope<actix_web::Scope<T>>
 where
-    T: ServiceFactory<
-        ServiceRequest,
-        Config = (),
-        Response = ServiceResponse,
-        Error = Error,
-        InitError = (),
-    >,
+    T: ServiceFactory<ServiceRequest, Config = (), Error = Error, InitError = ()>,
 {
     /// Proxy for [`actix_web::Scope::guard`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.guard).
     ///
@@ -381,7 +376,7 @@ where
     /// Proxy for [`actix_web::web::Scope::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.wrap).
     ///
     /// **NOTE:** This doesn't affect spec generation.
-    pub fn wrap<M>(
+    pub fn wrap<M, B>(
         mut self,
         mw: M,
     ) -> Scope<
@@ -389,7 +384,7 @@ where
             impl ServiceFactory<
                 ServiceRequest,
                 Config = (),
-                Response = ServiceResponse,
+                Response = ServiceResponse<B>,
                 Error = Error,
                 InitError = (),
             >,
@@ -399,10 +394,11 @@ where
         M: Transform<
                 T::Service,
                 ServiceRequest,
-                Response = ServiceResponse,
+                Response = ServiceResponse<B>,
                 Error = Error,
                 InitError = (),
             > + 'static,
+        B: MessageBody,
     {
         Scope {
             path: self.path,
@@ -516,11 +512,14 @@ pub struct Route {
 
 impl ServiceFactory<ServiceRequest> for Route {
     type Config = ();
-    type Response = ServiceResponse;
     type Error = Error;
     type InitError = ();
     type Service = <actix_web::Route as ServiceFactory<ServiceRequest>>::Service;
     type Future = <actix_web::Route as ServiceFactory<ServiceRequest>>::Future;
+    type Response =
+        <<actix_web::Route as ServiceFactory<ServiceRequest>>::Service as actix_service::Service<
+            ServiceRequest,
+        >>::Response;
 
     #[allow(clippy::unit_arg)]
     fn new_service(&self, cfg: Self::Config) -> Self::Future {
