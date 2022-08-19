@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `plugins/actix-web/src/app.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>app.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../paperclip_actix/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../paperclip_actix/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../paperclip_actix/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `plugins/actix-web/src/app.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>app.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../paperclip_actix/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../paperclip_actix/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../paperclip_actix/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -471,345 +465,345 @@
 <span id="465">465</span>
 <span id="466">466</span>
 <span id="467">467</span>
-</pre><pre class="rust"><code><span class="attribute">#![<span class="ident">allow</span>(<span class="ident">clippy::return_self_not_must_use</span>)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::return_self_not_must_use)]</span>
 
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_service2</span> <span class="kw">as</span> <span class="ident">actix_service</span>;
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web4</span> <span class="kw">as</span> <span class="ident">actix_web</span>;
+<span class="kw">extern crate </span>actix_service2 <span class="kw">as </span>actix_service;
+<span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::RAPIDOC</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::SWAGGER_DIST</span>;
-<span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">web</span>::{<span class="ident">Route</span>, <span class="ident">RouteWrapper</span>, <span class="ident">ServiceConfig</span>},
-    <span class="ident">Mountable</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
+<span class="kw">use </span><span class="kw">super</span>::RAPIDOC;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+<span class="kw">use </span><span class="kw">super</span>::SWAGGER_DIST;
+<span class="kw">use super</span>::{
+    web::{Route, RouteWrapper, ServiceConfig},
+    Mountable,
 };
-<span class="kw">use</span> <span class="ident">actix_service::ServiceFactory</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">actix_web::HttpRequest</span>;
-<span class="kw">use</span> <span class="ident">actix_web</span>::{
-    <span class="ident">body::MessageBody</span>,
-    <span class="ident">dev</span>::{<span class="ident">HttpServiceFactory</span>, <span class="ident">ServiceRequest</span>, <span class="ident">ServiceResponse</span>, <span class="ident">Transform</span>},
-    <span class="ident">Error</span>, <span class="ident">HttpResponse</span>,
+<span class="kw">use </span>actix_service::ServiceFactory;
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>))]</span>
+<span class="kw">use </span>actix_web::HttpRequest;
+<span class="kw">use </span>actix_web::{
+    body::MessageBody,
+    dev::{HttpServiceFactory, ServiceRequest, ServiceResponse, Transform},
+    Error, HttpResponse,
 };
-<span class="kw">use</span> <span class="ident">futures::future</span>::{<span class="ident">ok</span> <span class="kw">as</span> <span class="ident">fut_ok</span>, <span class="ident">Ready</span>};
-<span class="kw">use</span> <span class="ident">paperclip_core::v2::models</span>::{<span class="ident">DefaultApiRaw</span>, <span class="ident">SecurityScheme</span>};
-<span class="kw">use</span> <span class="ident">parking_lot::RwLock</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">tinytemplate::TinyTemplate</span>;
+<span class="kw">use </span>futures::future::{ok <span class="kw">as </span>fut_ok, Ready};
+<span class="kw">use </span>paperclip_core::v2::models::{DefaultApiRaw, SecurityScheme};
+<span class="kw">use </span>parking_lot::RwLock;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
+<span class="kw">use </span>tinytemplate::TinyTemplate;
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::BTreeMap</span>, <span class="ident">fmt::Debug</span>, <span class="ident">future::Future</span>, <span class="ident">sync::Arc</span>};
+<span class="kw">use </span>std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
-<span class="doccomment">/// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">spec</span>: <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">DefaultApiRaw</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-    <span class="ident">spec_v3</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">openapiv3::OpenAPI</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
-    <span class="ident">spec_path</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="ident">inner</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">actix_web::App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
+</span><span class="kw">pub struct </span>App&lt;T&gt; {
+    spec: Arc&lt;RwLock&lt;DefaultApiRaw&gt;&gt;,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+    spec_v3: <span class="prelude-ty">Option</span>&lt;Arc&lt;RwLock&lt;openapiv3::OpenAPI&gt;&gt;&gt;,
+    <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
+    spec_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    inner: <span class="prelude-ty">Option</span>&lt;actix_web::App&lt;T&gt;&gt;,
 }
 
-<span class="doccomment">/// Extension trait for actix-web applications.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">OpenApiExt</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Wrapper</span>;
+<span class="doccomment">/// Extension trait for actix-web applications.
+</span><span class="kw">pub trait </span>OpenApiExt&lt;T&gt; {
+    <span class="kw">type </span>Wrapper;
 
-    <span class="doccomment">/// Consumes this app and produces its wrapper to start tracking</span>
-    <span class="doccomment">/// paths and their corresponding operations.</span>
-    <span class="kw">fn</span> <span class="ident">wrap_api</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Wrapper</span>;
+    <span class="doccomment">/// Consumes this app and produces its wrapper to start tracking
+    /// paths and their corresponding operations.
+    </span><span class="kw">fn </span>wrap_api(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Wrapper;
 
-    <span class="doccomment">/// Same as `wrap_api` initializing with provided specification</span>
-    <span class="doccomment">/// defaults. Useful for defining Api properties outside of definitions and</span>
-    <span class="doccomment">/// paths.</span>
-    <span class="kw">fn</span> <span class="ident">wrap_api_with_spec</span>(<span class="self">self</span>, <span class="ident">spec</span>: <span class="ident">DefaultApiRaw</span>) -&gt; <span class="ident"><span class="self">Self</span>::Wrapper</span>;
+    <span class="doccomment">/// Same as `wrap_api` initializing with provided specification
+    /// defaults. Useful for defining Api properties outside of definitions and
+    /// paths.
+    </span><span class="kw">fn </span>wrap_api_with_spec(<span class="self">self</span>, spec: DefaultApiRaw) -&gt; <span class="self">Self</span>::Wrapper;
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OpenApiExt</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">actix_web::App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Wrapper</span> <span class="op">=</span> <span class="ident">App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>;
+<span class="kw">impl</span>&lt;T&gt; OpenApiExt&lt;T&gt; <span class="kw">for </span>actix_web::App&lt;T&gt; {
+    <span class="kw">type </span>Wrapper = App&lt;T&gt;;
 
-    <span class="kw">fn</span> <span class="ident">wrap_api</span>(<span class="self">self</span>) -&gt; <span class="ident"><span class="self">Self</span>::Wrapper</span> {
-        <span class="ident">App</span> {
-            <span class="ident">spec</span>: <span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="ident">DefaultApiRaw::default</span>())),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-            <span class="ident">spec_v3</span>: <span class="prelude-val">None</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">inner</span>: <span class="prelude-val">Some</span>(<span class="self">self</span>),
+    <span class="kw">fn </span>wrap_api(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Wrapper {
+        App {
+            spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+            spec_v3: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
+            spec_path: <span class="prelude-val">None</span>,
+            inner: <span class="prelude-val">Some</span>(<span class="self">self</span>),
         }
     }
 
-    <span class="kw">fn</span> <span class="ident">wrap_api_with_spec</span>(<span class="self">self</span>, <span class="ident">spec</span>: <span class="ident">DefaultApiRaw</span>) -&gt; <span class="ident"><span class="self">Self</span>::Wrapper</span> {
-        <span class="ident">App</span> {
-            <span class="ident">spec</span>: <span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="ident">spec</span>)),
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-            <span class="ident">spec_v3</span>: <span class="prelude-val">None</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">inner</span>: <span class="prelude-val">Some</span>(<span class="self">self</span>),
+    <span class="kw">fn </span>wrap_api_with_spec(<span class="self">self</span>, spec: DefaultApiRaw) -&gt; <span class="self">Self</span>::Wrapper {
+        App {
+            spec: Arc::new(RwLock::new(spec)),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+            spec_v3: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
+            spec_path: <span class="prelude-val">None</span>,
+            inner: <span class="prelude-val">Some</span>(<span class="self">self</span>),
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">ServiceFactory</span><span class="op">&lt;</span><span class="ident">ServiceRequest</span>, <span class="ident">Config</span> <span class="op">=</span> (), <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>, <span class="ident">InitError</span> <span class="op">=</span> ()<span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;T&gt; App&lt;T&gt;
+<span class="kw">where
+    </span>T: ServiceFactory&lt;ServiceRequest, Config = (), Error = Error, InitError = ()&gt;,
 {
-    <span class="doccomment">/// Proxy for [`actix_web::App::data_factory`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.data_factory).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">data_factory</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">Out</span>, <span class="ident">D</span>, <span class="ident">E</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>() -&gt; <span class="ident">Out</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">Out</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">D</span>, <span class="ident">E</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">D</span>: <span class="lifetime">&#39;static</span>,
-        <span class="ident">E</span>: <span class="ident">Debug</span>,
+    <span class="doccomment">/// Proxy for [`actix_web::App::data_factory`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.data_factory).
+    ///
+    /// **NOTE:** This doesn&#39;t affect spec generation.
+    </span><span class="kw">pub fn </span>data_factory&lt;F, Out, D, E&gt;(<span class="kw-2">mut </span><span class="self">self</span>, data: F) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>F: Fn() -&gt; Out + <span class="lifetime">&#39;static</span>,
+        Out: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;D, E&gt;&gt; + <span class="lifetime">&#39;static</span>,
+        D: <span class="lifetime">&#39;static</span>,
+        E: Debug,
     {
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">data_factory</span>(<span class="ident">data</span>));
-        <span class="self">self</span>
-    }
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| a.data_factory(data));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Proxy for [`actix_web::App::app_data`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.app_data).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">app_data</span><span class="op">&lt;</span><span class="ident">U</span>: <span class="lifetime">&#39;static</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">data</span>: <span class="ident">U</span>) -&gt; <span class="self">Self</span> {
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">app_data</span>(<span class="ident">data</span>));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Proxy for [`actix_web::App::app_data`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.app_data).
+    ///
+    /// **NOTE:** This doesn&#39;t affect spec generation.
+    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, data: U) -&gt; <span class="self">Self </span>{
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| a.app_data(data));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Wrapper for [`actix_web::App::configure`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.configure).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">configure</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnOnce</span>(<span class="kw-2">&amp;mut</span> <span class="ident">ServiceConfig</span>),
+    <span class="doccomment">/// Wrapper for [`actix_web::App::configure`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.configure).
+    </span><span class="kw">pub fn </span>configure&lt;F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, f: F) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>F: FnOnce(<span class="kw-2">&amp;mut </span>ServiceConfig),
     {
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> {
-            <span class="ident">s</span>.<span class="ident">configure</span>(<span class="op">|</span><span class="ident">c</span><span class="op">|</span> {
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cfg</span> <span class="op">=</span> <span class="ident">ServiceConfig::from</span>(<span class="ident">c</span>);
-                <span class="ident">f</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cfg</span>);
-                <span class="self">self</span>.<span class="ident">update_from_mountable</span>(<span class="kw-2">&amp;mut</span> <span class="ident">cfg</span>);
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|s| {
+            s.configure(|c| {
+                <span class="kw">let </span><span class="kw-2">mut </span>cfg = ServiceConfig::from(c);
+                f(<span class="kw-2">&amp;mut </span>cfg);
+                <span class="self">self</span>.update_from_mountable(<span class="kw-2">&amp;mut </span>cfg);
             })
         });
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Wrapper for [`actix_web::App::route`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.route).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">route</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">route</span>: <span class="ident">Route</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">w</span> <span class="op">=</span> <span class="ident">RouteWrapper::from</span>(<span class="ident">path</span>, <span class="ident">route</span>);
-        <span class="self">self</span>.<span class="ident">update_from_mountable</span>(<span class="kw-2">&amp;mut</span> <span class="ident">w</span>);
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">route</span>(<span class="ident">path</span>, <span class="ident">w</span>.<span class="ident">inner</span>));
-        <span class="self">self</span>
-    }
+    <span class="doccomment">/// Wrapper for [`actix_web::App::route`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.route).
+    </span><span class="kw">pub fn </span>route(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, route: Route) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>w = RouteWrapper::from(path, route);
+        <span class="self">self</span>.update_from_mountable(<span class="kw-2">&amp;mut </span>w);
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| a.route(path, w.inner));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Wrapper for [`actix_web::App::service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.service).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">service</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">factory</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Mountable</span> <span class="op">+</span> <span class="ident">HttpServiceFactory</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
+    <span class="doccomment">/// Wrapper for [`actix_web::App::service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.service).
+    </span><span class="kw">pub fn </span>service&lt;F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, <span class="kw-2">mut </span>factory: F) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>F: Mountable + HttpServiceFactory + <span class="lifetime">&#39;static</span>,
     {
-        <span class="self">self</span>.<span class="ident">update_from_mountable</span>(<span class="kw-2">&amp;mut</span> <span class="ident">factory</span>);
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">service</span>(<span class="ident">factory</span>));
-        <span class="self">self</span>
-    }
+        <span class="self">self</span>.update_from_mountable(<span class="kw-2">&amp;mut </span>factory);
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| a.service(factory));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Proxy for [`actix_web::App::default_service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.default_service).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">default_service</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">f</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">actix_service::IntoServiceFactory</span><span class="op">&lt;</span><span class="ident">U</span>, <span class="ident">ServiceRequest</span><span class="op">&gt;</span>,
-        <span class="ident">U</span>: <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
-                <span class="ident">ServiceRequest</span>,
-                <span class="ident">Config</span> <span class="op">=</span> (),
-                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span>,
-                <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
-                <span class="ident">InitError</span> <span class="op">=</span> (),
-            <span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">U::InitError</span>: <span class="ident">Debug</span>,
+    <span class="doccomment">/// Proxy for [`actix_web::App::default_service`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.default_service).
+    ///
+    /// **NOTE:** This doesn&#39;t affect spec generation.
+    </span><span class="kw">pub fn </span>default_service&lt;F, U&gt;(<span class="kw-2">mut </span><span class="self">self</span>, f: F) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>F: actix_service::IntoServiceFactory&lt;U, ServiceRequest&gt;,
+        U: ServiceFactory&lt;
+                ServiceRequest,
+                Config = (),
+                Response = ServiceResponse,
+                Error = Error,
+                InitError = (),
+            &gt; + <span class="lifetime">&#39;static</span>,
+        U::InitError: Debug,
     {
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">default_service</span>(<span class="ident">f</span>));
-        <span class="self">self</span>
-    }
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| a.default_service(f));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Proxy for [`actix_web::App::external_resource`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.external_resource).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">external_resource</span><span class="op">&lt;</span><span class="ident">N</span>, <span class="ident">U</span><span class="op">&gt;</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">name</span>: <span class="ident">N</span>, <span class="ident">url</span>: <span class="ident">U</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">N</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
-        <span class="ident">U</span>: <span class="ident">AsRef</span><span class="op">&lt;</span><span class="ident">str</span><span class="op">&gt;</span>,
+    <span class="doccomment">/// Proxy for [`actix_web::App::external_resource`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.external_resource).
+    ///
+    /// **NOTE:** This doesn&#39;t affect spec generation.
+    </span><span class="kw">pub fn </span>external_resource&lt;N, U&gt;(<span class="kw-2">mut </span><span class="self">self</span>, name: N, url: U) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>N: AsRef&lt;str&gt;,
+        U: AsRef&lt;str&gt;,
     {
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">external_resource</span>(<span class="ident">name</span>, <span class="ident">url</span>));
-        <span class="self">self</span>
-    }
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| a.external_resource(name, url));
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Proxy for [`actix_web::web::App::wrap`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap</span><span class="op">&lt;</span><span class="ident">M</span>, <span class="ident">B</span><span class="op">&gt;</span>(
-        <span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">mw</span>: <span class="ident">M</span>,
-    ) -&gt; <span class="ident">App</span><span class="op">&lt;</span>
-        <span class="kw">impl</span> <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
-            <span class="ident">ServiceRequest</span>,
-            <span class="ident">Config</span> <span class="op">=</span> (),
-            <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
-            <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
-            <span class="ident">InitError</span> <span class="op">=</span> (),
-        <span class="op">&gt;</span>,
-    <span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">M</span>: <span class="ident">Transform</span><span class="op">&lt;</span>
-                <span class="ident">T::Service</span>,
-                <span class="ident">ServiceRequest</span>,
-                <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
-                <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
-                <span class="ident">InitError</span> <span class="op">=</span> (),
-            <span class="op">&gt;</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">B</span>: <span class="ident">MessageBody</span>,
+    <span class="doccomment">/// Proxy for [`actix_web::web::App::wrap`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap).
+    ///
+    /// **NOTE:** This doesn&#39;t affect spec generation.
+    </span><span class="kw">pub fn </span>wrap&lt;M, B&gt;(
+        <span class="kw-2">mut </span><span class="self">self</span>,
+        mw: M,
+    ) -&gt; App&lt;
+        <span class="kw">impl </span>ServiceFactory&lt;
+            ServiceRequest,
+            Config = (),
+            Response = ServiceResponse&lt;B&gt;,
+            Error = Error,
+            InitError = (),
+        &gt;,
+    &gt;
+    <span class="kw">where
+        </span>M: Transform&lt;
+                T::Service,
+                ServiceRequest,
+                Response = ServiceResponse&lt;B&gt;,
+                Error = Error,
+                InitError = (),
+            &gt; + <span class="lifetime">&#39;static</span>,
+        B: MessageBody,
     {
-        <span class="ident">App</span> {
-            <span class="ident">spec</span>: <span class="self">self</span>.<span class="ident">spec</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-            <span class="ident">spec_v3</span>: <span class="self">self</span>.<span class="ident">spec_v3</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">inner</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">wrap</span>(<span class="ident">mw</span>)),
+        App {
+            spec: <span class="self">self</span>.spec,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+            spec_v3: <span class="self">self</span>.spec_v3,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
+            spec_path: <span class="prelude-val">None</span>,
+            inner: <span class="self">self</span>.inner.take().map(|a| a.wrap(mw)),
         }
     }
 
-    <span class="doccomment">/// Proxy for [`actix_web::web::App::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap_fn).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t affect spec generation.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">wrap_fn</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">R</span>, <span class="ident">B</span><span class="op">&gt;</span>(
-        <span class="kw-2">mut</span> <span class="self">self</span>,
-        <span class="ident">mw</span>: <span class="ident">F</span>,
-    ) -&gt; <span class="ident">App</span><span class="op">&lt;</span>
-        <span class="kw">impl</span> <span class="ident">ServiceFactory</span><span class="op">&lt;</span>
-            <span class="ident">ServiceRequest</span>,
-            <span class="ident">Config</span> <span class="op">=</span> (),
-            <span class="ident">Response</span> <span class="op">=</span> <span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>,
-            <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>,
-            <span class="ident">InitError</span> <span class="op">=</span> (),
-        <span class="op">&gt;</span>,
-    <span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="ident">ServiceRequest</span>, <span class="kw-2">&amp;</span><span class="ident">T::Service</span>) -&gt; <span class="ident">R</span> <span class="op">+</span> <span class="ident">Clone</span> <span class="op">+</span> <span class="lifetime">&#39;static</span>,
-        <span class="ident">R</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ServiceResponse</span><span class="op">&lt;</span><span class="ident">B</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">B</span>: <span class="ident">MessageBody</span>,
+    <span class="doccomment">/// Proxy for [`actix_web::web::App::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.App.html#method.wrap_fn).
+    ///
+    /// **NOTE:** This doesn&#39;t affect spec generation.
+    </span><span class="kw">pub fn </span>wrap_fn&lt;F, R, B&gt;(
+        <span class="kw-2">mut </span><span class="self">self</span>,
+        mw: F,
+    ) -&gt; App&lt;
+        <span class="kw">impl </span>ServiceFactory&lt;
+            ServiceRequest,
+            Config = (),
+            Response = ServiceResponse&lt;B&gt;,
+            Error = Error,
+            InitError = (),
+        &gt;,
+    &gt;
+    <span class="kw">where
+        </span>F: Fn(ServiceRequest, <span class="kw-2">&amp;</span>T::Service) -&gt; R + Clone + <span class="lifetime">&#39;static</span>,
+        R: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;ServiceResponse&lt;B&gt;, Error&gt;&gt;,
+        B: MessageBody,
     {
-        <span class="ident">App</span> {
-            <span class="ident">spec</span>: <span class="self">self</span>.<span class="ident">spec</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-            <span class="ident">spec_v3</span>: <span class="self">self</span>.<span class="ident">spec_v3</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            <span class="ident">spec_path</span>: <span class="prelude-val">None</span>,
-            <span class="ident">inner</span>: <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">wrap_fn</span>(<span class="ident">mw</span>)),
+        App {
+            spec: <span class="self">self</span>.spec,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+            spec_v3: <span class="self">self</span>.spec_v3,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
+            spec_path: <span class="prelude-val">None</span>,
+            inner: <span class="self">self</span>.inner.take().map(|a| a.wrap_fn(mw)),
         }
     }
 
-    <span class="doccomment">/// Mounts the specification for all operations and definitions</span>
-    <span class="doccomment">/// recorded by the wrapper and serves them in the given path</span>
-    <span class="doccomment">/// as a JSON.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_json_spec_at</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>))]</span>
+    <span class="doccomment">/// Mounts the specification for all operations and definitions
+    /// recorded by the wrapper and serves them in the given path
+    /// as a JSON.
+    </span><span class="kw">pub fn </span>with_json_spec_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
         {
-            <span class="self">self</span>.<span class="ident">spec_path</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">path</span>.<span class="ident">to_owned</span>());
+            <span class="self">self</span>.spec_path = <span class="prelude-val">Some</span>(path.to_owned());
         }
 
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
-            <span class="ident">a</span>.<span class="ident">service</span>(
-                <span class="ident">actix_web::web::resource</span>(<span class="ident">path</span>)
-                    .<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">SpecHandler</span>(<span class="self">self</span>.<span class="ident">spec</span>.<span class="ident">clone</span>()))),
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource(path)
+                    .route(actix_web::web::get().to(SpecHandler(<span class="self">self</span>.spec.clone()))),
             )
         });
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-    <span class="doccomment">/// Converts the generated v2 specification to v3 and then</span>
-    <span class="doccomment">/// mounts the v3 specification for all operations and definitions</span>
-    <span class="doccomment">/// recorded by the wrapper and serves them in the given path</span>
-    <span class="doccomment">/// as a JSON.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_json_spec_v3_at</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">spec_v3</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">spec_v3</span>) <span class="op">=</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">spec_v3</span> {
-            <span class="ident">spec_v3</span>.<span class="ident">clone</span>()
-        } <span class="kw">else</span> {
-            <span class="kw">let</span> <span class="ident">spec_v3</span> <span class="op">=</span> <span class="ident">Arc::new</span>(<span class="ident">RwLock::new</span>(<span class="ident">openapiv3::OpenAPI::default</span>()));
-            <span class="self">self</span>.<span class="ident">spec_v3</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">spec_v3</span>.<span class="ident">clone</span>());
-            <span class="ident">spec_v3</span>
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+    <span class="doccomment">/// Converts the generated v2 specification to v3 and then
+    /// mounts the v3 specification for all operations and definitions
+    /// recorded by the wrapper and serves them in the given path
+    /// as a JSON.
+    </span><span class="kw">pub fn </span>with_json_spec_v3_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>spec_v3 = <span class="kw">if let </span><span class="prelude-val">Some</span>(spec_v3) = <span class="kw-2">&amp;</span><span class="self">self</span>.spec_v3 {
+            spec_v3.clone()
+        } <span class="kw">else </span>{
+            <span class="kw">let </span>spec_v3 = Arc::new(RwLock::new(openapiv3::OpenAPI::default()));
+            <span class="self">self</span>.spec_v3 = <span class="prelude-val">Some</span>(spec_v3.clone());
+            spec_v3
         };
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
-            <span class="ident">a</span>.<span class="ident">service</span>(
-                <span class="ident">actix_web::web::resource</span>(<span class="ident">path</span>)
-                    .<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">SpecHandlerV3</span>(<span class="ident">spec_v3</span>.<span class="ident">clone</span>()))),
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource(path)
+                    .route(actix_web::web::get().to(SpecHandlerV3(spec_v3.clone()))),
             )
         });
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Calls the given function with `App` and JSON `Value` representing your API</span>
-    <span class="doccomment">/// specification **built until now**.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** Unlike `with_json_spec_at`, this only has the API spec built until</span>
-    <span class="doccomment">/// this function call. Any route handler added after this call won&#39;t affect the</span>
-    <span class="doccomment">/// spec. So, it&#39;s important to call this function after adding all route handlers.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_raw_json_spec</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">call</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="self">Self</span>, <span class="ident">serde_json::Value</span>) -&gt; <span class="self">Self</span>,
+    <span class="doccomment">/// Calls the given function with `App` and JSON `Value` representing your API
+    /// specification **built until now**.
+    ///
+    /// **NOTE:** Unlike `with_json_spec_at`, this only has the API spec built until
+    /// this function call. Any route handler added after this call won&#39;t affect the
+    /// spec. So, it&#39;s important to call this function after adding all route handlers.
+    </span><span class="kw">pub fn </span>with_raw_json_spec&lt;F&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>call: F) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>F: FnMut(<span class="self">Self</span>, serde_json::Value) -&gt; <span class="self">Self</span>,
     {
-        <span class="kw">let</span> <span class="ident">spec</span> <span class="op">=</span> <span class="ident">serde_json::to_value</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="ident">spec</span>.<span class="ident">read</span>()).<span class="ident">expect</span>(<span class="string">&quot;generating json spec&quot;</span>);
-        <span class="ident">call</span>(<span class="self">self</span>, <span class="ident">spec</span>)
+        <span class="kw">let </span>spec = serde_json::to_value(<span class="kw-2">&amp;*</span><span class="self">self</span>.spec.read()).expect(<span class="string">&quot;generating json spec&quot;</span>);
+        call(<span class="self">self</span>, spec)
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-    <span class="doccomment">/// Calls the given function with `App` and JSON `Value` representing your API</span>
-    <span class="doccomment">/// v2 specification **built until now** which is converted to v3.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** Unlike `with_json_spec_at`, this only has the API spec built until</span>
-    <span class="doccomment">/// this function call. Any route handler added after this call won&#39;t affect the</span>
-    <span class="doccomment">/// spec. So, it&#39;s important to call this function after adding all route handlers.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_raw_json_spec_v3</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">call</span>: <span class="ident">F</span>) -&gt; <span class="self">Self</span>
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">FnMut</span>(<span class="self">Self</span>, <span class="ident">serde_json::Value</span>) -&gt; <span class="self">Self</span>,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+    <span class="doccomment">/// Calls the given function with `App` and JSON `Value` representing your API
+    /// v2 specification **built until now** which is converted to v3.
+    ///
+    /// **NOTE:** Unlike `with_json_spec_at`, this only has the API spec built until
+    /// this function call. Any route handler added after this call won&#39;t affect the
+    /// spec. So, it&#39;s important to call this function after adding all route handlers.
+    </span><span class="kw">pub fn </span>with_raw_json_spec_v3&lt;F&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>call: F) -&gt; <span class="self">Self
+    </span><span class="kw">where
+        </span>F: FnMut(<span class="self">Self</span>, serde_json::Value) -&gt; <span class="self">Self</span>,
     {
-        <span class="kw">let</span> <span class="ident">v3</span> <span class="op">=</span> <span class="ident">paperclip_core::v3::openapiv2_to_v3</span>(<span class="self">self</span>.<span class="ident">spec</span>.<span class="ident">read</span>().<span class="ident">clone</span>());
-        <span class="kw">let</span> <span class="ident">spec</span> <span class="op">=</span> <span class="ident">serde_json::to_value</span>(<span class="ident">v3</span>).<span class="ident">expect</span>(<span class="string">&quot;generating json spec&quot;</span>);
-        <span class="ident">call</span>(<span class="self">self</span>, <span class="ident">spec</span>)
+        <span class="kw">let </span>v3 = paperclip_core::v3::openapiv2_to_v3(<span class="self">self</span>.spec.read().clone());
+        <span class="kw">let </span>spec = serde_json::to_value(v3).expect(<span class="string">&quot;generating json spec&quot;</span>);
+        call(<span class="self">self</span>, spec)
     }
 
-    <span class="doccomment">/// Exposes the previously built JSON specification with Swagger UI at the given path</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** you **MUST** call with_json_spec_at before calling this function</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;swagger-ui&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_swagger_ui_at</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">spec_path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">spec_path</span>.<span class="ident">clone</span>().<span class="ident">expect</span>(
+    <span class="doccomment">/// Exposes the previously built JSON specification with Swagger UI at the given path
+    ///
+    /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]</span>
+    <span class="kw">pub fn </span>with_swagger_ui_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>spec_path = <span class="self">self</span>.spec_path.clone().expect(
             <span class="string">&quot;Specification not set, be sure to call `with_json_spec_at` before this function&quot;</span>,
         );
 
-        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">into</span>();
-        <span class="comment">// Grab any file request from the documentation UI path and fetch it from SWAGGER_DIST</span>
-        <span class="comment">// E.g: js, html, svg and etc.</span>
-        <span class="kw">let</span> <span class="ident">regex_path</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}/{{filename:.*}}&quot;</span>, <span class="ident">path</span>);
+        <span class="kw">let </span>path: String = path.into();
+        <span class="comment">// Grab any file request from the documentation UI path and fetch it from SWAGGER_DIST
+        // E.g: js, html, svg and etc.
+        </span><span class="kw">let </span>regex_path = <span class="macro">format!</span>(<span class="string">&quot;{}/{{filename:.*}}&quot;</span>, path);
 
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
-            <span class="ident">a</span>.<span class="ident">service</span>(
-                <span class="ident">actix_web::web::resource</span>([<span class="ident">regex_path</span>.<span class="ident">to_owned</span>(), <span class="ident">path</span>.<span class="ident">clone</span>()]).<span class="ident">route</span>(
-                    <span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">request</span>: <span class="ident">HttpRequest</span><span class="op">|</span> {
-                        <span class="kw">let</span> <span class="ident">path</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">clone</span>();
-                        <span class="kw">let</span> <span class="ident">spec_path</span> <span class="op">=</span> <span class="ident">spec_path</span>.<span class="ident">clone</span>();
-                        <span class="kw">async</span> <span class="kw">move</span> {
-                            <span class="kw">let</span> <span class="ident">filename</span> <span class="op">=</span> <span class="ident">request</span>.<span class="ident">match_info</span>().<span class="ident">query</span>(<span class="string">&quot;filename&quot;</span>);
-                            <span class="kw">if</span> <span class="ident">filename</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="ident">request</span>.<span class="ident">query_string</span>().<span class="ident">is_empty</span>() {
-                                <span class="kw">let</span> <span class="ident">redirect_url</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;{}/index.html?url={}&quot;</span>, <span class="ident">path</span>, <span class="ident">spec_path</span>);
-                                <span class="ident">HttpResponse::PermanentRedirect</span>()
-                                    .<span class="ident">append_header</span>((<span class="string">&quot;Location&quot;</span>, <span class="ident">redirect_url</span>))
-                                    .<span class="ident">finish</span>()
-                            } <span class="kw">else</span> {
-                                <span class="ident">HttpResponse::Ok</span>().<span class="ident">body</span>(
-                                    <span class="ident">SWAGGER_DIST</span>
-                                        .<span class="ident">get_file</span>(<span class="ident">filename</span>)
-                                        .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> {
-                                            <span class="macro">panic!</span>(<span class="string">&quot;Failed to get file {}&quot;</span>, <span class="ident">filename</span>)
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| {
+            a.service(
+                actix_web::web::resource([regex_path.to_owned(), path.clone()]).route(
+                    actix_web::web::get().to(<span class="kw">move </span>|request: HttpRequest| {
+                        <span class="kw">let </span>path = path.clone();
+                        <span class="kw">let </span>spec_path = spec_path.clone();
+                        <span class="kw">async move </span>{
+                            <span class="kw">let </span>filename = request.match_info().query(<span class="string">&quot;filename&quot;</span>);
+                            <span class="kw">if </span>filename.is_empty() &amp;&amp; request.query_string().is_empty() {
+                                <span class="kw">let </span>redirect_url = <span class="macro">format!</span>(<span class="string">&quot;{}/index.html?url={}&quot;</span>, path, spec_path);
+                                HttpResponse::PermanentRedirect()
+                                    .append_header((<span class="string">&quot;Location&quot;</span>, redirect_url))
+                                    .finish()
+                            } <span class="kw">else </span>{
+                                HttpResponse::Ok().body(
+                                    SWAGGER_DIST
+                                        .get_file(filename)
+                                        .unwrap_or_else(|| {
+                                            <span class="macro">panic!</span>(<span class="string">&quot;Failed to get file {}&quot;</span>, filename)
                                         })
-                                        .<span class="ident">contents</span>(),
+                                        .contents(),
                                 )
                             }
                         }
@@ -817,127 +811,126 @@
                 ),
             )
         });
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Exposes the previously built JSON specification with RapiDoc at the given path</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** you **MUST** call with_json_spec_at before calling this function</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rapidoc&quot;</span>)]</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">with_rapidoc_at</span>(<span class="kw-2">mut</span> <span class="self">self</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">spec_path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">spec_path</span>.<span class="ident">clone</span>().<span class="ident">expect</span>(
+    <span class="doccomment">/// Exposes the previously built JSON specification with RapiDoc at the given path
+    ///
+    /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
+    <span class="kw">pub fn </span>with_rapidoc_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>spec_path = <span class="self">self</span>.spec_path.clone().expect(
             <span class="string">&quot;Specification not set, be sure to call `with_json_spec_at` before this function&quot;</span>,
         );
 
-        <span class="kw">let</span> <span class="ident">path</span>: <span class="ident">String</span> <span class="op">=</span> <span class="ident">path</span>.<span class="ident">trim_end_matches</span>(<span class="string">&#39;/&#39;</span>).<span class="ident">into</span>();
+        <span class="kw">let </span>path: String = path.trim_end_matches(<span class="string">&#39;/&#39;</span>).into();
 
-        <span class="kw">let</span> <span class="ident">rapidoc</span> <span class="op">=</span> <span class="ident">RAPIDOC</span>
-            .<span class="ident">get_file</span>(<span class="string">&quot;index.html&quot;</span>)
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">file</span><span class="op">|</span> <span class="ident">file</span>.<span class="ident">contents_utf8</span>())
-            .<span class="ident">unwrap_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="macro">panic!</span>(<span class="string">&quot;Failed to get file RapiDoc UI&quot;</span>));
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">tt</span> <span class="op">=</span> <span class="ident">TinyTemplate::new</span>();
-        <span class="ident">tt</span>.<span class="ident">add_template</span>(<span class="string">&quot;index.html&quot;</span>, <span class="ident">rapidoc</span>).<span class="ident">unwrap</span>();
+        <span class="kw">let </span>rapidoc = RAPIDOC
+            .get_file(<span class="string">&quot;index.html&quot;</span>)
+            .and_then(|file| file.contents_utf8())
+            .unwrap_or_else(|| <span class="macro">panic!</span>(<span class="string">&quot;Failed to get file RapiDoc UI&quot;</span>));
+        <span class="kw">let </span><span class="kw-2">mut </span>tt = TinyTemplate::new();
+        tt.add_template(<span class="string">&quot;index.html&quot;</span>, rapidoc).unwrap();
 
-        <span class="kw">async</span> <span class="kw">fn</span> <span class="ident">rapidoc_handler</span>(
-            <span class="ident">data</span>: <span class="ident">actix_web::web::Data</span><span class="op">&lt;</span>(<span class="ident">TinyTemplate</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>, <span class="ident">String</span>)<span class="op">&gt;</span>,
-        ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-            <span class="kw">let</span> <span class="ident">data</span> <span class="op">=</span> <span class="ident">data</span>.<span class="ident">into_inner</span>();
-            <span class="kw">let</span> (<span class="ident">tmpl</span>, <span class="ident">spec_path</span>) <span class="op">=</span> <span class="ident">data</span>.<span class="ident">as_ref</span>();
-            <span class="kw">let</span> <span class="ident">spec_path</span> <span class="op">=</span> <span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, <span class="ident">spec_path</span>);
-            <span class="kw">let</span> <span class="ident">ctx</span> <span class="op">=</span> <span class="macro">serde_json::json!</span>({ <span class="string">&quot;spec_url&quot;</span>: <span class="ident">spec_path</span> });
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">tmpl</span>.<span class="ident">render</span>(<span class="string">&quot;index.html&quot;</span>, <span class="kw-2">&amp;</span><span class="ident">ctx</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="kw">_</span><span class="op">|</span> {
-                <span class="ident">actix_web::error::ErrorInternalServerError</span>(<span class="string">&quot;Error rendering RapiDoc documentation&quot;</span>)
+        <span class="kw">async fn </span>rapidoc_handler(
+            data: actix_web::web::Data&lt;(TinyTemplate&lt;<span class="lifetime">&#39;_</span>&gt;, String)&gt;,
+        ) -&gt; <span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt; {
+            <span class="kw">let </span>data = data.into_inner();
+            <span class="kw">let </span>(tmpl, spec_path) = data.as_ref();
+            <span class="kw">let </span>spec_path = <span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, spec_path);
+            <span class="kw">let </span>ctx = <span class="macro">serde_json::json!</span>({ <span class="string">&quot;spec_url&quot;</span>: spec_path });
+            <span class="kw">let </span>s = tmpl.render(<span class="string">&quot;index.html&quot;</span>, <span class="kw-2">&amp;</span>ctx).map_err(|<span class="kw">_</span>| {
+                actix_web::error::ErrorInternalServerError(<span class="string">&quot;Error rendering RapiDoc documentation&quot;</span>)
             })<span class="question-mark">?</span>;
-            <span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">content_type</span>(<span class="string">&quot;text/html&quot;</span>).<span class="ident">body</span>(<span class="ident">s</span>))
+            <span class="prelude-val">Ok</span>(HttpResponse::Ok().content_type(<span class="string">&quot;text/html&quot;</span>).body(s))
         }
 
-        <span class="self">self</span>.<span class="ident">inner</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">take</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">a</span><span class="op">|</span> {
-            <span class="ident">a</span>.<span class="ident">app_data</span>(<span class="ident">actix_web::web::Data::new</span>((<span class="ident">tt</span>, <span class="ident">spec_path</span>)))
-                .<span class="ident">service</span>(
-                    <span class="ident">actix_web::web::resource</span>(<span class="macro">format!</span>(<span class="string">&quot;{}/index.html&quot;</span>, <span class="ident">path</span>))
-                        .<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">rapidoc_handler</span>)),
+        <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|a| {
+            a.app_data(actix_web::web::Data::new((tt, spec_path)))
+                .service(
+                    actix_web::web::resource(<span class="macro">format!</span>(<span class="string">&quot;{}/index.html&quot;</span>, path))
+                        .route(actix_web::web::get().to(rapidoc_handler)),
                 )
-                .<span class="ident">service</span>(
-                    <span class="ident">actix_web::web::resource</span>(<span class="ident">path</span>).<span class="ident">route</span>(<span class="ident">actix_web::web::get</span>().<span class="ident">to</span>(<span class="ident">rapidoc_handler</span>)),
+                .service(
+                    actix_web::web::resource(path).route(actix_web::web::get().to(rapidoc_handler)),
                 )
         });
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Builds and returns the `actix_web::App`.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">build</span>(<span class="self">self</span>) -&gt; <span class="ident">actix_web::App</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">v3</span>) <span class="op">=</span> <span class="self">self</span>.<span class="ident">spec_v3</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">v3</span> <span class="op">=</span> <span class="ident">v3</span>.<span class="ident">write</span>();
-            <span class="kw-2">*</span><span class="ident">v3</span> <span class="op">=</span> <span class="ident">paperclip_core::v3::openapiv2_to_v3</span>(<span class="self">self</span>.<span class="ident">spec</span>.<span class="ident">read</span>().<span class="ident">clone</span>());
+    <span class="doccomment">/// Builds and returns the `actix_web::App`.
+    </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; actix_web::App&lt;T&gt; {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(v3) = <span class="self">self</span>.spec_v3 {
+            <span class="kw">let </span><span class="kw-2">mut </span>v3 = v3.write();
+            <span class="kw-2">*</span>v3 = paperclip_core::v3::openapiv2_to_v3(<span class="self">self</span>.spec.read().clone());
         }
-        <span class="self">self</span>.<span class="ident">inner</span>.<span class="ident">expect</span>(<span class="string">&quot;missing app?&quot;</span>)
+        <span class="self">self</span>.inner.expect(<span class="string">&quot;missing app?&quot;</span>)
     }
 
-    <span class="doccomment">/// Trim&#39;s the Api base path from the start of all method paths.</span>
-    <span class="doccomment">/// **NOTE:** much like `with_raw_json_spec` this only has the API spec built until</span>
-    <span class="doccomment">/// this function call. Any route handler added after this call won&#39;t have the base path trimmed.</span>
-    <span class="doccomment">/// So, it&#39;s important to call this function after adding all route handlers.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">trim_base_path</span>(<span class="self">self</span>) -&gt; <span class="self">Self</span> {
+    <span class="doccomment">/// Trim&#39;s the Api base path from the start of all method paths.
+    /// **NOTE:** much like `with_raw_json_spec` this only has the API spec built until
+    /// this function call. Any route handler added after this call won&#39;t have the base path trimmed.
+    /// So, it&#39;s important to call this function after adding all route handlers.
+    </span><span class="kw">pub fn </span>trim_base_path(<span class="self">self</span>) -&gt; <span class="self">Self </span>{
         {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">spec</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">spec</span>.<span class="ident">write</span>();
-            <span class="kw">let</span> <span class="ident">base_path</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">base_path</span>.<span class="ident">clone</span>().<span class="ident">unwrap_or_default</span>();
-            <span class="ident">spec</span>.<span class="ident">paths</span> <span class="op">=</span> <span class="ident">spec</span>.<span class="ident">paths</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="ident">BTreeMap::new</span>(), <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">i</span>, (<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> {
-                <span class="ident">i</span>.<span class="ident">insert</span>(
-                    <span class="ident">k</span>.<span class="ident">trim_start_matches</span>(<span class="ident">base_path</span>.<span class="ident">as_str</span>()).<span class="ident">to_string</span>(),
-                    <span class="ident">v</span>.<span class="ident">clone</span>(),
+            <span class="kw">let </span><span class="kw-2">mut </span>spec = <span class="self">self</span>.spec.write();
+            <span class="kw">let </span>base_path = spec.base_path.clone().unwrap_or_default();
+            spec.paths = spec.paths.iter().fold(BTreeMap::new(), |<span class="kw-2">mut </span>i, (k, v)| {
+                i.insert(
+                    k.trim_start_matches(base_path.as_str()).to_string(),
+                    v.clone(),
                 );
-                <span class="ident">i</span>
+                i
             });
         }
-        <span class="self">self</span>
-    }
+        <span class="self">self
+    </span>}
 
-    <span class="doccomment">/// Updates the underlying spec with definitions and operations from the given factory.</span>
-    <span class="kw">fn</span> <span class="ident">update_from_mountable</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>, <span class="ident">factory</span>: <span class="kw-2">&amp;mut</span> <span class="ident">F</span>)
-    <span class="kw">where</span>
-        <span class="ident">F</span>: <span class="ident">Mountable</span>,
+    <span class="doccomment">/// Updates the underlying spec with definitions and operations from the given factory.
+    </span><span class="kw">fn </span>update_from_mountable&lt;F&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, factory: <span class="kw-2">&amp;mut </span>F)
+    <span class="kw">where
+        </span>F: Mountable,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">api</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">spec</span>.<span class="ident">write</span>();
-        <span class="ident">api</span>.<span class="ident">definitions</span>.<span class="ident">extend</span>(<span class="ident">factory</span>.<span class="ident">definitions</span>().<span class="ident">into_iter</span>());
-        <span class="ident">SecurityScheme::append_map</span>(
-            <span class="ident">factory</span>.<span class="ident">security_definitions</span>(),
-            <span class="kw-2">&amp;mut</span> <span class="ident">api</span>.<span class="ident">security_definitions</span>,
+        <span class="kw">let </span><span class="kw-2">mut </span>api = <span class="self">self</span>.spec.write();
+        api.definitions.extend(factory.definitions().into_iter());
+        SecurityScheme::append_map(
+            factory.security_definitions(),
+            <span class="kw-2">&amp;mut </span>api.security_definitions,
         );
-        <span class="ident">factory</span>.<span class="ident">update_operations</span>(<span class="kw-2">&amp;mut</span> <span class="ident">api</span>.<span class="ident">paths</span>);
-        <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;normalize&quot;</span>) {
-            <span class="kw">for</span> <span class="ident">map</span> <span class="kw">in</span> <span class="ident">api</span>.<span class="ident">paths</span>.<span class="ident">values_mut</span>() {
-                <span class="ident">map</span>.<span class="ident">normalize</span>();
+        factory.update_operations(<span class="kw-2">&amp;mut </span>api.paths);
+        <span class="kw">if </span><span class="macro">cfg!</span>(feature = <span class="string">&quot;normalize&quot;</span>) {
+            <span class="kw">for </span>map <span class="kw">in </span>api.paths.values_mut() {
+                map.normalize();
             }
         }
     }
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">struct</span> <span class="ident">SpecHandler</span>(<span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">DefaultApiRaw</span><span class="op">&gt;</span><span class="op">&gt;</span>);
+<span class="attribute">#[derive(Clone)]</span>
+<span class="kw">struct </span>SpecHandler(Arc&lt;RwLock&lt;DefaultApiRaw&gt;&gt;);
 
-<span class="kw">impl</span> <span class="ident">actix_web::dev::Handler</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SpecHandler</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Ready</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span>;
+<span class="kw">impl </span>actix_web::dev::Handler&lt;()&gt; <span class="kw">for </span>SpecHandler {
+    <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;;
+    <span class="kw">type </span>Future = Ready&lt;<span class="self">Self</span>::Output&gt;;
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: ()) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="ident">fut_ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">json</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>.<span class="ident">read</span>()))
+    <span class="kw">fn </span>call(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: ()) -&gt; <span class="self">Self</span>::Future {
+        fut_ok(HttpResponse::Ok().json(<span class="kw-2">&amp;*</span><span class="self">self</span>.<span class="number">0</span>.read()))
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Clone</span>)]</span>
-<span class="kw">struct</span> <span class="ident">SpecHandlerV3</span>(<span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">RwLock</span><span class="op">&lt;</span><span class="ident">openapiv3::OpenAPI</span><span class="op">&gt;</span><span class="op">&gt;</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+<span class="attribute">#[derive(Clone)]</span>
+<span class="kw">struct </span>SpecHandlerV3(Arc&lt;RwLock&lt;openapiv3::OpenAPI&gt;&gt;);
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;v3&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">actix_web::dev::Handler</span><span class="op">&lt;</span>()<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">SpecHandlerV3</span> {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Ready</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
+<span class="kw">impl </span>actix_web::dev::Handler&lt;()&gt; <span class="kw">for </span>SpecHandlerV3 {
+    <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;;
+    <span class="kw">type </span>Future = Ready&lt;<span class="self">Self</span>::Output&gt;;
 
-    <span class="kw">fn</span> <span class="ident">call</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: ()) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="ident">fut_ok</span>(<span class="ident">HttpResponse::Ok</span>().<span class="ident">json</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="self">self</span>.<span class="number">0</span>.<span class="ident">read</span>()))
+    <span class="kw">fn </span>call(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: ()) -&gt; <span class="self">Self</span>::Future {
+        fut_ok(HttpResponse::Ok().json(<span class="kw-2">&amp;*</span><span class="self">self</span>.<span class="number">0</span>.read()))
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

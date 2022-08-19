@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/parameter.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parameter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/parameter.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>parameter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -179,181 +173,180 @@
 <span id="173">173</span>
 <span id="174">174</span>
 <span id="175">175</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident"><span class="kw">super</span>::v2</span>;
+</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
 
-<span class="doccomment">/// helper function to convert a default raw parameter when we already know it&#39;s not part of a body</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">non_body_parameter_to_v3_parameter</span>(
-    <span class="ident">form_data</span>: <span class="ident">bool</span>,
-    <span class="ident">v2</span>: <span class="kw-2">&amp;</span><span class="ident">v2::DefaultParameterRaw</span>,
-) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">openapiv3::Schema</span><span class="op">&gt;</span> {
-    <span class="kw">match</span> <span class="ident">v2</span>.<span class="ident">data_type</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">data_type</span>) =&gt; {
-            <span class="kw">let</span> <span class="ident">schema_kind</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">data_type</span> {
-                <span class="ident">v2::DataType::Integer</span> =&gt; {
-                    <span class="ident">openapiv3::SchemaKind::Type</span>(<span class="ident">openapiv3::Type::Integer</span>(<span class="ident">openapiv3::IntegerType</span> {
-                        <span class="ident">format</span>: <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">v2</span>.<span class="ident">format</span> {
-                            <span class="prelude-val">None</span> =&gt; <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Empty</span>,
-                            <span class="prelude-val">Some</span>(<span class="ident">format</span>) =&gt; <span class="kw">match</span> <span class="ident">format</span> {
-                                <span class="ident">v2::DataTypeFormat::Int32</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::IntegerFormat::Int32</span>,
+<span class="doccomment">/// helper function to convert a default raw parameter when we already know it&#39;s not part of a body
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>non_body_parameter_to_v3_parameter(
+    form_data: bool,
+    v2: <span class="kw-2">&amp;</span>v2::DefaultParameterRaw,
+) -&gt; <span class="prelude-ty">Option</span>&lt;openapiv3::Schema&gt; {
+    <span class="kw">match </span>v2.data_type {
+        <span class="prelude-val">Some</span>(data_type) =&gt; {
+            <span class="kw">let </span>schema_kind = <span class="kw">match </span>data_type {
+                v2::DataType::Integer =&gt; {
+                    openapiv3::SchemaKind::Type(openapiv3::Type::Integer(openapiv3::IntegerType {
+                        format: <span class="kw">match </span><span class="kw-2">&amp;</span>v2.format {
+                            <span class="prelude-val">None </span>=&gt; openapiv3::VariantOrUnknownOrEmpty::Empty,
+                            <span class="prelude-val">Some</span>(format) =&gt; <span class="kw">match </span>format {
+                                v2::DataTypeFormat::Int32 =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::IntegerFormat::Int32,
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::Int64</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::IntegerFormat::Int64</span>,
+                                v2::DataTypeFormat::Int64 =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::IntegerFormat::Int64,
                                     )
                                 }
-                                <span class="ident">other</span> =&gt; {
-                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: {:?}&quot;</span>, <span class="ident">other</span>);
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Empty</span>
+                                other =&gt; {
+                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: {:?}&quot;</span>, other);
+                                    openapiv3::VariantOrUnknownOrEmpty::Empty
                                 }
                             },
                         },
-                        <span class="ident">multiple_of</span>: <span class="ident">v2</span>.<span class="ident">multiple_of</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">i64</span>),
-                        <span class="ident">exclusive_minimum</span>: <span class="ident">v2</span>.<span class="ident">exclusive_minimum</span>.<span class="ident">unwrap_or_default</span>(),
-                        <span class="ident">exclusive_maximum</span>: <span class="ident">v2</span>.<span class="ident">exclusive_maximum</span>.<span class="ident">unwrap_or_default</span>(),
-                        <span class="ident">minimum</span>: <span class="ident">v2</span>.<span class="ident">minimum</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">i64</span>),
-                        <span class="ident">maximum</span>: <span class="ident">v2</span>.<span class="ident">maximum</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">i64</span>),
-                        <span class="ident">enumeration</span>: <span class="ident">v2</span>
-                            .<span class="ident">enum_</span>
-                            .<span class="ident">iter</span>()
-                            .<span class="ident">cloned</span>()
-                            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">serde_json::from_value</span>(<span class="ident">v</span>).<span class="ident">unwrap_or_default</span>())
-                            .<span class="ident">collect</span>(),
+                        multiple_of: v2.multiple_of.map(|v| v <span class="kw">as </span>i64),
+                        exclusive_minimum: v2.exclusive_minimum.unwrap_or_default(),
+                        exclusive_maximum: v2.exclusive_maximum.unwrap_or_default(),
+                        minimum: v2.minimum.map(|v| v <span class="kw">as </span>i64),
+                        maximum: v2.maximum.map(|v| v <span class="kw">as </span>i64),
+                        enumeration: v2
+                            .enum_
+                            .iter()
+                            .cloned()
+                            .map(|v| serde_json::from_value(v).unwrap_or_default())
+                            .collect(),
                     }))
                 }
-                <span class="ident">v2::DataType::Number</span> =&gt; {
-                    <span class="ident">openapiv3::SchemaKind::Type</span>(<span class="ident">openapiv3::Type::Number</span>(<span class="ident">openapiv3::NumberType</span> {
-                        <span class="ident">format</span>: <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">v2</span>.<span class="ident">format</span> {
-                            <span class="prelude-val">None</span> =&gt; <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Empty</span>,
-                            <span class="prelude-val">Some</span>(<span class="ident">format</span>) =&gt; <span class="kw">match</span> <span class="ident">format</span> {
-                                <span class="ident">v2::DataTypeFormat::Float</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::NumberFormat::Float</span> {},
+                v2::DataType::Number =&gt; {
+                    openapiv3::SchemaKind::Type(openapiv3::Type::Number(openapiv3::NumberType {
+                        format: <span class="kw">match </span><span class="kw-2">&amp;</span>v2.format {
+                            <span class="prelude-val">None </span>=&gt; openapiv3::VariantOrUnknownOrEmpty::Empty,
+                            <span class="prelude-val">Some</span>(format) =&gt; <span class="kw">match </span>format {
+                                v2::DataTypeFormat::Float =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::NumberFormat::Float {},
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::Double</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::NumberFormat::Double</span> {},
+                                v2::DataTypeFormat::Double =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::NumberFormat::Double {},
                                     )
                                 }
-                                <span class="ident">other</span> =&gt; {
-                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: {:?}&quot;</span>, <span class="ident">other</span>);
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Empty</span>
+                                other =&gt; {
+                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: {:?}&quot;</span>, other);
+                                    openapiv3::VariantOrUnknownOrEmpty::Empty
                                 }
                             },
                         },
-                        <span class="ident">multiple_of</span>: <span class="ident">v2</span>.<span class="ident">multiple_of</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">f64</span>),
-                        <span class="ident">exclusive_minimum</span>: <span class="ident">v2</span>.<span class="ident">exclusive_minimum</span>.<span class="ident">unwrap_or_default</span>(),
-                        <span class="ident">exclusive_maximum</span>: <span class="ident">v2</span>.<span class="ident">exclusive_maximum</span>.<span class="ident">unwrap_or_default</span>(),
-                        <span class="ident">minimum</span>: <span class="ident">v2</span>.<span class="ident">minimum</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">f64</span>),
-                        <span class="ident">maximum</span>: <span class="ident">v2</span>.<span class="ident">maximum</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">f64</span>),
-                        <span class="ident">enumeration</span>: <span class="ident">v2</span>
-                            .<span class="ident">enum_</span>
-                            .<span class="ident">iter</span>()
-                            .<span class="ident">cloned</span>()
-                            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">serde_json::from_value</span>(<span class="ident">v</span>).<span class="ident">unwrap_or_default</span>())
-                            .<span class="ident">collect</span>(),
+                        multiple_of: v2.multiple_of.map(|v| v <span class="kw">as </span>f64),
+                        exclusive_minimum: v2.exclusive_minimum.unwrap_or_default(),
+                        exclusive_maximum: v2.exclusive_maximum.unwrap_or_default(),
+                        minimum: v2.minimum.map(|v| v <span class="kw">as </span>f64),
+                        maximum: v2.maximum.map(|v| v <span class="kw">as </span>f64),
+                        enumeration: v2
+                            .enum_
+                            .iter()
+                            .cloned()
+                            .map(|v| serde_json::from_value(v).unwrap_or_default())
+                            .collect(),
                     }))
                 }
-                <span class="ident">v2::DataType::String</span> =&gt; {
-                    <span class="ident">openapiv3::SchemaKind::Type</span>(<span class="ident">openapiv3::Type::String</span>(<span class="ident">openapiv3::StringType</span> {
-                        <span class="ident">format</span>: <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">v2</span>.<span class="ident">format</span> {
-                            <span class="prelude-val">None</span> =&gt; <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Empty</span>,
-                            <span class="prelude-val">Some</span>(<span class="ident">format</span>) =&gt; <span class="kw">match</span> <span class="ident">format</span> {
-                                <span class="ident">v2::DataTypeFormat::Byte</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::StringFormat::Byte</span>,
+                v2::DataType::String =&gt; {
+                    openapiv3::SchemaKind::Type(openapiv3::Type::String(openapiv3::StringType {
+                        format: <span class="kw">match </span><span class="kw-2">&amp;</span>v2.format {
+                            <span class="prelude-val">None </span>=&gt; openapiv3::VariantOrUnknownOrEmpty::Empty,
+                            <span class="prelude-val">Some</span>(format) =&gt; <span class="kw">match </span>format {
+                                v2::DataTypeFormat::Byte =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::StringFormat::Byte,
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::Binary</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::StringFormat::Binary</span>,
+                                v2::DataTypeFormat::Binary =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::StringFormat::Binary,
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::Date</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::StringFormat::Date</span>,
+                                v2::DataTypeFormat::Date =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::StringFormat::Date,
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::DateTime</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::StringFormat::DateTime</span>,
+                                v2::DataTypeFormat::DateTime =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::StringFormat::DateTime,
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::Password</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                                        <span class="ident">openapiv3::StringFormat::Password</span>,
+                                v2::DataTypeFormat::Password =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Item(
+                                        openapiv3::StringFormat::Password,
                                     )
                                 }
-                                <span class="ident">v2::DataTypeFormat::Other</span> =&gt; {
+                                v2::DataTypeFormat::Other =&gt; {
                                     <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: other&quot;</span>);
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Unknown</span>(
-                                        <span class="ident">v2::DataTypeFormat::Other</span>.<span class="ident">to_string</span>(),
+                                    openapiv3::VariantOrUnknownOrEmpty::Unknown(
+                                        v2::DataTypeFormat::Other.to_string(),
                                     )
                                 }
-                                <span class="ident">others</span> =&gt; {
-                                    <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Unknown</span>(<span class="ident">others</span>.<span class="ident">to_string</span>())
+                                others =&gt; {
+                                    openapiv3::VariantOrUnknownOrEmpty::Unknown(others.to_string())
                                 }
                             },
                         },
-                        <span class="ident">pattern</span>: <span class="ident">v2</span>.<span class="ident">pattern</span>.<span class="ident">clone</span>(),
-                        <span class="ident">enumeration</span>: <span class="ident">v2</span>
-                            .<span class="ident">enum_</span>
-                            .<span class="ident">iter</span>()
-                            .<span class="ident">cloned</span>()
-                            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">serde_json::from_value</span>(<span class="ident">v</span>).<span class="ident">unwrap_or_default</span>())
-                            .<span class="ident">collect</span>(),
-                        <span class="ident">min_length</span>: <span class="ident">v2</span>.<span class="ident">min_length</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">usize</span>),
-                        <span class="ident">max_length</span>: <span class="ident">v2</span>.<span class="ident">max_length</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">usize</span>),
+                        pattern: v2.pattern.clone(),
+                        enumeration: v2
+                            .enum_
+                            .iter()
+                            .cloned()
+                            .map(|v| serde_json::from_value(v).unwrap_or_default())
+                            .collect(),
+                        min_length: v2.min_length.map(|v| v <span class="kw">as </span>usize),
+                        max_length: v2.max_length.map(|v| v <span class="kw">as </span>usize),
                     }))
                 }
-                <span class="ident">v2::DataType::Boolean</span> =&gt; <span class="ident">openapiv3::SchemaKind::Type</span>(<span class="ident">openapiv3::Type::Boolean</span> {}),
-                <span class="ident">v2::DataType::Array</span> =&gt; {
-                    <span class="ident">openapiv3::SchemaKind::Type</span>(<span class="ident">openapiv3::Type::Array</span>(<span class="ident">openapiv3::ArrayType</span> {
-                        <span class="ident">items</span>: <span class="ident">v2</span>.<span class="ident">items</span>.<span class="ident">as_ref</span>().<span class="ident">map</span>(<span class="op">|</span><span class="ident">items</span><span class="op">|</span> <span class="ident">items</span>.<span class="ident">clone</span>().<span class="ident">into</span>()),
-                        <span class="ident">min_items</span>: <span class="ident">v2</span>.<span class="ident">min_items</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">usize</span>),
-                        <span class="ident">max_items</span>: <span class="ident">v2</span>.<span class="ident">max_items</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">v</span><span class="op">|</span> <span class="ident">v</span> <span class="kw">as</span> <span class="ident">usize</span>),
-                        <span class="ident">unique_items</span>: <span class="ident">v2</span>.<span class="ident">unique_items</span>,
+                v2::DataType::Boolean =&gt; openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
+                v2::DataType::Array =&gt; {
+                    openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
+                        items: v2.items.as_ref().map(|items| items.clone().into()),
+                        min_items: v2.min_items.map(|v| v <span class="kw">as </span>usize),
+                        max_items: v2.max_items.map(|v| v <span class="kw">as </span>usize),
+                        unique_items: v2.unique_items,
                     }))
                 }
-                <span class="ident">v2::DataType::Object</span> =&gt; {
-                    <span class="comment">// objects comes from the parameter schema which would not trigger this call</span>
-                    <span class="kw">return</span> <span class="prelude-val">None</span>;
+                v2::DataType::Object =&gt; {
+                    <span class="comment">// objects comes from the parameter schema which would not trigger this call
+                    </span><span class="kw">return </span><span class="prelude-val">None</span>;
                 }
-                <span class="ident">v2::DataType::File</span> =&gt; {
-                    <span class="kw">if</span> <span class="op">!</span><span class="ident">form_data</span> {
-                        <span class="comment">// File only usable from formData</span>
-                        <span class="kw">return</span> <span class="prelude-val">None</span>;
+                v2::DataType::File =&gt; {
+                    <span class="kw">if </span>!form_data {
+                        <span class="comment">// File only usable from formData
+                        </span><span class="kw">return </span><span class="prelude-val">None</span>;
                     }
-                    <span class="ident">openapiv3::SchemaKind::Type</span>(<span class="ident">openapiv3::Type::String</span>(<span class="ident">openapiv3::StringType</span> {
-                        <span class="ident">format</span>: <span class="ident">openapiv3::VariantOrUnknownOrEmpty::Item</span>(
-                            <span class="ident">openapiv3::StringFormat::Binary</span>,
+                    openapiv3::SchemaKind::Type(openapiv3::Type::String(openapiv3::StringType {
+                        format: openapiv3::VariantOrUnknownOrEmpty::Item(
+                            openapiv3::StringFormat::Binary,
                         ),
-                        ..<span class="ident">Default::default</span>()
+                        ..Default::default()
                     }))
                 }
             };
-            <span class="kw">let</span> <span class="ident">schema_data</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">form_data</span> {
-                <span class="comment">// formData has the description and default values in the schema&#39;s properties</span>
-                <span class="ident">openapiv3::SchemaData</span> {
-                    <span class="ident">description</span>: <span class="ident">v2</span>.<span class="ident">description</span>.<span class="ident">clone</span>(),
-                    <span class="ident">default</span>: <span class="ident">v2</span>.<span class="ident">default</span>.<span class="ident">clone</span>(),
-                    ..<span class="ident">Default::default</span>()
+            <span class="kw">let </span>schema_data = <span class="kw">if </span>form_data {
+                <span class="comment">// formData has the description and default values in the schema&#39;s properties
+                </span>openapiv3::SchemaData {
+                    description: v2.description.clone(),
+                    default: v2.default.clone(),
+                    ..Default::default()
                 }
-            } <span class="kw">else</span> {
-                <span class="comment">// properties set on the parameter and not on the schema&#39;s properties</span>
-                <span class="ident">openapiv3::SchemaData::default</span>()
+            } <span class="kw">else </span>{
+                <span class="comment">// properties set on the parameter and not on the schema&#39;s properties
+                </span>openapiv3::SchemaData::default()
             };
-            <span class="prelude-val">Some</span>(<span class="ident">openapiv3::Schema</span> {
-                <span class="ident">schema_data</span>,
-                <span class="ident">schema_kind</span>,
+            <span class="prelude-val">Some</span>(openapiv3::Schema {
+                schema_data,
+                schema_kind,
             })
         }
-        <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
+        <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

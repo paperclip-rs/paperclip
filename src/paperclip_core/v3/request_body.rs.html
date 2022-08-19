@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/request_body.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>request_body.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/request_body.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>request_body.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -65,67 +59,66 @@
 <span id="59">59</span>
 <span id="60">60</span>
 <span id="61">61</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">invalid_referenceor</span>, <span class="ident">non_body_parameter_to_v3_parameter</span>, <span class="ident">v2</span>, <span class="ident">Either</span>};
+</pre><pre class="rust"><code><span class="kw">use super</span>::{invalid_referenceor, non_body_parameter_to_v3_parameter, v2, Either};
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">v2::DefaultParameterRaw</span><span class="op">&gt;</span>
-    <span class="kw">for</span> <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">openapiv3::Parameter</span>, <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">openapiv3::RequestBody</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">openapiv3::Schema</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>
+<span class="kw">impl </span>From&lt;v2::DefaultParameterRaw&gt;
+    <span class="kw">for </span>Either&lt;openapiv3::Parameter, Either&lt;openapiv3::RequestBody, <span class="prelude-ty">Option</span>&lt;openapiv3::Schema&gt;&gt;&gt;
 {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v2</span>: <span class="ident">v2::DefaultParameterRaw</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="ident">parameter_data</span> <span class="op">=</span> <span class="op">|</span><span class="ident">schema</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">openapiv3::Schema</span><span class="op">&gt;</span><span class="op">|</span> <span class="ident">openapiv3::ParameterData</span> {
-            <span class="ident">name</span>: <span class="ident">v2</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
-            <span class="ident">description</span>: <span class="ident">v2</span>.<span class="ident">description</span>.<span class="ident">clone</span>(),
-            <span class="ident">required</span>: <span class="ident">v2</span>.<span class="ident">required</span>,
-            <span class="ident">deprecated</span>: <span class="prelude-val">None</span>,
-            <span class="ident">format</span>: <span class="kw">match</span> <span class="kw-2">&amp;</span><span class="ident">schema</span> {
-                <span class="prelude-val">Some</span>(<span class="ident">schema</span>) =&gt; <span class="ident">openapiv3::ParameterSchemaOrContent::Schema</span>(
-                    <span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">schema</span>.<span class="ident">clone</span>()),
+    <span class="kw">fn </span>from(v2: v2::DefaultParameterRaw) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span>parameter_data = |schema: <span class="prelude-ty">Option</span>&lt;openapiv3::Schema&gt;| openapiv3::ParameterData {
+            name: v2.name.clone(),
+            description: v2.description.clone(),
+            required: v2.required,
+            deprecated: <span class="prelude-val">None</span>,
+            format: <span class="kw">match </span><span class="kw-2">&amp;</span>schema {
+                <span class="prelude-val">Some</span>(schema) =&gt; openapiv3::ParameterSchemaOrContent::Schema(
+                    openapiv3::ReferenceOr::Item(schema.clone()),
                 ),
-                <span class="prelude-val">None</span> =&gt; <span class="ident">openapiv3::ParameterSchemaOrContent::Schema</span>(<span class="ident">invalid_referenceor</span>(<span class="macro">format!</span>(
+                <span class="prelude-val">None </span>=&gt; openapiv3::ParameterSchemaOrContent::Schema(invalid_referenceor(<span class="macro">format!</span>(
                     <span class="string">&quot;No Schema found: {:?}&quot;</span>,
-                    <span class="ident">v2</span>
+                    v2
                 ))),
             },
-            <span class="ident">example</span>: <span class="prelude-val">None</span>,
-            <span class="ident">examples</span>: <span class="ident">indexmap::IndexMap::new</span>(),
-            <span class="ident">explode</span>: <span class="prelude-val">None</span>,
-            <span class="ident">extensions</span>: <span class="ident">indexmap::IndexMap::new</span>(),
+            example: <span class="prelude-val">None</span>,
+            examples: indexmap::IndexMap::new(),
+            explode: <span class="prelude-val">None</span>,
+            extensions: indexmap::IndexMap::new(),
         };
 
-        <span class="kw">match</span> <span class="ident">v2</span>.<span class="ident">in_</span> {
-            <span class="ident">v2::ParameterIn::Query</span> =&gt; <span class="ident">Either::Left</span>(<span class="ident">openapiv3::Parameter::Query</span> {
-                <span class="ident">parameter_data</span>: <span class="ident">parameter_data</span>(<span class="ident">non_body_parameter_to_v3_parameter</span>(<span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="ident">v2</span>)),
-                <span class="ident">allow_reserved</span>: <span class="bool-val">false</span>,
-                <span class="ident">style</span>: <span class="ident">Default::default</span>(),
-                <span class="ident">allow_empty_value</span>: <span class="prelude-val">None</span>,
+        <span class="kw">match </span>v2.in_ {
+            v2::ParameterIn::Query =&gt; Either::Left(openapiv3::Parameter::Query {
+                parameter_data: parameter_data(non_body_parameter_to_v3_parameter(<span class="bool-val">false</span>, <span class="kw-2">&amp;</span>v2)),
+                allow_reserved: <span class="bool-val">false</span>,
+                style: Default::default(),
+                allow_empty_value: <span class="prelude-val">None</span>,
             }),
-            <span class="ident">v2::ParameterIn::Header</span> =&gt; <span class="ident">Either::Left</span>(<span class="ident">openapiv3::Parameter::Header</span> {
-                <span class="ident">parameter_data</span>: <span class="ident">parameter_data</span>(<span class="ident">non_body_parameter_to_v3_parameter</span>(<span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="ident">v2</span>)),
-                <span class="ident">style</span>: <span class="ident">Default::default</span>(),
+            v2::ParameterIn::Header =&gt; Either::Left(openapiv3::Parameter::Header {
+                parameter_data: parameter_data(non_body_parameter_to_v3_parameter(<span class="bool-val">false</span>, <span class="kw-2">&amp;</span>v2)),
+                style: Default::default(),
             }),
-            <span class="ident">v2::ParameterIn::Path</span> =&gt; <span class="ident">Either::Left</span>(<span class="ident">openapiv3::Parameter::Path</span> {
-                <span class="ident">parameter_data</span>: <span class="ident">parameter_data</span>(<span class="ident">non_body_parameter_to_v3_parameter</span>(<span class="bool-val">false</span>, <span class="kw-2">&amp;</span><span class="ident">v2</span>)),
-                <span class="ident">style</span>: <span class="ident">Default::default</span>(),
+            v2::ParameterIn::Path =&gt; Either::Left(openapiv3::Parameter::Path {
+                parameter_data: parameter_data(non_body_parameter_to_v3_parameter(<span class="bool-val">false</span>, <span class="kw-2">&amp;</span>v2)),
+                style: Default::default(),
             }),
-            <span class="ident">v2::ParameterIn::FormData</span> =&gt; {
-                <span class="ident">Either::Right</span>(<span class="ident">Either::Right</span>(<span class="ident">non_body_parameter_to_v3_parameter</span>(<span class="bool-val">true</span>, <span class="kw-2">&amp;</span><span class="ident">v2</span>)))
+            v2::ParameterIn::FormData =&gt; {
+                Either::Right(Either::Right(non_body_parameter_to_v3_parameter(<span class="bool-val">true</span>, <span class="kw-2">&amp;</span>v2)))
             }
-            <span class="ident">v2::ParameterIn::Body</span> =&gt; <span class="ident">Either::Right</span>(<span class="ident">Either::Left</span>(<span class="ident">openapiv3::RequestBody</span> {
-                <span class="ident">description</span>: <span class="ident">v2</span>.<span class="ident">description</span>,
-                <span class="ident">content</span>: {
-                    <span class="kw">let</span> <span class="ident">media</span> <span class="op">=</span> <span class="ident">openapiv3::MediaType</span> {
-                        <span class="ident">schema</span>: <span class="ident">v2</span>.<span class="ident">schema</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">into</span>()),
-                        ..<span class="ident">Default::default</span>()
+            v2::ParameterIn::Body =&gt; Either::Right(Either::Left(openapiv3::RequestBody {
+                description: v2.description,
+                content: {
+                    <span class="kw">let </span>media = openapiv3::MediaType {
+                        schema: v2.schema.map(|s| s.into()),
+                        ..Default::default()
                     };
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">map</span> <span class="op">=</span> <span class="ident">indexmap::IndexMap::new</span>();
-                    <span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">v2::SpecFormat::Json</span>.<span class="ident">mime</span>().<span class="number">0</span>.<span class="ident">to_string</span>(), <span class="ident">media</span>);
-                    <span class="ident">map</span>
+                    <span class="kw">let </span><span class="kw-2">mut </span>map = indexmap::IndexMap::new();
+                    map.insert(v2::SpecFormat::Json.mime().<span class="number">0</span>.to_string(), media);
+                    map
                 },
-                <span class="ident">required</span>: <span class="ident">v2</span>.<span class="ident">required</span>,
-                <span class="ident">extensions</span>: <span class="ident">indexmap::IndexMap::new</span>(),
+                required: v2.required,
+                extensions: indexmap::IndexMap::new(),
             })),
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

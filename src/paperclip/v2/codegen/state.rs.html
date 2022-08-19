@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -622,150 +616,150 @@
 <span id="616">616</span>
 <span id="617">617</span>
 <span id="618">618</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">object</span>,
-    <span class="ident">object::ApiObject</span>,
-    <span class="ident">template</span>::{<span class="self">self</span>, <span class="ident">TEMPLATE</span>},
-    <span class="ident">CrateMeta</span>, <span class="ident">EmitMode</span>,
+</pre><pre class="rust"><code><span class="kw">use super</span>::{
+    object,
+    object::ApiObject,
+    template::{<span class="self">self</span>, TEMPLATE},
+    CrateMeta, EmitMode,
 };
-<span class="kw">use</span> <span class="kw">crate</span>::{
-    <span class="ident">error::PaperClipError</span>,
-    <span class="ident">v2::models</span>::{<span class="ident">Coders</span>, <span class="ident">SpecFormat</span>},
+<span class="kw">use crate</span>::{
+    error::PaperClipError,
+    v2::models::{Coders, SpecFormat},
 };
-<span class="kw">use</span> <span class="ident">anyhow::Error</span>;
-<span class="kw">use</span> <span class="ident">heck::ToPascalCase</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">heck::ToSnakeCase</span>;
-<span class="kw">use</span> <span class="ident">itertools::Itertools</span>;
-<span class="kw">use</span> <span class="ident">url_dep::Url</span>;
+<span class="kw">use </span>anyhow::Error;
+<span class="kw">use </span>heck::ToPascalCase;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+<span class="kw">use </span>heck::ToSnakeCase;
+<span class="kw">use </span>itertools::Itertools;
+<span class="kw">use </span>url_dep::Url;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">std::fs</span>;
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">cell::RefCell</span>,
-    <span class="ident">collections</span>::{<span class="ident">BTreeMap</span>, <span class="ident">BTreeSet</span>, <span class="ident">HashMap</span>, <span class="ident">HashSet</span>},
-    <span class="ident">fmt::Write</span> <span class="kw">as</span> <span class="kw">_</span>,
-    <span class="ident">fs::OpenOptions</span>,
-    <span class="ident">hash</span>::{<span class="ident">Hash</span>, <span class="ident">Hasher</span>},
-    <span class="ident">io::Write</span>,
-    <span class="ident">path</span>::{<span class="ident">Path</span>, <span class="ident">PathBuf</span>},
-    <span class="ident">rc::Rc</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+<span class="kw">use </span>std::fs;
+<span class="kw">use </span>std::{
+    cell::RefCell,
+    collections::{BTreeMap, BTreeSet, HashMap, HashSet},
+    fmt::Write <span class="kw">as _</span>,
+    fs::OpenOptions,
+    hash::{Hash, Hasher},
+    io::Write,
+    path::{Path, PathBuf},
+    rc::Rc,
 };
 
-<span class="doccomment">/// Holds the state for your schema emitter.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">EmitterState</span> {
-    <span class="doccomment">/// Working directory - the path in which the necessary modules are generated.</span>
-    <span class="kw">pub</span> <span class="ident">working_dir</span>: <span class="ident">PathBuf</span>,
-    <span class="doccomment">/// Namespace separation string.</span>
-    <span class="kw">pub</span> <span class="ident">ns_sep</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
-    <span class="doccomment">/// Module prefix for using in generated code.</span>
-    <span class="kw">pub</span> <span class="ident">mod_prefix</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static</span> <span class="ident">str</span>,
+<span class="doccomment">/// Holds the state for your schema emitter.
+</span><span class="attribute">#[derive(Debug)]</span>
+<span class="kw">pub struct </span>EmitterState {
+    <span class="doccomment">/// Working directory - the path in which the necessary modules are generated.
+    </span><span class="kw">pub </span>working_dir: PathBuf,
+    <span class="doccomment">/// Namespace separation string.
+    </span><span class="kw">pub </span>ns_sep: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    <span class="doccomment">/// Module prefix for using in generated code.
+    </span><span class="kw">pub </span>mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
 
-    <span class="comment">/* MARK: Private fields. */</span>
-    <span class="doccomment">/// Base URL for the API.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">base_url</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Url</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Fallback encoding when we don&#39;t have a choice (obtained from `Api.spec_format`).</span>
-    <span class="ident">default_encoding</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">SpecFormat</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated</span>
-    <span class="doccomment">/// along with the modules. This is gated behind `&quot;cli&quot;` feature.</span>
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-    <span class="ident">crate_meta</span>: <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CrateMeta</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
+    <span class="comment">/* MARK: Private fields. */
+    </span><span class="doccomment">/// Base URL for the API.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) base_url: RefCell&lt;Url&gt;,
+    <span class="doccomment">/// Fallback encoding when we don&#39;t have a choice (obtained from `Api.spec_format`).
+    </span>default_encoding: RefCell&lt;SpecFormat&gt;,
+    <span class="doccomment">/// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
+    /// along with the modules. This is gated behind `&quot;cli&quot;` feature.
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+    crate_meta: Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;,
 
-    <span class="comment">/* MARK: Internal fields that should be reset for each session. */</span>
-    <span class="doccomment">/// Maps parent mod to immediate children. Used for declaring modules.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">mod_children</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">HashMap</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">ChildModule</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Holds generated struct definitions for leaf modules.</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">def_mods</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">PathBuf</span>, <span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">ApiObject</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Relative paths</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="ident">rel_paths</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Media ranges and the corresponding decoders we&#39;ve registered.</span>
-    <span class="ident">media_coders</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">MediaCoder</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Unit types used by builders.</span>
-    <span class="ident">unit_types</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">BTreeSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Generated CLI YAML for clap.</span>
-    <span class="ident">cli_yaml</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Generated match arms for clap subcommands and matches.</span>
-    <span class="ident">cli_match_arms</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>,
+    <span class="comment">/* MARK: Internal fields that should be reset for each session. */
+    </span><span class="doccomment">/// Maps parent mod to immediate children. Used for declaring modules.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) mod_children: RefCell&lt;HashMap&lt;PathBuf, HashSet&lt;ChildModule&gt;&gt;&gt;,
+    <span class="doccomment">/// Holds generated struct definitions for leaf modules.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) def_mods: RefCell&lt;BTreeMap&lt;PathBuf, Vec&lt;ApiObject&gt;&gt;&gt;,
+    <span class="doccomment">/// Relative paths
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) rel_paths: RefCell&lt;HashSet&lt;String&gt;&gt;,
+    <span class="doccomment">/// Media ranges and the corresponding decoders we&#39;ve registered.
+    </span>media_coders: RefCell&lt;Vec&lt;MediaCoder&gt;&gt;,
+    <span class="doccomment">/// Unit types used by builders.
+    </span>unit_types: RefCell&lt;BTreeSet&lt;String&gt;&gt;,
+    <span class="doccomment">/// Generated CLI YAML for clap.
+    </span>cli_yaml: RefCell&lt;String&gt;,
+    <span class="doccomment">/// Generated match arms for clap subcommands and matches.
+    </span>cli_match_arms: RefCell&lt;String&gt;,
 }
 
-<span class="doccomment">/// Indicates a child module in codegen working directory.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>, <span class="ident">Eq</span>)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct</span> <span class="ident">ChildModule</span> {
-    <span class="doccomment">/// Name of this child module.</span>
-    <span class="kw">pub</span> <span class="ident">name</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Whether this module is the final child.</span>
-    <span class="kw">pub</span> <span class="ident">is_final</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Indicates a child module in codegen working directory.
+</span><span class="attribute">#[derive(Debug, Clone, Eq)]</span>
+<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ChildModule {
+    <span class="doccomment">/// Name of this child module.
+    </span><span class="kw">pub </span>name: String,
+    <span class="doccomment">/// Whether this module is the final child.
+    </span><span class="kw">pub </span>is_final: bool,
 }
 
-<span class="kw">impl</span> <span class="ident">EmitterState</span> {
-    <span class="doccomment">/// Sets the base URL for this session.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** Once `Emitter::generate` is called, this gets overridden</span>
-    <span class="doccomment">/// by `host` and `basePath` fields in spec (if they exist).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_url</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">url</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">u</span> <span class="op">=</span> <span class="ident">Url::parse</span>(<span class="ident">url</span>).<span class="ident">map_err</span>(<span class="op">|</span><span class="ident">e</span><span class="op">|</span> <span class="ident">PaperClipError::InvalidBasePathURL</span>(<span class="ident">url</span>.<span class="ident">into</span>(), <span class="ident">e</span>))<span class="question-mark">?</span>;
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">base_url</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">u</span>;
+<span class="kw">impl </span>EmitterState {
+    <span class="doccomment">/// Sets the base URL for this session.
+    ///
+    /// **NOTE:** Once `Emitter::generate` is called, this gets overridden
+    /// by `host` and `basePath` fields in spec (if they exist).
+    </span><span class="kw">pub fn </span>set_url(<span class="kw-2">&amp;</span><span class="self">self</span>, url: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>u = Url::parse(url).map_err(|e| PaperClipError::InvalidBasePathURL(url.into(), e))<span class="question-mark">?</span>;
+        <span class="kw-2">*</span><span class="self">self</span>.base_url.borrow_mut() = u;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Base URL for this API.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** Once `Emitter::generate` is called, this gets overridden</span>
-    <span class="doccomment">/// by `host` and `basePath` fields in spec (if they exist).</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">base_url</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="self">self</span>.<span class="ident">base_url</span>.<span class="ident">borrow</span>().<span class="ident">to_string</span>()
+    <span class="doccomment">/// Base URL for this API.
+    ///
+    /// **NOTE:** Once `Emitter::generate` is called, this gets overridden
+    /// by `host` and `basePath` fields in spec (if they exist).
+    </span><span class="kw">pub fn </span>base_url(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="self">self</span>.base_url.borrow().to_string()
     }
 
-    <span class="doccomment">/// Resets internal state-related information used by the emitter.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">reset_internal_fields</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) {
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">mod_children</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">def_mods</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">rel_paths</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">unit_types</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">cli_yaml</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">cli_match_arms</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">media_coders</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">Default::default</span>();
+    <span class="doccomment">/// Resets internal state-related information used by the emitter.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>reset_internal_fields(<span class="kw-2">&amp;</span><span class="self">self</span>) {
+        <span class="kw-2">*</span><span class="self">self</span>.mod_children.borrow_mut() = Default::default();
+        <span class="kw-2">*</span><span class="self">self</span>.def_mods.borrow_mut() = Default::default();
+        <span class="kw-2">*</span><span class="self">self</span>.rel_paths.borrow_mut() = Default::default();
+        <span class="kw-2">*</span><span class="self">self</span>.unit_types.borrow_mut() = Default::default();
+        <span class="kw-2">*</span><span class="self">self</span>.cli_yaml.borrow_mut() = Default::default();
+        <span class="kw-2">*</span><span class="self">self</span>.cli_match_arms.borrow_mut() = Default::default();
+        <span class="kw-2">*</span><span class="self">self</span>.media_coders.borrow_mut() = Default::default();
     }
 
-    <span class="doccomment">/// Sets the media type information for encoder/decoders.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">set_media_info</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">spec_format</span>: <span class="ident">SpecFormat</span>, <span class="ident">coders</span>: <span class="kw-2">&amp;</span><span class="ident">Coders</span>) {
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">default_encoding</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">spec_format</span>;
+    <span class="doccomment">/// Sets the media type information for encoder/decoders.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>set_media_info(<span class="kw-2">&amp;</span><span class="self">self</span>, spec_format: SpecFormat, coders: <span class="kw-2">&amp;</span>Coders) {
+        <span class="kw-2">*</span><span class="self">self</span>.default_encoding.borrow_mut() = spec_format;
 
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">media_coders</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="ident">coders</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">c</span>)<span class="op">|</span> (<span class="ident">r</span>.<span class="number">0</span>.<span class="ident">as_ref</span>(), <span class="ident">c</span>))
-            .<span class="ident">map</span>(<span class="op">|</span>(<span class="ident">r</span>, <span class="ident">c</span>)<span class="op">|</span> <span class="ident">MediaCoder</span> {
-                <span class="ident">range</span>: <span class="ident">r</span>.<span class="ident">into</span>(),
-                <span class="ident">error_variant</span>: <span class="ident">r</span>.<span class="ident">replace</span>(<span class="string">&#39;*&#39;</span>, <span class="string">&quot;wildcard&quot;</span>).<span class="ident">to_pascal_case</span>(),
-                <span class="ident">error_ty_path</span>: <span class="ident">c</span>.<span class="ident">error_path</span>.<span class="ident">clone</span>(),
-                <span class="ident">decoder</span>: <span class="ident">c</span>.<span class="ident">decoder_path</span>.<span class="ident">clone</span>(),
+        <span class="kw-2">*</span><span class="self">self</span>.media_coders.borrow_mut() = coders
+            .iter()
+            .map(|(r, c)| (r.<span class="number">0</span>.as_ref(), c))
+            .map(|(r, c)| MediaCoder {
+                range: r.into(),
+                error_variant: r.replace(<span class="string">&#39;*&#39;</span>, <span class="string">&quot;wildcard&quot;</span>).to_pascal_case(),
+                error_ty_path: c.error_path.clone(),
+                decoder: c.decoder_path.clone(),
             })
-            .<span class="ident">collect</span>();
+            .collect();
     }
 
-    <span class="doccomment">/// Once the emitter has generated the struct definitions,</span>
-    <span class="doccomment">/// we can call this method to generate the module declarations</span>
-    <span class="doccomment">/// from root.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">declare_modules</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Once the emitter has generated the struct definitions,
+    /// we can call this method to generate the module declarations
+    /// from root.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>declare_modules(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="macro">info!</span>(<span class="string">&quot;Writing module declarations.&quot;</span>);
-        <span class="kw">let</span> <span class="ident">is_app</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">is_cli</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">mods</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">mod_children</span>.<span class="ident">borrow</span>();
-        <span class="kw">for</span> (<span class="ident">rel_parent</span>, <span class="ident">children</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">mods</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">mod_path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">working_dir</span>.<span class="ident">join</span>(<span class="kw-2">&amp;</span><span class="ident">rel_parent</span>);
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">String::new</span>();
+        <span class="kw">let </span>is_app = <span class="self">self</span>.is_cli()<span class="question-mark">?</span>;
+        <span class="kw">let </span>mods = <span class="self">self</span>.mod_children.borrow();
+        <span class="kw">for </span>(rel_parent, children) <span class="kw">in </span><span class="kw-2">&amp;*</span>mods {
+            <span class="kw">let </span><span class="kw-2">mut </span>mod_path = <span class="self">self</span>.working_dir.join(<span class="kw-2">&amp;</span>rel_parent);
+            <span class="kw">let </span><span class="kw-2">mut </span>contents = String::new();
 
-            <span class="kw">if</span> <span class="ident">rel_parent</span>.<span class="ident">parent</span>().<span class="ident">is_none</span>() <span class="op">&amp;&amp;</span> <span class="self">self</span>.<span class="ident">needs_root_module</span>() {
-                <span class="ident">mod_path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root_module_path</span>();
-                <span class="ident">contents</span>.<span class="ident">push_str</span>(
+            <span class="kw">if </span>rel_parent.parent().is_none() &amp;&amp; <span class="self">self</span>.needs_root_module() {
+                mod_path = <span class="self">self</span>.root_module_path();
+                contents.push_str(
                     <span class="string">&quot;
 #[macro_use]
 extern crate serde;
 &quot;</span>,
                 );
 
-                <span class="kw">if</span> <span class="ident">is_app</span> {
-                    <span class="ident">contents</span>.<span class="ident">push_str</span>(
+                <span class="kw">if </span>is_app {
+                    contents.push_str(
                         <span class="string">&quot;
 #[macro_use]
 extern crate clap;
@@ -776,109 +770,109 @@ pub mod cli {
 &quot;</span>,
                     )
                 }
-            } <span class="kw">else</span> {
-                <span class="ident">mod_path</span>.<span class="ident">push</span>(<span class="string">&quot;mod.rs&quot;</span>);
+            } <span class="kw">else </span>{
+                mod_path.push(<span class="string">&quot;mod.rs&quot;</span>);
             }
 
-            <span class="kw">for</span> <span class="ident">child</span> <span class="kw">in</span> <span class="ident">children</span>.<span class="ident">iter</span>().<span class="ident">sorted_by</span>(<span class="op">|</span><span class="ident">a</span>, <span class="ident">b</span><span class="op">|</span> <span class="ident">a</span>.<span class="ident">name</span>.<span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="ident">b</span>.<span class="ident">name</span>)) {
+            <span class="kw">for </span>child <span class="kw">in </span>children.iter().sorted_by(|a, b| a.name.cmp(<span class="kw-2">&amp;</span>b.name)) {
                 <span class="macro">writeln!</span>(
-                    <span class="ident">contents</span>,
+                    contents,
                     <span class="string">&quot;
 pub mod {name} {{
     include!(\&quot;./{path}\&quot;);
 }}&quot;</span>,
-                    <span class="ident">name</span> <span class="op">=</span> <span class="ident">child</span>.<span class="ident">name</span>,
-                    <span class="ident">path</span> <span class="op">=</span> <span class="kw">if</span> <span class="ident">child</span>.<span class="ident">is_final</span> {
-                        <span class="ident">child</span>.<span class="ident">name</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="string">&quot;.rs&quot;</span>
-                    } <span class="kw">else</span> {
-                        <span class="ident">child</span>.<span class="ident">name</span>.<span class="ident">clone</span>() <span class="op">+</span> <span class="string">&quot;/mod.rs&quot;</span>
-                    }
+                    name = child.name,
+                    path = <span class="kw">if </span>child.is_final {
+                        child.name.clone() + <span class="string">&quot;.rs&quot;
+                    </span>} <span class="kw">else </span>{
+                        child.name.clone() + <span class="string">&quot;/mod.rs&quot;
+                    </span>}
                 )<span class="question-mark">?</span>;
             }
 
-            <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="kw-2">&amp;</span><span class="ident">mod_path</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>mod_path)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Once the emitter has generated the struct definitions,</span>
-    <span class="doccomment">/// we can call this method to write the definitions to leaf modules.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">write_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">def_mods</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">def_mods</span>.<span class="ident">borrow</span>();
+    <span class="doccomment">/// Once the emitter has generated the struct definitions,
+    /// we can call this method to write the definitions to leaf modules.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>def_mods = <span class="self">self</span>.def_mods.borrow();
         <span class="macro">info!</span>(<span class="string">&quot;Writing definitions.&quot;</span>);
-        <span class="kw">for</span> (<span class="ident">i</span>, (<span class="ident">mod_path</span>, <span class="ident">object</span>)) <span class="kw">in</span> <span class="ident">def_mods</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">p</span>, <span class="ident">l</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">o</span><span class="op">|</span> (<span class="ident">p</span>, <span class="ident">o</span>)).<span class="ident">enumerate</span>())
+        <span class="kw">for </span>(i, (mod_path, object)) <span class="kw">in </span>def_mods
+            .iter()
+            .flat_map(<span class="kw">move </span>|(p, l)| l.iter().map(<span class="kw">move </span>|o| (p, o)).enumerate())
         {
-            <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">object</span>.<span class="ident">to_string</span>();
-            <span class="kw">if</span> <span class="ident">i</span> <span class="op">==</span> <span class="number">0</span> {
-                <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="ident">mod_path</span>)<span class="question-mark">?</span>;
-            } <span class="kw">else</span> {
-                <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="ident">mod_path</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>contents = object.to_string();
+            <span class="kw">if </span>i == <span class="number">0 </span>{
+                <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>contents, mod_path)<span class="question-mark">?</span>;
+            } <span class="kw">else </span>{
+                <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>contents, mod_path)<span class="question-mark">?</span>;
             }
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Once the emitter has collected requirements for paths,</span>
-    <span class="doccomment">/// we can use this method to add builder structs and their impls.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">add_builders</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">module_prefix</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">normalized_mod_prefix</span>();
+    <span class="doccomment">/// Once the emitter has collected requirements for paths,
+    /// we can use this method to add builder structs and their impls.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>add_builders(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>module_prefix = <span class="self">self</span>.normalized_mod_prefix();
         <span class="macro">info!</span>(<span class="string">&quot;Adding builders to definitions.&quot;</span>);
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">unit_types</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">unit_types</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="ident">def_mods</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">def_mods</span>.<span class="ident">borrow</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cli_yaml</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cli_yaml</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">match_arms</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">cli_match_arms</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">let</span> <span class="ident">is_cli</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">is_cli</span>()<span class="question-mark">?</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>unit_types = <span class="self">self</span>.unit_types.borrow_mut();
+        <span class="kw">let </span>def_mods = <span class="self">self</span>.def_mods.borrow();
+        <span class="kw">let </span><span class="kw-2">mut </span>cli_yaml = <span class="self">self</span>.cli_yaml.borrow_mut();
+        <span class="kw">let </span><span class="kw-2">mut </span>match_arms = <span class="self">self</span>.cli_match_arms.borrow_mut();
+        <span class="kw">let </span>is_cli = <span class="self">self</span>.is_cli()<span class="question-mark">?</span>;
 
-        <span class="kw">for</span> (<span class="ident">mod_path</span>, <span class="ident">object</span>) <span class="kw">in</span> <span class="ident">def_mods</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">flat_map</span>(<span class="kw">move</span> <span class="op">|</span>(<span class="ident">p</span>, <span class="ident">l</span>)<span class="op">|</span> <span class="ident">l</span>.<span class="ident">iter</span>().<span class="ident">map</span>(<span class="kw">move</span> <span class="op">|</span><span class="ident">o</span><span class="op">|</span> (<span class="ident">p</span>, <span class="ident">o</span>)))
+        <span class="kw">for </span>(mod_path, object) <span class="kw">in </span>def_mods
+            .iter()
+            .flat_map(<span class="kw">move </span>|(p, l)| l.iter().map(<span class="kw">move </span>|o| (p, o)))
         {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">builder_content</span> <span class="op">=</span> <span class="ident">String::new</span>();
-            <span class="kw">let</span> <span class="ident">repr</span> <span class="op">=</span> <span class="ident">object</span>.<span class="ident">impl_repr</span>(<span class="kw-2">&amp;</span><span class="ident">module_prefix</span>);
-            <span class="kw">for</span> <span class="ident">builder</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">repr</span>.<span class="ident">builders</span> {
-                <span class="ident">builder</span>
-                    .<span class="ident">struct_fields_iter</span>()
-                    .<span class="ident">filter</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> <span class="ident">f</span>.<span class="ident">prop</span>.<span class="ident">is_required</span>())
-                    .<span class="ident">for_each</span>(<span class="op">|</span><span class="ident">f</span><span class="op">|</span> {
-                        <span class="ident">unit_types</span>.<span class="ident">insert</span>(<span class="ident">object::to_pascal_case</span>(<span class="ident">f</span>.<span class="ident">name</span>));
+            <span class="kw">let </span><span class="kw-2">mut </span>builder_content = String::new();
+            <span class="kw">let </span>repr = object.impl_repr(<span class="kw-2">&amp;</span>module_prefix);
+            <span class="kw">for </span>builder <span class="kw">in </span><span class="kw-2">&amp;*</span>repr.builders {
+                builder
+                    .struct_fields_iter()
+                    .filter(|f| f.prop.is_required())
+                    .for_each(|f| {
+                        unit_types.insert(object::to_pascal_case(f.name));
                     });
 
-                <span class="ident">builder_content</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">builder_content</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">builder</span>);
-                <span class="ident">builder_content</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
-                <span class="kw">let</span> <span class="ident">inner_repr</span> <span class="op">=</span> <span class="ident">builder</span>.<span class="ident">impl_repr</span>();
-                <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="macro">write!</span>(<span class="ident">builder_content</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">inner_repr</span>);
-                <span class="kw">if</span> <span class="ident">is_cli</span> {
-                    <span class="ident">inner_repr</span>.<span class="ident">write_arg_parsing</span>(<span class="kw-2">&amp;mut</span> <span class="ident">builder_content</span>)<span class="question-mark">?</span>;
+                builder_content.push(<span class="string">&#39;\n&#39;</span>);
+                <span class="kw">let _ </span>= <span class="macro">write!</span>(builder_content, <span class="string">&quot;{}&quot;</span>, builder);
+                builder_content.push(<span class="string">&#39;\n&#39;</span>);
+                <span class="kw">let </span>inner_repr = builder.impl_repr();
+                <span class="kw">let _ </span>= <span class="macro">write!</span>(builder_content, <span class="string">&quot;{}&quot;</span>, inner_repr);
+                <span class="kw">if </span>is_cli {
+                    inner_repr.write_arg_parsing(<span class="kw-2">&amp;mut </span>builder_content)<span class="question-mark">?</span>;
                 }
             }
 
-            <span class="kw">if</span> <span class="ident">is_cli</span> {
-                <span class="ident">repr</span>.<span class="ident">write_clap_yaml</span>(<span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">cli_yaml</span>)<span class="question-mark">?</span>;
-                <span class="ident">repr</span>.<span class="ident">write_arg_match_arms</span>(<span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">match_arms</span>)<span class="question-mark">?</span>;
+            <span class="kw">if </span>is_cli {
+                repr.write_clap_yaml(<span class="kw-2">&amp;mut *</span>cli_yaml)<span class="question-mark">?</span>;
+                repr.write_arg_match_arms(<span class="kw-2">&amp;mut *</span>match_arms)<span class="question-mark">?</span>;
             }
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">impl_content</span> <span class="op">=</span> <span class="ident">String::from</span>(<span class="string">&quot;\n&quot;</span>);
-            <span class="macro">write!</span>(<span class="ident">impl_content</span>, <span class="string">&quot;{}&quot;</span>, <span class="ident">repr</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>impl_content = String::from(<span class="string">&quot;\n&quot;</span>);
+            <span class="macro">write!</span>(impl_content, <span class="string">&quot;{}&quot;</span>, repr)<span class="question-mark">?</span>;
 
-            <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="ident">impl_content</span>, <span class="ident">mod_path</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="ident">builder_content</span>, <span class="ident">mod_path</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>impl_content, mod_path)<span class="question-mark">?</span>;
+            <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>builder_content, mod_path)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Once the builders have been added, we can add unit types</span>
-    <span class="doccomment">/// and other dependencies.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">add_deps</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">module</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root_module_path</span>();
-        <span class="kw">let</span> <span class="ident">types</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">unit_types</span>.<span class="ident">borrow</span>();
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">content</span> <span class="op">=</span> <span class="ident">String::new</span>();
-        <span class="ident">content</span>.<span class="ident">push_str</span>(
+    <span class="doccomment">/// Once the builders have been added, we can add unit types
+    /// and other dependencies.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>add_deps(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>module = <span class="self">self</span>.root_module_path();
+        <span class="kw">let </span>types = <span class="self">self</span>.unit_types.borrow();
+        <span class="kw">let </span><span class="kw-2">mut </span>content = String::new();
+        content.push_str(
             <span class="string">&quot;
 pub mod generics {
     include!(\&quot;./generics.rs\&quot;);
@@ -889,357 +883,356 @@ pub mod util {
 }
 &quot;</span>,
         );
-        <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>content, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
-        <span class="ident">content</span>.<span class="ident">clear</span>();
-        <span class="ident">module</span>.<span class="ident">set_file_name</span>(<span class="string">&quot;generics.rs&quot;</span>);
+        content.clear();
+        module.set_file_name(<span class="string">&quot;generics.rs&quot;</span>);
 
-        <span class="kw">for</span> <span class="ident">ty</span> <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">types</span> {
-            <span class="ident">content</span>.<span class="ident">push_str</span>(<span class="string">&quot;\npub struct Missing&quot;</span>);
-            <span class="ident">content</span>.<span class="ident">push_str</span>(<span class="ident">ty</span>);
-            <span class="ident">content</span>.<span class="ident">push</span>(<span class="string">&#39;;&#39;</span>);
-            <span class="ident">content</span>.<span class="ident">push_str</span>(<span class="string">&quot;\npub struct &quot;</span>);
-            <span class="ident">content</span>.<span class="ident">push_str</span>(<span class="ident">ty</span>);
-            <span class="ident">content</span>.<span class="ident">push_str</span>(<span class="string">&quot;Exists;&quot;</span>);
+        <span class="kw">for </span>ty <span class="kw">in </span><span class="kw-2">&amp;*</span>types {
+            content.push_str(<span class="string">&quot;\npub struct Missing&quot;</span>);
+            content.push_str(ty);
+            content.push(<span class="string">&#39;;&#39;</span>);
+            content.push_str(<span class="string">&quot;\npub struct &quot;</span>);
+            content.push_str(ty);
+            content.push_str(<span class="string">&quot;Exists;&quot;</span>);
         }
 
-        <span class="ident">content</span>.<span class="ident">push</span>(<span class="string">&#39;\n&#39;</span>);
-        <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">content</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>)<span class="question-mark">?</span>;
+        content.push(<span class="string">&#39;\n&#39;</span>);
+        <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>content, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
-        <span class="ident">module</span>.<span class="ident">set_file_name</span>(<span class="string">&quot;util.rs&quot;</span>);
-        <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">template::render</span>(<span class="ident">TEMPLATE::UTIL_MOD</span>, <span class="kw-2">&amp;</span><span class="ident">EmptyContext</span> {})<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>)<span class="question-mark">?</span>;
+        module.set_file_name(<span class="string">&quot;util.rs&quot;</span>);
+        <span class="kw">let </span>contents = template::render(TEMPLATE::UTIL_MOD, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
+        <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
-        <span class="self">self</span>.<span class="ident">add_cli_deps_if_needed</span>()<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">create_manifest</span>()
+        <span class="self">self</span>.add_cli_deps_if_needed()<span class="question-mark">?</span>;
+        <span class="self">self</span>.create_manifest()
     }
 
-    <span class="doccomment">/// Once the builders have been added, we can add API client dependencies.</span>
-    <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">add_client_deps</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">module</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root_module_path</span>();
-        <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">template::render</span>(
-            <span class="ident">TEMPLATE::CLIENT_MOD</span>,
-            <span class="kw-2">&amp;</span><span class="ident">ClientModContext</span> {
-                <span class="ident">mod_prefix</span>: <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">normalized_mod_prefix</span>(),
-                <span class="ident">media_coders</span>: <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">media_coders</span>.<span class="ident">borrow</span>(),
-                <span class="ident">base_url</span>: <span class="self">self</span>.<span class="ident">base_url</span>.<span class="ident">borrow</span>().<span class="ident">as_str</span>(),
+    <span class="doccomment">/// Once the builders have been added, we can add API client dependencies.
+    </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>add_client_deps(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>module = <span class="self">self</span>.root_module_path();
+        <span class="kw">let </span>contents = template::render(
+            TEMPLATE::CLIENT_MOD,
+            <span class="kw-2">&amp;</span>ClientModContext {
+                mod_prefix: <span class="kw-2">&amp;</span><span class="self">self</span>.normalized_mod_prefix(),
+                media_coders: <span class="kw-2">&amp;</span><span class="self">self</span>.media_coders.borrow(),
+                base_url: <span class="self">self</span>.base_url.borrow().as_str(),
             },
         )<span class="question-mark">?</span>;
 
-        <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="kw-2">&amp;</span><span class="ident">module</span>)
+        <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>module)
     }
 
-    <span class="doccomment">/// Writes the given contents to a file at the given path (truncating the file if it exists).</span>
-    <span class="kw">fn</span> <span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">contents</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>()
-            .<span class="ident">create</span>(<span class="bool-val">true</span>)
-            .<span class="ident">write</span>(<span class="bool-val">true</span>)
-            .<span class="ident">truncate</span>(<span class="bool-val">true</span>)
-            .<span class="ident">open</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-        <span class="ident">fd</span>.<span class="ident">write_all</span>(<span class="ident">contents</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+    <span class="doccomment">/// Writes the given contents to a file at the given path (truncating the file if it exists).
+    </span><span class="kw">fn </span>write_contents(<span class="kw-2">&amp;</span><span class="self">self</span>, contents: <span class="kw-2">&amp;</span>str, path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>fd = OpenOptions::new()
+            .create(<span class="bool-val">true</span>)
+            .write(<span class="bool-val">true</span>)
+            .truncate(<span class="bool-val">true</span>)
+            .open(path)<span class="question-mark">?</span>;
+        fd.write_all(contents.as_bytes())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Appends the given contents to an existing file at the given path.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// **NOTE:** This doesn&#39;t create a file if it is non-existent.</span>
-    <span class="kw">fn</span> <span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">contents</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>, <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">Path</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">fd</span> <span class="op">=</span> <span class="ident">OpenOptions::new</span>().<span class="ident">append</span>(<span class="bool-val">true</span>).<span class="ident">open</span>(<span class="ident">path</span>)<span class="question-mark">?</span>;
-        <span class="ident">fd</span>.<span class="ident">write_all</span>(<span class="ident">contents</span>.<span class="ident">as_bytes</span>())<span class="question-mark">?</span>;
+    <span class="doccomment">/// Appends the given contents to an existing file at the given path.
+    ///
+    /// **NOTE:** This doesn&#39;t create a file if it is non-existent.
+    </span><span class="kw">fn </span>append_contents(<span class="kw-2">&amp;</span><span class="self">self</span>, contents: <span class="kw-2">&amp;</span>str, path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>fd = OpenOptions::new().append(<span class="bool-val">true</span>).open(path)<span class="question-mark">?</span>;
+        fd.write_all(contents.as_bytes())<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Adds CLI-related deps for the given object (if needed).</span>
-    <span class="kw">fn</span> <span class="ident">add_cli_deps_if_needed</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root_module_path</span>();
-        <span class="kw">if</span> <span class="op">!</span><span class="self">self</span>.<span class="ident">is_cli</span>()<span class="question-mark">?</span> {
-            <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="doccomment">/// Adds CLI-related deps for the given object (if needed).
+    </span><span class="kw">fn </span>add_cli_deps_if_needed(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span>root = <span class="self">self</span>.root_module_path();
+        <span class="kw">if </span>!<span class="self">self</span>.is_cli()<span class="question-mark">? </span>{
+            <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        <span class="kw">let</span> <span class="ident">cm</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">infer_crate_meta</span>()<span class="question-mark">?</span>;
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">meta</span>) <span class="op">=</span> <span class="ident">cm</span>.<span class="ident">borrow</span>().<span class="ident">as_ref</span>() {
-            <span class="comment">// Clap YAML</span>
-            <span class="kw">let</span> <span class="ident">clap_yaml</span> <span class="op">=</span> <span class="ident">root</span>.<span class="ident">with_file_name</span>(<span class="string">&quot;app.yaml&quot;</span>);
-            <span class="kw">let</span> <span class="ident">base_content</span> <span class="op">=</span> <span class="ident">template::render</span>(
-                <span class="ident">TEMPLATE::CLAP_YAML</span>,
-                <span class="kw-2">&amp;</span><span class="ident">ClapYamlContext</span> {
-                    <span class="ident">name</span>: <span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>(),
-                    <span class="ident">version</span>: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">meta</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()),
+        <span class="kw">let </span>cm = <span class="self">self</span>.infer_crate_meta()<span class="question-mark">?</span>;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(meta) = cm.borrow().as_ref() {
+            <span class="comment">// Clap YAML
+            </span><span class="kw">let </span>clap_yaml = root.with_file_name(<span class="string">&quot;app.yaml&quot;</span>);
+            <span class="kw">let </span>base_content = template::render(
+                TEMPLATE::CLAP_YAML,
+                <span class="kw-2">&amp;</span>ClapYamlContext {
+                    name: meta.name.as_ref().unwrap(),
+                    version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.version.as_ref().unwrap()),
                 },
             )<span class="question-mark">?</span>;
 
-            <span class="kw">let</span> <span class="ident">cli_mod</span> <span class="op">=</span> <span class="ident">root</span>.<span class="ident">with_file_name</span>(<span class="string">&quot;cli.rs&quot;</span>);
-            <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">base_content</span>, <span class="kw-2">&amp;</span><span class="ident">clap_yaml</span>)<span class="question-mark">?</span>;
-            <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cli_yaml</span>.<span class="ident">borrow</span>(), <span class="kw-2">&amp;</span><span class="ident">clap_yaml</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span>cli_mod = root.with_file_name(<span class="string">&quot;cli.rs&quot;</span>);
+            <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>base_content, <span class="kw-2">&amp;</span>clap_yaml)<span class="question-mark">?</span>;
+            <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span><span class="self">self</span>.cli_yaml.borrow(), <span class="kw-2">&amp;</span>clap_yaml)<span class="question-mark">?</span>;
 
-            <span class="comment">// CLI module</span>
-            <span class="kw">let</span> <span class="ident">cli_content</span> <span class="op">=</span> <span class="ident">template::render</span>(
-                <span class="ident">TEMPLATE::CLI_UTIL</span>,
-                <span class="kw-2">&amp;</span><span class="ident">CliUtilContext</span> {
-                    <span class="ident">match_arms</span>: <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">cli_match_arms</span>.<span class="ident">borrow</span>(),
-                    <span class="ident">media_coders</span>: <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">media_coders</span>.<span class="ident">borrow</span>(),
+            <span class="comment">// CLI module
+            </span><span class="kw">let </span>cli_content = template::render(
+                TEMPLATE::CLI_UTIL,
+                <span class="kw-2">&amp;</span>CliUtilContext {
+                    match_arms: <span class="kw-2">&amp;</span><span class="self">self</span>.cli_match_arms.borrow(),
+                    media_coders: <span class="kw-2">&amp;</span><span class="self">self</span>.media_coders.borrow(),
                 },
             )<span class="question-mark">?</span>;
 
-            <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">cli_content</span>, <span class="kw-2">&amp;</span><span class="ident">cli_mod</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>cli_content, <span class="kw-2">&amp;</span>cli_mod)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// `main.rs`</span>
-        <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">template::render</span>(<span class="ident">TEMPLATE::CLI_MAIN</span>, <span class="kw-2">&amp;</span><span class="ident">EmptyContext</span> {})<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">append_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="kw-2">&amp;</span><span class="ident">root</span>)
+        <span class="comment">// `main.rs`
+        </span><span class="kw">let </span>contents = template::render(TEMPLATE::CLI_MAIN, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
+        <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>root)
     }
 
-    <span class="doccomment">/// Returns if this session is for generating CLI.</span>
-    <span class="kw">fn</span> <span class="ident">is_cli</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>
-            .<span class="ident">infer_crate_meta</span>()<span class="question-mark">?</span>
-            .<span class="ident">borrow</span>()
-            .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">mode</span> <span class="op">==</span> <span class="ident">EmitMode::App</span>)
-            .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>))
+    <span class="doccomment">/// Returns if this session is for generating CLI.
+    </span><span class="kw">fn </span>is_cli(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self
+            </span>.infer_crate_meta()<span class="question-mark">?
+            </span>.borrow()
+            .as_ref()
+            .map(|m| m.mode == EmitMode::App)
+            .unwrap_or(<span class="bool-val">false</span>))
     }
 
-    <span class="kw">fn</span> <span class="ident">no_root</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">bool</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>
-            .<span class="ident">infer_crate_meta</span>()<span class="question-mark">?</span>
-            .<span class="ident">borrow</span>()
-            .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">no_root</span>)
-            .<span class="ident">unwrap_or</span>(<span class="bool-val">true</span>))
+    <span class="kw">fn </span>no_root(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;bool, Error&gt; {
+        <span class="prelude-val">Ok</span>(<span class="self">self
+            </span>.infer_crate_meta()<span class="question-mark">?
+            </span>.borrow()
+            .as_ref()
+            .map(|m| m.no_root)
+            .unwrap_or(<span class="bool-val">true</span>))
     }
 
-    <span class="doccomment">/// Normalized module prefix used by codegen.</span>
-    <span class="kw">fn</span> <span class="ident">normalized_mod_prefix</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">String</span> {
-        <span class="macro">format!</span>(<span class="string">&quot;{}::&quot;</span>, <span class="self">self</span>.<span class="ident">mod_prefix</span>.<span class="ident">trim_matches</span>(<span class="string">&#39;:&#39;</span>))
+    <span class="doccomment">/// Normalized module prefix used by codegen.
+    </span><span class="kw">fn </span>normalized_mod_prefix(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+        <span class="macro">format!</span>(<span class="string">&quot;{}::&quot;</span>, <span class="self">self</span>.mod_prefix.trim_matches(<span class="string">&#39;:&#39;</span>))
     }
 }
 
-<span class="comment">/* Feature-specific impls */</span>
+<span class="comment">/* Feature-specific impls */
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">EmitterState</span> {
-    <span class="doccomment">/// Sets the crate metadata for this session.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_meta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">meta</span>: <span class="ident">CrateMeta</span>) {
-        <span class="kw-2">*</span><span class="self">self</span>.<span class="ident">crate_meta</span>.<span class="ident">borrow_mut</span>() <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">meta</span>)
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+<span class="kw">impl </span>EmitterState {
+    <span class="doccomment">/// Sets the crate metadata for this session.
+    </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, meta: CrateMeta) {
+        <span class="kw-2">*</span><span class="self">self</span>.crate_meta.borrow_mut() = <span class="prelude-val">Some</span>(meta)
     }
 
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">get_meta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CrateMeta</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="ident">crate_meta</span>.<span class="ident">clone</span>()
+    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>get_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt; {
+        <span class="self">self</span>.crate_meta.clone()
     }
 
-    <span class="doccomment">/// Checks whether this session is for emitting a crate or CLI.</span>
-    <span class="kw">fn</span> <span class="ident">needs_root_module</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">crate_meta</span>
-            .<span class="ident">borrow</span>()
-            .<span class="ident">as_ref</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">m</span><span class="op">|</span> <span class="ident">m</span>.<span class="ident">mode</span> <span class="op">!</span><span class="op">=</span> <span class="ident">EmitMode::Module</span>)
-            .<span class="ident">unwrap_or</span>(<span class="bool-val">false</span>)
+    <span class="doccomment">/// Checks whether this session is for emitting a crate or CLI.
+    </span><span class="kw">fn </span>needs_root_module(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.crate_meta
+            .borrow()
+            .as_ref()
+            .map(|m| m.mode != EmitMode::Module)
+            .unwrap_or(<span class="bool-val">false</span>)
     }
 
-    <span class="doccomment">/// Returns the path to the root module.</span>
-    <span class="kw">fn</span> <span class="ident">root_module_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PathBuf</span> {
-        <span class="kw">let</span> <span class="ident">cm</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">crate_meta</span>.<span class="ident">borrow</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">meta</span>) <span class="op">=</span> <span class="ident">cm</span>.<span class="ident">as_ref</span>() {
-            <span class="kw">match</span> <span class="ident">meta</span>.<span class="ident">mode</span> {
-                <span class="ident">EmitMode::Crate</span> =&gt; <span class="kw">return</span> <span class="self">self</span>.<span class="ident">working_dir</span>.<span class="ident">join</span>(<span class="string">&quot;lib.rs&quot;</span>),
-                <span class="ident">EmitMode::App</span> =&gt; <span class="kw">return</span> <span class="self">self</span>.<span class="ident">working_dir</span>.<span class="ident">join</span>(<span class="string">&quot;main.rs&quot;</span>),
-                <span class="ident">EmitMode::Module</span> =&gt; (),
+    <span class="doccomment">/// Returns the path to the root module.
+    </span><span class="kw">fn </span>root_module_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
+        <span class="kw">let </span>cm = <span class="self">self</span>.crate_meta.borrow();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(meta) = cm.as_ref() {
+            <span class="kw">match </span>meta.mode {
+                EmitMode::Crate =&gt; <span class="kw">return </span><span class="self">self</span>.working_dir.join(<span class="string">&quot;lib.rs&quot;</span>),
+                EmitMode::App =&gt; <span class="kw">return </span><span class="self">self</span>.working_dir.join(<span class="string">&quot;main.rs&quot;</span>),
+                EmitMode::Module =&gt; (),
             }
         }
 
-        <span class="self">self</span>.<span class="ident">working_dir</span>.<span class="ident">join</span>(<span class="string">&quot;mod.rs&quot;</span>)
+        <span class="self">self</span>.working_dir.join(<span class="string">&quot;mod.rs&quot;</span>)
     }
 
-    <span class="doccomment">/// Creates a Cargo.toml manifest in the working directory (if it&#39;s a crate).</span>
-    <span class="kw">fn</span> <span class="ident">create_manifest</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">man_path</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">root_module_path</span>();
-        <span class="kw">let</span> <span class="ident">is_cli</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">is_cli</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">no_root</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">no_root</span>()<span class="question-mark">?</span>;
-        <span class="ident">man_path</span>.<span class="ident">set_file_name</span>(<span class="string">&quot;Cargo.toml&quot;</span>);
+    <span class="doccomment">/// Creates a Cargo.toml manifest in the working directory (if it&#39;s a crate).
+    </span><span class="kw">fn </span>create_manifest(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>man_path = <span class="self">self</span>.root_module_path();
+        <span class="kw">let </span>is_cli = <span class="self">self</span>.is_cli()<span class="question-mark">?</span>;
+        <span class="kw">let </span>no_root = <span class="self">self</span>.no_root()<span class="question-mark">?</span>;
+        man_path.set_file_name(<span class="string">&quot;Cargo.toml&quot;</span>);
 
-        <span class="kw">let</span> <span class="ident">cm</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">infer_crate_meta</span>()<span class="question-mark">?</span>;
-        <span class="kw">let</span> <span class="ident">m</span> <span class="op">=</span> <span class="ident">cm</span>.<span class="ident">borrow</span>();
-        <span class="kw">let</span> <span class="ident">meta</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">m</span>.<span class="ident">as_ref</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">c</span>) =&gt; <span class="ident">c</span>,
-            <span class="prelude-val">None</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(()),
+        <span class="kw">let </span>cm = <span class="self">self</span>.infer_crate_meta()<span class="question-mark">?</span>;
+        <span class="kw">let </span>m = cm.borrow();
+        <span class="kw">let </span>meta = <span class="kw">match </span>m.as_ref() {
+            <span class="prelude-val">Some</span>(c) =&gt; c,
+            <span class="prelude-val">None </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
         };
 
-        <span class="kw">if</span> <span class="self">self</span>.<span class="ident">needs_root_module</span>() {
-            <span class="kw">let</span> <span class="ident">contents</span> <span class="op">=</span> <span class="ident">template::render</span>(
-                <span class="ident">TEMPLATE::CARGO_MANIFEST</span>,
-                <span class="kw-2">&amp;</span><span class="ident">ManifestContext</span> {
-                    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()),
-                    <span class="ident">version</span>: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">meta</span>.<span class="ident">version</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()),
-                    <span class="ident">authors</span>: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="ident">meta</span>.<span class="ident">authors</span>.<span class="ident">as_ref</span>().<span class="ident">unwrap</span>()),
-                    <span class="ident">is_cli</span>,
-                    <span class="ident">no_root</span>,
+        <span class="kw">if </span><span class="self">self</span>.needs_root_module() {
+            <span class="kw">let </span>contents = template::render(
+                TEMPLATE::CARGO_MANIFEST,
+                <span class="kw-2">&amp;</span>ManifestContext {
+                    name: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.name.as_ref().unwrap()),
+                    version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.version.as_ref().unwrap()),
+                    authors: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.authors.as_ref().unwrap()),
+                    is_cli,
+                    no_root,
                 },
             )<span class="question-mark">?</span>;
 
-            <span class="self">self</span>.<span class="ident">write_contents</span>(<span class="kw-2">&amp;</span><span class="ident">contents</span>, <span class="kw-2">&amp;</span><span class="ident">man_path</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>man_path)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Validates crate metadata, sets the unset fields and returns a reference.</span>
-    <span class="kw">fn</span> <span class="ident">infer_crate_meta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CrateMeta</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">cm</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">crate_meta</span>.<span class="ident">borrow_mut</span>();
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">meta</span>) <span class="op">=</span> <span class="kw-2">&amp;mut</span> <span class="kw-2">*</span><span class="ident">cm</span> {
-            <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">name</span>.<span class="ident">is_none</span>() {
-                <span class="ident">meta</span>.<span class="ident">name</span> <span class="op">=</span> <span class="prelude-val">Some</span>(
-                    <span class="ident">fs::canonicalize</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">working_dir</span>)<span class="question-mark">?</span>
-                        .<span class="ident">file_name</span>()
-                        .<span class="ident">ok_or</span>(<span class="ident">PaperClipError::InvalidCodegenDirectory</span>)<span class="question-mark">?</span>
-                        .<span class="ident">to_string_lossy</span>()
-                        .<span class="ident">into_owned</span>()
-                        .<span class="ident">to_snake_case</span>(),
+    <span class="doccomment">/// Validates crate metadata, sets the unset fields and returns a reference.
+    </span><span class="kw">fn </span>infer_crate_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;, Error&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>cm = <span class="self">self</span>.crate_meta.borrow_mut();
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(meta) = <span class="kw-2">&amp;mut *</span>cm {
+            <span class="kw">if </span>meta.name.is_none() {
+                meta.name = <span class="prelude-val">Some</span>(
+                    fs::canonicalize(<span class="kw-2">&amp;</span><span class="self">self</span>.working_dir)<span class="question-mark">?
+                        </span>.file_name()
+                        .ok_or(PaperClipError::InvalidCodegenDirectory)<span class="question-mark">?
+                        </span>.to_string_lossy()
+                        .into_owned()
+                        .to_snake_case(),
                 );
             }
 
-            <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">version</span>.<span class="ident">is_none</span>() {
-                <span class="ident">meta</span>.<span class="ident">version</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="string">&quot;0.1.0&quot;</span>.<span class="ident">into</span>());
+            <span class="kw">if </span>meta.version.is_none() {
+                meta.version = <span class="prelude-val">Some</span>(<span class="string">&quot;0.1.0&quot;</span>.into());
             }
 
-            <span class="kw">if</span> <span class="ident">meta</span>.<span class="ident">authors</span>.<span class="ident">is_none</span>() {
-                <span class="kw">let</span> (<span class="kw-2">mut</span> <span class="ident">name</span>, <span class="ident">email</span>) <span class="op">=</span> <span class="ident"><span class="kw">super</span>::author::discover</span>()<span class="question-mark">?</span>;
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">e</span>) <span class="op">=</span> <span class="ident">email</span> {
-                    <span class="ident">name</span>.<span class="ident">push_str</span>(<span class="string">&quot; &lt;&quot;</span>);
-                    <span class="ident">name</span>.<span class="ident">push_str</span>(<span class="kw-2">&amp;</span><span class="ident">e</span>);
-                    <span class="ident">name</span>.<span class="ident">push</span>(<span class="string">&#39;&gt;&#39;</span>);
+            <span class="kw">if </span>meta.authors.is_none() {
+                <span class="kw">let </span>(<span class="kw-2">mut </span>name, email) = <span class="kw">super</span>::author::discover()<span class="question-mark">?</span>;
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(e) = email {
+                    name.push_str(<span class="string">&quot; &lt;&quot;</span>);
+                    name.push_str(<span class="kw-2">&amp;</span>e);
+                    name.push(<span class="string">&#39;&gt;&#39;</span>);
                 }
 
-                <span class="ident">meta</span>.<span class="ident">authors</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[<span class="ident">name</span>]);
+                meta.authors = <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[name]);
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="self">self</span>.<span class="ident">crate_meta</span>.<span class="ident">clone</span>())
+        <span class="prelude-val">Ok</span>(<span class="self">self</span>.crate_meta.clone())
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>))]</span>
-<span class="kw">impl</span> <span class="ident">EmitterState</span> {
-    <span class="doccomment">/// This is a no-op.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">set_meta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: <span class="ident">CrateMeta</span>) {}
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;cli&quot;</span>))]</span>
+<span class="kw">impl </span>EmitterState {
+    <span class="doccomment">/// This is a no-op.
+    </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: CrateMeta) {}
 
-    <span class="doccomment">/// This is a no-op</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">get_meta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CrateMeta</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="prelude-val">None</span>))
+    <span class="doccomment">/// This is a no-op
+    </span><span class="kw">pub fn </span>get_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt; {
+        Rc::new(RefCell::new(<span class="prelude-val">None</span>))
     }
 
-    <span class="doccomment">/// Always returns `Ok(None)`</span>
-    <span class="kw">fn</span> <span class="ident">infer_crate_meta</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Rc</span><span class="op">&lt;</span><span class="ident">RefCell</span><span class="op">&lt;</span><span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">CrateMeta</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>, <span class="ident">Error</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Ok</span>(<span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="prelude-val">None</span>)))
+    <span class="doccomment">/// Always returns `Ok(None)`
+    </span><span class="kw">fn </span>infer_crate_meta(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;, Error&gt; {
+        <span class="prelude-val">Ok</span>(Rc::new(RefCell::new(<span class="prelude-val">None</span>)))
     }
 
-    <span class="doccomment">/// Always returns the path to `mod.rs` in root.</span>
-    <span class="kw">fn</span> <span class="ident">root_module_path</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">PathBuf</span> {
-        <span class="self">self</span>.<span class="ident">working_dir</span>.<span class="ident">join</span>(<span class="string">&quot;mod.rs&quot;</span>)
+    <span class="doccomment">/// Always returns the path to `mod.rs` in root.
+    </span><span class="kw">fn </span>root_module_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
+        <span class="self">self</span>.working_dir.join(<span class="string">&quot;mod.rs&quot;</span>)
     }
 
-    <span class="doccomment">/// This always returns `false`.</span>
-    <span class="kw">fn</span> <span class="ident">needs_root_module</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="bool-val">false</span>
-    }
+    <span class="doccomment">/// This always returns `false`.
+    </span><span class="kw">fn </span>needs_root_module(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="bool-val">false
+    </span>}
 
-    <span class="doccomment">/// Always returns `Ok(())`</span>
-    <span class="kw">fn</span> <span class="ident">create_manifest</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">Error</span><span class="op">&gt;</span> {
+    <span class="doccomment">/// Always returns `Ok(())`
+    </span><span class="kw">fn </span>create_manifest(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="prelude-val">Ok</span>(())
     }
 }
 
-<span class="comment">/* Other impls */</span>
+<span class="comment">/* Other impls */
 
-<span class="kw">impl</span> <span class="ident">Clone</span> <span class="kw">for</span> <span class="ident">EmitterState</span> {
-    <span class="kw">fn</span> <span class="ident">clone</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="ident">EmitterState</span> {
-        <span class="ident">EmitterState</span> {
-            <span class="ident">working_dir</span>: <span class="self">self</span>.<span class="ident">working_dir</span>.<span class="ident">clone</span>(),
-            <span class="ident">mod_prefix</span>: <span class="self">self</span>.<span class="ident">mod_prefix</span>,
-            <span class="ident">ns_sep</span>: <span class="self">self</span>.<span class="ident">ns_sep</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-            <span class="ident">crate_meta</span>: <span class="self">self</span>.<span class="ident">crate_meta</span>.<span class="ident">clone</span>(),
-            <span class="ident">base_url</span>: <span class="self">self</span>.<span class="ident">base_url</span>.<span class="ident">clone</span>(),
-            <span class="ident">default_encoding</span>: <span class="self">self</span>.<span class="ident">default_encoding</span>.<span class="ident">clone</span>(),
-            <span class="comment">// Get rid of all state-specific fields.</span>
-            ..<span class="ident">Default::default</span>()
+</span><span class="kw">impl </span>Clone <span class="kw">for </span>EmitterState {
+    <span class="kw">fn </span>clone(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; EmitterState {
+        EmitterState {
+            working_dir: <span class="self">self</span>.working_dir.clone(),
+            mod_prefix: <span class="self">self</span>.mod_prefix,
+            ns_sep: <span class="self">self</span>.ns_sep,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+            crate_meta: <span class="self">self</span>.crate_meta.clone(),
+            base_url: <span class="self">self</span>.base_url.clone(),
+            default_encoding: <span class="self">self</span>.default_encoding.clone(),
+            <span class="comment">// Get rid of all state-specific fields.
+            </span>..Default::default()
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Default</span> <span class="kw">for</span> <span class="ident">EmitterState</span> {
-    <span class="kw">fn</span> <span class="ident">default</span>() -&gt; <span class="ident">EmitterState</span> {
-        <span class="ident">EmitterState</span> {
-            <span class="ident">working_dir</span>: <span class="ident">PathBuf::from</span>(<span class="string">&quot;.&quot;</span>),
-            <span class="ident">mod_prefix</span>: <span class="string">&quot;crate::&quot;</span>,
-            <span class="ident">ns_sep</span>: <span class="string">&quot;.&quot;</span>,
-            <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-            <span class="ident">crate_meta</span>: <span class="ident">Rc::new</span>(<span class="ident">RefCell::new</span>(<span class="prelude-val">None</span>)),
-            <span class="ident">base_url</span>: <span class="ident">RefCell::new</span>(<span class="string">&quot;https://example.com&quot;</span>.<span class="ident">parse</span>().<span class="ident">expect</span>(<span class="string">&quot;invalid URL?&quot;</span>)),
-            <span class="ident">def_mods</span>: <span class="ident">RefCell::new</span>(<span class="ident">BTreeMap::new</span>()),
-            <span class="ident">rel_paths</span>: <span class="ident">RefCell::new</span>(<span class="ident">HashSet::new</span>()),
-            <span class="ident">mod_children</span>: <span class="ident">RefCell::new</span>(<span class="ident">HashMap::new</span>()),
-            <span class="ident">unit_types</span>: <span class="ident">RefCell::new</span>(<span class="ident">BTreeSet::new</span>()),
-            <span class="ident">cli_yaml</span>: <span class="ident">RefCell::new</span>(<span class="ident">String::new</span>()),
-            <span class="ident">cli_match_arms</span>: <span class="ident">RefCell::new</span>(<span class="ident">String::new</span>()),
-            <span class="ident">media_coders</span>: <span class="ident">RefCell::new</span>(<span class="macro">vec!</span>[]),
-            <span class="ident">default_encoding</span>: <span class="ident">RefCell::new</span>(<span class="ident">SpecFormat::Json</span>),
+<span class="kw">impl </span>Default <span class="kw">for </span>EmitterState {
+    <span class="kw">fn </span>default() -&gt; EmitterState {
+        EmitterState {
+            working_dir: PathBuf::from(<span class="string">&quot;.&quot;</span>),
+            mod_prefix: <span class="string">&quot;crate::&quot;</span>,
+            ns_sep: <span class="string">&quot;.&quot;</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+            crate_meta: Rc::new(RefCell::new(<span class="prelude-val">None</span>)),
+            base_url: RefCell::new(<span class="string">&quot;https://example.com&quot;</span>.parse().expect(<span class="string">&quot;invalid URL?&quot;</span>)),
+            def_mods: RefCell::new(BTreeMap::new()),
+            rel_paths: RefCell::new(HashSet::new()),
+            mod_children: RefCell::new(HashMap::new()),
+            unit_types: RefCell::new(BTreeSet::new()),
+            cli_yaml: RefCell::new(String::new()),
+            cli_match_arms: RefCell::new(String::new()),
+            media_coders: RefCell::new(<span class="macro">vec!</span>[]),
+            default_encoding: RefCell::new(SpecFormat::Json),
         }
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Hash</span> <span class="kw">for</span> <span class="ident">ChildModule</span> {
-    <span class="kw">fn</span> <span class="ident">hash</span><span class="op">&lt;</span><span class="ident">H</span>: <span class="ident">Hasher</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">state</span>: <span class="kw-2">&amp;mut</span> <span class="ident">H</span>) {
-        <span class="self">self</span>.<span class="ident">name</span>.<span class="ident">hash</span>(<span class="ident">state</span>);
+<span class="kw">impl </span>Hash <span class="kw">for </span>ChildModule {
+    <span class="kw">fn </span>hash&lt;H: Hasher&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, state: <span class="kw-2">&amp;mut </span>H) {
+        <span class="self">self</span>.name.hash(state);
     }
 }
 
-<span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">ChildModule</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="ident">name</span> <span class="op">==</span> <span class="ident">other</span>.<span class="ident">name</span>
+<span class="kw">impl </span>PartialEq <span class="kw">for </span>ChildModule {
+    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+        <span class="self">self</span>.name == other.name
     }
 }
 
-<span class="comment">/* Templating contexts */</span>
+<span class="comment">/* Templating contexts */
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde::Serialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">ManifestContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">version</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">authors</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">is_cli</span>: <span class="ident">bool</span>,
-    <span class="ident">no_root</span>: <span class="ident">bool</span>,
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
+<span class="attribute">#[derive(serde::Serialize)]</span>
+<span class="kw">struct </span>ManifestContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    authors: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    is_cli: bool,
+    no_root: bool,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde::Serialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">CliUtilContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">match_arms</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">media_coders</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">MediaCoder</span>],
+<span class="attribute">#[derive(serde::Serialize)]</span>
+<span class="kw">struct </span>CliUtilContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+    match_arms: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde::Serialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">ClientModContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">base_url</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">mod_prefix</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">media_coders</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">MediaCoder</span>],
+<span class="attribute">#[derive(serde::Serialize)]</span>
+<span class="kw">struct </span>ClientModContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+    base_url: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">serde::Serialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">MediaCoder</span> {
-    <span class="ident">range</span>: <span class="ident">String</span>,
-    <span class="ident">decoder</span>: <span class="ident">String</span>,
-    <span class="ident">error_variant</span>: <span class="ident">String</span>,
-    <span class="ident">error_ty_path</span>: <span class="ident">String</span>,
+<span class="attribute">#[derive(Debug, serde::Serialize)]</span>
+<span class="kw">struct </span>MediaCoder {
+    range: String,
+    decoder: String,
+    error_variant: String,
+    error_ty_path: String,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde::Serialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">ClapYamlContext</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> {
-    <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
-    <span class="ident">version</span>: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span>,
+<span class="attribute">#[derive(serde::Serialize)]</span>
+<span class="kw">struct </span>ClapYamlContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+    version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
 }
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">serde::Serialize</span>)]</span>
-<span class="kw">struct</span> <span class="ident">EmptyContext</span> {}
+<span class="attribute">#[derive(serde::Serialize)]</span>
+<span class="kw">struct </span>EmptyContext {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

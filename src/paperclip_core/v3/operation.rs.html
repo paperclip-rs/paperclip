@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/operation.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>operation.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/operation.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>operation.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -131,133 +125,132 @@
 <span id="125">125</span>
 <span id="126">126</span>
 <span id="127">127</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{<span class="ident">v2</span>, <span class="ident">Either</span>, <span class="ident">OperationEitherResponse</span>};
+</pre><pre class="rust"><code><span class="kw">use super</span>::{v2, Either, OperationEitherResponse};
 
-<span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="ident">v2::Operation</span><span class="op">&lt;</span><span class="ident">v2::DefaultParameterRaw</span>, <span class="ident">v2::DefaultResponseRaw</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">openapiv3::Operation</span> {
-    <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">v2</span>: <span class="ident">v2::Operation</span><span class="op">&lt;</span><span class="ident">v2::DefaultParameterRaw</span>, <span class="ident">v2::DefaultResponseRaw</span><span class="op">&gt;</span>) -&gt; <span class="self">Self</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">request_body</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">openapiv3::RequestBody</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">form_data</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">openapiv3::AnySchema</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-val">None</span>;
-        <span class="kw">let</span> <span class="ident">v2v</span> <span class="op">=</span> <span class="ident">v2</span>.<span class="ident">clone</span>();
+<span class="kw">impl </span>From&lt;v2::Operation&lt;v2::DefaultParameterRaw, v2::DefaultResponseRaw&gt;&gt; <span class="kw">for </span>openapiv3::Operation {
+    <span class="kw">fn </span>from(v2: v2::Operation&lt;v2::DefaultParameterRaw, v2::DefaultResponseRaw&gt;) -&gt; <span class="self">Self </span>{
+        <span class="kw">let </span><span class="kw-2">mut </span>request_body: <span class="prelude-ty">Option</span>&lt;openapiv3::RequestBody&gt; = <span class="prelude-val">None</span>;
+        <span class="kw">let </span><span class="kw-2">mut </span>form_data: <span class="prelude-ty">Option</span>&lt;openapiv3::AnySchema&gt; = <span class="prelude-val">None</span>;
+        <span class="kw">let </span>v2v = v2.clone();
 
-        <span class="kw">let</span> <span class="ident">parameters</span> <span class="op">=</span> <span class="ident">v2</span>
-            .<span class="ident">parameters</span>
-            .<span class="ident">iter</span>()
-            .<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">p</span><span class="op">|</span> <span class="kw">match</span> <span class="ident">p</span> {
-                <span class="ident">Either::Left</span>(<span class="ident">reference</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">reference</span>.<span class="ident">into</span>()),
-                <span class="ident">Either::Right</span>(<span class="ident">parameter</span>) =&gt; {
-                    <span class="kw">let</span> <span class="ident">either</span>: <span class="ident">Either</span><span class="op">&lt;</span>
-                        <span class="ident">openapiv3::Parameter</span>,
-                        <span class="ident">Either</span><span class="op">&lt;</span><span class="ident">openapiv3::RequestBody</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">openapiv3::Schema</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-                    <span class="op">&gt;</span> <span class="op">=</span> <span class="ident">parameter</span>.<span class="ident">clone</span>().<span class="ident">into</span>();
-                    <span class="kw">match</span> <span class="ident">either</span> {
-                        <span class="ident">Either::Right</span>(<span class="ident">r</span>) =&gt; <span class="kw">match</span> <span class="ident">r</span> {
-                            <span class="ident">Either::Left</span>(<span class="ident">l</span>) =&gt; {
-                                <span class="ident">request_body</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">l</span>);
-                                <span class="prelude-val">None</span>
-                            }
-                            <span class="ident">Either::Right</span>(<span class="prelude-val">Some</span>(<span class="ident">schema</span>)) =&gt; {
-                                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">any</span>) <span class="op">=</span> <span class="ident">form_data</span>.<span class="ident">as_mut</span>() {
-                                    <span class="ident">any</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(
-                                        <span class="ident">parameter</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
-                                        <span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">Box::new</span>(<span class="ident">schema</span>)),
+        <span class="kw">let </span>parameters = v2
+            .parameters
+            .iter()
+            .filter_map(|p| <span class="kw">match </span>p {
+                Either::Left(reference) =&gt; <span class="prelude-val">Some</span>(reference.into()),
+                Either::Right(parameter) =&gt; {
+                    <span class="kw">let </span>either: Either&lt;
+                        openapiv3::Parameter,
+                        Either&lt;openapiv3::RequestBody, <span class="prelude-ty">Option</span>&lt;openapiv3::Schema&gt;&gt;,
+                    &gt; = parameter.clone().into();
+                    <span class="kw">match </span>either {
+                        Either::Right(r) =&gt; <span class="kw">match </span>r {
+                            Either::Left(l) =&gt; {
+                                request_body = <span class="prelude-val">Some</span>(l);
+                                <span class="prelude-val">None
+                            </span>}
+                            Either::Right(<span class="prelude-val">Some</span>(schema)) =&gt; {
+                                <span class="kw">if let </span><span class="prelude-val">Some</span>(any) = form_data.as_mut() {
+                                    any.properties.insert(
+                                        parameter.name.clone(),
+                                        openapiv3::ReferenceOr::Item(Box::new(schema)),
                                     );
-                                } <span class="kw">else</span> {
-                                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">any</span> <span class="op">=</span> <span class="ident">openapiv3::AnySchema::default</span>();
-                                    <span class="kw">if</span> <span class="ident">parameter</span>.<span class="ident">required</span> {
-                                        <span class="ident">any</span>.<span class="ident">required</span>.<span class="ident">push</span>(<span class="ident">parameter</span>.<span class="ident">name</span>.<span class="ident">clone</span>());
+                                } <span class="kw">else </span>{
+                                    <span class="kw">let </span><span class="kw-2">mut </span>any = openapiv3::AnySchema::default();
+                                    <span class="kw">if </span>parameter.required {
+                                        any.required.push(parameter.name.clone());
                                     }
-                                    <span class="ident">any</span>.<span class="ident">properties</span>.<span class="ident">insert</span>(
-                                        <span class="ident">parameter</span>.<span class="ident">name</span>.<span class="ident">clone</span>(),
-                                        <span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">Box::new</span>(<span class="ident">schema</span>)),
+                                    any.properties.insert(
+                                        parameter.name.clone(),
+                                        openapiv3::ReferenceOr::Item(Box::new(schema)),
                                     );
-                                    <span class="ident">form_data</span> <span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">any</span>);
+                                    form_data = <span class="prelude-val">Some</span>(any);
                                 }
-                                <span class="prelude-val">None</span>
-                            }
-                            <span class="ident">Either::Right</span>(<span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
+                                <span class="prelude-val">None
+                            </span>}
+                            Either::Right(<span class="prelude-val">None</span>) =&gt; <span class="prelude-val">None</span>,
                         },
-                        <span class="ident">Either::Left</span>(<span class="ident">parameter</span>) =&gt; <span class="prelude-val">Some</span>(<span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">parameter</span>)),
+                        Either::Left(parameter) =&gt; <span class="prelude-val">Some</span>(openapiv3::ReferenceOr::Item(parameter)),
                     }
                 }
             })
-            .<span class="ident">collect</span>();
+            .collect();
 
-        <span class="kw">let</span> <span class="ident">request_body</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">request_body</span>) <span class="op">=</span> <span class="ident">request_body</span> {
-            <span class="prelude-val">Some</span>(<span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">request_body</span>))
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">form_data</span>) <span class="op">=</span> <span class="ident">form_data</span> {
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">request_body</span> <span class="op">=</span> <span class="ident">openapiv3::RequestBody::default</span>();
-            <span class="kw">match</span> <span class="ident">v2</span>.<span class="ident">consumes</span> {
-                <span class="prelude-val">None</span> =&gt; <span class="prelude-val">None</span>,
-                <span class="prelude-val">Some</span>(<span class="ident">consumes</span>) =&gt; {
-                    <span class="kw">for</span> <span class="ident">media</span> <span class="kw">in</span> <span class="ident">consumes</span> {
-                        <span class="ident">request_body</span>.<span class="ident">content</span>.<span class="ident">insert</span>(<span class="ident">media</span>.<span class="number">0</span>.<span class="ident">to_string</span>(), {
-                            <span class="ident">openapiv3::MediaType</span> {
-                                <span class="ident">schema</span>: <span class="prelude-val">Some</span>(<span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">openapiv3::Schema</span> {
-                                    <span class="ident">schema_data</span>: <span class="ident">Default::default</span>(),
-                                    <span class="ident">schema_kind</span>: <span class="ident">openapiv3::SchemaKind::Any</span>(<span class="ident">form_data</span>.<span class="ident">clone</span>()),
+        <span class="kw">let </span>request_body = <span class="kw">if let </span><span class="prelude-val">Some</span>(request_body) = request_body {
+            <span class="prelude-val">Some</span>(openapiv3::ReferenceOr::Item(request_body))
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(form_data) = form_data {
+            <span class="kw">let </span><span class="kw-2">mut </span>request_body = openapiv3::RequestBody::default();
+            <span class="kw">match </span>v2.consumes {
+                <span class="prelude-val">None </span>=&gt; <span class="prelude-val">None</span>,
+                <span class="prelude-val">Some</span>(consumes) =&gt; {
+                    <span class="kw">for </span>media <span class="kw">in </span>consumes {
+                        request_body.content.insert(media.<span class="number">0</span>.to_string(), {
+                            openapiv3::MediaType {
+                                schema: <span class="prelude-val">Some</span>(openapiv3::ReferenceOr::Item(openapiv3::Schema {
+                                    schema_data: Default::default(),
+                                    schema_kind: openapiv3::SchemaKind::Any(form_data.clone()),
                                 })),
-                                ..<span class="ident">Default::default</span>()
+                                ..Default::default()
                             }
                         });
                     }
 
-                    <span class="prelude-val">Some</span>(<span class="ident">openapiv3::ReferenceOr::Item</span>(<span class="ident">request_body</span>))
+                    <span class="prelude-val">Some</span>(openapiv3::ReferenceOr::Item(request_body))
                 }
             }
-        } <span class="kw">else</span> {
-            <span class="prelude-val">None</span>
-        };
+        } <span class="kw">else </span>{
+            <span class="prelude-val">None
+        </span>};
 
-        <span class="ident">openapiv3::Operation</span> {
-            <span class="ident">tags</span>: <span class="ident">v2</span>.<span class="ident">tags</span>,
-            <span class="ident">summary</span>: <span class="ident">v2</span>.<span class="ident">summary</span>,
-            <span class="ident">description</span>: <span class="ident">v2</span>.<span class="ident">description</span>,
-            <span class="ident">external_docs</span>: <span class="prelude-val">None</span>,
-            <span class="ident">operation_id</span>: <span class="ident">v2</span>.<span class="ident">operation_id</span>,
-            <span class="ident">parameters</span>,
-            <span class="ident">request_body</span>,
-            <span class="ident">responses</span>: <span class="ident">openapiv3::Responses</span> {
-                <span class="ident">default</span>: <span class="prelude-val">None</span>,
-                <span class="ident">responses</span>: <span class="ident">v2</span>
-                    .<span class="ident">responses</span>
-                    .<span class="ident">iter</span>()
-                    .<span class="ident">fold</span>(<span class="ident">indexmap::IndexMap::new</span>(), <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">i</span>, (<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> {
-                        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">code</span>) <span class="op">=</span> <span class="ident">k</span>.<span class="ident">parse</span>::<span class="op">&lt;</span><span class="ident">u16</span><span class="op">&gt;</span>() {
-                            <span class="kw">let</span> <span class="ident">code</span> <span class="op">=</span> <span class="ident">openapiv3::StatusCode::Code</span>(<span class="ident">code</span>);
-                            <span class="ident">i</span>.<span class="ident">insert</span>(
-                                <span class="ident">code</span>,
-                                <span class="ident">OperationEitherResponse</span> {
-                                    <span class="ident">operation</span>: <span class="kw-2">&amp;</span><span class="ident">v2v</span>,
-                                    <span class="ident">response</span>: <span class="ident">v</span>,
+        openapiv3::Operation {
+            tags: v2.tags,
+            summary: v2.summary,
+            description: v2.description,
+            external_docs: <span class="prelude-val">None</span>,
+            operation_id: v2.operation_id,
+            parameters,
+            request_body,
+            responses: openapiv3::Responses {
+                default: <span class="prelude-val">None</span>,
+                responses: v2
+                    .responses
+                    .iter()
+                    .fold(indexmap::IndexMap::new(), |<span class="kw-2">mut </span>i, (k, v)| {
+                        <span class="kw">if let </span><span class="prelude-val">Ok</span>(code) = k.parse::&lt;u16&gt;() {
+                            <span class="kw">let </span>code = openapiv3::StatusCode::Code(code);
+                            i.insert(
+                                code,
+                                OperationEitherResponse {
+                                    operation: <span class="kw-2">&amp;</span>v2v,
+                                    response: v,
                                 }
-                                .<span class="ident">into</span>(),
+                                .into(),
                             );
                         }
-                        <span class="ident">i</span>
+                        i
                     }),
-                ..<span class="ident">Default::default</span>()
+                ..Default::default()
             },
-            <span class="ident">deprecated</span>: <span class="ident">v2</span>.<span class="ident">deprecated</span>,
-            <span class="ident">security</span>: <span class="kw">if</span> <span class="ident">v2</span>.<span class="ident">security</span>.<span class="ident">is_empty</span>() {
-                <span class="prelude-val">None</span>
-            } <span class="kw">else</span> {
+            deprecated: v2.deprecated,
+            security: <span class="kw">if </span>v2.security.is_empty() {
+                <span class="prelude-val">None
+            </span>} <span class="kw">else </span>{
                 <span class="prelude-val">Some</span>(
-                    <span class="ident">v2</span>.<span class="ident">security</span>
-                        .<span class="ident">iter</span>()
-                        .<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> {
-                            <span class="ident">s</span>.<span class="ident">iter</span>().<span class="ident">fold</span>(<span class="ident">indexmap::IndexMap::new</span>(), <span class="op">|</span><span class="kw-2">mut</span> <span class="ident">i</span>, (<span class="ident">k</span>, <span class="ident">v</span>)<span class="op">|</span> {
-                                <span class="ident">i</span>.<span class="ident">insert</span>(<span class="ident">k</span>.<span class="ident">to_string</span>(), <span class="ident">v</span>.<span class="ident">clone</span>());
-                                <span class="ident">i</span>
+                    v2.security
+                        .iter()
+                        .map(|s| {
+                            s.iter().fold(indexmap::IndexMap::new(), |<span class="kw-2">mut </span>i, (k, v)| {
+                                i.insert(k.to_string(), v.clone());
+                                i
                             })
                         })
-                        .<span class="ident">collect</span>(),
+                        .collect(),
                 )
             },
-            <span class="ident">servers</span>: <span class="macro">vec!</span>[],
-            <span class="ident">extensions</span>: <span class="ident">indexmap::IndexMap::new</span>(),
+            servers: <span class="macro">vec!</span>[],
+            extensions: indexmap::IndexMap::new(),
         }
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

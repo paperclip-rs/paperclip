@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/author.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>author.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/author.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>author.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -75,31 +69,31 @@
 <span id="69">69</span>
 <span id="70">70</span>
 <span id="71">71</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Author extraction for cargo manifest (c) 2018 Cargo Developers.</span>
-<span class="doccomment">//!</span>
-<span class="doccomment">//! Obtained from [Cargo](https://github.com/rust-lang/cargo/blob/fa05862cd0c6b899b801fda0f256ac5b9bae69d9/src/cargo/ops/cargo_new.rs#L690-L750).</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Author extraction for cargo manifest (c) 2018 Cargo Developers.
+//!
+//! Obtained from [Cargo](https://github.com/rust-lang/cargo/blob/fa05862cd0c6b899b801fda0f256ac5b9bae69d9/src/cargo/ops/cargo_new.rs#L690-L750).
 
-<span class="kw">use</span> <span class="ident">anyhow::Error</span>;
-<span class="kw">use</span> <span class="ident">git2</span>::{<span class="ident">Config</span> <span class="kw">as</span> <span class="ident">GitConfig</span>, <span class="ident">Repository</span> <span class="kw">as</span> <span class="ident">GitRepository</span>};
+</span><span class="kw">use </span>anyhow::Error;
+<span class="kw">use </span>git2::{Config <span class="kw">as </span>GitConfig, Repository <span class="kw">as </span>GitRepository};
 
-<span class="kw">use</span> <span class="ident">std::env</span>;
+<span class="kw">use </span>std::env;
 
-<span class="kw">fn</span> <span class="ident">get_environment_variable</span>(<span class="ident">variables</span>: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span><span class="ident">str</span>]) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-    <span class="ident">variables</span>.<span class="ident">iter</span>().<span class="ident">filter_map</span>(<span class="op">|</span><span class="ident">var</span><span class="op">|</span> <span class="ident">env::var</span>(<span class="ident">var</span>).<span class="ident">ok</span>()).<span class="ident">next</span>()
+<span class="kw">fn </span>get_environment_variable(variables: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+    variables.iter().filter_map(|var| env::var(var).ok()).next()
 }
 
-<span class="doccomment">/// Attempts to find the name and email of the author from the current environment.</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn</span> <span class="ident">discover</span>() -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(<span class="ident">String</span>, <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>), <span class="ident">Error</span><span class="op">&gt;</span> {
-    <span class="kw">let</span> <span class="ident">cwd</span> <span class="op">=</span> <span class="ident">env::current_dir</span>()<span class="question-mark">?</span>;
-    <span class="kw">let</span> <span class="ident">git_config</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Ok</span>(<span class="ident">repo</span>) <span class="op">=</span> <span class="ident">GitRepository::discover</span>(<span class="kw-2">&amp;</span><span class="ident">cwd</span>) {
-        <span class="ident">repo</span>.<span class="ident">config</span>()
-            .<span class="ident">ok</span>()
-            .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">GitConfig::open_default</span>().<span class="ident">ok</span>())
-    } <span class="kw">else</span> {
-        <span class="ident">GitConfig::open_default</span>().<span class="ident">ok</span>()
+<span class="doccomment">/// Attempts to find the name and email of the author from the current environment.
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>discover() -&gt; <span class="prelude-ty">Result</span>&lt;(String, <span class="prelude-ty">Option</span>&lt;String&gt;), Error&gt; {
+    <span class="kw">let </span>cwd = env::current_dir()<span class="question-mark">?</span>;
+    <span class="kw">let </span>git_config = <span class="kw">if let </span><span class="prelude-val">Ok</span>(repo) = GitRepository::discover(<span class="kw-2">&amp;</span>cwd) {
+        repo.config()
+            .ok()
+            .or_else(|| GitConfig::open_default().ok())
+    } <span class="kw">else </span>{
+        GitConfig::open_default().ok()
     };
-    <span class="kw">let</span> <span class="ident">git_config</span> <span class="op">=</span> <span class="ident">git_config</span>.<span class="ident">as_ref</span>();
-    <span class="kw">let</span> <span class="ident">name_variables</span> <span class="op">=</span> [
+    <span class="kw">let </span>git_config = git_config.as_ref();
+    <span class="kw">let </span>name_variables = [
         <span class="string">&quot;CARGO_NAME&quot;</span>,
         <span class="string">&quot;GIT_AUTHOR_NAME&quot;</span>,
         <span class="string">&quot;GIT_COMMITTER_NAME&quot;</span>,
@@ -107,45 +101,44 @@
         <span class="string">&quot;USERNAME&quot;</span>,
         <span class="string">&quot;NAME&quot;</span>,
     ];
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">get_environment_variable</span>(<span class="kw-2">&amp;</span><span class="ident">name_variables</span>[<span class="number">0</span>..<span class="number">3</span>])
-        .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">git_config</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="ident">g</span>.<span class="ident">get_string</span>(<span class="string">&quot;user.name&quot;</span>).<span class="ident">ok</span>()))
-        .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">get_environment_variable</span>(<span class="kw-2">&amp;</span><span class="ident">name_variables</span>[<span class="number">3</span>..]));
+    <span class="kw">let </span>name = get_environment_variable(<span class="kw-2">&amp;</span>name_variables[<span class="number">0</span>..<span class="number">3</span>])
+        .or_else(|| git_config.and_then(|g| g.get_string(<span class="string">&quot;user.name&quot;</span>).ok()))
+        .or_else(|| get_environment_variable(<span class="kw-2">&amp;</span>name_variables[<span class="number">3</span>..]));
 
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">name</span> {
-        <span class="prelude-val">Some</span>(<span class="ident">name</span>) =&gt; <span class="ident">name</span>,
-        <span class="prelude-val">None</span> =&gt; {
-            <span class="kw">let</span> <span class="ident">username_var</span> <span class="op">=</span> <span class="kw">if</span> <span class="macro">cfg!</span>(<span class="ident">windows</span>) { <span class="string">&quot;USERNAME&quot;</span> } <span class="kw">else</span> { <span class="string">&quot;USER&quot;</span> };
+    <span class="kw">let </span>name = <span class="kw">match </span>name {
+        <span class="prelude-val">Some</span>(name) =&gt; name,
+        <span class="prelude-val">None </span>=&gt; {
+            <span class="kw">let </span>username_var = <span class="kw">if </span><span class="macro">cfg!</span>(windows) { <span class="string">&quot;USERNAME&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;USER&quot; </span>};
             <span class="macro">anyhow::bail!</span>(
                 <span class="string">&quot;could not determine the current user, please set ${}&quot;</span>,
-                <span class="ident">username_var</span>
+                username_var
             )
         }
     };
-    <span class="kw">let</span> <span class="ident">email_variables</span> <span class="op">=</span> [
+    <span class="kw">let </span>email_variables = [
         <span class="string">&quot;CARGO_EMAIL&quot;</span>,
         <span class="string">&quot;GIT_AUTHOR_EMAIL&quot;</span>,
         <span class="string">&quot;GIT_COMMITTER_EMAIL&quot;</span>,
         <span class="string">&quot;EMAIL&quot;</span>,
     ];
-    <span class="kw">let</span> <span class="ident">email</span> <span class="op">=</span> <span class="ident">get_environment_variable</span>(<span class="kw-2">&amp;</span><span class="ident">email_variables</span>[<span class="number">0</span>..<span class="number">3</span>])
-        .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">git_config</span>.<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">g</span><span class="op">|</span> <span class="ident">g</span>.<span class="ident">get_string</span>(<span class="string">&quot;user.email&quot;</span>).<span class="ident">ok</span>()))
-        .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">get_environment_variable</span>(<span class="kw-2">&amp;</span><span class="ident">email_variables</span>[<span class="number">3</span>..]));
+    <span class="kw">let </span>email = get_environment_variable(<span class="kw-2">&amp;</span>email_variables[<span class="number">0</span>..<span class="number">3</span>])
+        .or_else(|| git_config.and_then(|g| g.get_string(<span class="string">&quot;user.email&quot;</span>).ok()))
+        .or_else(|| get_environment_variable(<span class="kw-2">&amp;</span>email_variables[<span class="number">3</span>..]));
 
-    <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="ident">name</span>.<span class="ident">trim</span>().<span class="ident">to_string</span>();
-    <span class="kw">let</span> <span class="ident">email</span> <span class="op">=</span> <span class="ident">email</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">s</span> <span class="op">=</span> <span class="ident">s</span>.<span class="ident">trim</span>();
+    <span class="kw">let </span>name = name.trim().to_string();
+    <span class="kw">let </span>email = email.map(|s| {
+        <span class="kw">let </span><span class="kw-2">mut </span>s = s.trim();
 
-        <span class="comment">// In some cases emails will already have &lt;&gt; remove them since they</span>
-        <span class="comment">// are already added when needed.</span>
-        <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">starts_with</span>(<span class="string">&#39;&lt;&#39;</span>) <span class="op">&amp;&amp;</span> <span class="ident">s</span>.<span class="ident">ends_with</span>(<span class="string">&#39;&gt;&#39;</span>) {
-            <span class="ident">s</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">s</span>[<span class="number">1</span>..<span class="ident">s</span>.<span class="ident">len</span>() <span class="op">-</span> <span class="number">1</span>];
+        <span class="comment">// In some cases emails will already have &lt;&gt; remove them since they
+        // are already added when needed.
+        </span><span class="kw">if </span>s.starts_with(<span class="string">&#39;&lt;&#39;</span>) &amp;&amp; s.ends_with(<span class="string">&#39;&gt;&#39;</span>) {
+            s = <span class="kw-2">&amp;</span>s[<span class="number">1</span>..s.len() - <span class="number">1</span>];
         }
 
-        <span class="ident">s</span>.<span class="ident">to_string</span>()
+        s.to_string()
     });
 
-    <span class="prelude-val">Ok</span>((<span class="ident">name</span>, <span class="ident">email</span>))
+    <span class="prelude-val">Ok</span>((name, email))
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

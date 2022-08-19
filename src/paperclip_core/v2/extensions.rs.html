@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/extensions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>extensions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/extensions.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>extensions.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -268,270 +262,269 @@
 <span id="262">262</span>
 <span id="263">263</span>
 <span id="264">264</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">serde</span>::{<span class="ident">Deserialize</span>, <span class="ident">Deserializer</span>, <span class="ident">Serialize</span>, <span class="ident">Serializer</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>serde::{Deserialize, Deserializer, Serialize, Serializer};
 
-<span class="kw">use</span> <span class="ident">once_cell::sync::Lazy</span>;
+<span class="kw">use </span>once_cell::sync::Lazy;
 
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">cmp::Ordering</span>,
-    <span class="ident">collections::BTreeMap</span>,
-    <span class="ident">fmt</span>,
-    <span class="ident">ops</span>::{<span class="ident">Deref</span>, <span class="ident">DerefMut</span>},
-    <span class="ident">sync::Arc</span>,
+<span class="kw">use </span>std::{
+    cmp::Ordering,
+    collections::BTreeMap,
+    fmt,
+    ops::{Deref, DerefMut},
+    sync::Arc,
 };
 
-<span class="doccomment">/// Media range for JSON.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">JSON_MIME</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">MediaRange</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">MediaRange</span>(<span class="string">&quot;application/json&quot;</span>.<span class="ident">parse</span>().<span class="ident">expect</span>(<span class="string">&quot;parsing mime&quot;</span>)));
-<span class="doccomment">/// Default coder for JSON.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">JSON_CODER</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
-    <span class="ident">Arc::new</span>(<span class="ident">Coder</span> {
-        <span class="ident">encoder_path</span>: <span class="string">&quot;serde_json::to_writer&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">decoder_path</span>: <span class="string">&quot;serde_json::from_reader&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">any_value</span>: <span class="string">&quot;serde_json::Value&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">error_path</span>: <span class="string">&quot;serde_json::Error&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">prefer</span>: <span class="bool-val">false</span>,
-        <span class="ident">builtin</span>: <span class="bool-val">true</span>,
+<span class="doccomment">/// Media range for JSON.
+</span><span class="kw">pub static </span>JSON_MIME: Lazy&lt;MediaRange&gt; =
+    Lazy::new(|| MediaRange(<span class="string">&quot;application/json&quot;</span>.parse().expect(<span class="string">&quot;parsing mime&quot;</span>)));
+<span class="doccomment">/// Default coder for JSON.
+</span><span class="kw">pub static </span>JSON_CODER: Lazy&lt;Arc&lt;Coder&gt;&gt; = Lazy::new(|| {
+    Arc::new(Coder {
+        encoder_path: <span class="string">&quot;serde_json::to_writer&quot;</span>.into(),
+        decoder_path: <span class="string">&quot;serde_json::from_reader&quot;</span>.into(),
+        any_value: <span class="string">&quot;serde_json::Value&quot;</span>.into(),
+        error_path: <span class="string">&quot;serde_json::Error&quot;</span>.into(),
+        prefer: <span class="bool-val">false</span>,
+        builtin: <span class="bool-val">true</span>,
     })
 });
-<span class="doccomment">/// Media range for YAML.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">YAML_MIME</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">MediaRange</span><span class="op">&gt;</span> <span class="op">=</span>
-    <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">MediaRange</span>(<span class="string">&quot;application/yaml&quot;</span>.<span class="ident">parse</span>().<span class="ident">expect</span>(<span class="string">&quot;parsing mime&quot;</span>)));
-<span class="doccomment">/// Default coder for YAML.</span>
-<span class="kw">pub</span> <span class="kw">static</span> <span class="ident">YAML_CODER</span>: <span class="ident">Lazy</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">Lazy::new</span>(<span class="op">|</span><span class="op">|</span> {
-    <span class="ident">Arc::new</span>(<span class="ident">Coder</span> {
-        <span class="ident">encoder_path</span>: <span class="string">&quot;serde_yaml::to_writer&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">decoder_path</span>: <span class="string">&quot;serde_yaml::from_reader&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">any_value</span>: <span class="string">&quot;serde_yaml::Value&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">error_path</span>: <span class="string">&quot;serde_yaml::Error&quot;</span>.<span class="ident">into</span>(),
-        <span class="ident">prefer</span>: <span class="bool-val">false</span>,
-        <span class="ident">builtin</span>: <span class="bool-val">true</span>,
+<span class="doccomment">/// Media range for YAML.
+</span><span class="kw">pub static </span>YAML_MIME: Lazy&lt;MediaRange&gt; =
+    Lazy::new(|| MediaRange(<span class="string">&quot;application/yaml&quot;</span>.parse().expect(<span class="string">&quot;parsing mime&quot;</span>)));
+<span class="doccomment">/// Default coder for YAML.
+</span><span class="kw">pub static </span>YAML_CODER: Lazy&lt;Arc&lt;Coder&gt;&gt; = Lazy::new(|| {
+    Arc::new(Coder {
+        encoder_path: <span class="string">&quot;serde_yaml::to_writer&quot;</span>.into(),
+        decoder_path: <span class="string">&quot;serde_yaml::from_reader&quot;</span>.into(),
+        any_value: <span class="string">&quot;serde_yaml::Value&quot;</span>.into(),
+        error_path: <span class="string">&quot;serde_yaml::Error&quot;</span>.into(),
+        prefer: <span class="bool-val">false</span>,
+        builtin: <span class="bool-val">true</span>,
     })
 });
 
-<span class="doccomment">/// Wrapper for `mime::MediaRange` to support `BTree{Set, Map}`.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">MediaRange</span>(<span class="kw">pub</span> <span class="ident">mime::Mime</span>);
+<span class="doccomment">/// Wrapper for `mime::MediaRange` to support `BTree{Set, Map}`.
+</span><span class="attribute">#[derive(Debug, Clone)]</span>
+<span class="kw">pub struct </span>MediaRange(<span class="kw">pub </span>mime::Mime);
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">MediaRange</span> {
-    <span class="doccomment">/// Implementation from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L155</span>
-    <span class="kw">fn</span> <span class="ident">matches_params</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">r</span>: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; <span class="ident">bool</span> {
-        <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">value</span>) <span class="kw">in</span> <span class="self">self</span>.<span class="number">0</span>.<span class="ident">params</span>() {
-            <span class="kw">if</span> <span class="ident">name</span> <span class="op">!</span><span class="op">=</span> <span class="string">&quot;q&quot;</span> <span class="op">&amp;&amp;</span> <span class="ident">r</span>.<span class="number">0</span>.<span class="ident">get_param</span>(<span class="ident">name</span>) <span class="op">!</span><span class="op">=</span> <span class="prelude-val">Some</span>(<span class="ident">value</span>) {
-                <span class="kw">return</span> <span class="bool-val">false</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="kw">impl </span>MediaRange {
+    <span class="doccomment">/// Implementation from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L155
+    </span><span class="kw">fn </span>matches_params(<span class="kw-2">&amp;</span><span class="self">self</span>, r: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
+        <span class="kw">for </span>(name, value) <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.params() {
+            <span class="kw">if </span>name != <span class="string">&quot;q&quot; </span>&amp;&amp; r.<span class="number">0</span>.get_param(name) != <span class="prelude-val">Some</span>(value) {
+                <span class="kw">return </span><span class="bool-val">false</span>;
             }
         }
 
-        <span class="bool-val">true</span>
-    }
+        <span class="bool-val">true
+    </span>}
 }
 
-<span class="doccomment">/// `x-rust-coders` global extension for custom encoders and decoders.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Coders</span>(<span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">MediaRange</span>, <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span><span class="op">&gt;</span>);
+<span class="doccomment">/// `x-rust-coders` global extension for custom encoders and decoders.
+</span><span class="attribute">#[derive(Debug, Default, Clone)]</span>
+<span class="kw">pub struct </span>Coders(BTreeMap&lt;MediaRange, Arc&lt;Coder&gt;&gt;);
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Coders</span> {
-    <span class="doccomment">/// Returns the matching coder for the given media range (if any).</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// Matching algorithm from &lt;https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126&gt;</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">matching_coder</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">ty</span>: <span class="kw-2">&amp;</span><span class="ident">MediaRange</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>
-            .<span class="ident">get</span>(<span class="ident">ty</span>)
-            .<span class="ident">or_else</span>(<span class="op">|</span><span class="op">|</span> {
-                <span class="kw">let</span> (<span class="ident">target_t1</span>, <span class="ident">target_t2</span>) <span class="op">=</span> (<span class="ident">ty</span>.<span class="number">0</span>.<span class="ident">type_</span>(), <span class="ident">ty</span>.<span class="number">0</span>.<span class="ident">subtype</span>());
-                <span class="kw">for</span> (<span class="ident">r</span>, <span class="ident">c</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span> {
-                    <span class="kw">let</span> (<span class="ident">source_t1</span>, <span class="ident">source_t2</span>) <span class="op">=</span> (<span class="ident">r</span>.<span class="number">0</span>.<span class="ident">type_</span>(), <span class="ident">r</span>.<span class="number">0</span>.<span class="ident">subtype</span>());
-                    <span class="kw">if</span> <span class="ident">target_t1</span> <span class="op">==</span> <span class="ident">mime::STAR</span> <span class="op">&amp;&amp;</span> <span class="ident">r</span>.<span class="ident">matches_params</span>(<span class="ident">ty</span>) {
-                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="kw">impl </span>Coders {
+    <span class="doccomment">/// Returns the matching coder for the given media range (if any).
+    ///
+    /// Matching algorithm from &lt;https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126&gt;
+    </span><span class="kw">pub fn </span>matching_coder(<span class="kw-2">&amp;</span><span class="self">self</span>, ty: <span class="kw-2">&amp;</span>MediaRange) -&gt; <span class="prelude-ty">Option</span>&lt;Arc&lt;Coder&gt;&gt; {
+        <span class="self">self</span>.<span class="number">0
+            </span>.get(ty)
+            .or_else(|| {
+                <span class="kw">let </span>(target_t1, target_t2) = (ty.<span class="number">0</span>.type_(), ty.<span class="number">0</span>.subtype());
+                <span class="kw">for </span>(r, c) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0 </span>{
+                    <span class="kw">let </span>(source_t1, source_t2) = (r.<span class="number">0</span>.type_(), r.<span class="number">0</span>.subtype());
+                    <span class="kw">if </span>target_t1 == mime::STAR &amp;&amp; r.matches_params(ty) {
+                        <span class="kw">return </span><span class="prelude-val">Some</span>(c);
                     }
 
-                    <span class="kw">if</span> <span class="ident">source_t1</span> <span class="op">!</span><span class="op">=</span> <span class="ident">target_t1</span> {
+                    <span class="kw">if </span>source_t1 != target_t1 {
                         <span class="kw">continue</span>;
                     }
 
-                    <span class="kw">if</span> <span class="ident">target_t2</span> <span class="op">==</span> <span class="ident">mime::STAR</span> <span class="op">&amp;&amp;</span> <span class="ident">r</span>.<span class="ident">matches_params</span>(<span class="ident">ty</span>) {
-                        <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>);
+                    <span class="kw">if </span>target_t2 == mime::STAR &amp;&amp; r.matches_params(ty) {
+                        <span class="kw">return </span><span class="prelude-val">Some</span>(c);
                     }
 
-                    <span class="kw">if</span> <span class="ident">source_t2</span> <span class="op">!</span><span class="op">=</span> <span class="ident">target_t2</span> {
+                    <span class="kw">if </span>source_t2 != target_t2 {
                         <span class="kw">continue</span>;
                     }
 
-                    <span class="kw">return</span> <span class="prelude-val">Some</span>(<span class="ident">c</span>);
+                    <span class="kw">return </span><span class="prelude-val">Some</span>(c);
                 }
 
-                <span class="prelude-val">None</span>
-            })
-            .<span class="ident">map</span>(<span class="ident">Clone::clone</span>)
+                <span class="prelude-val">None
+            </span>})
+            .map(Clone::clone)
     }
 }
 
-<span class="doccomment">/// Represents the en/decoder for some MIME media range.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">Default</span>, <span class="ident">Clone</span>, <span class="ident">Serialize</span>, <span class="ident">Deserialize</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">Coder</span> {
-    <span class="doccomment">/// Path to the encoding function.</span>
-    <span class="kw">pub</span> <span class="ident">encoder_path</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Path to the decoding function.</span>
-    <span class="kw">pub</span> <span class="ident">decoder_path</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Path to the error type.</span>
-    <span class="kw">pub</span> <span class="ident">error_path</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Path to the struct/enum that represents `Any` (such as `serde_json::Value`).</span>
-    <span class="kw">pub</span> <span class="ident">any_value</span>: <span class="ident">String</span>,
-    <span class="doccomment">/// Whether this media type should be preferred when multiple</span>
-    <span class="doccomment">/// types are available. When multiple types are preferred,</span>
-    <span class="doccomment">/// it&#39;s unspecified as to which is chosen.</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">default</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">prefer</span>: <span class="ident">bool</span>,
-    <span class="doccomment">/// Whether this en/decoder is built-in.</span>
-    <span class="attribute">#[<span class="ident">serde</span>(<span class="ident">skip</span>)]</span>
-    <span class="kw">pub</span> <span class="ident">builtin</span>: <span class="ident">bool</span>,
+<span class="doccomment">/// Represents the en/decoder for some MIME media range.
+</span><span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize)]</span>
+<span class="kw">pub struct </span>Coder {
+    <span class="doccomment">/// Path to the encoding function.
+    </span><span class="kw">pub </span>encoder_path: String,
+    <span class="doccomment">/// Path to the decoding function.
+    </span><span class="kw">pub </span>decoder_path: String,
+    <span class="doccomment">/// Path to the error type.
+    </span><span class="kw">pub </span>error_path: String,
+    <span class="doccomment">/// Path to the struct/enum that represents `Any` (such as `serde_json::Value`).
+    </span><span class="kw">pub </span>any_value: String,
+    <span class="doccomment">/// Whether this media type should be preferred when multiple
+    /// types are available. When multiple types are preferred,
+    /// it&#39;s unspecified as to which is chosen.
+    </span><span class="attribute">#[serde(default)]</span>
+    <span class="kw">pub </span>prefer: bool,
+    <span class="doccomment">/// Whether this en/decoder is built-in.
+    </span><span class="attribute">#[serde(skip)]</span>
+    <span class="kw">pub </span>builtin: bool,
 }
 
-<span class="comment">/* Common trait impls */</span>
+<span class="comment">/* Common trait impls */
 
-<span class="kw">impl</span> <span class="ident">PartialEq</span> <span class="kw">for</span> <span class="ident">MediaRange</span> {
-    <span class="kw">fn</span> <span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">MediaRange</span>) -&gt; <span class="ident">bool</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">eq</span>(<span class="kw-2">&amp;</span><span class="ident">other</span>.<span class="number">0</span>)
+</span><span class="kw">impl </span>PartialEq <span class="kw">for </span>MediaRange {
+    <span class="kw">fn </span>eq(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>MediaRange) -&gt; bool {
+        <span class="self">self</span>.<span class="number">0</span>.eq(<span class="kw-2">&amp;</span>other.<span class="number">0</span>)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Eq</span> <span class="kw">for</span> <span class="ident">MediaRange</span> {}
+<span class="kw">impl </span>Eq <span class="kw">for </span>MediaRange {}
 
-<span class="kw">impl</span> <span class="ident">PartialOrd</span> <span class="kw">for</span> <span class="ident">MediaRange</span> {
-    <span class="kw">fn</span> <span class="ident">partial_cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">MediaRange</span>) -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Ordering</span><span class="op">&gt;</span> {
-        <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">cmp</span>(<span class="ident">other</span>))
+<span class="kw">impl </span>PartialOrd <span class="kw">for </span>MediaRange {
+    <span class="kw">fn </span>partial_cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>MediaRange) -&gt; <span class="prelude-ty">Option</span>&lt;Ordering&gt; {
+        <span class="prelude-val">Some</span>(<span class="self">self</span>.cmp(other))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Ord</span> <span class="kw">for</span> <span class="ident">MediaRange</span> {
-    <span class="kw">fn</span> <span class="ident">cmp</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">other</span>: <span class="kw-2">&amp;</span><span class="ident">MediaRange</span>) -&gt; <span class="ident">Ordering</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">as_ref</span>().<span class="ident">cmp</span>(<span class="ident">other</span>.<span class="number">0</span>.<span class="ident">as_ref</span>())
+<span class="kw">impl </span>Ord <span class="kw">for </span>MediaRange {
+    <span class="kw">fn </span>cmp(<span class="kw-2">&amp;</span><span class="self">self</span>, other: <span class="kw-2">&amp;</span>MediaRange) -&gt; Ordering {
+        <span class="self">self</span>.<span class="number">0</span>.as_ref().cmp(other.<span class="number">0</span>.as_ref())
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">MediaRange</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+<span class="kw">impl </span>Serialize <span class="kw">for </span>MediaRange {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
     {
-        <span class="ident">serializer</span>.<span class="ident">serialize_str</span>(<span class="self">self</span>.<span class="number">0</span>.<span class="ident">as_ref</span>())
+        serializer.serialize_str(<span class="self">self</span>.<span class="number">0</span>.as_ref())
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">MediaRange</span> {
-    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>MediaRange {
+    <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="kw">struct</span> <span class="ident">Visitor</span>;
+        <span class="kw">struct </span>Visitor;
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">serde::de::Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Visitor</span> {
-            <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">MediaRange</span>;
+        <span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; serde::de::Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Visitor {
+            <span class="kw">type </span>Value = MediaRange;
 
-            <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span>) -&gt; <span class="ident">fmt::Result</span> {
-                <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;a valid media range&quot;</span>)
+            <span class="kw">fn </span>expecting(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
+                f.write_str(<span class="string">&quot;a valid media range&quot;</span>)
             }
 
-            <span class="kw">fn</span> <span class="ident">visit_str</span><span class="op">&lt;</span><span class="ident">E</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="ident">value</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">MediaRange</span>, <span class="ident">E</span><span class="op">&gt;</span>
-            <span class="kw">where</span>
-                <span class="ident">E</span>: <span class="ident">serde::de::Error</span>,
+            <span class="kw">fn </span>visit_str&lt;E&gt;(<span class="self">self</span>, value: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;MediaRange, E&gt;
+            <span class="kw">where
+                </span>E: serde::de::Error,
             {
-                <span class="ident">value</span>.<span class="ident">parse</span>().<span class="ident">map_err</span>(<span class="ident">E::custom</span>).<span class="ident">map</span>(<span class="ident">MediaRange</span>)
+                value.parse().map_err(E::custom).map(MediaRange)
             }
         }
 
-        <span class="ident">deserializer</span>.<span class="ident">deserialize_str</span>(<span class="ident">Visitor</span>)
+        deserializer.deserialize_str(Visitor)
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Deref</span> <span class="kw">for</span> <span class="ident">Coders</span> {
-    <span class="kw">type</span> <span class="ident">Target</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">MediaRange</span>, <span class="ident">Arc</span><span class="op">&lt;</span><span class="ident">Coder</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">impl </span>Deref <span class="kw">for </span>Coders {
+    <span class="kw">type </span>Target = BTreeMap&lt;MediaRange, Arc&lt;Coder&gt;&gt;;
 
-    <span class="kw">fn</span> <span class="ident">deref</span>(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="ident"><span class="self">Self</span>::Target</span> {
-        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>
-    }
+    <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span><span class="self">Self</span>::Target {
+        <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0
+    </span>}
 }
 
-<span class="kw">impl</span> <span class="ident">DerefMut</span> <span class="kw">for</span> <span class="ident">Coders</span> {
-    <span class="kw">fn</span> <span class="ident">deref_mut</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut</span> <span class="op">&lt;</span><span class="self">Self</span> <span class="kw">as</span> <span class="ident">Deref</span><span class="op">&gt;</span><span class="ident">::Target</span> {
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="number">0</span>
-    }
+<span class="kw">impl </span>DerefMut <span class="kw">for </span>Coders {
+    <span class="kw">fn </span>deref_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;mut </span>&lt;<span class="self">Self </span><span class="kw">as </span>Deref&gt;::Target {
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>.<span class="number">0
+    </span>}
 }
 
-<span class="kw">impl</span> <span class="ident">Serialize</span> <span class="kw">for</span> <span class="ident">Coders</span> {
-    <span class="kw">fn</span> <span class="ident">serialize</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">serializer</span>: <span class="ident">S</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">S::Ok</span>, <span class="ident">S::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">S</span>: <span class="ident">Serializer</span>,
+<span class="kw">impl </span>Serialize <span class="kw">for </span>Coders {
+    <span class="kw">fn </span>serialize&lt;S&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, serializer: S) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt;
+    <span class="kw">where
+        </span>S: Serializer,
     {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">serialize</span>(<span class="ident">serializer</span>)
+        <span class="self">self</span>.<span class="number">0</span>.serialize(serializer)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Coders</span> {
-    <span class="kw">fn</span> <span class="ident">deserialize</span><span class="op">&lt;</span><span class="ident">D</span><span class="op">&gt;</span>(<span class="ident">deserializer</span>: <span class="ident">D</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="self">Self</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>&gt; Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>Coders {
+    <span class="kw">fn </span>deserialize&lt;D&gt;(deserializer: D) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>, D::Error&gt;
+    <span class="kw">where
+        </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="prelude-val">Ok</span>(<span class="ident">Coders</span>(<span class="ident">BTreeMap::deserialize</span>(<span class="ident">deserializer</span>)<span class="question-mark">?</span>))
+        <span class="prelude-val">Ok</span>(Coders(BTreeMap::deserialize(deserializer)<span class="question-mark">?</span>))
     }
 }
 
-<span class="doccomment">/// Method used by openapiv3 crate.</span>
-<span class="doccomment">/// Works when deserializing but one could still add keys that don&#39;t start with &quot;x-&quot;.</span>
-<span class="doccomment">/// todo: add own extensions map type that enforces &quot;x-&quot;.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn</span> <span class="ident">deserialize_extensions</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">D</span><span class="op">&gt;</span>(
-    <span class="ident">deserializer</span>: <span class="ident">D</span>,
-) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">serde_json::Value</span><span class="op">&gt;</span>, <span class="ident">D::Error</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">D</span>: <span class="ident">Deserializer</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+<span class="doccomment">/// Method used by openapiv3 crate.
+/// Works when deserializing but one could still add keys that don&#39;t start with &quot;x-&quot;.
+/// todo: add own extensions map type that enforces &quot;x-&quot;.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>deserialize_extensions&lt;<span class="lifetime">&#39;de</span>, D&gt;(
+    deserializer: D,
+) -&gt; <span class="prelude-ty">Result</span>&lt;BTreeMap&lt;String, serde_json::Value&gt;, D::Error&gt;
+<span class="kw">where
+    </span>D: Deserializer&lt;<span class="lifetime">&#39;de</span>&gt;,
 {
-    <span class="ident">deserializer</span>.<span class="ident">deserialize_map</span>(<span class="ident">PredicateVisitor</span>(
-        <span class="op">|</span><span class="ident">key</span>: <span class="kw-2">&amp;</span><span class="ident">String</span><span class="op">|</span> <span class="ident">key</span>.<span class="ident">starts_with</span>(<span class="string">&quot;x-&quot;</span>),
-        <span class="ident">std::marker::PhantomData</span>,
+    deserializer.deserialize_map(PredicateVisitor(
+        |key: <span class="kw-2">&amp;</span>String| key.starts_with(<span class="string">&quot;x-&quot;</span>),
+        std::marker::PhantomData,
     ))
 }
 
-<span class="doccomment">/// Modified to BTreeMap from openapiv3 crate</span>
-<span class="doccomment">/// Used to deserialize IndexMap&lt;K, V&gt; that are flattened within other structs.</span>
-<span class="doccomment">/// This only adds keys that satisfy the given predicate.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">PredicateVisitor</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">F</span>, <span class="kw">pub</span> <span class="ident">std::marker::PhantomData</span><span class="op">&lt;</span>(<span class="ident">K</span>, <span class="ident">V</span>)<span class="op">&gt;</span>);
+<span class="doccomment">/// Modified to BTreeMap from openapiv3 crate
+/// Used to deserialize IndexMap&lt;K, V&gt; that are flattened within other structs.
+/// This only adds keys that satisfy the given predicate.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>PredicateVisitor&lt;F, K, V&gt;(<span class="kw">pub </span>F, <span class="kw">pub </span>std::marker::PhantomData&lt;(K, V)&gt;);
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span>, <span class="ident">F</span>, <span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span> <span class="ident">serde::de::Visitor</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">PredicateVisitor</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Fn</span>(<span class="kw-2">&amp;</span><span class="ident">K</span>) -&gt; <span class="ident">bool</span>,
-    <span class="ident">K</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span> <span class="op">+</span> <span class="ident">Eq</span> <span class="op">+</span> <span class="ident">std::hash::Hash</span> <span class="op">+</span> <span class="ident">std::cmp::Ord</span>,
-    <span class="ident">V</span>: <span class="ident">Deserialize</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+<span class="kw">impl</span>&lt;<span class="lifetime">&#39;de</span>, F, K, V&gt; serde::de::Visitor&lt;<span class="lifetime">&#39;de</span>&gt; <span class="kw">for </span>PredicateVisitor&lt;F, K, V&gt;
+<span class="kw">where
+    </span>F: Fn(<span class="kw-2">&amp;</span>K) -&gt; bool,
+    K: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt; + Eq + std::hash::Hash + std::cmp::Ord,
+    V: Deserialize&lt;<span class="lifetime">&#39;de</span>&gt;,
 {
-    <span class="kw">type</span> <span class="ident">Value</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">K</span>, <span class="ident">V</span><span class="op">&gt;</span>;
+    <span class="kw">type </span>Value = BTreeMap&lt;K, V&gt;;
 
-    <span class="kw">fn</span> <span class="ident">expecting</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">formatter</span>: <span class="kw-2">&amp;mut</span> <span class="ident">std::fmt::Formatter</span>) -&gt; <span class="ident">std::fmt::Result</span> {
-        <span class="ident">formatter</span>.<span class="ident">write_str</span>(<span class="string">&quot;a map whose fields obey a predicate&quot;</span>)
+    <span class="kw">fn </span>expecting(<span class="kw-2">&amp;</span><span class="self">self</span>, formatter: <span class="kw-2">&amp;mut </span>std::fmt::Formatter) -&gt; std::fmt::Result {
+        formatter.write_str(<span class="string">&quot;a map whose fields obey a predicate&quot;</span>)
     }
 
-    <span class="kw">fn</span> <span class="ident">visit_map</span><span class="op">&lt;</span><span class="ident">A</span><span class="op">&gt;</span>(<span class="self">self</span>, <span class="kw-2">mut</span> <span class="ident">map</span>: <span class="ident">A</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Value</span>, <span class="ident">A::Error</span><span class="op">&gt;</span>
-    <span class="kw">where</span>
-        <span class="ident">A</span>: <span class="ident">serde::de::MapAccess</span><span class="op">&lt;</span><span class="lifetime">&#39;de</span><span class="op">&gt;</span>,
+    <span class="kw">fn </span>visit_map&lt;A&gt;(<span class="self">self</span>, <span class="kw-2">mut </span>map: A) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="self">Self</span>::Value, A::Error&gt;
+    <span class="kw">where
+        </span>A: serde::de::MapAccess&lt;<span class="lifetime">&#39;de</span>&gt;,
     {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ret</span> <span class="op">=</span> <span class="ident"><span class="self">Self</span>::Value::default</span>();
+        <span class="kw">let </span><span class="kw-2">mut </span>ret = <span class="self">Self</span>::Value::default();
 
-        <span class="kw">loop</span> {
-            <span class="kw">match</span> <span class="ident">map</span>.<span class="ident">next_key</span>::<span class="op">&lt;</span><span class="ident">K</span><span class="op">&gt;</span>() {
+        <span class="kw">loop </span>{
+            <span class="kw">match </span>map.next_key::&lt;K&gt;() {
                 <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; (),
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">None</span>) =&gt; <span class="kw">break</span>,
-                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="ident">key</span>)) <span class="kw">if</span> <span class="self">self</span>.<span class="number">0</span>(<span class="kw-2">&amp;</span><span class="ident">key</span>) =&gt; {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">ret</span>.<span class="ident">insert</span>(<span class="ident">key</span>, <span class="ident">map</span>.<span class="ident">next_value</span>()<span class="question-mark">?</span>);
+                <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(key)) <span class="kw">if </span><span class="self">self</span>.<span class="number">0</span>(<span class="kw-2">&amp;</span>key) =&gt; {
+                    <span class="kw">let _ </span>= ret.insert(key, map.next_value()<span class="question-mark">?</span>);
                 }
                 <span class="prelude-val">Ok</span>(<span class="prelude-val">Some</span>(<span class="kw">_</span>)) =&gt; {
-                    <span class="kw">let</span> <span class="kw">_</span> <span class="op">=</span> <span class="ident">map</span>.<span class="ident">next_value</span>::<span class="op">&lt;</span><span class="ident">serde::de::IgnoredAny</span><span class="op">&gt;</span>()<span class="question-mark">?</span>;
+                    <span class="kw">let _ </span>= map.next_value::&lt;serde::de::IgnoredAny&gt;()<span class="question-mark">?</span>;
                 }
             }
         }
 
-        <span class="prelude-val">Ok</span>(<span class="ident">ret</span>)
+        <span class="prelude-val">Ok</span>(ret)
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

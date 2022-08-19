@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/mod.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>mod.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -73,75 +67,74 @@
 <span id="67">67</span>
 <span id="68">68</span>
 <span id="69">69</span>
-</pre><pre class="rust"><code><span class="doccomment">//! Core types and traits associated with the</span>
-<span class="doccomment">//! [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).</span>
+</pre><pre class="rust"><code><span class="doccomment">//! Core types and traits associated with the
+//! [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">actix</span>;
-<span class="kw">mod</span> <span class="ident">extensions</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">models</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">mod</span> <span class="ident">resolver</span>;
-<span class="kw">pub</span> <span class="kw">mod</span> <span class="ident">schema</span>;
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
+<span class="kw">mod </span>actix;
+<span class="kw">mod </span>extensions;
+<span class="kw">pub mod </span>models;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="kw">mod </span>resolver;
+<span class="kw">pub mod </span>schema;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::actix</span>::{
-    <span class="ident">AcceptedJson</span>, <span class="ident">CreatedJson</span>, <span class="ident">NoContent</span>, <span class="ident">OperationModifier</span>, <span class="ident">ResponderWrapper</span>, <span class="ident">ResponseWrapper</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
+<span class="kw">pub use </span><span class="self">self</span>::actix::{
+    AcceptedJson, CreatedJson, NoContent, OperationModifier, ResponderWrapper, ResponseWrapper,
 };
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident"><span class="self">self</span>::actix::HttpResponseWrapper</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">pub use </span><span class="self">self</span>::actix::HttpResponseWrapper;
 
-<span class="kw">pub</span> <span class="kw">use</span> <span class="self">self</span>::{
-    <span class="ident">models</span>::{<span class="ident">DefaultSchema</span>, <span class="ident">ResolvableApi</span>},
-    <span class="ident">schema::Schema</span>,
+<span class="kw">pub use </span><span class="self">self</span>::{
+    models::{DefaultSchema, ResolvableApi},
+    schema::Schema,
 };
-<span class="kw">pub</span> <span class="kw">use</span> <span class="ident">paperclip_macros</span>::<span class="kw-2">*</span>;
+<span class="kw">pub use </span>paperclip_macros::<span class="kw-2">*</span>;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="self">self</span>::resolver::Resolver</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::ValidationError</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="kw">use </span><span class="self">self</span>::resolver::Resolver;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="kw">use </span><span class="kw">crate</span>::error::ValidationError;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span>: <span class="ident">Schema</span> <span class="op">+</span> <span class="ident">Default</span><span class="op">&gt;</span> <span class="ident">ResolvableApi</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// Consumes this API schema, resolves the references and returns</span>
-    <span class="doccomment">/// the resolved schema.</span>
-    <span class="doccomment">///</span>
-    <span class="doccomment">/// This walks recursively, collects the referenced schema objects,</span>
-    <span class="doccomment">/// substitutes the referenced IDs with the pointer to schema objects</span>
-    <span class="doccomment">/// and returns the resolved object or an error if it encountered one.</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve</span>(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ResolvableApi</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">resolver</span> <span class="op">=</span> <span class="ident">Resolver::from</span>((
-            <span class="self">self</span>.<span class="ident">definitions</span>,
-            <span class="self">self</span>.<span class="ident">paths</span>,
-            <span class="self">self</span>.<span class="ident">parameters</span>,
-            <span class="self">self</span>.<span class="ident">responses</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;S: Schema + Default&gt; ResolvableApi&lt;S&gt; {
+    <span class="doccomment">/// Consumes this API schema, resolves the references and returns
+    /// the resolved schema.
+    ///
+    /// This walks recursively, collects the referenced schema objects,
+    /// substitutes the referenced IDs with the pointer to schema objects
+    /// and returns the resolved object or an error if it encountered one.
+    </span><span class="kw">pub fn </span>resolve(<span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;ResolvableApi&lt;S&gt;, ValidationError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>resolver = Resolver::from((
+            <span class="self">self</span>.definitions,
+            <span class="self">self</span>.paths,
+            <span class="self">self</span>.parameters,
+            <span class="self">self</span>.responses,
         ));
-        <span class="ident">resolver</span>.<span class="ident">resolve</span>()<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">ResolvableApi</span> {
-            <span class="ident">swagger</span>: <span class="self">self</span>.<span class="ident">swagger</span>,
-            <span class="ident">info</span>: <span class="self">self</span>.<span class="ident">info</span>,
-            <span class="ident">definitions</span>: <span class="ident">resolver</span>.<span class="ident">defs</span>,
-            <span class="ident">paths</span>: <span class="ident">resolver</span>.<span class="ident">paths</span>,
-            <span class="ident">base_path</span>: <span class="self">self</span>.<span class="ident">base_path</span>,
-            <span class="ident">host</span>: <span class="self">self</span>.<span class="ident">host</span>,
-            <span class="ident">schemes</span>: <span class="self">self</span>.<span class="ident">schemes</span>,
-            <span class="ident">consumes</span>: <span class="self">self</span>.<span class="ident">consumes</span>,
-            <span class="ident">produces</span>: <span class="self">self</span>.<span class="ident">produces</span>,
-            <span class="ident">coders</span>: <span class="self">self</span>.<span class="ident">coders</span>,
-            <span class="ident">support_crates</span>: <span class="self">self</span>.<span class="ident">support_crates</span>,
-            <span class="ident">parameters</span>: <span class="ident">resolver</span>.<span class="ident">params</span>,
-            <span class="ident">responses</span>: <span class="ident">resolver</span>.<span class="ident">resp</span>,
-            <span class="ident">spec_format</span>: <span class="self">self</span>.<span class="ident">spec_format</span>,
-            <span class="ident">external_docs</span>: <span class="self">self</span>.<span class="ident">external_docs</span>,
-            <span class="ident">security</span>: <span class="self">self</span>.<span class="ident">security</span>,
-            <span class="ident">security_definitions</span>: <span class="self">self</span>.<span class="ident">security_definitions</span>,
-            <span class="ident">tags</span>: <span class="self">self</span>.<span class="ident">tags</span>,
-            <span class="ident">extensions</span>: <span class="self">self</span>.<span class="ident">extensions</span>,
+        resolver.resolve()<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(ResolvableApi {
+            swagger: <span class="self">self</span>.swagger,
+            info: <span class="self">self</span>.info,
+            definitions: resolver.defs,
+            paths: resolver.paths,
+            base_path: <span class="self">self</span>.base_path,
+            host: <span class="self">self</span>.host,
+            schemes: <span class="self">self</span>.schemes,
+            consumes: <span class="self">self</span>.consumes,
+            produces: <span class="self">self</span>.produces,
+            coders: <span class="self">self</span>.coders,
+            support_crates: <span class="self">self</span>.support_crates,
+            parameters: resolver.params,
+            responses: resolver.resp,
+            spec_format: <span class="self">self</span>.spec_format,
+            external_docs: <span class="self">self</span>.external_docs,
+            security: <span class="self">self</span>.security,
+            security_definitions: <span class="self">self</span>.security_definitions,
+            tags: <span class="self">self</span>.tags,
+            extensions: <span class="self">self</span>.extensions,
         })
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

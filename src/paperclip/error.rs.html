@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../paperclip/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../normalize.css"><link rel="stylesheet" type="text/css" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../paperclip/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -83,85 +77,84 @@
 <span id="77">77</span>
 <span id="78">78</span>
 <span id="79">79</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">collections::HashSet</span>, <span class="ident">path::PathBuf</span>};
+</pre><pre class="rust"><code><span class="kw">use </span>std::{collections::HashSet, path::PathBuf};
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_err_from</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">err</span>:<span class="ident">ident</span> :: <span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ty</span> <span class="op">&gt;</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>:<span class="ident">ident</span>) =&gt; {
-        <span class="kw">impl</span> <span class="ident">From</span><span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="kw">type</span><span class="op">&gt;</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">err</span> {
-            <span class="kw">fn</span> <span class="ident">from</span>(<span class="ident">s</span>: <span class="macro-nonterminal">$</span><span class="kw">type</span>) -&gt; <span class="macro-nonterminal">Self</span> {
-                <span class="macro-nonterminal">$</span><span class="macro-nonterminal">err</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">variant</span>(<span class="ident">s</span>)
+<span class="macro">macro_rules!</span> impl_err_from {
+    (<span class="macro-nonterminal">$err</span>:ident :: <span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ty </span>&gt; <span class="macro-nonterminal">$variant</span>:ident) =&gt; {
+        <span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$err </span>{
+            <span class="kw">fn </span>from(s: <span class="macro-nonterminal">$</span><span class="kw">type</span>) -&gt; <span class="macro-nonterminal">Self </span>{
+                <span class="macro-nonterminal">$err</span>::<span class="macro-nonterminal">$variant</span>(s)
             }
         }
     };
 }
 
-<span class="doccomment">/// Generic result used throughout this library.</span>
-<span class="kw">pub</span> <span class="kw">type</span> <span class="ident">PaperClipResult</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="op">=</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">PaperClipError</span><span class="op">&gt;</span>;
+<span class="doccomment">/// Generic result used throughout this library.
+</span><span class="kw">pub type </span>PaperClipResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, PaperClipError&gt;;
 
-<span class="doccomment">/// Global error which encapsulates all related errors.</span>
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>, <span class="ident">thiserror::Error</span>)]</span>
-<span class="kw">pub</span> <span class="kw">enum</span> <span class="ident">PaperClipError</span> {
-    <span class="doccomment">/// Error encountered during spec validation.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;{}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">Validation</span>(<span class="ident">paperclip_core::ValidationError</span>),
-    <span class="doccomment">/// The given directory cannot be used for generating code.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Cannot generate code in the given directory&quot;</span>)]</span>
-    <span class="ident">InvalidCodegenDirectory</span>,
-    <span class="doccomment">/// Currently, we only support OpenAPI v2, and eventually v3.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;This version of OpenAPI is unsupported.&quot;</span>)]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::upper_case_acronyms</span>)]</span>
-    <span class="ident">UnsupportedOpenAPIVersion</span>,
-    <span class="doccomment">/// Paths listed in the spec must be unique.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Path similar to {:?} already exists.&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">RelativePathNotUnique</span>(<span class="ident">String</span>),
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Parameter(s) {:?} aren&#39;t defined for templated path {:?}&quot;</span>, <span class="ident">_1</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">MissingParametersInPath</span>(<span class="ident">String</span>, <span class="ident">HashSet</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
-    <span class="doccomment">/// Invalid host for URL.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Cannot parse host {:?}: {}&quot;</span>, <span class="ident">_0</span>, <span class="ident">_1</span>)]</span>
-    <span class="ident">InvalidHost</span>(<span class="ident">String</span>, <span class="ident">url_dep::ParseError</span>),
-    <span class="doccomment">/// Invalid base path URL.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Cannot set URL {:?}: {}&quot;</span>, <span class="ident">_0</span>, <span class="ident">_1</span>)]</span>
-    <span class="attribute">#[<span class="ident">allow</span>(<span class="ident">clippy::upper_case_acronyms</span>)]</span>
-    <span class="ident">InvalidBasePathURL</span>(<span class="ident">String</span>, <span class="ident">url_dep::ParseError</span>),
-    <span class="doccomment">/// The given schema object is an array, but the `items` field is missing.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Missing item schema for array: {:?}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">MissingArrayItem</span>(<span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span>),
-    <span class="doccomment">/// The name for the given definition is invalid.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Invalid name for definition: &#39;{0}&#39;&quot;</span>)]</span>
-    <span class="ident">InvalidDefinitionName</span>(<span class="ident">String</span>),
-    <span class="doccomment">/// The name for the given definition is missing.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Missing name for definition&quot;</span>)]</span>
-    <span class="ident">MissingDefinitionName</span>,
-    <span class="doccomment">/// A valid path cannot be obtained for the given definition.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Invalid path for definition: {:?}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">InvalidDefinitionPath</span>(<span class="ident">PathBuf</span>),
-    <span class="doccomment">/// I/O errors.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;I/O error: {}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">Io</span>(<span class="ident">std::io::Error</span>),
-    <span class="doccomment">/// JSON coding errors.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;JSON error: {}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">Json</span>(<span class="ident">serde_json::Error</span>),
-    <span class="doccomment">/// YAML coding errors.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;YAML error: {}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">Yaml</span>(<span class="ident">serde_yaml::Error</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen-fmt&quot;</span>)]</span>
-    <span class="doccomment">/// Errors from rustfmt.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Rustfmt formatting error: {}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">RustFmt</span>(<span class="ident">rustfmt_nightly::ErrorKind</span>),
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-    <span class="doccomment">/// Errors in templating.</span>
-    <span class="attribute">#[<span class="ident">error</span>(<span class="string">&quot;Templating error: {}&quot;</span>, <span class="ident">_0</span>)]</span>
-    <span class="ident">Templating</span>(<span class="ident">tinytemplate::error::Error</span>),
+<span class="doccomment">/// Global error which encapsulates all related errors.
+</span><span class="attribute">#[derive(Debug, thiserror::Error)]</span>
+<span class="kw">pub enum </span>PaperClipError {
+    <span class="doccomment">/// Error encountered during spec validation.
+    </span><span class="attribute">#[error(<span class="string">&quot;{}&quot;</span>, _0)]</span>
+    Validation(paperclip_core::ValidationError),
+    <span class="doccomment">/// The given directory cannot be used for generating code.
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot generate code in the given directory&quot;</span>)]</span>
+    InvalidCodegenDirectory,
+    <span class="doccomment">/// Currently, we only support OpenAPI v2, and eventually v3.
+    </span><span class="attribute">#[error(<span class="string">&quot;This version of OpenAPI is unsupported.&quot;</span>)]</span>
+    <span class="attribute">#[allow(clippy::upper_case_acronyms)]</span>
+    UnsupportedOpenAPIVersion,
+    <span class="doccomment">/// Paths listed in the spec must be unique.
+    </span><span class="attribute">#[error(<span class="string">&quot;Path similar to {:?} already exists.&quot;</span>, _0)]</span>
+    RelativePathNotUnique(String),
+    <span class="attribute">#[error(<span class="string">&quot;Parameter(s) {:?} aren&#39;t defined for templated path {:?}&quot;</span>, _1, _0)]</span>
+    MissingParametersInPath(String, HashSet&lt;String&gt;),
+    <span class="doccomment">/// Invalid host for URL.
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot parse host {:?}: {}&quot;</span>, _0, _1)]</span>
+    InvalidHost(String, url_dep::ParseError),
+    <span class="doccomment">/// Invalid base path URL.
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot set URL {:?}: {}&quot;</span>, _0, _1)]</span>
+    <span class="attribute">#[allow(clippy::upper_case_acronyms)]</span>
+    InvalidBasePathURL(String, url_dep::ParseError),
+    <span class="doccomment">/// The given schema object is an array, but the `items` field is missing.
+    </span><span class="attribute">#[error(<span class="string">&quot;Missing item schema for array: {:?}&quot;</span>, _0)]</span>
+    MissingArrayItem(<span class="prelude-ty">Option</span>&lt;String&gt;),
+    <span class="doccomment">/// The name for the given definition is invalid.
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid name for definition: &#39;{0}&#39;&quot;</span>)]</span>
+    InvalidDefinitionName(String),
+    <span class="doccomment">/// The name for the given definition is missing.
+    </span><span class="attribute">#[error(<span class="string">&quot;Missing name for definition&quot;</span>)]</span>
+    MissingDefinitionName,
+    <span class="doccomment">/// A valid path cannot be obtained for the given definition.
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid path for definition: {:?}&quot;</span>, _0)]</span>
+    InvalidDefinitionPath(PathBuf),
+    <span class="doccomment">/// I/O errors.
+    </span><span class="attribute">#[error(<span class="string">&quot;I/O error: {}&quot;</span>, _0)]</span>
+    Io(std::io::Error),
+    <span class="doccomment">/// JSON coding errors.
+    </span><span class="attribute">#[error(<span class="string">&quot;JSON error: {}&quot;</span>, _0)]</span>
+    Json(serde_json::Error),
+    <span class="doccomment">/// YAML coding errors.
+    </span><span class="attribute">#[error(<span class="string">&quot;YAML error: {}&quot;</span>, _0)]</span>
+    Yaml(serde_yaml::Error),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]</span>
+    <span class="doccomment">/// Errors from rustfmt.
+    </span><span class="attribute">#[error(<span class="string">&quot;Rustfmt formatting error: {}&quot;</span>, _0)]</span>
+    RustFmt(rustfmt_nightly::ErrorKind),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+    <span class="doccomment">/// Errors in templating.
+    </span><span class="attribute">#[error(<span class="string">&quot;Templating error: {}&quot;</span>, _0)]</span>
+    Templating(tinytemplate::error::Error),
 }
 
-<span class="macro">impl_err_from!</span>(<span class="ident">PaperClipError::std::io::Error</span> <span class="op">&gt;</span> <span class="ident">Io</span>);
-<span class="macro">impl_err_from!</span>(<span class="ident">PaperClipError::serde_json::Error</span> <span class="op">&gt;</span> <span class="ident">Json</span>);
-<span class="macro">impl_err_from!</span>(<span class="ident">PaperClipError::serde_yaml::Error</span> <span class="op">&gt;</span> <span class="ident">Yaml</span>);
-<span class="macro">impl_err_from!</span>(<span class="ident">PaperClipError::paperclip_core::ValidationError</span> <span class="op">&gt;</span> <span class="ident">Validation</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen-fmt&quot;</span>)]</span>
-<span class="macro">impl_err_from!</span>(<span class="ident">PaperClipError::rustfmt_nightly::ErrorKind</span> <span class="op">&gt;</span> <span class="ident">RustFmt</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="macro">impl_err_from!</span>(<span class="ident">PaperClipError::tinytemplate::error::Error</span> <span class="op">&gt;</span> <span class="ident">Templating</span>);
+<span class="macro">impl_err_from!</span>(PaperClipError::std::io::Error &gt; Io);
+<span class="macro">impl_err_from!</span>(PaperClipError::serde_json::Error &gt; Json);
+<span class="macro">impl_err_from!</span>(PaperClipError::serde_yaml::Error &gt; Yaml);
+<span class="macro">impl_err_from!</span>(PaperClipError::paperclip_core::ValidationError &gt; Validation);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]</span>
+<span class="macro">impl_err_from!</span>(PaperClipError::rustfmt_nightly::ErrorKind &gt; RustFmt);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
+<span class="macro">impl_err_from!</span>(PaperClipError::tinytemplate::error::Error &gt; Templating);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

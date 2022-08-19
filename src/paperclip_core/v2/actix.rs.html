@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/actix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>actix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/actix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>actix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -907,852 +901,852 @@
 <span id="901">901</span>
 <span id="902">902</span>
 <span id="903">903</span>
-</pre><pre class="rust"><code><span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>)]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web_validator2</span> <span class="kw">as</span> <span class="ident">actix_web_validator</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>)]</span>
-<span class="kw">extern</span> <span class="kw">crate</span> <span class="ident">actix_web_validator3</span> <span class="kw">as</span> <span class="ident">actix_web_validator</span>;
+</pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;actix3-validator&quot;</span>)]</span>
+<span class="kw">extern crate </span>actix_web_validator2 <span class="kw">as </span>actix_web_validator;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4-validator&quot;</span>)]</span>
+<span class="kw">extern crate </span>actix_web_validator3 <span class="kw">as </span>actix_web_validator;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-multipart&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">super</span>::schema::TypedData</span>;
-<span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">models</span>::{
-        <span class="ident">DefaultOperationRaw</span>, <span class="ident">DefaultSchemaRaw</span>, <span class="ident">Either</span>, <span class="ident">Items</span>, <span class="ident">Parameter</span>, <span class="ident">ParameterIn</span>, <span class="ident">Response</span>,
-        <span class="ident">SecurityScheme</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]</span>
+<span class="kw">use </span><span class="kw">super</span>::schema::TypedData;
+<span class="kw">use super</span>::{
+    models::{
+        DefaultOperationRaw, DefaultSchemaRaw, Either, Items, Parameter, ParameterIn, Response,
+        SecurityScheme,
     },
-    <span class="ident">schema</span>::{<span class="ident">Apiv2Errors</span>, <span class="ident">Apiv2Operation</span>, <span class="ident">Apiv2Schema</span>},
+    schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema},
 };
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::util</span>::{<span class="ident">ready</span>, <span class="ident">Ready</span>};
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">actix_web::web::ReqData</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">actix_web::Error</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">actix_web</span>::{<span class="ident">body::BoxBody</span>, <span class="ident">ResponseError</span>};
-<span class="kw">use</span> <span class="ident">actix_web</span>::{
-    <span class="ident">http::StatusCode</span>,
-    <span class="ident">web</span>::{<span class="ident">Bytes</span>, <span class="ident">Data</span>, <span class="ident">Form</span>, <span class="ident">Json</span>, <span class="ident">Path</span>, <span class="ident">Payload</span>, <span class="ident">Query</span>},
-    <span class="ident">HttpRequest</span>, <span class="ident">HttpResponse</span>, <span class="ident">Responder</span>,
-};
-
-<span class="kw">use</span> <span class="ident">pin_project::pin_project</span>;
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-<span class="kw">use</span> <span class="ident">actix_web_validator</span>::{
-    <span class="ident">Json</span> <span class="kw">as</span> <span class="ident">ValidatedJson</span>, <span class="ident">Path</span> <span class="kw">as</span> <span class="ident">ValidatedPath</span>, <span class="ident">QsQuery</span> <span class="kw">as</span> <span class="ident">ValidatedQsQuery</span>,
-    <span class="ident">Query</span> <span class="kw">as</span> <span class="ident">ValidatedQuery</span>,
-};
-<span class="kw">use</span> <span class="ident">serde::Serialize</span>;
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde_qs&quot;</span>)]</span>
-<span class="kw">use</span> <span class="ident">serde_qs::actix::QsQuery</span>;
-
-<span class="kw">use</span> <span class="ident">std</span>::{
-    <span class="ident">collections::BTreeMap</span>,
-    <span class="ident">fmt</span>,
-    <span class="ident">future::Future</span>,
-    <span class="ident">pin::Pin</span>,
-    <span class="ident">task</span>::{<span class="ident">Context</span>, <span class="ident">Poll</span>},
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">use </span><span class="kw">crate</span>::util::{ready, Ready};
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">use </span>actix_web::web::ReqData;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">use </span>actix_web::Error;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">use </span>actix_web::{body::BoxBody, ResponseError};
+<span class="kw">use </span>actix_web::{
+    http::StatusCode,
+    web::{Bytes, Data, Form, Json, Path, Payload, Query},
+    HttpRequest, HttpResponse, Responder,
 };
 
-<span class="doccomment">/// Actix-specific trait for indicating that this entity can modify an operation</span>
-<span class="doccomment">/// and/or update the global map of definitions.</span>
-<span class="kw">pub</span> <span class="kw">trait</span> <span class="ident">OperationModifier</span>: <span class="ident">Apiv2Schema</span> <span class="op">+</span> <span class="ident">Sized</span> {
-    <span class="doccomment">/// Update the parameters list in the given operation (if needed).</span>
-    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">update_parameter</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">op</span>);
+<span class="kw">use </span>pin_project::pin_project;
+
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="kw">use </span>actix_web_validator::{
+    Json <span class="kw">as </span>ValidatedJson, Path <span class="kw">as </span>ValidatedPath, QsQuery <span class="kw">as </span>ValidatedQsQuery,
+    Query <span class="kw">as </span>ValidatedQuery,
+};
+<span class="kw">use </span>serde::Serialize;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serde_qs&quot;</span>)]</span>
+<span class="kw">use </span>serde_qs::actix::QsQuery;
+
+<span class="kw">use </span>std::{
+    collections::BTreeMap,
+    fmt,
+    future::Future,
+    pin::Pin,
+    task::{Context, Poll},
+};
+
+<span class="doccomment">/// Actix-specific trait for indicating that this entity can modify an operation
+/// and/or update the global map of definitions.
+</span><span class="kw">pub trait </span>OperationModifier: Apiv2Schema + Sized {
+    <span class="doccomment">/// Update the parameters list in the given operation (if needed).
+    </span><span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        update_parameter::&lt;<span class="self">Self</span>&gt;(op);
     }
 
-    <span class="doccomment">/// Update the responses map in the given operation (if needed).</span>
-    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">_op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {}
+    <span class="doccomment">/// Update the responses map in the given operation (if needed).
+    </span><span class="kw">fn </span>update_response(_op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {}
 
-    <span class="doccomment">/// Update the definitions map (if needed).</span>
-    <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {
-        <span class="ident">update_definitions_from_schema_type</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">map</span>);
+    <span class="doccomment">/// Update the definitions map (if needed).
+    </span><span class="kw">fn </span>update_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {
+        update_definitions_from_schema_type::&lt;<span class="self">Self</span>&gt;(map);
     }
 
-    <span class="doccomment">/// Update the security map in the given operation (if needed).</span>
-    <span class="kw">fn</span> <span class="ident">update_security</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">update_security</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">op</span>);
+    <span class="doccomment">/// Update the security map in the given operation (if needed).
+    </span><span class="kw">fn </span>update_security(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        update_security::&lt;<span class="self">Self</span>&gt;(op);
     }
 
-    <span class="doccomment">/// Update the security definition map (if needed).</span>
-    <span class="kw">fn</span> <span class="ident">update_security_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
-        <span class="ident">update_security_definitions</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">map</span>);
+    <span class="doccomment">/// Update the security definition map (if needed).
+    </span><span class="kw">fn </span>update_security_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, SecurityScheme&gt;) {
+        update_security_definitions::&lt;<span class="self">Self</span>&gt;(map);
     }
 }
 
-<span class="doccomment">/// All schema types default to updating the definitions map.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">T</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="doccomment">/// All schema types default to updating the definitions map.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>T
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">update_parameter</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">op</span>);
+    default <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        update_parameter::&lt;<span class="self">Self</span>&gt;(op);
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">_op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {}
+    default <span class="kw">fn </span>update_response(_op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {}
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {
-        <span class="ident">update_definitions_from_schema_type</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">map</span>);
+    default <span class="kw">fn </span>update_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {
+        update_definitions_from_schema_type::&lt;<span class="self">Self</span>&gt;(map);
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_security</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">update_security</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">op</span>);
+    default <span class="kw">fn </span>update_security(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        update_security::&lt;<span class="self">Self</span>&gt;(op);
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_security_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
-        <span class="ident">update_security_definitions</span>::<span class="op">&lt;</span><span class="self">Self</span><span class="op">&gt;</span>(<span class="ident">map</span>);
+    default <span class="kw">fn </span>update_security_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, SecurityScheme&gt;) {
+        update_security_definitions::&lt;<span class="self">Self</span>&gt;(map);
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">OperationModifier</span>,
+<span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt;
+<span class="kw">where
+    </span>T: OperationModifier,
 {
-    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_parameter</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_parameter(op);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_response</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_response(op);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {
-        <span class="ident">T::update_definitions</span>(<span class="ident">map</span>);
+    <span class="kw">fn </span>update_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {
+        T::update_definitions(map);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_security</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_security</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_security(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_security(op);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_security_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
-        <span class="ident">T::update_security_definitions</span>(<span class="ident">map</span>);
+    <span class="kw">fn </span>update_security_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, SecurityScheme&gt;) {
+        T::update_security_definitions(map);
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">OperationModifier</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T, E&gt; OperationModifier <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, E&gt;
+<span class="kw">where
+    </span>T: OperationModifier,
 {
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_parameter</span>(<span class="ident">op</span>);
+    default <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_parameter(op);
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_response</span>(<span class="ident">op</span>);
+    default <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_response(op);
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {
-        <span class="ident">T::update_definitions</span>(<span class="ident">map</span>);
+    default <span class="kw">fn </span>update_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {
+        T::update_definitions(map);
     }
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">update_security_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
-        <span class="ident">T::update_security_definitions</span>(<span class="ident">map</span>);
+    default <span class="kw">fn </span>update_security_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, SecurityScheme&gt;) {
+        T::update_security_definitions(map);
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">E</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">OperationModifier</span>,
-    <span class="ident">E</span>: <span class="ident">Apiv2Errors</span>,
+<span class="kw">impl</span>&lt;T, E&gt; OperationModifier <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, E&gt;
+<span class="kw">where
+    </span>T: OperationModifier,
+    E: Apiv2Errors,
 {
-    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_parameter</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_parameter(op);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">T::update_response</span>(<span class="ident">op</span>);
-        <span class="ident">E::update_error_definitions</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        T::update_response(op);
+        E::update_error_definitions(op);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {
-        <span class="ident">T::update_definitions</span>(<span class="ident">map</span>);
-        <span class="ident">E::update_definitions</span>(<span class="ident">map</span>);
+    <span class="kw">fn </span>update_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {
+        T::update_definitions(map);
+        E::update_definitions(map);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_security_definitions</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>) {
-        <span class="ident">T::update_security_definitions</span>(<span class="ident">map</span>);
+    <span class="kw">fn </span>update_security_definitions(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, SecurityScheme&gt;) {
+        T::update_security_definitions(map);
     }
 }
 
-<span class="comment">// We don&#39;t know what we should do with these abstractions</span>
-<span class="comment">// as they could be anything.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">Data</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">std::clone::Clone</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ReqData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">std::clone::Clone</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">ReqData</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
+<span class="comment">// We don&#39;t know what we should do with these abstractions
+// as they could be anything.
+</span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span>Data&lt;T&gt; {}
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>Data&lt;T&gt; {}
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: std::clone::Clone&gt; Apiv2Schema <span class="kw">for </span>ReqData&lt;T&gt; {}
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: std::clone::Clone&gt; OperationModifier <span class="kw">for </span>ReqData&lt;T&gt; {}
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_empty</span>({ $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span>),<span class="op">+</span> } =&gt; {
+<span class="macro">macro_rules!</span> impl_empty({ $(<span class="macro-nonterminal">$ty</span>:ty),+ } =&gt; {
     $(
-        <span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {}
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-        <span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {}
-    )<span class="op">+</span>
+        <span class="kw">impl </span>Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+        <span class="kw">impl </span>OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
+    )+
 });
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="doccomment">/// Workaround for possibility to directly return HttpResponse from closure handler.</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// This is needed after actix removed `impl Future` from `HttpResponse`:</span>
-<span class="doccomment">/// &lt;https://github.com/actix/actix-web/pull/2601&gt;</span>
-<span class="doccomment">///</span>
-<span class="doccomment">/// Example:</span>
-<span class="comment">//////</span>
-<span class="doccomment">/// ```ignore</span>
-<span class="doccomment">/// .route(web::get().to(||</span>
-<span class="doccomment">///     async move {</span>
-<span class="doccomment">///         paperclip::actix::HttpResponseWrapper(</span>
-<span class="doccomment">///             HttpResponse::Ok().body(&quot;Hi there!&quot;)</span>
-<span class="doccomment">///         )</span>
-<span class="doccomment">///     }</span>
-<span class="doccomment">/// ))</span>
-<span class="doccomment">/// ```</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">HttpResponseWrapper</span>(<span class="kw">pub</span> <span class="ident">HttpResponse</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="doccomment">/// Workaround for possibility to directly return HttpResponse from closure handler.
+///
+/// This is needed after actix removed `impl Future` from `HttpResponse`:
+/// &lt;https://github.com/actix/actix-web/pull/2601&gt;
+///
+/// Example:
+</span><span class="comment">//////
+</span><span class="doccomment">/// ```ignore
+/// .route(web::get().to(||
+///     async move {
+///         paperclip::actix::HttpResponseWrapper(
+///             HttpResponse::Ok().body(&quot;Hi there!&quot;)
+///         )
+///     }
+/// ))
+/// ```
+</span><span class="kw">pub struct </span>HttpResponseWrapper(<span class="kw">pub </span>HttpResponse);
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">HttpResponseWrapper</span> {
-    <span class="kw">type</span> <span class="ident">Body</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">HttpResponse</span> <span class="kw">as</span> <span class="ident">Responder</span><span class="op">&gt;</span><span class="ident">::Body</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl </span>Responder <span class="kw">for </span>HttpResponseWrapper {
+    <span class="kw">type </span>Body = &lt;HttpResponse <span class="kw">as </span>Responder&gt;::Body;
 
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Body</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">respond_to</span>(<span class="ident">req</span>)
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, req: <span class="kw-2">&amp;</span>HttpRequest) -&gt; HttpResponse&lt;<span class="self">Self</span>::Body&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.respond_to(req)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span><span class="op">&gt;</span> <span class="ident">Apiv2Operation</span> <span class="kw">for</span> <span class="ident">F</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">HttpResponseWrapper</span><span class="op">&gt;</span>,
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;F&gt; Apiv2Operation <span class="kw">for </span>F
+<span class="kw">where
+    </span>F: Future&lt;Output = HttpResponseWrapper&gt;,
 {
-    <span class="kw">fn</span> <span class="ident">operation</span>() -&gt; <span class="ident">DefaultOperationRaw</span> {
-        <span class="ident">Default::default</span>()
+    <span class="kw">fn </span>operation() -&gt; DefaultOperationRaw {
+        Default::default()
     }
 
-    <span class="kw">fn</span> <span class="ident">security_definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">Default::default</span>()
+    <span class="kw">fn </span>security_definitions() -&gt; BTreeMap&lt;String, SecurityScheme&gt; {
+        Default::default()
     }
 
-    <span class="kw">fn</span> <span class="ident">definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span> {
-        <span class="ident">Default::default</span>()
-    }
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">impl</span> <span class="ident">Apiv2Operation</span> <span class="kw">for</span> <span class="ident">HttpResponse</span> {
-    <span class="kw">fn</span> <span class="ident">operation</span>() -&gt; <span class="ident">DefaultOperationRaw</span> {
-        <span class="ident">Default::default</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">security_definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">Default::default</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span> {
-        <span class="ident">Default::default</span>()
+    <span class="kw">fn </span>definitions() -&gt; BTreeMap&lt;String, DefaultSchemaRaw&gt; {
+        Default::default()
     }
 }
 
-<span class="macro">impl_empty!</span>(<span class="ident">HttpRequest</span>, <span class="ident">HttpResponse</span>, <span class="ident">Bytes</span>, <span class="ident">Payload</span>);
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">impl </span>Apiv2Operation <span class="kw">for </span>HttpResponse {
+    <span class="kw">fn </span>operation() -&gt; DefaultOperationRaw {
+        Default::default()
+    }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="kw">mod</span> <span class="ident">manual_impl</span> {
-    <span class="kw">use</span> <span class="ident"><span class="kw">super</span>::OperationModifier</span>;
+    <span class="kw">fn </span>security_definitions() -&gt; BTreeMap&lt;String, SecurityScheme&gt; {
+        Default::default()
+    }
 
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> <span class="ident">str</span> {}
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="lifetime">&#39;a</span>, <span class="ident">T</span>: <span class="ident">OperationModifier</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="kw-2">&amp;</span><span class="lifetime">&#39;a</span> [<span class="ident">T</span>] {}
+    <span class="kw">fn </span>definitions() -&gt; BTreeMap&lt;String, DefaultSchemaRaw&gt; {
+        Default::default()
+    }
+}
 
-    <span class="macro">macro_rules!</span> <span class="ident">impl_simple</span>({ <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span> } =&gt; {
-        <span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {}
+<span class="macro">impl_empty!</span>(HttpRequest, HttpResponse, Bytes, Payload);
+
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">mod </span>manual_impl {
+    <span class="kw">use </span><span class="kw">super</span>::OperationModifier;
+
+    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; OperationModifier <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {}
+    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: OperationModifier&gt; OperationModifier <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T] {}
+
+    <span class="macro">macro_rules!</span> impl_simple({ <span class="macro-nonterminal">$ty</span>:ty } =&gt; {
+        <span class="kw">impl </span>OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
     });
 
-    <span class="macro">impl_simple!</span>(<span class="ident">char</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">String</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">bool</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">f32</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">f64</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">i8</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">i16</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">i32</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">u8</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">u16</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">u32</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">i64</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">i128</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">isize</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">u64</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">u128</span>);
-    <span class="macro">impl_simple!</span>(<span class="ident">usize</span>);
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-    <span class="macro">impl_simple!</span>(<span class="ident">chrono::NaiveDateTime</span>);
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;rust_decimal&quot;</span>)]</span>
-    <span class="macro">impl_simple!</span>(<span class="ident">rust_decimal::Decimal</span>);
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;url&quot;</span>)]</span>
-    <span class="macro">impl_simple!</span>(<span class="ident">url::Url</span>);
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;uuid&quot;</span>)]</span>
-    <span class="macro">impl_simple!</span>(<span class="ident">uuid::Uuid</span>);
+    <span class="macro">impl_simple!</span>(char);
+    <span class="macro">impl_simple!</span>(String);
+    <span class="macro">impl_simple!</span>(bool);
+    <span class="macro">impl_simple!</span>(f32);
+    <span class="macro">impl_simple!</span>(f64);
+    <span class="macro">impl_simple!</span>(i8);
+    <span class="macro">impl_simple!</span>(i16);
+    <span class="macro">impl_simple!</span>(i32);
+    <span class="macro">impl_simple!</span>(u8);
+    <span class="macro">impl_simple!</span>(u16);
+    <span class="macro">impl_simple!</span>(u32);
+    <span class="macro">impl_simple!</span>(i64);
+    <span class="macro">impl_simple!</span>(i128);
+    <span class="macro">impl_simple!</span>(isize);
+    <span class="macro">impl_simple!</span>(u64);
+    <span class="macro">impl_simple!</span>(u128);
+    <span class="macro">impl_simple!</span>(usize);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
+    <span class="macro">impl_simple!</span>(chrono::NaiveDateTime);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;rust_decimal&quot;</span>)]</span>
+    <span class="macro">impl_simple!</span>(rust_decimal::Decimal);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]</span>
+    <span class="macro">impl_simple!</span>(url::Url);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;uuid&quot;</span>)]</span>
+    <span class="macro">impl_simple!</span>(uuid::Uuid);
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">chrono::TimeZone</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">chrono::DateTime</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
+<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T: chrono::TimeZone&gt; OperationModifier <span class="kw">for </span>chrono::DateTime&lt;T&gt; {}
 
-<span class="comment">// Other extractors</span>
+<span class="comment">// Other extractors
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span>Json&lt;T&gt; {
+    default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">Default::default</span>()
-    }
-}
-
-<span class="doccomment">/// JSON needs specialization because it updates the global definitions.</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="ident">T::name</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">T::raw_schema</span>()
+    default <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+        Default::default()
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">Json</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="doccomment">/// JSON needs specialization because it updates the global definitions.
+</span><span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span>Json&lt;T&gt; {
+    <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        T::name()
+    }
+
+    <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+        T::raw_schema()
+    }
+}
+
+<span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>Json&lt;T&gt;
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">Parameter</span> {
-            <span class="ident">description</span>: <span class="prelude-val">None</span>,
-            <span class="ident">in_</span>: <span class="ident">ParameterIn::Body</span>,
-            <span class="ident">name</span>: <span class="string">&quot;body&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">required</span>: <span class="bool-val">true</span>,
-            <span class="ident">schema</span>: <span class="prelude-val">Some</span>({
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">T::schema_with_ref</span>();
-                <span class="ident">def</span>.<span class="ident">retain_ref</span>();
-                <span class="ident">def</span>
+    <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        op.parameters.push(Either::Right(Parameter {
+            description: <span class="prelude-val">None</span>,
+            in_: ParameterIn::Body,
+            name: <span class="string">&quot;body&quot;</span>.into(),
+            required: <span class="bool-val">true</span>,
+            schema: <span class="prelude-val">Some</span>({
+                <span class="kw">let </span><span class="kw-2">mut </span>def = T::schema_with_ref();
+                def.retain_ref();
+                def
             }),
-            ..<span class="ident">Default::default</span>()
+            ..Default::default()
         }));
     }
 
-    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">op</span>.<span class="ident">responses</span>.<span class="ident">insert</span>(
-            <span class="string">&quot;200&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">Either::Right</span>(<span class="ident">Response</span> {
-                <span class="comment">// TODO: Support configuring other 2xx codes using macro attribute.</span>
-                <span class="ident">description</span>: <span class="prelude-val">Some</span>(<span class="string">&quot;OK&quot;</span>.<span class="ident">into</span>()),
-                <span class="ident">schema</span>: <span class="prelude-val">Some</span>({
-                    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">T::schema_with_ref</span>();
-                    <span class="ident">def</span>.<span class="ident">retain_ref</span>();
-                    <span class="ident">def</span>
+    <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        op.responses.insert(
+            <span class="string">&quot;200&quot;</span>.into(),
+            Either::Right(Response {
+                <span class="comment">// TODO: Support configuring other 2xx codes using macro attribute.
+                </span>description: <span class="prelude-val">Some</span>(<span class="string">&quot;OK&quot;</span>.into()),
+                schema: <span class="prelude-val">Some</span>({
+                    <span class="kw">let </span><span class="kw-2">mut </span>def = T::schema_with_ref();
+                    def.retain_ref();
+                    def
                 }),
-                ..<span class="ident">Default::default</span>()
+                ..Default::default()
             }),
         );
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(
-    <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>),
-    <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>
-))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedJson</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+<span class="attribute">#[cfg(all(
+    any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>),
+    feature = <span class="string">&quot;nightly&quot;
+</span>))]</span>
+<span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span>ValidatedJson&lt;T&gt; {
+    <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">Default::default</span>()
-    }
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedJson</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="ident">T::name</span>()
-    }
-
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">T::raw_schema</span>()
+    default <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+        Default::default()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">ValidatedJson</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span>ValidatedJson&lt;T&gt; {
+    <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        T::name()
+    }
+
+    <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+        T::raw_schema()
+    }
+}
+
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>ValidatedJson&lt;T&gt;
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">Json</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::update_parameter</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        Json::&lt;T&gt;::update_parameter(op);
     }
 
-    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">Json</span>::<span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span><span class="ident">::update_response</span>(<span class="ident">op</span>);
+    <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        Json::&lt;T&gt;::update_response(op);
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-multipart&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">actix_multipart::Multipart</span> {
-    <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">Parameter</span> {
-            <span class="ident">description</span>: <span class="prelude-val">None</span>,
-            <span class="ident">in_</span>: <span class="ident">ParameterIn::FormData</span>,
-            <span class="ident">name</span>: <span class="string">&quot;file_data&quot;</span>.<span class="ident">into</span>(),
-            <span class="ident">required</span>: <span class="bool-val">true</span>,
-            <span class="ident">data_type</span>: <span class="prelude-val">Some</span>(<span class="op">&lt;</span><span class="ident">actix_multipart::Multipart</span> <span class="kw">as</span> <span class="ident">TypedData</span><span class="op">&gt;</span><span class="ident">::data_type</span>()),
-            <span class="ident">format</span>: <span class="op">&lt;</span><span class="ident">actix_multipart::Multipart</span> <span class="kw">as</span> <span class="ident">TypedData</span><span class="op">&gt;</span><span class="ident">::format</span>(),
-            ..<span class="ident">Default::default</span>()
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]</span>
+<span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_multipart::Multipart {
+    <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        op.parameters.push(Either::Right(Parameter {
+            description: <span class="prelude-val">None</span>,
+            in_: ParameterIn::FormData,
+            name: <span class="string">&quot;file_data&quot;</span>.into(),
+            required: <span class="bool-val">true</span>,
+            data_type: <span class="prelude-val">Some</span>(&lt;actix_multipart::Multipart <span class="kw">as </span>TypedData&gt;::data_type()),
+            format: &lt;actix_multipart::Multipart <span class="kw">as </span>TypedData&gt;::format(),
+            ..Default::default()
         }));
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-session&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">actix_session::Session</span> {
-    <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">_map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {}
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-session&quot;</span>)]</span>
+<span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_session::Session {
+    <span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix-files&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">actix_files::NamedFile</span> {
-    <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">_map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {}
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-files&quot;</span>)]</span>
+<span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_files::NamedFile {
+    <span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_param_extractor</span> ({ <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ty</span> =&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">container</span>:<span class="ident">ident</span> } =&gt; {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-        <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-            <span class="prelude-val">None</span>
-        }
+<span class="macro">macro_rules!</span> impl_param_extractor ({ <span class="macro-nonterminal">$ty</span>:ty =&gt; <span class="macro-nonterminal">$container</span>:ident } =&gt; {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+    <span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
+        default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+            <span class="prelude-val">None
+        </span>}
 
-        <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-            <span class="ident">Default::default</span>()
+        default <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+            Default::default()
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {}
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+    <span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
 
-    <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span> {
-        <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-            <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">T::raw_schema</span>();
-            <span class="comment">// If there aren&#39;t any properties and if it&#39;s a path parameter,</span>
-            <span class="comment">// then add a parameter whose name will be overridden later.</span>
-            <span class="kw">if</span> <span class="ident">def</span>.<span class="ident">properties</span>.<span class="ident">is_empty</span>() <span class="op">&amp;&amp;</span> <span class="ident">ParameterIn</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">container</span> <span class="op">==</span> <span class="ident">ParameterIn::Path</span> {
-                <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">Parameter</span> {
-                    <span class="ident">name</span>: <span class="ident">String::new</span>(),
-                    <span class="ident">in_</span>: <span class="ident">ParameterIn::Path</span>,
-                    <span class="ident">required</span>: <span class="bool-val">true</span>,
-                    <span class="ident">data_type</span>: <span class="ident">def</span>.<span class="ident">data_type</span>,
-                    <span class="ident">format</span>: <span class="ident">def</span>.<span class="ident">format</span>,
-                    <span class="ident">enum_</span>: <span class="ident">def</span>.<span class="ident">enum_</span>,
-                    <span class="ident">description</span>: <span class="ident">def</span>.<span class="ident">description</span>,
-                    ..<span class="ident">Default::default</span>()
+    <span class="kw">impl</span>&lt;T: Apiv2Schema&gt; OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
+        <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+            <span class="kw">let </span>def = T::raw_schema();
+            <span class="comment">// If there aren&#39;t any properties and if it&#39;s a path parameter,
+            // then add a parameter whose name will be overridden later.
+            </span><span class="kw">if </span>def.properties.is_empty() &amp;&amp; ParameterIn::<span class="macro-nonterminal">$container </span>== ParameterIn::Path {
+                op.parameters.push(Either::Right(Parameter {
+                    name: String::new(),
+                    in_: ParameterIn::Path,
+                    required: <span class="bool-val">true</span>,
+                    data_type: def.data_type,
+                    format: def.format,
+                    enum_: def.enum_,
+                    description: def.description,
+                    ..Default::default()
                 }));
             }
-            <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">def</span>.<span class="ident">properties</span> {
-                <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">Parameter</span> {
-                    <span class="ident">in_</span>: <span class="ident">ParameterIn</span>::<span class="macro-nonterminal">$</span><span class="macro-nonterminal">container</span>,
-                    <span class="ident">required</span>: <span class="ident">def</span>.<span class="ident">required</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>),
-                    <span class="ident">data_type</span>: <span class="ident">v</span>.<span class="ident">data_type</span>,
-                    <span class="ident">format</span>: <span class="ident">v</span>.<span class="ident">format</span>,
-                    <span class="ident">enum_</span>: <span class="ident">v</span>.<span class="ident">enum_</span>,
-                    <span class="ident">description</span>: <span class="ident">v</span>.<span class="ident">description</span>,
-                    <span class="ident">collection_format</span>: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv</span>
-                    <span class="ident">items</span>: <span class="ident">v</span>.<span class="ident">items</span>.<span class="ident">as_deref</span>().<span class="ident">map</span>(<span class="ident">map_schema_to_items</span>),
-                    <span class="ident">name</span>: <span class="ident">k</span>,
-                    ..<span class="ident">Default::default</span>()
+            <span class="kw">for </span>(k, v) <span class="kw">in </span>def.properties {
+                op.parameters.push(Either::Right(Parameter {
+                    in_: ParameterIn::<span class="macro-nonterminal">$container</span>,
+                    required: def.required.contains(<span class="kw-2">&amp;</span>k),
+                    data_type: v.data_type,
+                    format: v.format,
+                    enum_: v.enum_,
+                    description: v.description,
+                    collection_format: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv
+                    </span>items: v.items.as_deref().map(map_schema_to_items),
+                    name: k,
+                    ..Default::default()
                 }));
             }
         }
 
-        <span class="comment">// These don&#39;t require updating definitions, as we use them only</span>
-        <span class="comment">// to get their properties.</span>
-        <span class="kw">fn</span> <span class="ident">update_definitions</span>(<span class="ident">_map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>) {}
+        <span class="comment">// These don&#39;t require updating definitions, as we use them only
+        // to get their properties.
+        </span><span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
     }
 });
 
-<span class="kw">fn</span> <span class="ident">map_schema_to_items</span>(<span class="ident">schema</span>: <span class="kw-2">&amp;</span><span class="ident">DefaultSchemaRaw</span>) -&gt; <span class="ident">Items</span> {
-    <span class="ident">Items</span> {
-        <span class="ident">data_type</span>: <span class="ident">schema</span>.<span class="ident">data_type</span>,
-        <span class="ident">format</span>: <span class="ident">schema</span>.<span class="ident">format</span>.<span class="ident">clone</span>(),
-        <span class="ident">collection_format</span>: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv</span>
-        <span class="ident">enum_</span>: <span class="ident">schema</span>.<span class="ident">enum_</span>.<span class="ident">clone</span>(),
-        <span class="ident">items</span>: <span class="ident">schema</span>
-            .<span class="ident">items</span>
-            .<span class="ident">as_deref</span>()
-            .<span class="ident">map</span>(<span class="op">|</span><span class="ident">schema</span><span class="op">|</span> <span class="ident">Box::new</span>(<span class="ident">map_schema_to_items</span>(<span class="ident">schema</span>))),
-        ..<span class="ident">Default::default</span>() <span class="comment">// range fields are not emitted</span>
+<span class="kw">fn </span>map_schema_to_items(schema: <span class="kw-2">&amp;</span>DefaultSchemaRaw) -&gt; Items {
+    Items {
+        data_type: schema.data_type,
+        format: schema.format.clone(),
+        collection_format: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv
+        </span>enum_: schema.enum_.clone(),
+        items: schema
+            .items
+            .as_deref()
+            .map(|schema| Box::new(map_schema_to_items(schema))),
+        ..Default::default() <span class="comment">// range fields are not emitted
+    </span>}
+}
+
+<span class="doccomment">/// `formData` can refer to the global definitions.
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span>Form&lt;T&gt; {
+    <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        T::name()
+    }
+
+    <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+        T::raw_schema()
     }
 }
 
-<span class="doccomment">/// `formData` can refer to the global definitions.</span>
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Apiv2Schema</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Form</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="ident">T::name</span>()
-    }
+<span class="macro">impl_param_extractor!</span>(Path&lt;T&gt; =&gt; Path);
+<span class="macro">impl_param_extractor!</span>(Query&lt;T&gt; =&gt; Query);
+<span class="macro">impl_param_extractor!</span>(Form&lt;T&gt; =&gt; FormData);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;serde_qs&quot;</span>)]</span>
+<span class="macro">impl_param_extractor!</span>(QsQuery&lt;T&gt; =&gt; Query);
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="macro">impl_param_extractor!</span>(ValidatedPath&lt;T&gt; =&gt; Path);
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="macro">impl_param_extractor!</span>(ValidatedQuery&lt;T&gt; =&gt; Query);
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+<span class="macro">impl_param_extractor!</span>(ValidatedQsQuery&lt;T&gt; =&gt; Query);
 
-    <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">T::raw_schema</span>()
-    }
-}
+<span class="macro">macro_rules!</span> impl_path_tuple ({ $(<span class="macro-nonterminal">$ty</span>:ident),+ } =&gt; {
+    <span class="attribute">#[cfg(all(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>), feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+    <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; Apiv2Schema <span class="kw">for </span>ValidatedPath&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-<span class="macro">impl_param_extractor!</span>(<span class="ident">Path</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Path</span>);
-<span class="macro">impl_param_extractor!</span>(<span class="ident">Query</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
-<span class="macro">impl_param_extractor!</span>(<span class="ident">Form</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">FormData</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;serde_qs&quot;</span>)]</span>
-<span class="macro">impl_param_extractor!</span>(<span class="ident">QsQuery</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-<span class="macro">impl_param_extractor!</span>(<span class="ident">ValidatedPath</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Path</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-<span class="macro">impl_param_extractor!</span>(<span class="ident">ValidatedQuery</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-<span class="macro">impl_param_extractor!</span>(<span class="ident">ValidatedQsQuery</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> =&gt; <span class="ident">Query</span>);
+    <span class="attribute">#[cfg(all(not(feature = <span class="string">&quot;nightly&quot;</span>), any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>)))]</span>
+    <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+&gt; Apiv2Schema <span class="kw">for </span>ValidatedPath&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-<span class="macro">macro_rules!</span> <span class="ident">impl_path_tuple</span> ({ $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>:<span class="ident">ident</span>),<span class="op">+</span> } =&gt; {
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>), <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedPath</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">all</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>), <span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>)))]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">Apiv2Schema</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ValidatedPath</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
-
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">any</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4-validator&quot;</span>, <span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix3-validator&quot;</span>))]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">ValidatedPath</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span>
-        <span class="kw">where</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">Apiv2Schema</span>,)<span class="op">+</span>
+    <span class="attribute">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]</span>
+    <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; OperationModifier <span class="kw">for </span>ValidatedPath&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt;
+        <span class="kw">where </span>$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+
     {
-        <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
+        <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
             $(
-                <span class="ident">Path</span>::<span class="op">&lt;</span><span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span><span class="op">&gt;</span><span class="ident">::update_parameter</span>(<span class="ident">op</span>);
-            )<span class="op">+</span>
+                Path::&lt;<span class="macro-nonterminal">$ty</span>&gt;::update_parameter(op);
+            )+
         }
     }
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Path</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+    <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; Apiv2Schema <span class="kw">for </span>Path&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-    <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">Apiv2Schema</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">Path</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span> {}
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+    <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+&gt; Apiv2Schema <span class="kw">for </span>Path&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-    <span class="kw">impl</span><span class="op">&lt;</span>$(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">Path</span><span class="op">&lt;</span>($(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>,)<span class="op">+</span>)<span class="op">&gt;</span>
-        <span class="kw">where</span> $(<span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty</span>: <span class="ident">Apiv2Schema</span>,)<span class="op">+</span>
+    <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; OperationModifier <span class="kw">for </span>Path&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt;
+        <span class="kw">where </span>$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+
     {
-        <span class="kw">fn</span> <span class="ident">update_parameter</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
+        <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
             $(
-                <span class="kw">let</span> <span class="ident">def</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">ty::raw_schema</span>();
-                <span class="kw">if</span> <span class="ident">def</span>.<span class="ident">properties</span>.<span class="ident">is_empty</span>() {
-                    <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">Parameter</span> {
-                        <span class="comment">// NOTE: We&#39;re setting empty name, because we don&#39;t know</span>
-                        <span class="comment">// the name in this context. We&#39;ll get it when we add services.</span>
-                        <span class="ident">name</span>: <span class="ident">String::new</span>(),
-                        <span class="ident">in_</span>: <span class="ident">ParameterIn::Path</span>,
-                        <span class="ident">required</span>: <span class="bool-val">true</span>,
-                        <span class="ident">data_type</span>: <span class="ident">def</span>.<span class="ident">data_type</span>,
-                        <span class="ident">format</span>: <span class="ident">def</span>.<span class="ident">format</span>,
-                        <span class="ident">enum_</span>: <span class="ident">def</span>.<span class="ident">enum_</span>,
-                        <span class="ident">description</span>: <span class="ident">def</span>.<span class="ident">description</span>,
-                        ..<span class="ident">Default::default</span>()
+                <span class="kw">let </span>def = <span class="macro-nonterminal">$ty::raw_schema</span>();
+                <span class="kw">if </span>def.properties.is_empty() {
+                    op.parameters.push(Either::Right(Parameter {
+                        <span class="comment">// NOTE: We&#39;re setting empty name, because we don&#39;t know
+                        // the name in this context. We&#39;ll get it when we add services.
+                        </span>name: String::new(),
+                        in_: ParameterIn::Path,
+                        required: <span class="bool-val">true</span>,
+                        data_type: def.data_type,
+                        format: def.format,
+                        enum_: def.enum_,
+                        description: def.description,
+                        ..Default::default()
                     }));
                 }
-                <span class="kw">for</span> (<span class="ident">k</span>, <span class="ident">v</span>) <span class="kw">in</span> <span class="ident">def</span>.<span class="ident">properties</span> {
-                    <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">Parameter</span> {
-                        <span class="ident">in_</span>: <span class="ident">ParameterIn::Path</span>,
-                        <span class="ident">required</span>: <span class="ident">def</span>.<span class="ident">required</span>.<span class="ident">contains</span>(<span class="kw-2">&amp;</span><span class="ident">k</span>),
-                        <span class="ident">data_type</span>: <span class="ident">v</span>.<span class="ident">data_type</span>,
-                        <span class="ident">format</span>: <span class="ident">v</span>.<span class="ident">format</span>,
-                        <span class="ident">enum_</span>: <span class="ident">v</span>.<span class="ident">enum_</span>,
-                        <span class="ident">description</span>: <span class="ident">v</span>.<span class="ident">description</span>,
-                        <span class="ident">collection_format</span>: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv</span>
-                        <span class="ident">items</span>: <span class="ident">v</span>.<span class="ident">items</span>.<span class="ident">as_deref</span>().<span class="ident">map</span>(<span class="ident">map_schema_to_items</span>),
-                        <span class="ident">name</span>: <span class="ident">k</span>,
-                        ..<span class="ident">Default::default</span>()
+                <span class="kw">for </span>(k, v) <span class="kw">in </span>def.properties {
+                    op.parameters.push(Either::Right(Parameter {
+                        in_: ParameterIn::Path,
+                        required: def.required.contains(<span class="kw-2">&amp;</span>k),
+                        data_type: v.data_type,
+                        format: v.format,
+                        enum_: v.enum_,
+                        description: v.description,
+                        collection_format: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv
+                        </span>items: v.items.as_deref().map(map_schema_to_items),
+                        name: k,
+                        ..Default::default()
                     }));
                 }
-            )<span class="op">+</span>
+            )+
         }
     }
 });
 
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>, <span class="ident">H</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>, <span class="ident">H</span>, <span class="ident">I</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>, <span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">J</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>, <span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">J</span>, <span class="ident">K</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>, <span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">J</span>, <span class="ident">K</span>, <span class="ident">L</span>);
-<span class="macro">impl_path_tuple!</span>(<span class="ident">A</span>, <span class="ident">B</span>, <span class="ident">C</span>, <span class="ident">D</span>, <span class="ident">E</span>, <span class="ident">F</span>, <span class="ident">G</span>, <span class="ident">H</span>, <span class="ident">I</span>, <span class="ident">J</span>, <span class="ident">K</span>, <span class="ident">L</span>, <span class="ident">M</span>);
+<span class="macro">impl_path_tuple!</span>(A);
+<span class="macro">impl_path_tuple!</span>(A, B);
+<span class="macro">impl_path_tuple!</span>(A, B, C);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G, H);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G, H, I);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G, H, I, J);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G, H, I, J, K);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G, H, I, J, K, L);
+<span class="macro">impl_path_tuple!</span>(A, B, C, D, E, F, G, H, I, J, K, L, M);
 
-<span class="doccomment">/// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ResponderWrapper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">T</span>);
+<span class="doccomment">/// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).
+</span><span class="kw">pub struct </span>ResponderWrapper&lt;T&gt;(<span class="kw">pub </span>T);
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ResponderWrapper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-        <span class="prelude-val">None</span>
-    }
+<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T: Responder&gt; Apiv2Schema <span class="kw">for </span>ResponderWrapper&lt;T&gt; {
+    default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+        <span class="prelude-val">None
+    </span>}
 
-    <span class="ident">default</span> <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-        <span class="ident">DefaultSchemaRaw::default</span>()
-    }
-}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">ResponderWrapper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">ResponderWrapper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">actix_web::dev::Response</span><span class="op">&lt;</span><span class="ident">actix_web::body::BoxBody</span><span class="op">&gt;</span> {}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">actix_web::dev::Response</span><span class="op">&lt;</span><span class="ident">actix_web::body::BoxBody</span><span class="op">&gt;</span> {}
-
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span><span class="op">&gt;</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">ResponderWrapper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Body</span> <span class="op">=</span> <span class="ident">T::Body</span>;
-
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Body</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">respond_to</span>(<span class="ident">req</span>)
+    default <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+        DefaultSchemaRaw::default()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span><span class="op">&gt;</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">ResponderWrapper</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">T::Error</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">T::Future</span>;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: Responder&gt; Apiv2Schema <span class="kw">for </span>ResponderWrapper&lt;T&gt; {}
 
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">respond_to</span>(<span class="ident">req</span>)
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: Responder&gt; OperationModifier <span class="kw">for </span>ResponderWrapper&lt;T&gt; {}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl </span>Apiv2Schema <span class="kw">for </span>actix_web::dev::Response&lt;actix_web::body::BoxBody&gt; {}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_web::dev::Response&lt;actix_web::body::BoxBody&gt; {}
+
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T: Responder&gt; Responder <span class="kw">for </span>ResponderWrapper&lt;T&gt; {
+    <span class="kw">type </span>Body = T::Body;
+
+    <span class="attribute">#[inline]</span>
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, req: <span class="kw-2">&amp;</span>HttpRequest) -&gt; HttpResponse&lt;<span class="self">Self</span>::Body&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.respond_to(req)
     }
 }
 
-<span class="doccomment">/// Wrapper for all response types from handlers. This holds the actual value</span>
-<span class="doccomment">/// returned by the handler and a unit struct (autogenerated by the plugin) which</span>
-<span class="doccomment">/// is used for generating operation information.</span>
-<span class="attribute">#[<span class="ident">pin_project</span>]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">ResponseWrapper</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">H</span><span class="op">&gt;</span>(<span class="attribute">#[<span class="ident">pin</span>]</span> <span class="kw">pub</span> <span class="ident">T</span>, <span class="kw">pub</span> <span class="ident">H</span>);
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: Responder&gt; Responder <span class="kw">for </span>ResponderWrapper&lt;T&gt; {
+    <span class="kw">type </span>Error = T::Error;
+    <span class="kw">type </span>Future = T::Future;
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span>, <span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">ResponseWrapper</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">H</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Body</span> <span class="op">=</span> <span class="ident">T::Body</span>;
-
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Body</span><span class="op">&gt;</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">respond_to</span>(<span class="ident">req</span>)
+    <span class="attribute">#[inline]</span>
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, req: <span class="kw-2">&amp;</span>HttpRequest) -&gt; <span class="self">Self</span>::Future {
+        <span class="self">self</span>.<span class="number">0</span>.respond_to(req)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Responder</span>, <span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">ResponseWrapper</span><span class="op">&lt;</span><span class="ident">T</span>, <span class="ident">H</span><span class="op">&gt;</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Responder</span><span class="op">&gt;</span><span class="ident">::Error</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="op">&lt;</span><span class="ident">T</span> <span class="kw">as</span> <span class="ident">Responder</span><span class="op">&gt;</span><span class="ident">::Future</span>;
+<span class="doccomment">/// Wrapper for all response types from handlers. This holds the actual value
+/// returned by the handler and a unit struct (autogenerated by the plugin) which
+/// is used for generating operation information.
+</span><span class="attribute">#[pin_project]</span>
+<span class="kw">pub struct </span>ResponseWrapper&lt;T, H&gt;(<span class="attribute">#[pin]</span> <span class="kw">pub </span>T, <span class="kw">pub </span>H);
 
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="ident">req</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="self">self</span>.<span class="number">0</span>.<span class="ident">respond_to</span>(<span class="ident">req</span>)
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl</span>&lt;T: Responder, H&gt; Responder <span class="kw">for </span>ResponseWrapper&lt;T, H&gt; {
+    <span class="kw">type </span>Body = T::Body;
+
+    <span class="attribute">#[inline]</span>
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, req: <span class="kw-2">&amp;</span>HttpRequest) -&gt; HttpResponse&lt;<span class="self">Self</span>::Body&gt; {
+        <span class="self">self</span>.<span class="number">0</span>.respond_to(req)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Future</span> <span class="kw">for</span> <span class="ident">ResponseWrapper</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">H</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">T</span>: <span class="ident">OperationModifier</span> <span class="op">+</span> <span class="ident">Responder</span>,
-    <span class="ident">H</span>: <span class="ident">Apiv2Operation</span>,
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">impl</span>&lt;T: Responder, H&gt; Responder <span class="kw">for </span>ResponseWrapper&lt;T, H&gt; {
+    <span class="kw">type </span>Error = &lt;T <span class="kw">as </span>Responder&gt;::Error;
+    <span class="kw">type </span>Future = &lt;T <span class="kw">as </span>Responder&gt;::Future;
+
+    <span class="attribute">#[inline]</span>
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, req: <span class="kw-2">&amp;</span>HttpRequest) -&gt; <span class="self">Self</span>::Future {
+        <span class="self">self</span>.<span class="number">0</span>.respond_to(req)
+    }
+}
+
+<span class="kw">impl</span>&lt;F, T, H&gt; Future <span class="kw">for </span>ResponseWrapper&lt;F, H&gt;
+<span class="kw">where
+    </span>F: Future&lt;Output = T&gt;,
+    T: OperationModifier + Responder,
+    H: Apiv2Operation,
 {
-    <span class="kw">type</span> <span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span>;
+    <span class="kw">type </span>Output = T;
 
-    <span class="attribute">#[<span class="ident">inline</span>]</span>
-    <span class="kw">fn</span> <span class="ident">poll</span>(<span class="kw-2">mut</span> <span class="self">self</span>: <span class="ident">Pin</span><span class="op">&lt;</span><span class="kw-2">&amp;mut</span> <span class="self">Self</span><span class="op">&gt;</span>, <span class="ident">ctx</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Context</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">Poll</span><span class="op">&lt;</span><span class="ident"><span class="self">Self</span>::Output</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">this</span> <span class="op">=</span> <span class="self">self</span>.<span class="ident">as_mut</span>().<span class="ident">project</span>();
-        <span class="ident">this</span>.<span class="number">0</span>.<span class="ident">poll</span>(<span class="ident">ctx</span>)
+    <span class="attribute">#[inline]</span>
+    <span class="kw">fn </span>poll(<span class="kw-2">mut </span><span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, ctx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; Poll&lt;<span class="self">Self</span>::Output&gt; {
+        <span class="kw">let </span>this = <span class="self">self</span>.as_mut().project();
+        this.<span class="number">0</span>.poll(ctx)
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">T</span>, <span class="ident">H</span><span class="op">&gt;</span> <span class="ident">Apiv2Operation</span> <span class="kw">for</span> <span class="ident">ResponseWrapper</span><span class="op">&lt;</span><span class="ident">F</span>, <span class="ident">H</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">F</span>: <span class="ident">Future</span><span class="op">&lt;</span><span class="ident">Output</span> <span class="op">=</span> <span class="ident">T</span><span class="op">&gt;</span>,
-    <span class="ident">T</span>: <span class="ident">OperationModifier</span> <span class="op">+</span> <span class="ident">Responder</span>,
-    <span class="ident">H</span>: <span class="ident">Apiv2Operation</span>,
+<span class="kw">impl</span>&lt;F, T, H&gt; Apiv2Operation <span class="kw">for </span>ResponseWrapper&lt;F, H&gt;
+<span class="kw">where
+    </span>F: Future&lt;Output = T&gt;,
+    T: OperationModifier + Responder,
+    H: Apiv2Operation,
 {
-    <span class="kw">fn</span> <span class="ident">operation</span>() -&gt; <span class="ident">DefaultOperationRaw</span> {
-        <span class="ident">H::operation</span>()
+    <span class="kw">fn </span>operation() -&gt; DefaultOperationRaw {
+        H::operation()
     }
 
-    <span class="kw">fn</span> <span class="ident">security_definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span> {
-        <span class="ident">H::security_definitions</span>()
+    <span class="kw">fn </span>security_definitions() -&gt; BTreeMap&lt;String, SecurityScheme&gt; {
+        H::security_definitions()
     }
 
-    <span class="kw">fn</span> <span class="ident">definitions</span>() -&gt; <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span> {
-        <span class="ident">H::definitions</span>()
+    <span class="kw">fn </span>definitions() -&gt; BTreeMap&lt;String, DefaultSchemaRaw&gt; {
+        H::definitions()
     }
 
-    <span class="kw">fn</span> <span class="ident">is_visible</span>() -&gt; <span class="ident">bool</span> {
-        <span class="ident">H::is_visible</span>()
+    <span class="kw">fn </span>is_visible() -&gt; bool {
+        H::is_visible()
     }
 }
 
-<span class="doccomment">/// Given the schema type, recursively update the map of definitions.</span>
-<span class="kw">fn</span> <span class="ident">update_definitions_from_schema_type</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">DefaultSchemaRaw</span><span class="op">&gt;</span>)
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="doccomment">/// Given the schema type, recursively update the map of definitions.
+</span><span class="kw">fn </span>update_definitions_from_schema_type&lt;T&gt;(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;)
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="ident">T::schema_with_ref</span>();
-    <span class="kw">loop</span> {
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">s</span>) <span class="op">=</span> <span class="ident">schema</span>.<span class="ident">items</span> {
-            <span class="ident">schema</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">s</span>;
+    <span class="kw">let </span><span class="kw-2">mut </span>schema = T::schema_with_ref();
+    <span class="kw">loop </span>{
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = schema.items {
+            schema = <span class="kw-2">*</span>s;
             <span class="kw">continue</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">Either::Right</span>(<span class="ident">s</span>)) <span class="op">=</span> <span class="ident">schema</span>.<span class="ident">extra_props</span> {
-            <span class="ident">schema</span> <span class="op">=</span> <span class="kw-2">*</span><span class="ident">s</span>;
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(Either::Right(s)) = schema.extra_props {
+            schema = <span class="kw-2">*</span>s;
             <span class="kw">continue</span>;
-        } <span class="kw">else</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">n</span>) <span class="op">=</span> <span class="ident">schema</span>.<span class="ident">name</span>.<span class="ident">take</span>() {
-            <span class="ident">schema</span>.<span class="ident">remove_refs</span>();
-            <span class="ident">map</span>.<span class="ident">insert</span>(<span class="ident">n</span>, <span class="ident">schema</span>);
+        } <span class="kw">else if let </span><span class="prelude-val">Some</span>(n) = schema.name.take() {
+            schema.remove_refs();
+            map.insert(n, schema);
         }
 
         <span class="kw">break</span>;
     }
 }
 
-<span class="kw">fn</span> <span class="ident">update_parameter</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>)
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="kw">fn </span>update_parameter&lt;T&gt;(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw)
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="kw">for</span> <span class="ident">parameter</span> <span class="kw">in</span> <span class="ident">T::header_parameter_schema</span>() {
-        <span class="ident">op</span>.<span class="ident">parameters</span>.<span class="ident">push</span>(<span class="ident">Either::Right</span>(<span class="ident">parameter</span>))
+    <span class="kw">for </span>parameter <span class="kw">in </span>T::header_parameter_schema() {
+        op.parameters.push(Either::Right(parameter))
     }
 }
 
-<span class="doccomment">/// Add security requirements to operation.</span>
-<span class="kw">fn</span> <span class="ident">update_security</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>)
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="doccomment">/// Add security requirements to operation.
+</span><span class="kw">fn </span>update_security&lt;T&gt;(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw)
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">name</span>), <span class="prelude-val">Some</span>(<span class="ident">scheme</span>)) <span class="op">=</span> (<span class="ident">T::name</span>(), <span class="ident">T::security_scheme</span>()) {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">security_map</span> <span class="op">=</span> <span class="ident">BTreeMap::new</span>();
-        <span class="kw">let</span> <span class="ident">scopes</span> <span class="op">=</span> <span class="ident">scheme</span>.<span class="ident">scopes</span>.<span class="ident">keys</span>().<span class="ident">map</span>(<span class="ident">String::clone</span>).<span class="ident">collect</span>();
-        <span class="ident">security_map</span>.<span class="ident">insert</span>(<span class="ident">name</span>, <span class="ident">scopes</span>);
-        <span class="ident">op</span>.<span class="ident">security</span>.<span class="ident">push</span>(<span class="ident">security_map</span>);
+    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(name), <span class="prelude-val">Some</span>(scheme)) = (T::name(), T::security_scheme()) {
+        <span class="kw">let </span><span class="kw-2">mut </span>security_map = BTreeMap::new();
+        <span class="kw">let </span>scopes = scheme.scopes.keys().map(String::clone).collect();
+        security_map.insert(name, scopes);
+        op.security.push(security_map);
     }
 }
 
-<span class="doccomment">/// Merge security scheme into existing security definitions or add new.</span>
-<span class="kw">fn</span> <span class="ident">update_security_definitions</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>(<span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">SecurityScheme</span><span class="op">&gt;</span>)
-<span class="kw">where</span>
-    <span class="ident">T</span>: <span class="ident">Apiv2Schema</span>,
+<span class="doccomment">/// Merge security scheme into existing security definitions or add new.
+</span><span class="kw">fn </span>update_security_definitions&lt;T&gt;(map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, SecurityScheme&gt;)
+<span class="kw">where
+    </span>T: Apiv2Schema,
 {
-    <span class="kw">if</span> <span class="kw">let</span> (<span class="prelude-val">Some</span>(<span class="ident">name</span>), <span class="prelude-val">Some</span>(<span class="ident">new</span>)) <span class="op">=</span> (<span class="ident">T::name</span>(), <span class="ident">T::security_scheme</span>()) {
-        <span class="ident">new</span>.<span class="ident">update_definitions</span>(<span class="kw-2">&amp;</span><span class="ident">name</span>, <span class="ident">map</span>);
+    <span class="kw">if let </span>(<span class="prelude-val">Some</span>(name), <span class="prelude-val">Some</span>(new)) = (T::name(), T::security_scheme()) {
+        new.update_definitions(<span class="kw-2">&amp;</span>name, map);
     }
 }
 
-<span class="macro">macro_rules!</span> <span class="ident">json_with_status</span> {
-    (<span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span>:<span class="ident">ident</span> =&gt; <span class="macro-nonterminal">$</span><span class="macro-nonterminal">status</span>:<span class="ident">expr</span>) =&gt; {
-        <span class="kw">pub</span> <span class="kw">struct</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span>: <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span><span class="op">&gt;</span>(<span class="kw">pub</span> <span class="ident">T</span>);
+<span class="macro">macro_rules!</span> json_with_status {
+    (<span class="macro-nonterminal">$name</span>:ident =&gt; <span class="macro-nonterminal">$status</span>:expr) =&gt; {
+        <span class="kw">pub struct </span><span class="macro-nonterminal">$name</span>&lt;T: Serialize + Apiv2Schema&gt;(<span class="kw">pub </span>T);
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt::Debug</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-        <span class="kw">where</span>
-            <span class="ident">T</span>: <span class="ident">fmt::Debug</span> <span class="op">+</span> <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span>,
+        <span class="kw">impl</span>&lt;T&gt; fmt::Debug <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
+        <span class="kw">where
+            </span>T: fmt::Debug + Serialize + Apiv2Schema,
         {
-            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
-                <span class="kw">let</span> <span class="ident">status</span>: <span class="ident">StatusCode</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">status</span>;
-                <span class="kw">let</span> <span class="ident">status_str</span> <span class="op">=</span> <span class="ident">status</span>.<span class="ident">canonical_reason</span>().<span class="ident">unwrap_or</span>(<span class="ident">status</span>.<span class="ident">as_str</span>());
-                <span class="macro">write!</span>(<span class="ident">f</span>, <span class="string">&quot;{} Json: {:?}&quot;</span>, <span class="ident">status_str</span>, <span class="self">self</span>.<span class="number">0</span>)
+            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+                <span class="kw">let </span>status: StatusCode = <span class="macro-nonterminal">$status</span>;
+                <span class="kw">let </span>status_str = status.canonical_reason().unwrap_or(status.as_str());
+                <span class="macro">write!</span>(f, <span class="string">&quot;{} Json: {:?}&quot;</span>, status_str, <span class="self">self</span>.<span class="number">0</span>)
             }
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-        <span class="kw">where</span>
-            <span class="ident">T</span>: <span class="ident">fmt::Display</span> <span class="op">+</span> <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span>,
+        <span class="kw">impl</span>&lt;T&gt; fmt::Display <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
+        <span class="kw">where
+            </span>T: fmt::Display + Serialize + Apiv2Schema,
         {
-            <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
-                <span class="ident">fmt::Display::fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, <span class="ident">f</span>)
+            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+                fmt::Display::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, f)
             }
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-        <span class="kw">where</span>
-            <span class="ident">T</span>: <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span>,
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+        <span class="kw">impl</span>&lt;T&gt; Responder <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
+        <span class="kw">where
+            </span>T: Serialize + Apiv2Schema,
         {
-            <span class="kw">type</span> <span class="ident">Body</span> <span class="op">=</span> <span class="ident">BoxBody</span>;
+            <span class="kw">type </span>Body = BoxBody;
 
-            <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span><span class="op">&lt;</span><span class="ident">BoxBody</span><span class="op">&gt;</span> {
-                <span class="kw">let</span> <span class="ident">status</span>: <span class="ident">StatusCode</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">status</span>;
-                <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">body</span>) =&gt; <span class="ident">body</span>,
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">e</span>.<span class="ident">error_response</span>(),
+            <span class="kw">fn </span>respond_to(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>HttpRequest) -&gt; HttpResponse&lt;BoxBody&gt; {
+                <span class="kw">let </span>status: StatusCode = <span class="macro-nonterminal">$status</span>;
+                <span class="kw">let </span>body = <span class="kw">match </span>serde_json::to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) {
+                    <span class="prelude-val">Ok</span>(body) =&gt; body,
+                    <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>e.error_response(),
                 };
 
-                <span class="ident">HttpResponse::build</span>(<span class="ident">status</span>)
-                    .<span class="ident">content_type</span>(<span class="string">&quot;application/json&quot;</span>)
-                    .<span class="ident">body</span>(<span class="ident">body</span>)
+                HttpResponse::build(status)
+                    .content_type(<span class="string">&quot;application/json&quot;</span>)
+                    .body(body)
             }
         }
 
-        <span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-        <span class="kw">where</span>
-            <span class="ident">T</span>: <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span>,
+        <span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+        <span class="kw">impl</span>&lt;T&gt; Responder <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
+        <span class="kw">where
+            </span>T: Serialize + Apiv2Schema,
         {
-            <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-            <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Ready</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+            <span class="kw">type </span>Error = Error;
+            <span class="kw">type </span>Future = Ready&lt;<span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;&gt;;
 
-            <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-                <span class="kw">let</span> <span class="ident">status</span>: <span class="ident">StatusCode</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">status</span>;
-                <span class="kw">let</span> <span class="ident">body</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">serde_json::to_string</span>(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) {
-                    <span class="prelude-val">Ok</span>(<span class="ident">body</span>) =&gt; <span class="ident">body</span>,
-                    <span class="prelude-val">Err</span>(<span class="ident">e</span>) =&gt; <span class="kw">return</span> <span class="ident">ready</span>(<span class="prelude-val">Err</span>(<span class="ident">e</span>.<span class="ident">into</span>())),
+            <span class="kw">fn </span>respond_to(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>HttpRequest) -&gt; <span class="self">Self</span>::Future {
+                <span class="kw">let </span>status: StatusCode = <span class="macro-nonterminal">$status</span>;
+                <span class="kw">let </span>body = <span class="kw">match </span>serde_json::to_string(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>) {
+                    <span class="prelude-val">Ok</span>(body) =&gt; body,
+                    <span class="prelude-val">Err</span>(e) =&gt; <span class="kw">return </span>ready(<span class="prelude-val">Err</span>(e.into())),
                 };
 
-                <span class="ident">ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::build</span>(<span class="ident">status</span>)
-                    .<span class="ident">content_type</span>(<span class="string">&quot;application/json&quot;</span>)
-                    .<span class="ident">body</span>(<span class="ident">body</span>)))
+                ready(<span class="prelude-val">Ok</span>(HttpResponse::build(status)
+                    .content_type(<span class="string">&quot;application/json&quot;</span>)
+                    .body(body)))
             }
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-        <span class="kw">where</span>
-            <span class="ident">T</span>: <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span>,
+        <span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
+        <span class="kw">where
+            </span>T: Serialize + Apiv2Schema,
         {
-            <span class="kw">fn</span> <span class="ident">name</span>() -&gt; <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">String</span><span class="op">&gt;</span> {
-                <span class="ident">T::name</span>()
+            <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
+                T::name()
             }
 
-            <span class="kw">fn</span> <span class="ident">raw_schema</span>() -&gt; <span class="ident">DefaultSchemaRaw</span> {
-                <span class="ident">T::raw_schema</span>()
+            <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
+                T::raw_schema()
             }
         }
 
-        <span class="kw">impl</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">name</span><span class="op">&lt;</span><span class="ident">T</span><span class="op">&gt;</span>
-        <span class="kw">where</span>
-            <span class="ident">T</span>: <span class="ident">Serialize</span> <span class="op">+</span> <span class="ident">Apiv2Schema</span>,
+        <span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
+        <span class="kw">where
+            </span>T: Serialize + Apiv2Schema,
         {
-            <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-                <span class="kw">let</span> <span class="ident">status</span>: <span class="ident">StatusCode</span> <span class="op">=</span> <span class="macro-nonterminal">$</span><span class="macro-nonterminal">status</span>;
-                <span class="ident">op</span>.<span class="ident">responses</span>.<span class="ident">insert</span>(
-                    <span class="ident">status</span>.<span class="ident">as_str</span>().<span class="ident">into</span>(),
-                    <span class="ident">Either::Right</span>(<span class="ident">Response</span> {
-                        <span class="ident">description</span>: <span class="ident">status</span>.<span class="ident">canonical_reason</span>().<span class="ident">map</span>(<span class="ident">ToString::to_string</span>),
-                        <span class="ident">schema</span>: <span class="prelude-val">Some</span>({
-                            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">def</span> <span class="op">=</span> <span class="ident">T::schema_with_ref</span>();
-                            <span class="ident">def</span>.<span class="ident">retain_ref</span>();
-                            <span class="ident">def</span>
+            <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+                <span class="kw">let </span>status: StatusCode = <span class="macro-nonterminal">$status</span>;
+                op.responses.insert(
+                    status.as_str().into(),
+                    Either::Right(Response {
+                        description: status.canonical_reason().map(ToString::to_string),
+                        schema: <span class="prelude-val">Some</span>({
+                            <span class="kw">let </span><span class="kw-2">mut </span>def = T::schema_with_ref();
+                            def.retain_ref();
+                            def
                         }),
-                        ..<span class="ident">Default::default</span>()
+                        ..Default::default()
                     }),
                 );
             }
@@ -1760,56 +1754,55 @@
     };
 }
 
-<span class="macro">json_with_status!</span>(<span class="ident">CreatedJson</span> =&gt; <span class="ident">StatusCode::CREATED</span>);
-<span class="macro">json_with_status!</span>(<span class="ident">AcceptedJson</span> =&gt; <span class="ident">StatusCode::ACCEPTED</span>);
+<span class="macro">json_with_status!</span>(CreatedJson =&gt; StatusCode::CREATED);
+<span class="macro">json_with_status!</span>(AcceptedJson =&gt; StatusCode::ACCEPTED);
 
-<span class="attribute">#[<span class="ident">derive</span>(<span class="ident">Debug</span>)]</span>
-<span class="kw">pub</span> <span class="kw">struct</span> <span class="ident">NoContent</span>;
+<span class="attribute">#[derive(Debug)]</span>
+<span class="kw">pub struct </span>NoContent;
 
-<span class="kw">impl</span> <span class="ident">fmt::Display</span> <span class="kw">for</span> <span class="ident">NoContent</span> {
-    <span class="kw">fn</span> <span class="ident">fmt</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">f</span>: <span class="kw-2">&amp;mut</span> <span class="ident">fmt::Formatter</span><span class="op">&lt;</span><span class="lifetime">&#39;_</span><span class="op">&gt;</span>) -&gt; <span class="ident">fmt::Result</span> {
-        <span class="ident">f</span>.<span class="ident">write_str</span>(<span class="string">&quot;No Content&quot;</span>)
+<span class="kw">impl </span>fmt::Display <span class="kw">for </span>NoContent {
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+        f.write_str(<span class="string">&quot;No Content&quot;</span>)
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">impl</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">NoContent</span> {
-    <span class="kw">type</span> <span class="ident">Body</span> <span class="op">=</span> <span class="ident">BoxBody</span>;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
+<span class="kw">impl </span>Responder <span class="kw">for </span>NoContent {
+    <span class="kw">type </span>Body = BoxBody;
 
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident">HttpResponse</span><span class="op">&lt;</span><span class="ident">BoxBody</span><span class="op">&gt;</span> {
-        <span class="ident">HttpResponse::build</span>(<span class="ident">StatusCode::NO_CONTENT</span>)
-            .<span class="ident">content_type</span>(<span class="string">&quot;application/json&quot;</span>)
-            .<span class="ident">finish</span>()
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>HttpRequest) -&gt; HttpResponse&lt;BoxBody&gt; {
+        HttpResponse::build(StatusCode::NO_CONTENT)
+            .content_type(<span class="string">&quot;application/json&quot;</span>)
+            .finish()
     }
 }
 
-<span class="attribute">#[<span class="ident">cfg</span>(<span class="ident">not</span>(<span class="ident">feature</span> <span class="op">=</span> <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">impl</span> <span class="ident">Responder</span> <span class="kw">for</span> <span class="ident">NoContent</span> {
-    <span class="kw">type</span> <span class="ident">Error</span> <span class="op">=</span> <span class="ident">Error</span>;
-    <span class="kw">type</span> <span class="ident">Future</span> <span class="op">=</span> <span class="ident">Ready</span><span class="op">&lt;</span><span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">HttpResponse</span>, <span class="ident">Error</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
+<span class="kw">impl </span>Responder <span class="kw">for </span>NoContent {
+    <span class="kw">type </span>Error = Error;
+    <span class="kw">type </span>Future = Ready&lt;<span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;&gt;;
 
-    <span class="kw">fn</span> <span class="ident">respond_to</span>(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span><span class="ident">HttpRequest</span>) -&gt; <span class="ident"><span class="self">Self</span>::Future</span> {
-        <span class="ident">ready</span>(<span class="prelude-val">Ok</span>(<span class="ident">HttpResponse::build</span>(<span class="ident">StatusCode::NO_CONTENT</span>)
-            .<span class="ident">content_type</span>(<span class="string">&quot;application/json&quot;</span>)
-            .<span class="ident">finish</span>()))
+    <span class="kw">fn </span>respond_to(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>HttpRequest) -&gt; <span class="self">Self</span>::Future {
+        ready(<span class="prelude-val">Ok</span>(HttpResponse::build(StatusCode::NO_CONTENT)
+            .content_type(<span class="string">&quot;application/json&quot;</span>)
+            .finish()))
     }
 }
 
-<span class="kw">impl</span> <span class="ident">Apiv2Schema</span> <span class="kw">for</span> <span class="ident">NoContent</span> {}
+<span class="kw">impl </span>Apiv2Schema <span class="kw">for </span>NoContent {}
 
-<span class="kw">impl</span> <span class="ident">OperationModifier</span> <span class="kw">for</span> <span class="ident">NoContent</span> {
-    <span class="kw">fn</span> <span class="ident">update_response</span>(<span class="ident">op</span>: <span class="kw-2">&amp;mut</span> <span class="ident">DefaultOperationRaw</span>) {
-        <span class="kw">let</span> <span class="ident">status</span> <span class="op">=</span> <span class="ident">StatusCode::NO_CONTENT</span>;
-        <span class="ident">op</span>.<span class="ident">responses</span>.<span class="ident">insert</span>(
-            <span class="ident">status</span>.<span class="ident">as_str</span>().<span class="ident">into</span>(),
-            <span class="ident">Either::Right</span>(<span class="ident">Response</span> {
-                <span class="ident">description</span>: <span class="ident">status</span>.<span class="ident">canonical_reason</span>().<span class="ident">map</span>(<span class="ident">ToString::to_string</span>),
-                <span class="ident">schema</span>: <span class="prelude-val">None</span>,
-                ..<span class="ident">Default::default</span>()
+<span class="kw">impl </span>OperationModifier <span class="kw">for </span>NoContent {
+    <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
+        <span class="kw">let </span>status = StatusCode::NO_CONTENT;
+        op.responses.insert(
+            status.as_str().into(),
+            Either::Right(Response {
+                description: status.canonical_reason().map(ToString::to_string),
+                schema: <span class="prelude-val">None</span>,
+                ..Default::default()
             }),
         );
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>

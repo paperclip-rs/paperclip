@@ -1,10 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/resolver.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>resolver.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a><h2 class="location"></h2>
-    </nav>
-    <nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div>
-        </a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1">
-                                <a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div>
-                        </div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/resolver.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>resolver.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" type="text/css" href="../../../normalize.css"><link rel="stylesheet" type="text/css" href="../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" type="text/css" href="../../../ayu.css" disabled><link rel="stylesheet" type="text/css" href="../../../dark.css" disabled><link rel="stylesheet" type="text/css" href="../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../storage.js"></script><script defer src="../../../source-script.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../main.js"></script><noscript><link rel="stylesheet" href="../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="mobile-topbar"><button class="sidebar-menu-toggle">&#9776;</button><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a><h2 class="location"></h2></nav><nav class="sidebar"><a class="sidebar-logo" href="../../../paperclip_core/index.html"><div class="logo-container"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><button type="button">?</button></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -314,316 +308,315 @@
 <span id="308">308</span>
 <span id="309">309</span>
 <span id="310">310</span>
-</pre><pre class="rust"><code><span class="kw">use</span> <span class="kw">super</span>::{
-    <span class="ident">models</span>::{
-        <span class="ident">Either</span>, <span class="ident">HttpMethod</span>, <span class="ident">Reference</span>, <span class="ident">Resolvable</span>, <span class="ident">ResolvableParameter</span>, <span class="ident">ResolvablePathItem</span>,
-        <span class="ident">ResolvableResponse</span>,
+</pre><pre class="rust"><code><span class="kw">use super</span>::{
+    models::{
+        Either, HttpMethod, Reference, Resolvable, ResolvableParameter, ResolvablePathItem,
+        ResolvableResponse,
     },
-    <span class="ident">Schema</span>,
+    Schema,
 };
-<span class="kw">use</span> <span class="ident"><span class="kw">crate</span>::error::ValidationError</span>;
-<span class="kw">use</span> <span class="ident">heck::ToPascalCase</span>;
+<span class="kw">use </span><span class="kw">crate</span>::error::ValidationError;
+<span class="kw">use </span>heck::ToPascalCase;
 
-<span class="kw">use</span> <span class="ident">std</span>::{<span class="ident">cell::RefCell</span>, <span class="ident">collections::BTreeMap</span>, <span class="ident">mem</span>};
+<span class="kw">use </span>std::{cell::RefCell, collections::BTreeMap, mem};
 
-<span class="comment">// FIXME: The resolver is not in its best. It &quot;just&quot; works atm.</span>
+<span class="comment">// FIXME: The resolver is not in its best. It &quot;just&quot; works atm.
 
-<span class="kw">const</span> <span class="ident">DEF_REF_PREFIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;#/definitions/&quot;</span>;
-<span class="kw">const</span> <span class="ident">PARAM_REF_PREFIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;#/parameters/&quot;</span>;
-<span class="kw">const</span> <span class="ident">RESP_REF_PREFIX</span>: <span class="kw-2">&amp;</span><span class="ident">str</span> <span class="op">=</span> <span class="string">&quot;#/responses/&quot;</span>;
+</span><span class="kw">const </span>DEF_REF_PREFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;#/definitions/&quot;</span>;
+<span class="kw">const </span>PARAM_REF_PREFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;#/parameters/&quot;</span>;
+<span class="kw">const </span>RESP_REF_PREFIX: <span class="kw-2">&amp;</span>str = <span class="string">&quot;#/responses/&quot;</span>;
 
-<span class="kw">type</span> <span class="ident">DefinitionsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>;
-<span class="kw">type</span> <span class="ident">OperationsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">ResolvablePathItem</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>;
-<span class="kw">type</span> <span class="ident">ParametersMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">ResolvableParameter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>;
-<span class="kw">type</span> <span class="ident">ResponsesMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="op">=</span> <span class="ident">BTreeMap</span><span class="op">&lt;</span><span class="ident">String</span>, <span class="ident">ResolvableResponse</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>;
+<span class="kw">type </span>DefinitionsMap&lt;S&gt; = BTreeMap&lt;String, Resolvable&lt;S&gt;&gt;;
+<span class="kw">type </span>OperationsMap&lt;S&gt; = BTreeMap&lt;String, ResolvablePathItem&lt;S&gt;&gt;;
+<span class="kw">type </span>ParametersMap&lt;S&gt; = BTreeMap&lt;String, ResolvableParameter&lt;S&gt;&gt;;
+<span class="kw">type </span>ResponsesMap&lt;S&gt; = BTreeMap&lt;String, ResolvableResponse&lt;S&gt;&gt;;
 
-<span class="doccomment">/// API schema resolver. This visits each definition and resolves</span>
-<span class="doccomment">/// `$ref` field (if any) by finding the associated definition and</span>
-<span class="doccomment">/// replacing the field with a reference to the actual definition.</span>
-<span class="comment">// FIXME: Move all validation to resolver.</span>
-<span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct</span> <span class="ident">Resolver</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> {
-    <span class="doccomment">/// List of definitions that must be marked as cyclic while resolving a definition.</span>
-    <span class="ident">cyclic_defs</span>: <span class="ident">RefCell</span><span class="op">&lt;</span><span class="ident">Vec</span><span class="op">&lt;</span><span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Globally defined object definitions.</span>
-    <span class="kw">pub</span> <span class="ident">defs</span>: <span class="ident">DefinitionsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Paths and the corresponding operations.</span>
-    <span class="kw">pub</span> <span class="ident">paths</span>: <span class="ident">OperationsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Globally defined parameters.</span>
-    <span class="kw">pub</span> <span class="ident">params</span>: <span class="ident">ParametersMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-    <span class="doccomment">/// Globally defined responses;</span>
-    <span class="kw">pub</span> <span class="ident">resp</span>: <span class="ident">ResponsesMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+<span class="doccomment">/// API schema resolver. This visits each definition and resolves
+/// `$ref` field (if any) by finding the associated definition and
+/// replacing the field with a reference to the actual definition.
+</span><span class="comment">// FIXME: Move all validation to resolver.
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>Resolver&lt;S&gt; {
+    <span class="doccomment">/// List of definitions that must be marked as cyclic while resolving a definition.
+    </span>cyclic_defs: RefCell&lt;Vec&lt;Resolvable&lt;S&gt;&gt;&gt;,
+    <span class="doccomment">/// Globally defined object definitions.
+    </span><span class="kw">pub </span>defs: DefinitionsMap&lt;S&gt;,
+    <span class="doccomment">/// Paths and the corresponding operations.
+    </span><span class="kw">pub </span>paths: OperationsMap&lt;S&gt;,
+    <span class="doccomment">/// Globally defined parameters.
+    </span><span class="kw">pub </span>params: ParametersMap&lt;S&gt;,
+    <span class="doccomment">/// Globally defined responses;
+    </span><span class="kw">pub </span>resp: ResponsesMap&lt;S&gt;,
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>
-    <span class="ident">From</span><span class="op">&lt;</span>(
-        <span class="ident">DefinitionsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-        <span class="ident">OperationsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-        <span class="ident">ParametersMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-        <span class="ident">ResponsesMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-    )<span class="op">&gt;</span> <span class="kw">for</span> <span class="ident">Resolver</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>
+<span class="kw">impl</span>&lt;S&gt;
+    From&lt;(
+        DefinitionsMap&lt;S&gt;,
+        OperationsMap&lt;S&gt;,
+        ParametersMap&lt;S&gt;,
+        ResponsesMap&lt;S&gt;,
+    )&gt; <span class="kw">for </span>Resolver&lt;S&gt;
 {
-    <span class="kw">fn</span> <span class="ident">from</span>(
-        (<span class="ident">defs</span>, <span class="ident">paths</span>, <span class="ident">params</span>, <span class="ident">resp</span>): (
-            <span class="ident">DefinitionsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-            <span class="ident">OperationsMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-            <span class="ident">ParametersMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-            <span class="ident">ResponsesMap</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
+    <span class="kw">fn </span>from(
+        (defs, paths, params, resp): (
+            DefinitionsMap&lt;S&gt;,
+            OperationsMap&lt;S&gt;,
+            ParametersMap&lt;S&gt;,
+            ResponsesMap&lt;S&gt;,
         ),
-    ) -&gt; <span class="self">Self</span> {
-        <span class="ident">Resolver</span> {
-            <span class="ident">cyclic_defs</span>: <span class="macro">vec!</span>[].<span class="ident">into</span>(),
-            <span class="ident">defs</span>,
-            <span class="ident">paths</span>,
-            <span class="ident">params</span>,
-            <span class="ident">resp</span>,
+    ) -&gt; <span class="self">Self </span>{
+        Resolver {
+            cyclic_defs: <span class="macro">vec!</span>[].into(),
+            defs,
+            paths,
+            params,
+            resp,
         }
     }
 }
 
-<span class="kw">impl</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span> <span class="ident">Resolver</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>
-<span class="kw">where</span>
-    <span class="ident">S</span>: <span class="ident">Schema</span> <span class="op">+</span> <span class="ident">Default</span>,
+<span class="kw">impl</span>&lt;S&gt; Resolver&lt;S&gt;
+<span class="kw">where
+    </span>S: Schema + Default,
 {
-    <span class="doccomment">/// Visit definitions and resolve them!</span>
-    <span class="kw">pub</span> <span class="kw">fn</span> <span class="ident">resolve</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="comment">// Resolve path operations first. We may encounter anonymous</span>
-        <span class="comment">// definitions along the way, which we&#39;ll insert into `self.defs`</span>
-        <span class="comment">// and we&#39;ll have to resolve them anyway.</span>
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">paths</span> <span class="op">=</span> <span class="ident">mem::take</span>(<span class="kw-2">&amp;mut</span> <span class="self">self</span>.<span class="ident">paths</span>);
-        <span class="ident">paths</span>.<span class="ident">iter_mut</span>().<span class="ident">try_for_each</span>(<span class="op">|</span>(<span class="ident">path</span>, <span class="ident">map</span>)<span class="op">|</span> {
-            <span class="macro">log::trace!</span>(<span class="string">&quot;Checking path: {}&quot;</span>, <span class="ident">path</span>);
-            <span class="self">self</span>.<span class="ident">resolve_operations</span>(<span class="ident">path</span>, <span class="ident">map</span>)
+    <span class="doccomment">/// Visit definitions and resolve them!
+    </span><span class="kw">pub fn </span>resolve(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
+        <span class="comment">// Resolve path operations first. We may encounter anonymous
+        // definitions along the way, which we&#39;ll insert into `self.defs`
+        // and we&#39;ll have to resolve them anyway.
+        </span><span class="kw">let </span><span class="kw-2">mut </span>paths = mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.paths);
+        paths.iter_mut().try_for_each(|(path, map)| {
+            <span class="macro">log::trace!</span>(<span class="string">&quot;Checking path: {}&quot;</span>, path);
+            <span class="self">self</span>.resolve_operations(path, map)
         })<span class="question-mark">?</span>;
-        <span class="self">self</span>.<span class="ident">paths</span> <span class="op">=</span> <span class="ident">paths</span>;
+        <span class="self">self</span>.paths = paths;
 
-        <span class="comment">// Set the names of all schemas.</span>
-        <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">schema</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">defs</span> {
-            <span class="ident">schema</span>.<span class="ident">write</span>().<span class="ident">set_name</span>(<span class="ident">name</span>);
+        <span class="comment">// Set the names of all schemas.
+        </span><span class="kw">for </span>(name, schema) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.defs {
+            schema.write().set_name(name);
         }
 
-        <span class="kw">for</span> (<span class="ident">name</span>, <span class="ident">schema</span>) <span class="kw">in</span> <span class="kw-2">&amp;</span><span class="self">self</span>.<span class="ident">defs</span> {
-            <span class="macro">log::trace!</span>(<span class="string">&quot;Entering: {}&quot;</span>, <span class="ident">name</span>);
-            <span class="self">self</span>.<span class="ident">resolve_definitions_no_root_ref</span>(<span class="ident">schema</span>)<span class="question-mark">?</span>;
+        <span class="kw">for </span>(name, schema) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.defs {
+            <span class="macro">log::trace!</span>(<span class="string">&quot;Entering: {}&quot;</span>, name);
+            <span class="self">self</span>.resolve_definitions_no_root_ref(schema)<span class="question-mark">?</span>;
 
-            <span class="kw">for</span> <span class="ident">def</span> <span class="kw">in</span> <span class="self">self</span>.<span class="ident">cyclic_defs</span>.<span class="ident">borrow_mut</span>().<span class="ident">drain</span>(..) {
+            <span class="kw">for </span>def <span class="kw">in </span><span class="self">self</span>.cyclic_defs.borrow_mut().drain(..) {
                 <span class="macro">log::debug!</span>(
                     <span class="string">&quot;Cyclic definition detected: {:?}&quot;</span>,
-                    <span class="ident">def</span>.<span class="ident">read</span>().<span class="ident">name</span>().<span class="ident">unwrap</span>()
+                    def.read().name().unwrap()
                 );
-                <span class="ident">def</span>.<span class="ident">write</span>().<span class="ident">set_cyclic</span>(<span class="bool-val">true</span>);
+                def.write().set_cyclic(<span class="bool-val">true</span>);
             }
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// We&#39;ve passed some definition. Resolve it assuming that it doesn&#39;t</span>
-    <span class="doccomment">/// contain any reference.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_definitions_no_root_ref</span>(
+    <span class="doccomment">/// We&#39;ve passed some definition. Resolve it assuming that it doesn&#39;t
+    /// contain any reference.
+    </span><span class="kw">fn </span>resolve_definitions_no_root_ref(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">schema</span>: <span class="kw-2">&amp;</span><span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">schema</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">schema</span>.<span class="ident">try_write</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
-            <span class="prelude-val">None</span> =&gt; {
-                <span class="self">self</span>.<span class="ident">cyclic_defs</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">schema</span>.<span class="ident">clone</span>());
-                <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+        schema: <span class="kw-2">&amp;</span>Resolvable&lt;S&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
+        <span class="kw">let </span><span class="kw-2">mut </span>schema = <span class="kw">match </span>schema.try_write() {
+            <span class="prelude-val">Some</span>(s) =&gt; s,
+            <span class="prelude-val">None </span>=&gt; {
+                <span class="self">self</span>.cyclic_defs.borrow_mut().push(schema.clone());
+                <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
         };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">inner</span>) <span class="op">=</span> <span class="ident">schema</span>.<span class="ident">items_mut</span>().<span class="ident">take</span>() {
-            <span class="kw">return</span> <span class="self">self</span>.<span class="ident">resolve_definitions</span>(<span class="ident">inner</span>);
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(inner) = schema.items_mut().take() {
+            <span class="kw">return </span><span class="self">self</span>.resolve_definitions(inner);
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">props</span>) <span class="op">=</span> <span class="ident">schema</span>.<span class="ident">properties_mut</span>().<span class="ident">take</span>() {
-            <span class="ident">props</span>.<span class="ident">iter_mut</span>().<span class="ident">try_for_each</span>(<span class="op">|</span>(<span class="ident">k</span>, <span class="ident">s</span>)<span class="op">|</span> {
-                <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving property {:?}&quot;</span>, <span class="ident">k</span>);
-                <span class="self">self</span>.<span class="ident">resolve_definitions</span>(<span class="ident">s</span>)
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(props) = schema.properties_mut().take() {
+            props.iter_mut().try_for_each(|(k, s)| {
+                <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving property {:?}&quot;</span>, k);
+                <span class="self">self</span>.resolve_definitions(s)
             })<span class="question-mark">?</span>;
         }
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">props</span>) <span class="op">=</span> <span class="ident">schema</span>
-            .<span class="ident">additional_properties_mut</span>()
-            .<span class="ident">take</span>()
-            .<span class="ident">and_then</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">right_mut</span>())
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(props) = schema
+            .additional_properties_mut()
+            .take()
+            .and_then(|s| s.right_mut())
         {
-            <span class="self">self</span>.<span class="ident">resolve_definitions</span>(<span class="ident">props</span>)<span class="question-mark">?</span>;
+            <span class="self">self</span>.resolve_definitions(props)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Resolve the given definition. If it contains a reference, find and assign it,</span>
-    <span class="doccomment">/// otherwise traverse further.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_definitions</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">schema</span>: <span class="kw-2">&amp;mut</span> <span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">ref_def</span> <span class="op">=</span> {
-            <span class="kw">let</span> <span class="ident">s</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">schema</span>.<span class="ident">try_read</span>() {
-                <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
-                <span class="prelude-val">None</span> =&gt; {
-                    <span class="self">self</span>.<span class="ident">cyclic_defs</span>.<span class="ident">borrow_mut</span>().<span class="ident">push</span>(<span class="ident">schema</span>.<span class="ident">clone</span>());
-                    <span class="kw">return</span> <span class="prelude-val">Ok</span>(());
+    <span class="doccomment">/// Resolve the given definition. If it contains a reference, find and assign it,
+    /// otherwise traverse further.
+    </span><span class="kw">fn </span>resolve_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>, schema: <span class="kw-2">&amp;mut </span>Resolvable&lt;S&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
+        <span class="kw">let </span>ref_def = {
+            <span class="kw">let </span>s = <span class="kw">match </span>schema.try_read() {
+                <span class="prelude-val">Some</span>(s) =&gt; s,
+                <span class="prelude-val">None </span>=&gt; {
+                    <span class="self">self</span>.cyclic_defs.borrow_mut().push(schema.clone());
+                    <span class="kw">return </span><span class="prelude-val">Ok</span>(());
                 }
             };
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">ref_name</span>) <span class="op">=</span> <span class="ident">s</span>.<span class="ident">reference</span>() {
-                <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving definition {}&quot;</span>, <span class="ident">ref_name</span>);
-                <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">resolve_definition_reference</span>(<span class="ident">ref_name</span>)<span class="question-mark">?</span>)
-            } <span class="kw">else</span> {
-                <span class="prelude-val">None</span>
-            }
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(ref_name) = s.reference() {
+                <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving definition {}&quot;</span>, ref_name);
+                <span class="prelude-val">Some</span>(<span class="self">self</span>.resolve_definition_reference(ref_name)<span class="question-mark">?</span>)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">None
+            </span>}
         };
 
-        <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">new</span>) <span class="op">=</span> <span class="ident">ref_def</span> {
-            <span class="kw-2">*</span><span class="ident">schema</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">schema</span> {
-                <span class="ident">Resolvable::Raw</span>(<span class="ident">old</span>) =&gt; <span class="ident">Resolvable::Resolved</span> {
-                    <span class="ident">old</span>: <span class="ident">old</span>.<span class="ident">clone</span>(),
-                    <span class="ident">new</span>: (<span class="kw-2">*</span><span class="ident">new</span>).<span class="ident">clone</span>(),
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(new) = ref_def {
+            <span class="kw-2">*</span>schema = <span class="kw">match </span>schema {
+                Resolvable::Raw(old) =&gt; Resolvable::Resolved {
+                    old: old.clone(),
+                    new: (<span class="kw-2">*</span>new).clone(),
                 },
-                <span class="kw">_</span> =&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;schema already resolved?&quot;</span>),
+                <span class="kw">_ </span>=&gt; <span class="macro">unimplemented!</span>(<span class="string">&quot;schema already resolved?&quot;</span>),
             };
         }
 
-        <span class="self">self</span>.<span class="ident">resolve_definitions_no_root_ref</span>(<span class="kw-2">&amp;</span><span class="kw-2">*</span><span class="ident">schema</span>)
+        <span class="self">self</span>.resolve_definitions_no_root_ref(<span class="kw-2">&amp;*</span>schema)
     }
 
-    <span class="doccomment">/// Resolve a given operation.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_operations</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">map</span>: <span class="kw-2">&amp;mut</span> <span class="ident">ResolvablePathItem</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">for</span> (<span class="kw-2">&amp;</span><span class="ident">method</span>, <span class="ident">op</span>) <span class="kw">in</span> <span class="kw-2">&amp;mut</span> <span class="ident">map</span>.<span class="ident">methods</span> {
-            <span class="self">self</span>.<span class="ident">resolve_parameters</span>(<span class="prelude-val">Some</span>(<span class="ident">method</span>), <span class="ident">path</span>, <span class="kw-2">&amp;mut</span> <span class="ident">op</span>.<span class="ident">parameters</span>)<span class="question-mark">?</span>;
-            <span class="kw">for</span> <span class="ident">resp</span> <span class="kw">in</span> <span class="ident">op</span>.<span class="ident">responses</span>.<span class="ident">values_mut</span>() {
-                <span class="kw">let</span> <span class="ident">ref_resp</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">r</span>) <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">left</span>() {
-                    <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving response {}&quot;</span>, <span class="ident">r</span>.<span class="ident">reference</span>);
-                    <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">resolve_response_reference</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">reference</span>)<span class="question-mark">?</span>)
-                } <span class="kw">else</span> {
-                    <span class="prelude-val">None</span>
-                };
+    <span class="doccomment">/// Resolve a given operation.
+    </span><span class="kw">fn </span>resolve_operations(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        path: <span class="kw-2">&amp;</span>str,
+        map: <span class="kw-2">&amp;mut </span>ResolvablePathItem&lt;S&gt;,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
+        <span class="kw">for </span>(<span class="kw-2">&amp;</span>method, op) <span class="kw">in </span><span class="kw-2">&amp;mut </span>map.methods {
+            <span class="self">self</span>.resolve_parameters(<span class="prelude-val">Some</span>(method), path, <span class="kw-2">&amp;mut </span>op.parameters)<span class="question-mark">?</span>;
+            <span class="kw">for </span>resp <span class="kw">in </span>op.responses.values_mut() {
+                <span class="kw">let </span>ref_resp = <span class="kw">if let </span><span class="prelude-val">Some</span>(r) = resp.left() {
+                    <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving response {}&quot;</span>, r.reference);
+                    <span class="prelude-val">Some</span>(<span class="self">self</span>.resolve_response_reference(<span class="kw-2">&amp;</span>r.reference)<span class="question-mark">?</span>)
+                } <span class="kw">else </span>{
+                    <span class="prelude-val">None
+                </span>};
 
-                <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">new</span>) <span class="op">=</span> <span class="ident">ref_resp</span> {
-                    <span class="kw-2">*</span><span class="ident">resp</span> <span class="op">=</span> <span class="ident">Either::Right</span>(<span class="ident">new</span>);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(new) = ref_resp {
+                    <span class="kw-2">*</span>resp = Either::Right(new);
                 }
 
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">response</span> <span class="op">=</span> <span class="ident">resp</span>.<span class="ident">write</span>();
-                <span class="self">self</span>.<span class="ident">resolve_operation_schema</span>(
-                    <span class="kw-2">&amp;mut</span> <span class="ident">response</span>.<span class="ident">schema</span>,
-                    <span class="prelude-val">Some</span>(<span class="ident">method</span>),
-                    <span class="ident">path</span>,
+                <span class="kw">let </span><span class="kw-2">mut </span>response = resp.write();
+                <span class="self">self</span>.resolve_operation_schema(
+                    <span class="kw-2">&amp;mut </span>response.schema,
+                    <span class="prelude-val">Some</span>(method),
+                    path,
                     <span class="string">&quot;Response&quot;</span>,
                 )<span class="question-mark">?</span>;
             }
         }
 
-        <span class="self">self</span>.<span class="ident">resolve_parameters</span>(<span class="prelude-val">None</span>, <span class="ident">path</span>, <span class="kw-2">&amp;mut</span> <span class="ident">map</span>.<span class="ident">parameters</span>)
+        <span class="self">self</span>.resolve_parameters(<span class="prelude-val">None</span>, path, <span class="kw-2">&amp;mut </span>map.parameters)
     }
 
-    <span class="doccomment">/// Resolve the given bunch of parameters.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_parameters</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">method</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">HttpMethod</span><span class="op">&gt;</span>,
-        <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">params</span>: <span class="kw-2">&amp;mut</span> [<span class="ident">Either</span><span class="op">&lt;</span><span class="ident">Reference</span>, <span class="ident">ResolvableParameter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>],
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">for</span> <span class="ident">p</span> <span class="kw">in</span> <span class="ident">params</span>.<span class="ident">iter_mut</span>() {
-            <span class="kw">let</span> <span class="ident">ref_param</span> <span class="op">=</span> <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">r</span>) <span class="op">=</span> <span class="ident">p</span>.<span class="ident">left</span>() {
-                <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving parameter {}&quot;</span>, <span class="ident">r</span>.<span class="ident">reference</span>);
-                <span class="prelude-val">Some</span>(<span class="self">self</span>.<span class="ident">resolve_parameter_reference</span>(<span class="kw-2">&amp;</span><span class="ident">r</span>.<span class="ident">reference</span>)<span class="question-mark">?</span>)
-            } <span class="kw">else</span> {
-                <span class="prelude-val">None</span>
-            };
+    <span class="doccomment">/// Resolve the given bunch of parameters.
+    </span><span class="kw">fn </span>resolve_parameters(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        method: <span class="prelude-ty">Option</span>&lt;HttpMethod&gt;,
+        path: <span class="kw-2">&amp;</span>str,
+        params: <span class="kw-2">&amp;mut </span>[Either&lt;Reference, ResolvableParameter&lt;S&gt;&gt;],
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
+        <span class="kw">for </span>p <span class="kw">in </span>params.iter_mut() {
+            <span class="kw">let </span>ref_param = <span class="kw">if let </span><span class="prelude-val">Some</span>(r) = p.left() {
+                <span class="macro">log::trace!</span>(<span class="string">&quot;Resolving parameter {}&quot;</span>, r.reference);
+                <span class="prelude-val">Some</span>(<span class="self">self</span>.resolve_parameter_reference(<span class="kw-2">&amp;</span>r.reference)<span class="question-mark">?</span>)
+            } <span class="kw">else </span>{
+                <span class="prelude-val">None
+            </span>};
 
-            <span class="kw">if</span> <span class="kw">let</span> <span class="prelude-val">Some</span>(<span class="ident">new</span>) <span class="op">=</span> <span class="ident">ref_param</span> {
-                <span class="kw-2">*</span><span class="ident">p</span> <span class="op">=</span> <span class="ident">Either::Right</span>(<span class="ident">new</span>);
+            <span class="kw">if let </span><span class="prelude-val">Some</span>(new) = ref_param {
+                <span class="kw-2">*</span>p = Either::Right(new);
             }
 
-            <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">param</span> <span class="op">=</span> <span class="ident">p</span>.<span class="ident">write</span>();
-            <span class="self">self</span>.<span class="ident">resolve_operation_schema</span>(<span class="kw-2">&amp;mut</span> <span class="ident">param</span>.<span class="ident">schema</span>, <span class="ident">method</span>, <span class="ident">path</span>, <span class="string">&quot;Body&quot;</span>)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>param = p.write();
+            <span class="self">self</span>.resolve_operation_schema(<span class="kw-2">&amp;mut </span>param.schema, method, path, <span class="string">&quot;Body&quot;</span>)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Resolves request/response schema in operation.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_operation_schema</span>(
-        <span class="kw-2">&amp;mut</span> <span class="self">self</span>,
-        <span class="ident">s</span>: <span class="kw-2">&amp;mut</span> <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span><span class="op">&gt;</span>,
-        <span class="ident">method</span>: <span class="prelude-ty">Option</span><span class="op">&lt;</span><span class="ident">HttpMethod</span><span class="op">&gt;</span>,
-        <span class="ident">path</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-        <span class="ident">suffix</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span>(), <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">let</span> <span class="ident">schema</span> <span class="op">=</span> <span class="kw">match</span> <span class="ident">s</span>.<span class="ident">as_mut</span>() {
-            <span class="prelude-val">Some</span>(<span class="ident">s</span>) =&gt; <span class="ident">s</span>,
-            <span class="kw">_</span> =&gt; <span class="kw">return</span> <span class="prelude-val">Ok</span>(()),
+    <span class="doccomment">/// Resolves request/response schema in operation.
+    </span><span class="kw">fn </span>resolve_operation_schema(
+        <span class="kw-2">&amp;mut </span><span class="self">self</span>,
+        s: <span class="kw-2">&amp;mut </span><span class="prelude-ty">Option</span>&lt;Resolvable&lt;S&gt;&gt;,
+        method: <span class="prelude-ty">Option</span>&lt;HttpMethod&gt;,
+        path: <span class="kw-2">&amp;</span>str,
+        suffix: <span class="kw-2">&amp;</span>str,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
+        <span class="kw">let </span>schema = <span class="kw">match </span>s.as_mut() {
+            <span class="prelude-val">Some</span>(s) =&gt; s,
+            <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
         };
 
-        <span class="kw">match</span> <span class="ident">schema</span> {
-            <span class="ident">Resolvable::Raw</span>(<span class="kw-2">ref</span> <span class="ident">s</span>) <span class="kw">if</span> <span class="ident">s</span>.<span class="ident">read</span>().<span class="ident">reference</span>().<span class="ident">is_none</span>() =&gt; {
-                <span class="comment">// We&#39;ve encountered an anonymous schema definition in some</span>
-                <span class="comment">// parameter/response. Give it a name and add it to global definitions.</span>
-                <span class="kw">let</span> <span class="ident">prefix</span> <span class="op">=</span> <span class="ident">method</span>.<span class="ident">map</span>(<span class="op">|</span><span class="ident">s</span><span class="op">|</span> <span class="ident">s</span>.<span class="ident">to_string</span>()).<span class="ident">unwrap_or_default</span>();
-                <span class="kw">let</span> <span class="ident">def_name</span> <span class="op">=</span> (<span class="ident">prefix</span> <span class="op">+</span> <span class="ident">path</span> <span class="op">+</span> <span class="ident">suffix</span>).<span class="ident">to_pascal_case</span>();
-                <span class="kw">let</span> <span class="kw-2">mut</span> <span class="ident">ref_schema</span> <span class="op">=</span> <span class="ident">S::default</span>();
-                <span class="ident">ref_schema</span>.<span class="ident">set_reference</span>(<span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, <span class="ident">DEF_REF_PREFIX</span>, <span class="ident">def_name</span>));
-                <span class="kw">let</span> <span class="ident">old_schema</span> <span class="op">=</span> <span class="ident">mem::replace</span>(<span class="ident">schema</span>, <span class="ident">ref_schema</span>.<span class="ident">into</span>());
-                <span class="self">self</span>.<span class="ident">defs</span>.<span class="ident">insert</span>(<span class="ident">def_name</span>, <span class="ident">old_schema</span>);
+        <span class="kw">match </span>schema {
+            Resolvable::Raw(<span class="kw-2">ref </span>s) <span class="kw">if </span>s.read().reference().is_none() =&gt; {
+                <span class="comment">// We&#39;ve encountered an anonymous schema definition in some
+                // parameter/response. Give it a name and add it to global definitions.
+                </span><span class="kw">let </span>prefix = method.map(|s| s.to_string()).unwrap_or_default();
+                <span class="kw">let </span>def_name = (prefix + path + suffix).to_pascal_case();
+                <span class="kw">let </span><span class="kw-2">mut </span>ref_schema = S::default();
+                ref_schema.set_reference(<span class="macro">format!</span>(<span class="string">&quot;{}{}&quot;</span>, DEF_REF_PREFIX, def_name));
+                <span class="kw">let </span>old_schema = mem::replace(schema, ref_schema.into());
+                <span class="self">self</span>.defs.insert(def_name, old_schema);
             }
-            <span class="kw">_</span> =&gt; (),
+            <span class="kw">_ </span>=&gt; (),
         }
 
-        <span class="self">self</span>.<span class="ident">resolve_definitions</span>(<span class="ident">schema</span>)<span class="question-mark">?</span>;
+        <span class="self">self</span>.resolve_definitions(schema)<span class="question-mark">?</span>;
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// Given a name (from `$ref` field), get a reference to the definition.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_definition_reference</span>(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">Resolvable</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">name</span>.<span class="ident">starts_with</span>(<span class="ident">DEF_REF_PREFIX</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::InvalidRefUri</span>(<span class="ident">name</span>.<span class="ident">into</span>()));
+    <span class="doccomment">/// Given a name (from `$ref` field), get a reference to the definition.
+    </span><span class="kw">fn </span>resolve_definition_reference(<span class="kw-2">&amp;</span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Result</span>&lt;Resolvable&lt;S&gt;, ValidationError&gt; {
+        <span class="kw">if </span>!name.starts_with(DEF_REF_PREFIX) {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(ValidationError::InvalidRefUri(name.into()));
         }
 
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">name</span>[<span class="ident">DEF_REF_PREFIX</span>.<span class="ident">len</span>()..];
-        <span class="kw">let</span> <span class="ident">schema</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">defs</span>
-            .<span class="ident">get</span>(<span class="ident">name</span>)
-            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">ValidationError::MissingReference</span>(<span class="ident">name</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">schema</span>.<span class="ident">clone</span>())
+        <span class="kw">let </span>name = <span class="kw-2">&amp;</span>name[DEF_REF_PREFIX.len()..];
+        <span class="kw">let </span>schema = <span class="self">self
+            </span>.defs
+            .get(name)
+            .ok_or_else(|| ValidationError::MissingReference(name.into()))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(schema.clone())
     }
 
-    <span class="doccomment">/// Given a name (from `$ref` field), get a reference to the parameter.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_parameter_reference</span>(
+    <span class="doccomment">/// Given a name (from `$ref` field), get a reference to the parameter.
+    </span><span class="kw">fn </span>resolve_parameter_reference(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ResolvableParameter</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">name</span>.<span class="ident">starts_with</span>(<span class="ident">PARAM_REF_PREFIX</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::InvalidRefUri</span>(<span class="ident">name</span>.<span class="ident">into</span>()));
+        name: <span class="kw-2">&amp;</span>str,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;ResolvableParameter&lt;S&gt;, ValidationError&gt; {
+        <span class="kw">if </span>!name.starts_with(PARAM_REF_PREFIX) {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(ValidationError::InvalidRefUri(name.into()));
         }
 
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">name</span>[<span class="ident">PARAM_REF_PREFIX</span>.<span class="ident">len</span>()..];
-        <span class="kw">let</span> <span class="ident">param</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">params</span>
-            .<span class="ident">get</span>(<span class="ident">name</span>)
-            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">ValidationError::MissingReference</span>(<span class="ident">name</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">param</span>.<span class="ident">clone</span>())
+        <span class="kw">let </span>name = <span class="kw-2">&amp;</span>name[PARAM_REF_PREFIX.len()..];
+        <span class="kw">let </span>param = <span class="self">self
+            </span>.params
+            .get(name)
+            .ok_or_else(|| ValidationError::MissingReference(name.into()))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(param.clone())
     }
 
-    <span class="doccomment">/// Given a name (from `$ref` field), get a reference to the response.</span>
-    <span class="kw">fn</span> <span class="ident">resolve_response_reference</span>(
+    <span class="doccomment">/// Given a name (from `$ref` field), get a reference to the response.
+    </span><span class="kw">fn </span>resolve_response_reference(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        <span class="ident">name</span>: <span class="kw-2">&amp;</span><span class="ident">str</span>,
-    ) -&gt; <span class="prelude-ty">Result</span><span class="op">&lt;</span><span class="ident">ResolvableResponse</span><span class="op">&lt;</span><span class="ident">S</span><span class="op">&gt;</span>, <span class="ident">ValidationError</span><span class="op">&gt;</span> {
-        <span class="kw">if</span> <span class="op">!</span><span class="ident">name</span>.<span class="ident">starts_with</span>(<span class="ident">RESP_REF_PREFIX</span>) {
-            <span class="kw">return</span> <span class="prelude-val">Err</span>(<span class="ident">ValidationError::InvalidRefUri</span>(<span class="ident">name</span>.<span class="ident">into</span>()));
+        name: <span class="kw-2">&amp;</span>str,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;ResolvableResponse&lt;S&gt;, ValidationError&gt; {
+        <span class="kw">if </span>!name.starts_with(RESP_REF_PREFIX) {
+            <span class="kw">return </span><span class="prelude-val">Err</span>(ValidationError::InvalidRefUri(name.into()));
         }
 
-        <span class="kw">let</span> <span class="ident">name</span> <span class="op">=</span> <span class="kw-2">&amp;</span><span class="ident">name</span>[<span class="ident">RESP_REF_PREFIX</span>.<span class="ident">len</span>()..];
-        <span class="kw">let</span> <span class="ident">resp</span> <span class="op">=</span> <span class="self">self</span>
-            .<span class="ident">resp</span>
-            .<span class="ident">get</span>(<span class="ident">name</span>)
-            .<span class="ident">ok_or_else</span>(<span class="op">|</span><span class="op">|</span> <span class="ident">ValidationError::MissingReference</span>(<span class="ident">name</span>.<span class="ident">into</span>()))<span class="question-mark">?</span>;
-        <span class="prelude-val">Ok</span>(<span class="ident">resp</span>.<span class="ident">clone</span>())
+        <span class="kw">let </span>name = <span class="kw-2">&amp;</span>name[RESP_REF_PREFIX.len()..];
+        <span class="kw">let </span>resp = <span class="self">self
+            </span>.resp
+            .get(name)
+            .ok_or_else(|| ValidationError::MissingReference(name.into()))<span class="question-mark">?</span>;
+        <span class="prelude-val">Ok</span>(resp.clone())
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.64.0-nightly (4d6d601c8 2022-07-26)" ></div>
-</body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
