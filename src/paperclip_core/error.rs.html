@@ -36,43 +36,43 @@
 <span id="36">36</span>
 <span id="37">37</span>
 <span id="38">38</span>
-</pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="kw">use </span><span class="kw">crate</span>::v2::models::{DataType, ParameterIn};
+</pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::v2::models::{DataType, ParameterIn};
 <span class="kw">use </span>thiserror::Error;
 
 <span class="doccomment">/// Errors related to spec validation.
-</span><span class="attribute">#[derive(Debug, Error)]</span>
-<span class="kw">pub enum </span>ValidationError {
+</span><span class="attribute">#[derive(Debug, Error)]
+</span><span class="kw">pub enum </span>ValidationError {
     <span class="doccomment">/// Failed to resolve the schema because an invalid URI was provided for
     /// `$ref` field.
     ///
     /// Currently, we only support `#/{definitions,parameters}/Name` in `$ref` field.
-    </span><span class="attribute">#[error(<span class="string">&quot;Invalid $ref URI {:?}. Only relative URIs are supported.&quot;</span>, _0)]</span>
-    InvalidRefUri(String),
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid $ref URI {:?}. Only relative URIs are supported.&quot;</span>, _0)]
+    </span>InvalidRefUri(String),
     <span class="doccomment">/// The specified reference is missing in the spec.
-    </span><span class="attribute">#[error(<span class="string">&quot;Reference missing in spec: {}&quot;</span>, _0)]</span>
-    MissingReference(String),
+    </span><span class="attribute">#[error(<span class="string">&quot;Reference missing in spec: {}&quot;</span>, _0)]
+    </span>MissingReference(String),
     <span class="doccomment">/// If a parameter specifies body, then schema must be specified.
     </span><span class="attribute">#[error(
         <span class="string">&quot;Parameter {:?} in path {:?} is a body but the schema is missing&quot;</span>,
         _0,
         _1
-    )]</span>
-    MissingSchemaForBodyParameter(String, String),
+    )]
+    </span>MissingSchemaForBodyParameter(String, String),
     <span class="doccomment">/// Some headers have special meaning in OpenAPI. The user cannot have these headers
     /// in their API spec.
-    </span><span class="attribute">#[error(<span class="string">&quot;Path {:?} has header parameter {:?} which is not allowed&quot;</span>, _1, _0)]</span>
-    InvalidHeader(String, String),
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-    <span class="doccomment">/// Only arrays and primitive types are allowed in parameters.
+    </span><span class="attribute">#[error(<span class="string">&quot;Path {:?} has header parameter {:?} which is not allowed&quot;</span>, _1, _0)]
+    </span>InvalidHeader(String, String),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+    </span><span class="doccomment">/// Only arrays and primitive types are allowed in parameters.
     </span><span class="attribute">#[error(
         <span class="string">&quot;Parameter {:?} in path {:?} has specified {:?} type, but it&#39;s invalid for {:?} parameters&quot;</span>,
         _0,
         _1,
         _2,
         _3
-    )]</span>
-    InvalidParameterType(String, String, <span class="prelude-ty">Option</span>&lt;DataType&gt;, ParameterIn),
+    )]
+    </span>InvalidParameterType(String, String, <span class="prelude-ty">Option</span>&lt;DataType&gt;, ParameterIn),
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

@@ -140,17 +140,17 @@
 //! You shouldn&#39;t need to depend on this, because the stuff here is
 //! already exposed by the corresponding crates.
 
-</span><span class="attribute">#![recursion_limit = <span class="string">&quot;512&quot;</span>]</span>
+</span><span class="attribute">#![recursion_limit = <span class="string">&quot;512&quot;</span>]
 
-<span class="kw">extern crate </span>proc_macro;
-<span class="attribute">#[macro_use]</span>
-<span class="kw">extern crate </span>proc_macro_error;
+</span><span class="kw">extern crate </span>proc_macro;
+<span class="attribute">#[macro_use]
+</span><span class="kw">extern crate </span>proc_macro_error;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[macro_use]</span>
-<span class="kw">mod </span>actix;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="kw">mod </span>core;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[macro_use]
+</span><span class="kw">mod </span>actix;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+</span><span class="kw">mod </span>core;
 
 <span class="kw">use </span>proc_macro::TokenStream;
 <span class="kw">use </span>quote::quote;
@@ -166,72 +166,72 @@
 /// [Schema](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject)
 /// object ([example](https://paperclip-rs.github.io/paperclip/paperclip/v2/)). This adds the necessary fields (in addition to your own fields) and implements the
 /// `Schema` trait for parsing and codegen.
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_attribute]</span>
-<span class="kw">pub fn </span>api_v2_schema_struct(_attr: TokenStream, input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>api_v2_schema_struct(_attr: TokenStream, input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::core::emit_v2_schema_struct(input)
 }
 
 <span class="doccomment">/// Marker attribute for indicating that a function is an OpenAPI v2 compatible operation.
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_error]</span>
-<span class="attribute">#[proc_macro_attribute]</span>
-<span class="kw">pub fn </span>api_v2_operation(attr: TokenStream, input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[proc_macro_error]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>api_v2_operation(attr: TokenStream, input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::actix::emit_v2_operation(attr, input)
 }
 
 <span class="doccomment">/// Derive attribute for indicating that a type is an OpenAPI v2 compatible definition.
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_error]</span>
-<span class="attribute">#[proc_macro_derive(Apiv2Schema, attributes(openapi))]</span>
-<span class="kw">pub fn </span>api_v2_schema(input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[proc_macro_error]
+#[proc_macro_derive(Apiv2Schema, attributes(openapi))]
+</span><span class="kw">pub fn </span>api_v2_schema(input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::actix::emit_v2_definition(input)
 }
 
 <span class="doccomment">/// Marker attribute for indicating that an object forbids public access to operation (for example AccessToken).
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_error]</span>
-<span class="attribute">#[proc_macro_derive(Apiv2Security, attributes(openapi))]</span>
-<span class="kw">pub fn </span>api_v2_security(input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[proc_macro_error]
+#[proc_macro_derive(Apiv2Security, attributes(openapi))]
+</span><span class="kw">pub fn </span>api_v2_security(input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::actix::emit_v2_security(input)
 }
 
 <span class="doccomment">/// Derive attribute for indicating that a type is an OpenAPI v2 compatible header parameter.
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_error]</span>
-<span class="attribute">#[proc_macro_derive(Apiv2Header, attributes(openapi))]</span>
-<span class="kw">pub fn </span>api_v2_header(input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[proc_macro_error]
+#[proc_macro_derive(Apiv2Header, attributes(openapi))]
+</span><span class="kw">pub fn </span>api_v2_header(input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::actix::emit_v2_header(input)
 }
 
 <span class="doccomment">/// Marker attribute for indicating that the marked object can represent non-2xx (error)
 /// status codes with optional descriptions.
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_error]</span>
-<span class="attribute">#[proc_macro_attribute]</span>
-<span class="kw">pub fn </span>api_v2_errors(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[proc_macro_error]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>api_v2_errors(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::actix::emit_v2_errors(attrs, input)
 }
 
 <span class="doccomment">/// Marker attribute for indicating that the marked object can filter error responses from the
 /// the `#[api_v2_errors]` macro.
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="attribute">#[proc_macro_error]</span>
-<span class="attribute">#[proc_macro_attribute]</span>
-<span class="kw">pub fn </span>api_v2_errors_overlay(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+#[proc_macro_error]
+#[proc_macro_attribute]
+</span><span class="kw">pub fn </span>api_v2_errors_overlay(attrs: TokenStream, input: TokenStream) -&gt; TokenStream {
     <span class="self">self</span>::actix::emit_v2_errors_overlay(attrs, input)
 }
 
 <span class="doccomment">/// Generate an error at the call site and return empty token stream.
-</span><span class="attribute">#[allow(dead_code)]</span>
-<span class="kw">fn </span>span_error_with_msg&lt;T: Spanned&gt;(it: <span class="kw-2">&amp;</span>T, msg: <span class="kw-2">&amp;</span>str) -&gt; TokenStream {
+</span><span class="attribute">#[allow(dead_code)]
+</span><span class="kw">fn </span>span_error_with_msg&lt;T: Spanned&gt;(it: <span class="kw-2">&amp;</span>T, msg: <span class="kw-2">&amp;</span>str) -&gt; TokenStream {
     <span class="macro">emit_error!</span>(it.span().unwrap(), msg);
-    (<span class="macro">quote!</span> {}).into()
+    (<span class="macro">quote! </span>{}).into()
 }
 
 <span class="doccomment">/// Parses this token stream expecting a struct/enum and fails with an error otherwise.
-</span><span class="attribute">#[allow(dead_code)]</span>
-<span class="kw">fn </span>expect_struct_or_enum(ts: TokenStream) -&gt; <span class="prelude-ty">Result</span>&lt;DeriveInput, TokenStream&gt; {
+</span><span class="attribute">#[allow(dead_code)]
+</span><span class="kw">fn </span>expect_struct_or_enum(ts: TokenStream) -&gt; <span class="prelude-ty">Result</span>&lt;DeriveInput, TokenStream&gt; {
     syn::parse(ts).map_err(|e| {
         <span class="macro">emit_error!</span>(
             e.span().unwrap(),
@@ -242,8 +242,8 @@
 }
 
 <span class="doccomment">/// Helper struct for parsing proc-macro input attributes.
-</span><span class="attribute">#[derive(Default)]</span>
-<span class="kw">struct </span>MacroAttribute(Punctuated&lt;NestedMeta, Comma&gt;);
+</span><span class="attribute">#[derive(Default)]
+</span><span class="kw">struct </span>MacroAttribute(Punctuated&lt;NestedMeta, Comma&gt;);
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>MacroAttribute {
     <span class="kw">fn </span>parse(input: ParseStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
@@ -251,8 +251,8 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="kw">fn </span>parse_input_attrs(ts: TokenStream) -&gt; MacroAttribute {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+</span><span class="kw">fn </span>parse_input_attrs(ts: TokenStream) -&gt; MacroAttribute {
     syn::parse(ts)
         .map_err(|e| {
             <span class="macro">emit_warning!</span>(
@@ -264,8 +264,8 @@
         .unwrap_or_default()
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="macro">rest_methods!</span> {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+</span><span class="macro">rest_methods! </span>{
     Get,    get,
     Post,   post,
     Put,    put,
@@ -273,4 +273,4 @@
     Patch,  patch,
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

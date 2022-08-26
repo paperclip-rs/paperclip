@@ -79,7 +79,7 @@
 <span id="79">79</span>
 </pre><pre class="rust"><code><span class="kw">use </span>std::{collections::HashSet, path::PathBuf};
 
-<span class="macro">macro_rules!</span> impl_err_from {
+<span class="macro">macro_rules! </span>impl_err_from {
     (<span class="macro-nonterminal">$err</span>:ident :: <span class="macro-nonterminal">$</span><span class="kw">type</span>:<span class="macro-nonterminal">ty </span>&gt; <span class="macro-nonterminal">$variant</span>:ident) =&gt; {
         <span class="kw">impl </span>From&lt;<span class="macro-nonterminal">$</span><span class="kw">type</span>&gt; <span class="kw">for </span><span class="macro-nonterminal">$err </span>{
             <span class="kw">fn </span>from(s: <span class="macro-nonterminal">$</span><span class="kw">type</span>) -&gt; <span class="macro-nonterminal">Self </span>{
@@ -93,68 +93,68 @@
 </span><span class="kw">pub type </span>PaperClipResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, PaperClipError&gt;;
 
 <span class="doccomment">/// Global error which encapsulates all related errors.
-</span><span class="attribute">#[derive(Debug, thiserror::Error)]</span>
-<span class="kw">pub enum </span>PaperClipError {
+</span><span class="attribute">#[derive(Debug, thiserror::Error)]
+</span><span class="kw">pub enum </span>PaperClipError {
     <span class="doccomment">/// Error encountered during spec validation.
-    </span><span class="attribute">#[error(<span class="string">&quot;{}&quot;</span>, _0)]</span>
-    Validation(paperclip_core::ValidationError),
+    </span><span class="attribute">#[error(<span class="string">&quot;{}&quot;</span>, _0)]
+    </span>Validation(paperclip_core::ValidationError),
     <span class="doccomment">/// The given directory cannot be used for generating code.
-    </span><span class="attribute">#[error(<span class="string">&quot;Cannot generate code in the given directory&quot;</span>)]</span>
-    InvalidCodegenDirectory,
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot generate code in the given directory&quot;</span>)]
+    </span>InvalidCodegenDirectory,
     <span class="doccomment">/// Currently, we only support OpenAPI v2, and eventually v3.
-    </span><span class="attribute">#[error(<span class="string">&quot;This version of OpenAPI is unsupported.&quot;</span>)]</span>
-    <span class="attribute">#[allow(clippy::upper_case_acronyms)]</span>
-    UnsupportedOpenAPIVersion,
+    </span><span class="attribute">#[error(<span class="string">&quot;This version of OpenAPI is unsupported.&quot;</span>)]
+    #[allow(clippy::upper_case_acronyms)]
+    </span>UnsupportedOpenAPIVersion,
     <span class="doccomment">/// Paths listed in the spec must be unique.
-    </span><span class="attribute">#[error(<span class="string">&quot;Path similar to {:?} already exists.&quot;</span>, _0)]</span>
-    RelativePathNotUnique(String),
-    <span class="attribute">#[error(<span class="string">&quot;Parameter(s) {:?} aren&#39;t defined for templated path {:?}&quot;</span>, _1, _0)]</span>
-    MissingParametersInPath(String, HashSet&lt;String&gt;),
+    </span><span class="attribute">#[error(<span class="string">&quot;Path similar to {:?} already exists.&quot;</span>, _0)]
+    </span>RelativePathNotUnique(String),
+    <span class="attribute">#[error(<span class="string">&quot;Parameter(s) {:?} aren&#39;t defined for templated path {:?}&quot;</span>, _1, _0)]
+    </span>MissingParametersInPath(String, HashSet&lt;String&gt;),
     <span class="doccomment">/// Invalid host for URL.
-    </span><span class="attribute">#[error(<span class="string">&quot;Cannot parse host {:?}: {}&quot;</span>, _0, _1)]</span>
-    InvalidHost(String, url_dep::ParseError),
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot parse host {:?}: {}&quot;</span>, _0, _1)]
+    </span>InvalidHost(String, url_dep::ParseError),
     <span class="doccomment">/// Invalid base path URL.
-    </span><span class="attribute">#[error(<span class="string">&quot;Cannot set URL {:?}: {}&quot;</span>, _0, _1)]</span>
-    <span class="attribute">#[allow(clippy::upper_case_acronyms)]</span>
-    InvalidBasePathURL(String, url_dep::ParseError),
+    </span><span class="attribute">#[error(<span class="string">&quot;Cannot set URL {:?}: {}&quot;</span>, _0, _1)]
+    #[allow(clippy::upper_case_acronyms)]
+    </span>InvalidBasePathURL(String, url_dep::ParseError),
     <span class="doccomment">/// The given schema object is an array, but the `items` field is missing.
-    </span><span class="attribute">#[error(<span class="string">&quot;Missing item schema for array: {:?}&quot;</span>, _0)]</span>
-    MissingArrayItem(<span class="prelude-ty">Option</span>&lt;String&gt;),
+    </span><span class="attribute">#[error(<span class="string">&quot;Missing item schema for array: {:?}&quot;</span>, _0)]
+    </span>MissingArrayItem(<span class="prelude-ty">Option</span>&lt;String&gt;),
     <span class="doccomment">/// The name for the given definition is invalid.
-    </span><span class="attribute">#[error(<span class="string">&quot;Invalid name for definition: &#39;{0}&#39;&quot;</span>)]</span>
-    InvalidDefinitionName(String),
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid name for definition: &#39;{0}&#39;&quot;</span>)]
+    </span>InvalidDefinitionName(String),
     <span class="doccomment">/// The name for the given definition is missing.
-    </span><span class="attribute">#[error(<span class="string">&quot;Missing name for definition&quot;</span>)]</span>
-    MissingDefinitionName,
+    </span><span class="attribute">#[error(<span class="string">&quot;Missing name for definition&quot;</span>)]
+    </span>MissingDefinitionName,
     <span class="doccomment">/// A valid path cannot be obtained for the given definition.
-    </span><span class="attribute">#[error(<span class="string">&quot;Invalid path for definition: {:?}&quot;</span>, _0)]</span>
-    InvalidDefinitionPath(PathBuf),
+    </span><span class="attribute">#[error(<span class="string">&quot;Invalid path for definition: {:?}&quot;</span>, _0)]
+    </span>InvalidDefinitionPath(PathBuf),
     <span class="doccomment">/// I/O errors.
-    </span><span class="attribute">#[error(<span class="string">&quot;I/O error: {}&quot;</span>, _0)]</span>
-    Io(std::io::Error),
+    </span><span class="attribute">#[error(<span class="string">&quot;I/O error: {}&quot;</span>, _0)]
+    </span>Io(std::io::Error),
     <span class="doccomment">/// JSON coding errors.
-    </span><span class="attribute">#[error(<span class="string">&quot;JSON error: {}&quot;</span>, _0)]</span>
-    Json(serde_json::Error),
+    </span><span class="attribute">#[error(<span class="string">&quot;JSON error: {}&quot;</span>, _0)]
+    </span>Json(serde_json::Error),
     <span class="doccomment">/// YAML coding errors.
-    </span><span class="attribute">#[error(<span class="string">&quot;YAML error: {}&quot;</span>, _0)]</span>
-    Yaml(serde_yaml::Error),
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]</span>
-    <span class="doccomment">/// Errors from rustfmt.
-    </span><span class="attribute">#[error(<span class="string">&quot;Rustfmt formatting error: {}&quot;</span>, _0)]</span>
-    RustFmt(rustfmt_nightly::ErrorKind),
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-    <span class="doccomment">/// Errors in templating.
-    </span><span class="attribute">#[error(<span class="string">&quot;Templating error: {}&quot;</span>, _0)]</span>
-    Templating(tinytemplate::error::Error),
+    </span><span class="attribute">#[error(<span class="string">&quot;YAML error: {}&quot;</span>, _0)]
+    </span>Yaml(serde_yaml::Error),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]
+    </span><span class="doccomment">/// Errors from rustfmt.
+    </span><span class="attribute">#[error(<span class="string">&quot;Rustfmt formatting error: {}&quot;</span>, _0)]
+    </span>RustFmt(rustfmt_nightly::ErrorKind),
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+    </span><span class="doccomment">/// Errors in templating.
+    </span><span class="attribute">#[error(<span class="string">&quot;Templating error: {}&quot;</span>, _0)]
+    </span>Templating(tinytemplate::error::Error),
 }
 
 <span class="macro">impl_err_from!</span>(PaperClipError::std::io::Error &gt; Io);
 <span class="macro">impl_err_from!</span>(PaperClipError::serde_json::Error &gt; Json);
 <span class="macro">impl_err_from!</span>(PaperClipError::serde_yaml::Error &gt; Yaml);
 <span class="macro">impl_err_from!</span>(PaperClipError::paperclip_core::ValidationError &gt; Validation);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]</span>
-<span class="macro">impl_err_from!</span>(PaperClipError::rustfmt_nightly::ErrorKind &gt; RustFmt);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="macro">impl_err_from!</span>(PaperClipError::tinytemplate::error::Error &gt; Templating);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]
+</span><span class="macro">impl_err_from!</span>(PaperClipError::rustfmt_nightly::ErrorKind &gt; RustFmt);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="macro">impl_err_from!</span>(PaperClipError::tinytemplate::error::Error &gt; Templating);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

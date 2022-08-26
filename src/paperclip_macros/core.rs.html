@@ -374,7 +374,7 @@
         <span class="prelude-val">Err</span>(ts) =&gt; <span class="kw">return </span>ts,
     };
 
-    gen.extend(<span class="macro">quote!</span> {
+    gen.extend(<span class="macro">quote! </span>{
         #item_ast
 
         <span class="kw">impl </span>Default <span class="kw">for </span>#name {
@@ -418,73 +418,73 @@
         }
 
         <span class="kw">impl </span>#impl_generics paperclip::v2::Schema <span class="kw">for </span>#name #ty_generics #where_clause {
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
                 <span class="self">self</span>.name.as_ref().map(String::as_str)
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>set_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>set_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) {
                 <span class="self">self</span>.name = <span class="prelude-val">Some</span>(name.into());
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>set_cyclic(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cyclic: bool) {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>set_cyclic(<span class="kw-2">&amp;mut </span><span class="self">self</span>, cyclic: bool) {
                 <span class="self">self</span>.cyclic = cyclic;
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>is_cyclic(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>is_cyclic(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
                 <span class="self">self</span>.cyclic
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>description(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>description(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
                 <span class="self">self</span>.description.as_ref().map(String::as_str)
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>reference(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>reference(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt; {
                 <span class="self">self</span>.reference.as_ref().map(String::as_str)
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>set_reference(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ref_: String) {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>set_reference(<span class="kw-2">&amp;mut </span><span class="self">self</span>, ref_: String) {
                 <span class="self">self</span>.reference = <span class="prelude-val">Some</span>(ref_);
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>data_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataType&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>data_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataType&gt; {
                 <span class="self">self</span>.data_type
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>format(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>paperclip::v2::models::DataTypeFormat&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>format(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>paperclip::v2::models::DataTypeFormat&gt; {
                 <span class="self">self</span>.format.as_ref()
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>items(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>items(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt; {
                 <span class="self">self</span>.items.as_ref()
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>items_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>items_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt; {
                 <span class="self">self</span>.items.as_mut()
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>additional_properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>paperclip::v2::models::Either&lt;bool, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>additional_properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>paperclip::v2::models::Either&lt;bool, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
                 <span class="self">self</span>.extra_props.as_ref()
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>additional_properties_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>paperclip::v2::models::Either&lt;bool, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>additional_properties_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>paperclip::v2::models::Either&lt;bool, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
                 <span class="self">self</span>.extra_props.as_mut()
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::collections::BTreeMap&lt;String, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::collections::BTreeMap&lt;String, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
                 <span class="kw">if </span><span class="self">self</span>.properties.is_empty() {
                     <span class="prelude-val">None
                 </span>} <span class="kw">else </span>{
@@ -492,8 +492,8 @@
                 }
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>properties_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>std::collections::BTreeMap&lt;String, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>properties_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>std::collections::BTreeMap&lt;String, paperclip::v2::models::Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt; {
                 <span class="kw">if </span><span class="self">self</span>.properties.is_empty() {
                     <span class="prelude-val">None
                 </span>} <span class="kw">else </span>{
@@ -501,8 +501,8 @@
                 }
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>required_properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::collections::BTreeSet&lt;String&gt;&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>required_properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>std::collections::BTreeSet&lt;String&gt;&gt; {
                 <span class="kw">if </span><span class="self">self</span>.required.is_empty() {
                     <span class="prelude-val">None
                 </span>} <span class="kw">else </span>{
@@ -510,8 +510,8 @@
                 }
             }
 
-            <span class="attribute">#[inline]</span>
-            <span class="kw">fn </span>enum_variants(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[serde_json::Value]&gt; {
+            <span class="attribute">#[inline]
+            </span><span class="kw">fn </span>enum_variants(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[serde_json::Value]&gt; {
                 <span class="kw">if </span><span class="self">self</span>.enum_.is_empty() {
                     <span class="kw">return </span><span class="prelude-val">None
                 </span>} <span class="kw">else </span>{
@@ -601,74 +601,74 @@
     };
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(rename = <span class="string">&quot;$ref&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>reference: <span class="prelude-ty">Option</span>&lt;String&gt;,
+        <span class="attribute">#[serde(rename = <span class="string">&quot;$ref&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>reference: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>title: <span class="prelude-ty">Option</span>&lt;String&gt;,
+        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>title: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataType&gt;,
+        <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataType&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataTypeFormat&gt;,
+        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataTypeFormat&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>example: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
+        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>example: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
     ));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;std::collections::BTreeMap::is_empty&quot;</span>)]</span>
-        <span class="kw">pub </span>properties: std::collections::BTreeMap&lt;String,
+        <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;std::collections::BTreeMap::is_empty&quot;</span>)]
+        </span><span class="kw">pub </span>properties: std::collections::BTreeMap&lt;String,
     ));
     add_self(<span class="kw-2">&amp;mut </span>gen);
     gen.extend(<span class="macro">quote!</span>(&gt;,));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;
+        <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;
     ));
     add_self(<span class="kw-2">&amp;mut </span>gen);
     gen.extend(<span class="macro">quote!</span>(&gt;,));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-        <span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
+        <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+        </span><span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
     ));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(rename = <span class="string">&quot;additionalProperties&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-        <span class="kw">pub </span>extra_props: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::Either&lt;bool,
+        <span class="attribute">#[serde(rename = <span class="string">&quot;additionalProperties&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        </span><span class="kw">pub </span>extra_props: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::Either&lt;bool,
     ));
     add_self(<span class="kw-2">&amp;mut </span>gen);
     gen.extend(<span class="macro">quote!</span>(&gt;&gt;,));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;std::collections::BTreeSet::is_empty&quot;</span>)]</span>
-        <span class="kw">pub </span>required: std::collections::BTreeSet&lt;String&gt;,
+        <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;std::collections::BTreeSet::is_empty&quot;</span>)]
+        </span><span class="kw">pub </span>required: std::collections::BTreeSet&lt;String&gt;,
     ));
 
     <span class="kw">if </span>is_ref {
         gen.extend(<span class="macro">quote!</span>(
-            <span class="attribute">#[serde(skip)]</span>
-            cyclic: bool,
+            <span class="attribute">#[serde(skip)]
+            </span>cyclic: bool,
         ));
     }
 
     <span class="macro">quote!</span>({
-        <span class="attribute">#[doc(hidden)]</span>
-        <span class="attribute">#[serde(skip)]</span>
-        <span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+        <span class="attribute">#[doc(hidden)]
+        #[serde(skip)]
+        </span><span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
         #gen
     })
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

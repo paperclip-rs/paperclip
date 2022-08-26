@@ -28,35 +28,35 @@
 <span id="28">28</span>
 <span id="29">29</span>
 <span id="30">30</span>
-</pre><pre class="rust"><code><span class="attribute">#![cfg_attr(feature = <span class="string">&quot;nightly&quot;</span>, feature(specialization))]</span>
-<span class="doccomment">//! Core structs and traits for paperclip.
+</pre><pre class="rust"><code><span class="attribute">#![cfg_attr(feature = <span class="string">&quot;nightly&quot;</span>, feature(specialization))]
+</span><span class="doccomment">//! Core structs and traits for paperclip.
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix2&quot;</span>)]</span>
-<span class="kw">extern crate </span>actix_web2 <span class="kw">as </span>actix_web;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix3&quot;</span>)]</span>
-<span class="kw">extern crate </span>actix_web3 <span class="kw">as </span>actix_web;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
-<span class="attribute">#[cfg_attr(feature = <span class="string">&quot;v2&quot;</span>, macro_use)]</span>
-<span class="kw">extern crate </span>serde;
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix2&quot;</span>)]
+</span><span class="kw">extern crate </span>actix_web2 <span class="kw">as </span>actix_web;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix3&quot;</span>)]
+</span><span class="kw">extern crate </span>actix_web3 <span class="kw">as </span>actix_web;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+</span><span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
+<span class="attribute">#[cfg_attr(feature = <span class="string">&quot;v2&quot;</span>, macro_use)]
+</span><span class="kw">extern crate </span>serde;
 
 <span class="kw">mod </span>error;
 <span class="kw">pub mod </span>im;
 <span class="kw">pub mod </span>util;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="kw">pub mod </span>v2;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-<span class="kw">pub mod </span>v3;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+</span><span class="kw">pub mod </span>v2;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+</span><span class="kw">pub mod </span>v3;
 
 <span class="kw">pub use </span><span class="self">self</span>::error::ValidationError;
 
-<span class="attribute">#[cfg(all(feature = <span class="string">&quot;actix2&quot;</span>, feature = <span class="string">&quot;actix3&quot;</span>))]</span>
-<span class="macro">compile_error!</span>(<span class="string">&quot;feature \&quot;actix2\&quot; and feature \&quot;actix3\&quot; cannot be enabled at the same time&quot;</span>);
+<span class="attribute">#[cfg(all(feature = <span class="string">&quot;actix2&quot;</span>, feature = <span class="string">&quot;actix3&quot;</span>))]
+</span><span class="macro">compile_error!</span>(<span class="string">&quot;feature \&quot;actix2\&quot; and feature \&quot;actix3\&quot; cannot be enabled at the same time&quot;</span>);
 
-<span class="attribute">#[cfg(all(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="macro">compile_error!</span>(<span class="string">&quot;feature \&quot;actix3\&quot; and feature \&quot;actix4\&quot; cannot be enabled at the same time&quot;</span>);
+<span class="attribute">#[cfg(all(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]
+</span><span class="macro">compile_error!</span>(<span class="string">&quot;feature \&quot;actix3\&quot; and feature \&quot;actix4\&quot; cannot be enabled at the same time&quot;</span>);
 
-<span class="attribute">#[cfg(all(feature = <span class="string">&quot;actix2&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="macro">compile_error!</span>(<span class="string">&quot;feature \&quot;actix2\&quot; and feature \&quot;actix4\&quot; cannot be enabled at the same time&quot;</span>);
+<span class="attribute">#[cfg(all(feature = <span class="string">&quot;actix2&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]
+</span><span class="macro">compile_error!</span>(<span class="string">&quot;feature \&quot;actix2\&quot; and feature \&quot;actix4\&quot; cannot be enabled at the same time&quot;</span>);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

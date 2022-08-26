@@ -1019,8 +1019,8 @@
 <span class="kw">use </span>paperclip_macros::api_v2_schema_struct;
 <span class="kw">use </span>regex::{Captures, Regex};
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">use </span>actix_web::http::Method;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
+</span><span class="kw">use </span>actix_web::http::Method;
 
 <span class="kw">use </span>parking_lot::RwLock;
 <span class="kw">use </span>std::{
@@ -1040,16 +1040,16 @@
 </span><span class="kw">const </span>SPECIAL_HEADERS: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str] = <span class="kw-2">&amp;</span>[<span class="string">&quot;content-type&quot;</span>, <span class="string">&quot;accept&quot;</span>, <span class="string">&quot;authorization&quot;</span>];
 
 <span class="doccomment">/// OpenAPI version.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]</span>
-<span class="kw">pub enum </span>Version {
-    <span class="attribute">#[serde(rename = <span class="string">&quot;2.0&quot;</span>)]</span>
-    V2,
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>Version {
+    <span class="attribute">#[serde(rename = <span class="string">&quot;2.0&quot;</span>)]
+    </span>V2,
 }
 
 <span class="doccomment">/// Supported data types.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]</span>
-<span class="kw">pub enum </span>DataType {
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]
+</span><span class="kw">pub enum </span>DataType {
     Integer,
     Number,
     String,
@@ -1061,8 +1061,8 @@
 
 <span class="kw">impl </span>DataType {
     <span class="doccomment">/// Checks if this is a primitive type.
-    </span><span class="attribute">#[inline]</span>
-    <span class="kw">pub fn </span>is_primitive(<span class="self">self</span>) -&gt; bool {
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub fn </span>is_primitive(<span class="self">self</span>) -&gt; bool {
         <span class="macro">std::matches!</span>(
             <span class="self">self</span>,
             DataType::Integer | DataType::Number | DataType::String | DataType::Boolean
@@ -1071,9 +1071,9 @@
 }
 
 <span class="doccomment">/// Supported data type formats.
-</span><span class="attribute">#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]</span>
-<span class="kw">pub enum </span>DataTypeFormat {
+</span><span class="attribute">#[derive(Clone, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]
+</span><span class="kw">pub enum </span>DataTypeFormat {
     Int32,
     Int64,
     Float,
@@ -1081,16 +1081,16 @@
     Byte,
     Binary,
     Date,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;date-time&quot;</span>)]</span>
-    DateTime,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;date-time&quot;</span>)]
+    </span>DateTime,
     Password,
     Url,
     Uuid,
     Ip,
     IpV4,
     IpV6,
-    <span class="attribute">#[serde(other)]</span>
-    Other,
+    <span class="attribute">#[serde(other)]
+    </span>Other,
 }
 
 <span class="kw">impl </span>ToString <span class="kw">for </span>DataTypeFormat {
@@ -1148,38 +1148,38 @@
 <span class="doccomment">/// OpenAPI v2 (swagger) spec generic over parameter and schema.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Api&lt;P, R, S&gt; {
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Api&lt;P, R, S&gt; {
     <span class="kw">pub </span>swagger: Version,
-    <span class="attribute">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>)]</span>
-    <span class="kw">pub </span>definitions: BTreeMap&lt;String, S&gt;,
+    <span class="attribute">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>)]
+    </span><span class="kw">pub </span>definitions: BTreeMap&lt;String, S&gt;,
     <span class="kw">pub </span>paths: BTreeMap&lt;String, PathItem&lt;P, R&gt;&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>host: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;basePath&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>base_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>consumes: BTreeSet&lt;MediaRange&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>produces: BTreeSet&lt;MediaRange&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>schemes: BTreeSet&lt;OperationProtocol&gt;,
-    <span class="attribute">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>parameters: BTreeMap&lt;String, P&gt;,
-    <span class="attribute">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>responses: BTreeMap&lt;String, R&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>host: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;basePath&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>base_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>consumes: BTreeSet&lt;MediaRange&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>produces: BTreeSet&lt;MediaRange&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>schemes: BTreeSet&lt;OperationProtocol&gt;,
+    <span class="attribute">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>parameters: BTreeMap&lt;String, P&gt;,
+    <span class="attribute">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>responses: BTreeMap&lt;String, R&gt;,
     <span class="attribute">#[serde(
         default,
         rename = <span class="string">&quot;securityDefinitions&quot;</span>,
         skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;
-    </span>)]</span>
-    <span class="kw">pub </span>security_definitions: BTreeMap&lt;String, SecurityScheme&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>security: Vec&lt;BTreeMap&lt;String, BTreeSet&lt;String&gt;&gt;&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>tags: Vec&lt;Tag&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;externalDocs&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>external_docs: <span class="prelude-ty">Option</span>&lt;ExternalDocs&gt;,
+    </span>)]
+    </span><span class="kw">pub </span>security_definitions: BTreeMap&lt;String, SecurityScheme&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>security: Vec&lt;BTreeMap&lt;String, BTreeSet&lt;String&gt;&gt;&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>tags: Vec&lt;Tag&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;externalDocs&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>external_docs: <span class="prelude-ty">Option</span>&lt;ExternalDocs&gt;,
     <span class="doccomment">/// Extension for custom coders to be used for decoding API objects.
     ///
     /// An example for JSON would be:
@@ -1196,8 +1196,8 @@
         default,
         rename = <span class="string">&quot;x-rust-coders&quot;</span>,
         skip_serializing_if = <span class="string">&quot;&lt;Coders as Deref&gt;::Target::is_empty&quot;
-    </span>)]</span>
-    <span class="kw">pub </span>coders: Coders,
+    </span>)]
+    </span><span class="kw">pub </span>coders: Coders,
     <span class="doccomment">/// Additional crates that need to be added to the manifest.
     ///
     /// The key is the LHS of a dependency, which is the crate name.
@@ -1213,25 +1213,25 @@
         default,
         rename = <span class="string">&quot;x-rust-dependencies&quot;</span>,
         skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;
-    </span>)]</span>
-    <span class="kw">pub </span>support_crates: BTreeMap&lt;String, String&gt;,
+    </span>)]
+    </span><span class="kw">pub </span>support_crates: BTreeMap&lt;String, String&gt;,
     <span class="doccomment">/// This field is set manually, because we don&#39;t know the format in which
     /// the spec was provided and we need to use this as the fallback encoding.
-    </span><span class="attribute">#[serde(skip)]</span>
-    <span class="kw">pub </span>spec_format: SpecFormat,
+    </span><span class="attribute">#[serde(skip)]
+    </span><span class="kw">pub </span>spec_format: SpecFormat,
     <span class="kw">pub </span>info: Info,
 
     <span class="attribute">#[serde(
         flatten,
         skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>,
         deserialize_with = <span class="string">&quot;crate::v2::extensions::deserialize_extensions&quot;
-    </span>)]</span>
-    <span class="kw">pub </span>extensions: BTreeMap&lt;String, serde_json::Value&gt;,
+    </span>)]
+    </span><span class="kw">pub </span>extensions: BTreeMap&lt;String, serde_json::Value&gt;,
 }
 
 <span class="doccomment">/// The format used by spec (JSON/YAML).
-</span><span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq)]</span>
-<span class="kw">pub enum </span>SpecFormat {
+</span><span class="attribute">#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+</span><span class="kw">pub enum </span>SpecFormat {
     Json,
     Yaml,
 }
@@ -1270,77 +1270,77 @@
 </span><span class="doccomment">/// Default schema if your schema doesn&#39;t have any custom fields.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#schemaObject&gt;
-</span><span class="attribute">#[api_v2_schema_struct]</span>
-<span class="attribute">#[derive(Clone, Debug, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>DefaultSchema;
+</span><span class="attribute">#[api_v2_schema_struct]
+#[derive(Clone, Debug, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>DefaultSchema;
 
 <span class="doccomment">/// Info object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#infoObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Info {
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Info {
     <span class="kw">pub </span>version: String,
     <span class="kw">pub </span>title: String,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>contact: <span class="prelude-ty">Option</span>&lt;Contact&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>license: <span class="prelude-ty">Option</span>&lt;License&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>contact: <span class="prelude-ty">Option</span>&lt;Contact&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>license: <span class="prelude-ty">Option</span>&lt;License&gt;,
     <span class="doccomment">/// Inline extensions to this object.
     </span><span class="attribute">#[serde(
         flatten,
         skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>,
         deserialize_with = <span class="string">&quot;crate::v2::extensions::deserialize_extensions&quot;
-    </span>)]</span>
-    <span class="kw">pub </span>extensions: BTreeMap&lt;String, serde_json::Value&gt;,
+    </span>)]
+    </span><span class="kw">pub </span>extensions: BTreeMap&lt;String, serde_json::Value&gt;,
 }
 
 <span class="doccomment">/// Contact object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#contactObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Contact {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>url: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>email: <span class="prelude-ty">Option</span>&lt;String&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Contact {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>url: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>email: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="doccomment">/// License object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#licenseObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>License {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>url: <span class="prelude-ty">Option</span>&lt;String&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>License {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>url: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="doccomment">/// Security Scheme object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#security-scheme-object&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>SecurityScheme {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>)]</span>
-    <span class="kw">pub </span>type_: String,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;in&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>in_: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>flow: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;authorizationUrl&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>auth_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;tokenUrl&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>token_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>scopes: BTreeMap&lt;String, String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>SecurityScheme {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>)]
+    </span><span class="kw">pub </span>type_: String,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;in&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>in_: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>flow: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;authorizationUrl&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>auth_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;tokenUrl&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>token_url: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>scopes: BTreeMap&lt;String, String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
 }
 
 <span class="kw">impl </span>SecurityScheme {
@@ -1377,23 +1377,23 @@
 <span class="doccomment">/// Tag object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#tag-object&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Tag {
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Tag {
     <span class="kw">pub </span>name: String,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="attribute">#[serde(rename = <span class="string">&quot;externalDocs&quot;</span>)]</span>
-    <span class="kw">pub </span>external_docs: <span class="prelude-ty">Option</span>&lt;ExternalDocs&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    #[serde(rename = <span class="string">&quot;externalDocs&quot;</span>)]
+    </span><span class="kw">pub </span>external_docs: <span class="prelude-ty">Option</span>&lt;ExternalDocs&gt;,
 }
 
 <span class="doccomment">/// External Documentation object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#external-documentation-object&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>ExternalDocs {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>ExternalDocs {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="kw">pub </span>url: String,
 }
 
@@ -1406,12 +1406,12 @@
 <span class="doccomment">/// Path item object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#pathItemObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>PathItem&lt;P, R&gt; {
-    <span class="attribute">#[serde(flatten, default = <span class="string">&quot;BTreeMap::default&quot;</span>)]</span>
-    <span class="kw">pub </span>methods: BTreeMap&lt;HttpMethod, Operation&lt;P, R&gt;&gt;,
-    <span class="attribute">#[serde(default = <span class="string">&quot;Vec::default&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>parameters: Vec&lt;Either&lt;Reference, P&gt;&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>PathItem&lt;P, R&gt; {
+    <span class="attribute">#[serde(flatten, default = <span class="string">&quot;BTreeMap::default&quot;</span>)]
+    </span><span class="kw">pub </span>methods: BTreeMap&lt;HttpMethod, Operation&lt;P, R&gt;&gt;,
+    <span class="attribute">#[serde(default = <span class="string">&quot;Vec::default&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>parameters: Vec&lt;Either&lt;Reference, P&gt;&gt;,
 }
 
 <span class="kw">impl</span>&lt;S&gt; PathItem&lt;Parameter&lt;S&gt;, Response&lt;S&gt;&gt; {
@@ -1469,94 +1469,94 @@
 <span class="doccomment">/// Request parameter object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#parameterObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub struct </span>Parameter&lt;S&gt; {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;in&quot;</span>)]</span>
-    <span class="kw">pub </span>in_: ParameterIn,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>Parameter&lt;S&gt; {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;in&quot;</span>)]
+    </span><span class="kw">pub </span>in_: ParameterIn,
     <span class="kw">pub </span>name: String,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]</span>
-    <span class="kw">pub </span>required: bool,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>schema: <span class="prelude-ty">Option</span>&lt;S&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;DataTypeFormat&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;Items&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>collection_format: <span class="prelude-ty">Option</span>&lt;CollectionFormat&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]</span>
-    <span class="kw">pub </span>allow_empty_value: bool,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>default: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>maximum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMaximum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>exclusive_maximum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>minimum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMinimum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>exclusive_minimum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;maxLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>max_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;minLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>min_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>pattern: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;maxItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>max_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;minItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>min_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(default, rename = <span class="string">&quot;uniqueItems&quot;</span>, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]</span>
-    <span class="kw">pub </span>unique_items: bool,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;multipleOf&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>multiple_of: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]
+    </span><span class="kw">pub </span>required: bool,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>schema: <span class="prelude-ty">Option</span>&lt;S&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;DataTypeFormat&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;Items&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>collection_format: <span class="prelude-ty">Option</span>&lt;CollectionFormat&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]
+    </span><span class="kw">pub </span>allow_empty_value: bool,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>default: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>maximum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMaximum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>exclusive_maximum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>minimum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMinimum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>exclusive_minimum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;maxLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;minLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>min_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>pattern: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;maxItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;minItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>min_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(default, rename = <span class="string">&quot;uniqueItems&quot;</span>, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]
+    </span><span class="kw">pub </span>unique_items: bool,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;multipleOf&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>multiple_of: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
 }
 
 <span class="doccomment">/// Items object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#itemsObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub struct </span>Items {
-    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;DataTypeFormat&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;Box&lt;Items&gt;&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>collection_format: <span class="prelude-ty">Option</span>&lt;CollectionFormat&gt;,
-    <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>maximum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMaximum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>exclusive_maximum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>minimum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMinimum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>exclusive_minimum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;maxLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>max_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;minLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>min_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>pattern: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;maxItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>max_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;minItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>min_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;uniqueItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>unique_items: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;multipleOf&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>multiple_of: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize, PartialEq)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>Items {
+    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;DataTypeFormat&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;Box&lt;Items&gt;&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>collection_format: <span class="prelude-ty">Option</span>&lt;CollectionFormat&gt;,
+    <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>maximum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMaximum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>exclusive_maximum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>minimum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMinimum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>exclusive_minimum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;maxLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;minLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>min_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>pattern: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;maxItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;minItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>min_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;uniqueItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>unique_items: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;multipleOf&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>multiple_of: <span class="prelude-ty">Option</span>&lt;f32&gt;,
 }
 
 <span class="kw">impl</span>&lt;S&gt; Parameter&lt;Resolvable&lt;S&gt;&gt;
@@ -1639,9 +1639,9 @@
 }
 
 <span class="doccomment">/// The location of the parameter.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub enum </span>ParameterIn {
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub enum </span>ParameterIn {
     Query,
     Header,
     Path,
@@ -1650,9 +1650,9 @@
 }
 
 <span class="doccomment">/// Possible formats for array values in parameter.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]</span>
-<span class="kw">pub enum </span>CollectionFormat {
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]
+</span><span class="kw">pub enum </span>CollectionFormat {
     Csv,
     Ssv,
     Tsv,
@@ -1669,34 +1669,34 @@
 <span class="doccomment">/// Operation object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#operationObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">pub struct </span>Operation&lt;P, R&gt; {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>operation_id: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>summary: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">pub struct </span>Operation&lt;P, R&gt; {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>operation_id: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>summary: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="comment">// *NOTE:* `consumes` and `produces` are optional, because
     // local media ranges can be used to override global media ranges
     // (including setting it to empty), so we cannot go for an empty set.
-    </span><span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>consumes: <span class="prelude-ty">Option</span>&lt;BTreeSet&lt;MediaRange&gt;&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>produces: <span class="prelude-ty">Option</span>&lt;BTreeSet&lt;MediaRange&gt;&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>security: Vec&lt;BTreeMap&lt;String, Vec&lt;String&gt;&gt;&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>schemes: BTreeSet&lt;OperationProtocol&gt;,
+    </span><span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>consumes: <span class="prelude-ty">Option</span>&lt;BTreeSet&lt;MediaRange&gt;&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>produces: <span class="prelude-ty">Option</span>&lt;BTreeSet&lt;MediaRange&gt;&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>security: Vec&lt;BTreeMap&lt;String, Vec&lt;String&gt;&gt;&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeSet::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>schemes: BTreeSet&lt;OperationProtocol&gt;,
     <span class="comment">// FIXME: Validate using `http::status::StatusCode::from_u16`
     </span><span class="kw">pub </span>responses: BTreeMap&lt;String, Either&lt;Reference, R&gt;&gt;,
-    <span class="attribute">#[serde(default = <span class="string">&quot;Vec::default&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>parameters: Vec&lt;Either&lt;Reference, P&gt;&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]</span>
-    <span class="kw">pub </span>deprecated: bool,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>tags: Vec&lt;String&gt;,
+    <span class="attribute">#[serde(default = <span class="string">&quot;Vec::default&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>parameters: Vec&lt;Either&lt;Reference, P&gt;&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;is_false&quot;</span>)]
+    </span><span class="kw">pub </span>deprecated: bool,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>tags: Vec&lt;String&gt;,
 }
 
 <span class="kw">impl</span>&lt;S&gt; Operation&lt;Parameter&lt;S&gt;, Response&lt;S&gt;&gt; {
@@ -1727,16 +1727,16 @@
 <span class="doccomment">/// Reference object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#referenceObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]</span>
-<span class="kw">pub struct </span>Reference {
-    <span class="attribute">#[serde(rename = <span class="string">&quot;$ref&quot;</span>)]</span>
-    <span class="kw">pub </span>reference: String,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
+</span><span class="kw">pub struct </span>Reference {
+    <span class="attribute">#[serde(rename = <span class="string">&quot;$ref&quot;</span>)]
+    </span><span class="kw">pub </span>reference: String,
 }
 
 <span class="doccomment">/// The protocol used for an operation.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]</span>
-<span class="kw">pub enum </span>OperationProtocol {
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]
+</span><span class="kw">pub enum </span>OperationProtocol {
     Http,
     Https,
     Ws,
@@ -1752,63 +1752,63 @@
 <span class="doccomment">/// Response object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#responseObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Response&lt;S&gt; {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>schema: <span class="prelude-ty">Option</span>&lt;S&gt;,
-    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>headers: BTreeMap&lt;String, Header&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Response&lt;S&gt; {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>schema: <span class="prelude-ty">Option</span>&lt;S&gt;,
+    <span class="attribute">#[serde(default, skip_serializing_if = <span class="string">&quot;BTreeMap::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>headers: BTreeMap&lt;String, Header&gt;,
 }
 
 <span class="doccomment">/// Header object.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#headerObject&gt;
-</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Header {
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;DataTypeFormat&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;Items&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>collection_format: <span class="prelude-ty">Option</span>&lt;CollectionFormat&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>default: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
-    <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]</span>
-    <span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>maximum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMaximum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>exclusive_maximum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>minimum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMinimum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>exclusive_minimum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;maxLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>max_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;minLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>min_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>pattern: <span class="prelude-ty">Option</span>&lt;String&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;maxItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>max_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;minItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>min_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;uniqueItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>unique_items: <span class="prelude-ty">Option</span>&lt;bool&gt;,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;multipleOf&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]</span>
-    <span class="kw">pub </span>multiple_of: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+</span><span class="attribute">#[derive(Clone, Debug, Default, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Header {
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;DataTypeFormat&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;Items&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>collection_format: <span class="prelude-ty">Option</span>&lt;CollectionFormat&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>default: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
+    <span class="attribute">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+    </span><span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>maximum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMaximum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>exclusive_maximum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>minimum: <span class="prelude-ty">Option</span>&lt;f32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;exclusiveMinimum&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>exclusive_minimum: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;maxLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;minLength&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>min_length: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>pattern: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;maxItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>max_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;minItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>min_items: <span class="prelude-ty">Option</span>&lt;u32&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;uniqueItems&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>unique_items: <span class="prelude-ty">Option</span>&lt;bool&gt;,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;multipleOf&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+    </span><span class="kw">pub </span>multiple_of: <span class="prelude-ty">Option</span>&lt;f32&gt;,
 }
 
 <span class="doccomment">/// The HTTP method used for an operation.
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]</span>
-<span class="kw">pub enum </span>HttpMethod {
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[serde(rename_all = <span class="string">&quot;lowercase&quot;</span>)]
+</span><span class="kw">pub enum </span>HttpMethod {
     Get,
     Put,
     Post,
@@ -1829,9 +1829,9 @@
 
 </span><span class="doccomment">/// `Either` from &quot;either&quot; crate. We can&#39;t use that crate because
 /// we don&#39;t want the enum to be tagged during de/serialization.
-</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]</span>
-<span class="attribute">#[serde(untagged)]</span>
-<span class="kw">pub enum </span>Either&lt;L, R&gt; {
+</span><span class="attribute">#[derive(Debug, Clone, Serialize, Deserialize)]
+#[serde(untagged)]
+</span><span class="kw">pub enum </span>Either&lt;L, R&gt; {
     Left(L),
     Right(R),
 }
@@ -1873,12 +1873,12 @@
 <span class="doccomment">/// Wrapper for schema. This uses `Arc&lt;RwLock&lt;S&gt;&gt;` for interior
 /// mutability and differentiates raw schema from resolved schema
 /// (i.e., the one where `$ref` references point to the actual schema).
-</span><span class="attribute">#[derive(Debug, Deserialize)]</span>
-<span class="attribute">#[serde(untagged)]</span>
-<span class="kw">pub enum </span>Resolvable&lt;S&gt; {
+</span><span class="attribute">#[derive(Debug, Deserialize)]
+#[serde(untagged)]
+</span><span class="kw">pub enum </span>Resolvable&lt;S&gt; {
     Raw(Arc&lt;RwLock&lt;S&gt;&gt;),
-    <span class="attribute">#[serde(skip)]</span>
-    Resolved {
+    <span class="attribute">#[serde(skip)]
+    </span>Resolved {
         new: Arc&lt;RwLock&lt;S&gt;&gt;,
         old: Arc&lt;RwLock&lt;S&gt;&gt;,
     },
@@ -1906,8 +1906,8 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>Method&gt; <span class="kw">for </span>HttpMethod {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
+</span><span class="kw">impl </span>From&lt;<span class="kw-2">&amp;</span>Method&gt; <span class="kw">for </span>HttpMethod {
     <span class="kw">fn </span>from(method: <span class="kw-2">&amp;</span>Method) -&gt; HttpMethod {
         <span class="kw">match </span>method.as_str() {
             <span class="string">&quot;PUT&quot; </span>=&gt; HttpMethod::Put,
@@ -2012,9 +2012,9 @@
 
 <span class="comment">/* Serde helpers */
 
-</span><span class="attribute">#[allow(clippy::trivially_copy_pass_by_ref)]</span>
-<span class="kw">fn </span>is_false(val: <span class="kw-2">&amp;</span>bool) -&gt; bool {
+</span><span class="attribute">#[allow(clippy::trivially_copy_pass_by_ref)]
+</span><span class="kw">fn </span>is_false(val: <span class="kw-2">&amp;</span>bool) -&gt; bool {
     !<span class="kw-2">*</span>val
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

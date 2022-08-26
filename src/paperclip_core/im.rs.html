@@ -22,13 +22,13 @@
 <span id="22">22</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Interior mutability stuff.
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="kw">use </span><span class="kw">crate</span>::v2::models::Resolvable;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="kw">use </span>serde::{Serialize, Serializer};
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::v2::models::Resolvable;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+</span><span class="kw">use </span>serde::{Serialize, Serializer};
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;T&gt; Serialize <span class="kw">for </span>Resolvable&lt;T&gt;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v2&quot;</span>)]
+</span><span class="kw">impl</span>&lt;T&gt; Serialize <span class="kw">for </span>Resolvable&lt;T&gt;
 <span class="kw">where
     </span>T: Serialize,
 {
@@ -43,4 +43,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

@@ -1213,8 +1213,8 @@
 </span><span class="kw">static </span>AT_REGEX: Lazy&lt;Regex&gt; = Lazy::new(|| Regex::new(<span class="string">r&quot;^@&quot;</span>).expect(<span class="string">&quot;invalid at regex?&quot;</span>));
 
 <span class="doccomment">/// Represents a (simplified) Rust struct or enum.
-</span><span class="attribute">#[derive(Default, Debug, Clone)]</span>
-<span class="kw">pub struct </span>ApiObject {
+</span><span class="attribute">#[derive(Default, Debug, Clone)]
+</span><span class="kw">pub struct </span>ApiObject {
     <span class="doccomment">/// Name of the struct (camel-cased).
     </span><span class="kw">pub </span>name: String,
     <span class="doccomment">/// Description for this object (if any), to be used for docs.
@@ -1266,8 +1266,8 @@
 }
 
 <span class="doccomment">/// Container for the struct/enum containing fields/variants.
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub enum </span>ObjectContainer {
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub enum </span>ObjectContainer {
     Enum {
         <span class="doccomment">/// Variants if it&#39;s an enum.
         ///
@@ -1300,8 +1300,8 @@
 }
 
 <span class="doccomment">/// Operations in a path.
-</span><span class="attribute">#[derive(Default, Debug, Clone)]</span>
-<span class="kw">pub struct </span>PathOps {
+</span><span class="attribute">#[derive(Default, Debug, Clone)]
+</span><span class="kw">pub struct </span>PathOps {
     <span class="doccomment">/// Operations for this object and their associated requirements.
     </span><span class="kw">pub </span>req: BTreeMap&lt;HttpMethod, OpRequirement&gt;,
     <span class="doccomment">/// Parameters required for all operations in this path.
@@ -1309,8 +1309,8 @@
 }
 
 <span class="doccomment">/// Requirement for an object corresponding to some operation.
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub struct </span>OpRequirement {
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>OpRequirement {
     <span class="doccomment">/// Operation ID (if it&#39;s provided in the schema).
     ///
     /// If there are multiple operations for the same path, then we
@@ -1338,8 +1338,8 @@
     </span><span class="kw">pub </span>decoding: <span class="prelude-ty">Option</span>&lt;(String, Arc&lt;Coder&gt;)&gt;,
 }
 
-<span class="attribute">#[derive(Default, Debug, Clone)]</span>
-<span class="kw">pub struct </span>Response&lt;S, H&gt; {
+<span class="attribute">#[derive(Default, Debug, Clone)]
+</span><span class="kw">pub struct </span>Response&lt;S, H&gt; {
     <span class="doccomment">/// Type path for this operation&#39;s response (if any). If this is empty,
     /// then we go for `Any`.
     </span><span class="kw">pub </span>ty_path: <span class="prelude-ty">Option</span>&lt;S&gt;,
@@ -1364,8 +1364,8 @@
 }
 
 <span class="doccomment">/// Represents some parameter somewhere (header, path, query, etc.).
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub struct </span>Parameter {
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>Parameter {
     <span class="doccomment">/// Name of the parameter.
     </span><span class="kw">pub </span>name: String,
     <span class="doccomment">/// Description of this operation (if any), to be used for docs.
@@ -1381,8 +1381,8 @@
 }
 
 <span class="doccomment">/// Represents an enum variant.
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub struct </span>ObjectVariant {
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>ObjectVariant {
     <span class="doccomment">/// Name of the variant (case unspecified).
     </span><span class="kw">pub </span>name: String,
     <span class="doccomment">/// Value of this variant (if any). Note that this is only applicable
@@ -1391,8 +1391,8 @@
 }
 
 <span class="doccomment">/// Represents a struct field.
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub struct </span>ObjectField {
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>ObjectField {
     <span class="doccomment">/// Name of the field.
     </span><span class="kw">pub </span>name: String,
     <span class="doccomment">/// Type of the field as a path.
@@ -1486,8 +1486,8 @@
     }
 
     <span class="doccomment">/// Returns whether this type is simple (i.e., not an object defined by us).
-    </span><span class="attribute">#[inline]</span>
-    <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_simple_type(ty: <span class="kw-2">&amp;</span>str) -&gt; bool {
+    </span><span class="attribute">#[inline]
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>is_simple_type(ty: <span class="kw-2">&amp;</span>str) -&gt; bool {
         !ty.contains(<span class="string">&quot;::&quot;</span>) || ty.ends_with(<span class="string">&quot;Delimited&quot;</span>)
     }
 
@@ -1522,8 +1522,8 @@
 }
 
 <span class="doccomment">/// Represents a builder struct for some API object.
-</span><span class="attribute">#[derive(Default, Debug, Clone)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ApiObjectBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="attribute">#[derive(Default, Debug, Clone)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ApiObjectBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Index of this builder.
     </span><span class="kw">pub </span>idx: usize,
     <span class="doccomment">/// Description if any, for docs.
@@ -1567,8 +1567,8 @@
 }
 
 <span class="doccomment">/// The property we&#39;re dealing with.
-</span><span class="attribute">#[derive(Debug, Clone, Copy, Eq, PartialEq)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>Property {
+</span><span class="attribute">#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">enum </span>Property {
     RequiredField,
     OptionalField,
     RequiredParam,
@@ -1601,8 +1601,8 @@
 }
 
 <span class="doccomment">/// Represents a Rust struct field (could be actual object field or a parameter).
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>StructField&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>StructField&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Name of this field (case unspecified).
     </span><span class="kw">pub </span>name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     <span class="doccomment">/// Type of this field.
@@ -2371,4 +2371,4 @@ impl&lt;&#39;de&gt; serde::Deserialize&lt;&#39;de&gt; for {name} {{
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

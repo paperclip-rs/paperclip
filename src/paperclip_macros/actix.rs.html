@@ -2033,7 +2033,7 @@
 
 <span class="kw">const </span>SCHEMA_MACRO_ATTR: <span class="kw-2">&amp;</span>str = <span class="string">&quot;openapi&quot;</span>;
 
-<span class="macro">lazy_static!</span> {
+<span class="macro">lazy_static! </span>{
     <span class="kw">static </span><span class="kw-2">ref </span>EMPTY_SCHEMA_HELP: String = <span class="macro">format!</span>(
         <span class="string">&quot;you can mark the struct with #[{}(empty)] to ignore this warning.&quot;</span>,
         SCHEMA_MACRO_ATTR
@@ -2161,8 +2161,8 @@
                     Default::default()
                 }
 
-                <span class="attribute">#[allow(unused_mut)]</span>
-                <span class="kw">fn </span>security_definitions() -&gt; std::collections::BTreeMap&lt;String, paperclip::v2::models::SecurityScheme&gt; {
+                <span class="attribute">#[allow(unused_mut)]
+                </span><span class="kw">fn </span>security_definitions() -&gt; std::collections::BTreeMap&lt;String, paperclip::v2::models::SecurityScheme&gt; {
                     Default::default()
                 }
 
@@ -2198,9 +2198,9 @@
     <span class="kw">let </span>modifiers = extract_fn_arguments_types(<span class="kw-2">&amp;</span>item_ast);
 
     <span class="kw">let </span>operation_modifier = <span class="kw">if </span>is_responder {
-        <span class="macro">quote!</span> { paperclip::actix::ResponderWrapper::&lt;actix_web::HttpResponse&gt; }
+        <span class="macro">quote! </span>{ paperclip::actix::ResponderWrapper::&lt;actix_web::HttpResponse&gt; }
     } <span class="kw">else </span>{
-        <span class="macro">quote!</span> { &lt;&lt;#wrapper <span class="kw">as </span>std::future::Future&gt;::Output&gt; }
+        <span class="macro">quote! </span>{ &lt;&lt;#wrapper <span class="kw">as </span>std::future::Future&gt;::Output&gt; }
     };
 
     <span class="macro">quote!</span>(
@@ -2225,8 +2225,8 @@
                 op
             }
 
-            <span class="attribute">#[allow(unused_mut)]</span>
-            <span class="kw">fn </span>security_definitions() -&gt; std::collections::BTreeMap&lt;String, paperclip::v2::models::SecurityScheme&gt; {
+            <span class="attribute">#[allow(unused_mut)]
+            </span><span class="kw">fn </span>security_definitions() -&gt; std::collections::BTreeMap&lt;String, paperclip::v2::models::SecurityScheme&gt; {
                 <span class="kw">use </span>paperclip::actix::OperationModifier;
                 <span class="kw">let </span><span class="kw-2">mut </span>map = Default::default();
                 #(
@@ -2524,13 +2524,13 @@
         <span class="kw">if </span>default_schema.is_none() {
             TokenStream2::new()
         } <span class="kw">else </span>{
-            <span class="macro">quote!</span> {
+            <span class="macro">quote! </span>{
                 #default_schema::update_definitions(map);
             }
         },
         |<span class="kw-2">mut </span>stream, (<span class="kw">_</span>, <span class="kw">_</span>, schema)| {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(schema) = schema {
-                <span class="kw">let </span>tokens = <span class="macro">quote!</span> {
+                <span class="kw">let </span>tokens = <span class="macro">quote! </span>{
                     #schema::update_definitions(map);
                 };
                 stream.extend(tokens);
@@ -2539,7 +2539,7 @@
         },
     );
 
-    <span class="kw">let </span>update_definitions = <span class="macro">quote!</span> {
+    <span class="kw">let </span>update_definitions = <span class="macro">quote! </span>{
         <span class="kw">fn </span>update_definitions(map: <span class="kw-2">&amp;mut </span>std::collections::BTreeMap&lt;String, paperclip::v2::models::DefaultSchemaRaw&gt;) {
             <span class="kw">use </span>paperclip::actix::OperationModifier;
             #error_definitions
@@ -2550,7 +2550,7 @@
     </span><span class="kw">let </span>error_map = error_codes.iter().fold(
         proc_macro2::TokenStream::new(),
         |<span class="kw-2">mut </span>stream, (code, description, <span class="kw">_</span>)| {
-            <span class="kw">let </span>token = <span class="macro">quote!</span> {
+            <span class="kw">let </span>token = <span class="macro">quote! </span>{
                 (#code, #description),
             };
             stream.extend(token);
@@ -2558,7 +2558,7 @@
         },
     );
 
-    <span class="kw">let </span>update_error_helper = <span class="macro">quote!</span> {
+    <span class="kw">let </span>update_error_helper = <span class="macro">quote! </span>{
         <span class="kw">fn </span>update_error_definitions(code: <span class="kw-2">&amp;</span>u16, description: <span class="kw-2">&amp;</span>str, schema: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;, op: <span class="kw-2">&amp;mut </span>paperclip::v2::models::DefaultOperationRaw) {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(schema) = <span class="kw-2">&amp;</span>schema {
                 op.responses.insert(code.to_string(), paperclip::v2::models::Either::Right(paperclip::v2::models::Response {
@@ -2584,15 +2584,15 @@
         |<span class="kw-2">mut </span>stream, (code, description, schema)| {
             <span class="kw">let </span>tokens = <span class="kw">if let </span><span class="prelude-val">Some</span>(schema) = schema {
                 <span class="kw">let </span>schema = schema.to_string();
-                <span class="macro">quote!</span> {
+                <span class="macro">quote! </span>{
                     update_error_definitions(<span class="kw-2">&amp;</span>#code, #description, <span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(#schema), op);
                 }
             } <span class="kw">else if let </span><span class="prelude-val">Some</span>(scheme) = <span class="kw-2">&amp;</span>default_schema {
-                <span class="macro">quote!</span> {
+                <span class="macro">quote! </span>{
                     update_error_definitions(<span class="kw-2">&amp;</span>#code, #description, <span class="kw-2">&amp;</span><span class="prelude-val">Some</span>(#scheme), op);
                 }
             } <span class="kw">else </span>{
-                <span class="macro">quote!</span> {
+                <span class="macro">quote! </span>{
                     update_error_definitions(<span class="kw-2">&amp;</span>#code, #description, <span class="kw-2">&amp;</span><span class="prelude-val">None</span>, op);
                 }
             };
@@ -2601,7 +2601,7 @@
         },
     );
 
-    <span class="kw">let </span>gen = <span class="macro">quote!</span> {
+    <span class="kw">let </span>gen = <span class="macro">quote! </span>{
         #item_ast
 
         <span class="kw">impl </span>#impl_generics paperclip::v2::schema::Apiv2Errors <span class="kw">for </span>#name #ty_generics #where_clause {
@@ -2682,14 +2682,14 @@
         .iter()
         .fold(TokenStream2::new(), |<span class="kw-2">mut </span>stream, code| {
             <span class="kw">let </span>status_code = <span class="kw-2">&amp;</span>code.to_string();
-            <span class="kw">let </span>tokens = <span class="macro">quote!</span> {
+            <span class="kw">let </span>tokens = <span class="macro">quote! </span>{
                 op.responses.remove(#status_code);
             };
             stream.extend(tokens);
             stream
         });
 
-    <span class="kw">let </span>gen = <span class="macro">quote!</span> {
+    <span class="kw">let </span>gen = <span class="macro">quote! </span>{
         #item_ast
 
         <span class="kw">impl </span>std::fmt::Display <span class="kw">for </span>#name {
@@ -2807,7 +2807,7 @@
     <span class="kw">let </span>(impl_generics, ty_generics, where_clause) = generics.split_for_impl();
 
     <span class="comment">// FIXME: Use attr path segments to find flattening, skipping, etc.
-    </span><span class="kw">let </span><span class="kw-2">mut </span>props_gen = <span class="macro">quote!</span> {};
+    </span><span class="kw">let </span><span class="kw-2">mut </span>props_gen = <span class="macro">quote! </span>{};
 
     <span class="kw">match </span><span class="kw-2">&amp;</span>item_ast.data {
         Data::Struct(<span class="kw-2">ref </span>s) =&gt; {
@@ -2840,21 +2840,21 @@
     <span class="kw">let </span>base_name = extract_rename(<span class="kw-2">&amp;</span>item_ast.attrs).unwrap_or_else(|| name.to_string());
     <span class="kw">let </span>type_params: Vec&lt;<span class="kw-2">&amp;</span>Ident&gt; = generics.type_params().map(|p| <span class="kw-2">&amp;</span>p.ident).collect();
     <span class="kw">let </span>schema_name = <span class="kw">if </span>type_params.is_empty() {
-        <span class="macro">quote!</span> { #base_name }
+        <span class="macro">quote! </span>{ #base_name }
     } <span class="kw">else </span>{
-        <span class="kw">let </span>type_names = <span class="macro">quote!</span> {
+        <span class="kw">let </span>type_names = <span class="macro">quote! </span>{
             <span class="macro">vec!</span>[#(#type_params::name()),<span class="kw-2">*</span>]
                 .iter()
                 .filter_map(|n| n.to_owned())
                 .collect::&lt;Vec&lt;String&gt;&gt;()
                 .join(<span class="string">&quot;, &quot;</span>)
         };
-        <span class="macro">quote!</span> { <span class="macro">format!</span>(<span class="string">&quot;{}&lt;{}&gt;&quot;</span>, #base_name, #type_names) }
+        <span class="macro">quote! </span>{ <span class="macro">format!</span>(<span class="string">&quot;{}&lt;{}&gt;&quot;</span>, #base_name, #type_names) }
     };
     <span class="kw">let </span>props_gen_empty = props_gen.is_empty();
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]</span>
-    <span class="kw">let </span>default_schema_raw_def = <span class="macro">quote!</span> {
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    </span><span class="kw">let </span>default_schema_raw_def = <span class="macro">quote! </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>schema = DefaultSchemaRaw {
             name: <span class="prelude-val">Some</span>(#schema_name.into()),
             example: #example,
@@ -2862,8 +2862,8 @@
         };
     };
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]</span>
-    <span class="kw">let </span>default_schema_raw_def = <span class="macro">quote!</span> {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    </span><span class="kw">let </span>default_schema_raw_def = <span class="macro">quote! </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>schema = DefaultSchemaRaw {
             name: <span class="prelude-val">Some</span>(<span class="self">Self</span>::__paperclip_schema_name()), <span class="comment">// Add name for later use.
             </span>example: #example,
@@ -2871,11 +2871,11 @@
         };
     };
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]</span>
-    <span class="kw">let </span>paperclip_schema_name_def = <span class="macro">quote!</span>();
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    </span><span class="kw">let </span>paperclip_schema_name_def = <span class="macro">quote!</span>();
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]</span>
-    <span class="kw">let </span>paperclip_schema_name_def = <span class="macro">quote!</span> {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    </span><span class="kw">let </span>paperclip_schema_name_def = <span class="macro">quote! </span>{
         <span class="kw">fn </span>__paperclip_schema_name() -&gt; String {
             <span class="comment">// The module path itself, e.g cratename::module
             </span><span class="kw">let </span>full_module_path = <span class="macro">std::module_path!</span>().to_string();
@@ -2890,27 +2890,27 @@
         }
     };
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]</span>
-    <span class="kw">let </span>const_name_def = <span class="macro">quote!</span> {
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    </span><span class="kw">let </span>const_name_def = <span class="macro">quote! </span>{
         <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
             <span class="prelude-val">Some</span>(#schema_name.to_string())
         }
     };
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]</span>
-    <span class="kw">let </span>const_name_def = <span class="macro">quote!</span>();
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    </span><span class="kw">let </span>const_name_def = <span class="macro">quote!</span>();
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]</span>
-    <span class="kw">let </span>props_gen_empty_name_def = <span class="macro">quote!</span> {
+    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    </span><span class="kw">let </span>props_gen_empty_name_def = <span class="macro">quote! </span>{
         schema.name = <span class="prelude-val">Some</span>(#schema_name.into());
     };
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]</span>
-    <span class="kw">let </span>props_gen_empty_name_def = <span class="macro">quote!</span> {
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    </span><span class="kw">let </span>props_gen_empty_name_def = <span class="macro">quote! </span>{
         schema.name = <span class="prelude-val">Some</span>(<span class="self">Self</span>::__paperclip_schema_name());
     };
 
-    <span class="kw">let </span>gen = <span class="macro">quote!</span> {
+    <span class="kw">let </span>gen = <span class="macro">quote! </span>{
         <span class="kw">impl </span>#impl_generics #name #ty_generics #where_clause {
             #paperclip_schema_name_def
         }
@@ -3065,7 +3065,7 @@
     <span class="kw">let </span>scopes_stream = scopes
         .iter()
         .fold(proc_macro2::TokenStream::new(), |<span class="kw-2">mut </span>stream, scope| {
-            stream.extend(<span class="macro">quote!</span> {
+            stream.extend(<span class="macro">quote! </span>{
                 oauth2_scopes.insert(#scope.to_string(), #scope.to_string());
             });
             stream
@@ -3085,7 +3085,7 @@
             <span class="kw">let </span>quoted_token_url = quote_option(security_attrs.get(<span class="string">&quot;token_url&quot;</span>));
 
             (
-                <span class="prelude-val">Some</span>(<span class="macro">quote!</span> {
+                <span class="prelude-val">Some</span>(<span class="macro">quote! </span>{
                     <span class="prelude-val">Some</span>(paperclip::v2::models::SecurityScheme {
                         type_: #type_.to_string(),
                         name: #quoted_name,
@@ -3104,7 +3104,7 @@
             <span class="kw">let </span>parent_ident = Ident::new(parent, proc_macro2::Span::call_site());
             <span class="comment">// Child of security definition (Scopes will be glued to parent definition).
             </span>(
-                <span class="prelude-val">Some</span>(<span class="macro">quote!</span> {
+                <span class="prelude-val">Some</span>(<span class="macro">quote! </span>{
                     <span class="kw">let </span><span class="kw-2">mut </span>oauth2_scopes = std::collections::BTreeMap::new();
                     #scopes_stream
                     <span class="kw">let </span><span class="kw-2">mut </span>scheme = #parent_ident::security_scheme()
@@ -3132,7 +3132,7 @@
     };
 
     <span class="kw">let </span>gen = <span class="kw">if let </span>(<span class="prelude-val">Some</span>(def_block), <span class="prelude-val">Some</span>(def_name)) = (security_def, security_def_name) {
-        <span class="macro">quote!</span> {
+        <span class="macro">quote! </span>{
             <span class="kw">impl </span>#impl_generics paperclip::v2::schema::Apiv2Schema <span class="kw">for </span>#name #ty_generics #where_clause {
                 <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
                     #def_name
@@ -3146,7 +3146,7 @@
             #opt_impl
         }
     } <span class="kw">else </span>{
-        <span class="macro">quote!</span> {}
+        <span class="macro">quote! </span>{}
     };
 
     gen.into()
@@ -3185,29 +3185,29 @@
 
     <span class="kw">fn </span>quote_format(format: <span class="kw-2">&amp;</span>str) -&gt; proc_macro2::TokenStream {
         <span class="kw">match </span>format {
-            <span class="string">&quot;int32&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Int32) },
-            <span class="string">&quot;int64&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Int64) },
-            <span class="string">&quot;float&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Float) },
-            <span class="string">&quot;double&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Double) },
-            <span class="string">&quot;byte&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Byte) },
-            <span class="string">&quot;binary&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Binary) },
-            <span class="string">&quot;date&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Date) },
+            <span class="string">&quot;int32&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Int32) },
+            <span class="string">&quot;int64&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Int64) },
+            <span class="string">&quot;float&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Float) },
+            <span class="string">&quot;double&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Double) },
+            <span class="string">&quot;byte&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Byte) },
+            <span class="string">&quot;binary&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Binary) },
+            <span class="string">&quot;date&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Date) },
             <span class="string">&quot;datetime&quot; </span>| <span class="string">&quot;date-time&quot; </span>=&gt; {
-                <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::DateTime) }
+                <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::DateTime) }
             }
-            <span class="string">&quot;password&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Password) },
-            <span class="string">&quot;url&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Url) },
-            <span class="string">&quot;uuid&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Uuid) },
-            <span class="string">&quot;ip&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Ip) },
-            <span class="string">&quot;ipv4&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::IpV4) },
-            <span class="string">&quot;ipv6&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::IpV6) },
-            <span class="string">&quot;other&quot; </span>=&gt; <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Other) },
+            <span class="string">&quot;password&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Password) },
+            <span class="string">&quot;url&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Url) },
+            <span class="string">&quot;uuid&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Uuid) },
+            <span class="string">&quot;ip&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Ip) },
+            <span class="string">&quot;ipv4&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::IpV4) },
+            <span class="string">&quot;ipv6&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::IpV6) },
+            <span class="string">&quot;other&quot; </span>=&gt; <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(paperclip::v2::models::DataTypeFormat::Other) },
             v =&gt; {
                 <span class="macro">emit_error!</span>(
                     format.span().unwrap(),
                     <span class="macro">format!</span>(<span class="string">&quot;Invalid format attribute value. Got {}&quot;</span>, v)
                 );
-                <span class="macro">quote!</span> { <span class="prelude-val">None </span>}
+                <span class="macro">quote! </span>{ <span class="prelude-val">None </span>}
             }
         }
     }
@@ -3312,28 +3312,28 @@
 
         <span class="kw">let </span>(quoted_type, quoted_format) = <span class="kw">if let </span><span class="prelude-val">Some</span>(ty_ref) = get_field_type(field) {
             (
-                <span class="macro">quote!</span> { {
+                <span class="macro">quote! </span>{ {
                     <span class="kw">use </span>paperclip::v2::schema::TypedData;
                     <span class="prelude-val">Some</span>(#ty_ref::data_type())
                 } },
-                <span class="macro">quote!</span> { {
+                <span class="macro">quote! </span>{ {
                     <span class="kw">use </span>paperclip::v2::schema::TypedData;
                     #ty_ref::format()
                 } },
             )
         } <span class="kw">else </span>{
-            (<span class="macro">quote!</span> { <span class="prelude-val">None </span>}, <span class="macro">quote!</span> { <span class="prelude-val">None </span>})
+            (<span class="macro">quote! </span>{ <span class="prelude-val">None </span>}, <span class="macro">quote! </span>{ <span class="prelude-val">None </span>})
         };
 
         <span class="kw">let </span>(quoted_type, quoted_format) = <span class="kw">if let </span><span class="prelude-val">Some</span>(format) = parameter_attrs.get(<span class="string">&quot;format&quot;</span>) {
             <span class="kw">let </span>quoted_format = quote_format(format);
-            <span class="kw">let </span>quoted_type = <span class="macro">quote!</span> { #quoted_format.map(|format| format.into()) };
+            <span class="kw">let </span>quoted_type = <span class="macro">quote! </span>{ #quoted_format.map(|format| format.into()) };
             (quoted_type, quoted_format)
         } <span class="kw">else </span>{
             (quoted_type, quoted_format)
         };
 
-        <span class="kw">let </span>def_block = <span class="macro">quote!</span> {
+        <span class="kw">let </span>def_block = <span class="macro">quote! </span>{
             paperclip::v2::models::Parameter::&lt;paperclip::v2::models::DefaultSchemaRaw&gt; {
                 name: #quoted_name.to_owned(),
                 in_: paperclip::v2::models::ParameterIn::Header,
@@ -3348,7 +3348,7 @@
         header_definitions.push(def_block);
     }
 
-    <span class="kw">let </span>gen = <span class="macro">quote!</span> {
+    <span class="kw">let </span>gen = <span class="macro">quote! </span>{
         <span class="kw">impl </span>#impl_generics paperclip::v2::schema::Apiv2Schema <span class="kw">for </span>#name #ty_generics #where_clause {
             <span class="kw">fn </span>header_parameter_schema() -&gt; Vec&lt;paperclip::v2::models::Parameter&lt;paperclip::v2::models::DefaultSchemaRaw&gt;&gt; {
                 <span class="macro">vec!</span>[
@@ -3365,22 +3365,22 @@
 
 <span class="kw">fn </span>quote_option(value: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt;) -&gt; proc_macro2::TokenStream {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = value {
-        <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(#value.to_string()) }
+        <span class="macro">quote! </span>{ <span class="prelude-val">Some</span>(#value.to_string()) }
     } <span class="kw">else </span>{
-        <span class="macro">quote!</span> { <span class="prelude-val">None </span>}
+        <span class="macro">quote! </span>{ <span class="prelude-val">None </span>}
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">fn </span>add_optional_impl(<span class="kw">_</span>: <span class="kw-2">&amp;</span>Ident, <span class="kw">_</span>: <span class="kw-2">&amp;</span>Generics) -&gt; proc_macro2::TokenStream {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="kw">fn </span>add_optional_impl(<span class="kw">_</span>: <span class="kw-2">&amp;</span>Ident, <span class="kw">_</span>: <span class="kw-2">&amp;</span>Generics) -&gt; proc_macro2::TokenStream {
     <span class="comment">// Empty impl for &quot;nightly&quot; feature because specialization helps us there.
     </span><span class="macro">quote!</span>()
 }
 
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]</span>
-<span class="kw">fn </span>add_optional_impl(name: <span class="kw-2">&amp;</span>Ident, generics: <span class="kw-2">&amp;</span>Generics) -&gt; proc_macro2::TokenStream {
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+</span><span class="kw">fn </span>add_optional_impl(name: <span class="kw-2">&amp;</span>Ident, generics: <span class="kw-2">&amp;</span>Generics) -&gt; proc_macro2::TokenStream {
     <span class="kw">let </span>(impl_generics, ty_generics, where_clause) = generics.split_for_impl();
-    <span class="macro">quote!</span> {
+    <span class="macro">quote! </span>{
         <span class="kw">impl </span>#impl_generics paperclip::actix::OperationModifier <span class="kw">for </span>#name #ty_generics #where_clause {}
     }
 }
@@ -3680,24 +3680,24 @@
 <span class="comment">/* Serde attributes */
 
 </span><span class="doccomment">/// Supported renaming options in serde (https://serde.rs/variant-attrs.html).
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString)]</span>
-<span class="kw">enum </span>SerdeRename {
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;lowercase&quot;</span>)]</span>
-    Lower,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;UPPERCASE&quot;</span>)]</span>
-    Upper,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;PascalCase&quot;</span>)]</span>
-    Pascal,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;camelCase&quot;</span>)]</span>
-    Camel,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;snake_case&quot;</span>)]</span>
-    Snake,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;SCREAMING_SNAKE_CASE&quot;</span>)]</span>
-    ScreamingSnake,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;kebab-case&quot;</span>)]</span>
-    Kebab,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;SCREAMING-KEBAB-CASE&quot;</span>)]</span>
-    ScreamingKebab,
+</span><span class="attribute">#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString)]
+</span><span class="kw">enum </span>SerdeRename {
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;lowercase&quot;</span>)]
+    </span>Lower,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;UPPERCASE&quot;</span>)]
+    </span>Upper,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;PascalCase&quot;</span>)]
+    </span>Pascal,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;camelCase&quot;</span>)]
+    </span>Camel,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;snake_case&quot;</span>)]
+    </span>Snake,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;SCREAMING_SNAKE_CASE&quot;</span>)]
+    </span>ScreamingSnake,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;kebab-case&quot;</span>)]
+    </span>Kebab,
+    <span class="attribute">#[strum(serialize = <span class="string">&quot;SCREAMING-KEBAB-CASE&quot;</span>)]
+    </span>ScreamingKebab,
 }
 
 <span class="kw">impl </span>SerdeRename {
@@ -3792,8 +3792,8 @@
     </span>}
 }
 
-<span class="attribute">#[derive(Clone, Debug, Default)]</span>
-<span class="kw">struct </span>SerdeProps {
+<span class="attribute">#[derive(Clone, Debug, Default)]
+</span><span class="kw">struct </span>SerdeProps {
     rename: <span class="prelude-ty">Option</span>&lt;SerdeRename&gt;,
 }
 
@@ -3873,15 +3873,15 @@
     </span>}
 }
 
-<span class="macro">macro_rules!</span> doc_comment {
+<span class="macro">macro_rules! </span>doc_comment {
     (<span class="macro-nonterminal">$x</span>:expr; $(<span class="macro-nonterminal">$tt</span>:tt)<span class="kw-2">*</span>) =&gt; {
-        <span class="attribute">#[doc = <span class="macro-nonterminal">$x</span>]</span>
-        $(<span class="macro-nonterminal">$tt</span>)*
+        <span class="attribute">#[doc = <span class="macro-nonterminal">$x</span>]
+        </span>$(<span class="macro-nonterminal">$tt</span>)*
     };
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-<span class="kw">impl </span><span class="kw">super</span>::Method {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+</span><span class="kw">impl </span><span class="kw">super</span>::Method {
     <span class="kw">fn </span>handler_uri(attr: TokenStream) -&gt; TokenStream {
         <span class="kw">let </span>attr = <span class="macro">parse_macro_input!</span>(attr <span class="kw">as </span>syn::AttributeArgs);
         attr.first().into_token_stream().into()
@@ -3910,9 +3910,9 @@
             uri
         };
 
-        <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> {
-            <span class="attribute">#[allow(non_camel_case_types, missing_docs)]</span>
-            <span class="kw">pub struct </span>#handler_name;
+        <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
+            <span class="attribute">#[allow(non_camel_case_types, missing_docs)]
+            </span><span class="kw">pub struct </span>#handler_name;
 
             <span class="kw">impl </span>#handler_name {
                 <span class="kw">fn </span>resource() -&gt; paperclip::actix::web::Resource {
@@ -3964,13 +3964,13 @@
     }
 }
 
-<span class="macro">macro_rules!</span> rest_methods {
+<span class="macro">macro_rules! </span>rest_methods {
     (
         $(<span class="macro-nonterminal">$variant</span>:ident, <span class="macro-nonterminal">$method</span>:ident, )+
     ) =&gt; {
         <span class="doccomment">/// All available Rest methods
-        </span><span class="attribute">#[derive(Debug, PartialEq, Eq, Hash)]</span>
-        <span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Method {
+        </span><span class="attribute">#[derive(Debug, PartialEq, Eq, Hash)]
+        </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Method {
             $(
                 <span class="macro-nonterminal">$variant</span>,
             )+
@@ -3989,7 +3989,7 @@
             }
         }
 
-        $(<span class="macro">doc_comment!</span> {
+        $(<span class="macro">doc_comment! </span>{
             <span class="macro">concat!</span>(<span class="string">&quot;
 Creates route handler with `paperclip::actix::web::Resource&quot;</span>, <span class="string">&quot;`.
 In order to control the output type and status codes the return value/response must implement the
@@ -4011,9 +4011,9 @@ trait actix_web::Responder.
 /// async fn example() {
 /// }
 &quot;#</span>);
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]</span>
-            <span class="attribute">#[proc_macro_attribute]</span>
-            <span class="kw">pub fn </span><span class="macro-nonterminal">$method</span>(attr: TokenStream, item: TokenStream) -&gt; TokenStream {
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+            #[proc_macro_attribute]
+            </span><span class="kw">pub fn </span><span class="macro-nonterminal">$method</span>(attr: TokenStream, item: TokenStream) -&gt; TokenStream {
                 <span class="kw">match </span>Method::<span class="macro-nonterminal">$variant</span>.generate(attr, item) {
                     <span class="prelude-val">Ok</span>(v) =&gt; v.into(),
                     <span class="prelude-val">Err</span>(e) =&gt; e.to_compile_error().into(),
@@ -4023,4 +4023,4 @@ trait actix_web::Responder.
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

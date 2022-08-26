@@ -464,23 +464,22 @@
 <span id="464">464</span>
 <span id="465">465</span>
 <span id="466">466</span>
-<span id="467">467</span>
-</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::return_self_not_must_use)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::return_self_not_must_use)]
 
-<span class="kw">extern crate </span>actix_service2 <span class="kw">as </span>actix_service;
+</span><span class="kw">extern crate </span>actix_service2 <span class="kw">as </span>actix_service;
 <span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
-<span class="kw">use </span><span class="kw">super</span>::RAPIDOC;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]</span>
-<span class="kw">use </span><span class="kw">super</span>::SWAGGER_DIST;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">super</span>::RAPIDOC;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">super</span>::SWAGGER_DIST;
 <span class="kw">use super</span>::{
     web::{Route, RouteWrapper, ServiceConfig},
     Mountable,
 };
 <span class="kw">use </span>actix_service::ServiceFactory;
-<span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>))]</span>
-<span class="kw">use </span>actix_web::HttpRequest;
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>))]
+</span><span class="kw">use </span>actix_web::HttpRequest;
 <span class="kw">use </span>actix_web::{
     body::MessageBody,
     dev::{HttpServiceFactory, ServiceRequest, ServiceResponse, Transform},
@@ -489,18 +488,18 @@
 <span class="kw">use </span>futures::future::{ok <span class="kw">as </span>fut_ok, Ready};
 <span class="kw">use </span>paperclip_core::v2::models::{DefaultApiRaw, SecurityScheme};
 <span class="kw">use </span>parking_lot::RwLock;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
-<span class="kw">use </span>tinytemplate::TinyTemplate;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]
+</span><span class="kw">use </span>tinytemplate::TinyTemplate;
 
 <span class="kw">use </span>std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 <span class="doccomment">/// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 </span><span class="kw">pub struct </span>App&lt;T&gt; {
     spec: Arc&lt;RwLock&lt;DefaultApiRaw&gt;&gt;,
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-    spec_v3: <span class="prelude-ty">Option</span>&lt;Arc&lt;RwLock&lt;openapiv3::OpenAPI&gt;&gt;&gt;,
-    <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-    spec_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+    </span>spec_v3: <span class="prelude-ty">Option</span>&lt;Arc&lt;RwLock&lt;openapiv3::OpenAPI&gt;&gt;&gt;,
+    <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+    </span>spec_path: <span class="prelude-ty">Option</span>&lt;String&gt;,
     inner: <span class="prelude-ty">Option</span>&lt;actix_web::App&lt;T&gt;&gt;,
 }
 
@@ -524,10 +523,10 @@
     <span class="kw">fn </span>wrap_api(<span class="self">self</span>) -&gt; <span class="self">Self</span>::Wrapper {
         App {
             spec: Arc::new(RwLock::new(DefaultApiRaw::default())),
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-            spec_v3: <span class="prelude-val">None</span>,
-            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            spec_path: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+            </span>spec_v3: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+            </span>spec_path: <span class="prelude-val">None</span>,
             inner: <span class="prelude-val">Some</span>(<span class="self">self</span>),
         }
     }
@@ -535,10 +534,10 @@
     <span class="kw">fn </span>wrap_api_with_spec(<span class="self">self</span>, spec: DefaultApiRaw) -&gt; <span class="self">Self</span>::Wrapper {
         App {
             spec: Arc::new(RwLock::new(spec)),
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-            spec_v3: <span class="prelude-val">None</span>,
-            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            spec_path: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+            </span>spec_v3: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+            </span>spec_path: <span class="prelude-val">None</span>,
             inner: <span class="prelude-val">Some</span>(<span class="self">self</span>),
         }
     }
@@ -661,10 +660,10 @@
     {
         App {
             spec: <span class="self">self</span>.spec,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-            spec_v3: <span class="self">self</span>.spec_v3,
-            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            spec_path: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+            </span>spec_v3: <span class="self">self</span>.spec_v3,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+            </span>spec_path: <span class="prelude-val">None</span>,
             inner: <span class="self">self</span>.inner.take().map(|a| a.wrap(mw)),
         }
     }
@@ -691,10 +690,10 @@
     {
         App {
             spec: <span class="self">self</span>.spec,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-            spec_v3: <span class="self">self</span>.spec_v3,
-            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-            spec_path: <span class="prelude-val">None</span>,
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+            </span>spec_v3: <span class="self">self</span>.spec_v3,
+            <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+            </span>spec_path: <span class="prelude-val">None</span>,
             inner: <span class="self">self</span>.inner.take().map(|a| a.wrap_fn(mw)),
         }
     }
@@ -703,8 +702,8 @@
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     </span><span class="kw">pub fn </span>with_json_spec_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
-        <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-        {
+        <span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+        </span>{
             <span class="self">self</span>.spec_path = <span class="prelude-val">Some</span>(path.to_owned());
         }
 
@@ -717,8 +716,8 @@
         <span class="self">self
     </span>}
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-    <span class="doccomment">/// Converts the generated v2 specification to v3 and then
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+    </span><span class="doccomment">/// Converts the generated v2 specification to v3 and then
     /// mounts the v3 specification for all operations and definitions
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
@@ -753,8 +752,8 @@
         call(<span class="self">self</span>, spec)
     }
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-    <span class="doccomment">/// Calls the given function with `App` and JSON `Value` representing your API
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+    </span><span class="doccomment">/// Calls the given function with `App` and JSON `Value` representing your API
     /// v2 specification **built until now** which is converted to v3.
     ///
     /// **NOTE:** Unlike `with_json_spec_at`, this only has the API spec built until
@@ -772,8 +771,8 @@
     <span class="doccomment">/// Exposes the previously built JSON specification with Swagger UI at the given path
     ///
     /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
-    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]</span>
-    <span class="kw">pub fn </span>with_swagger_ui_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]
+    </span><span class="kw">pub fn </span>with_swagger_ui_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>spec_path = <span class="self">self</span>.spec_path.clone().expect(
             <span class="string">&quot;Specification not set, be sure to call `with_json_spec_at` before this function&quot;</span>,
         );
@@ -817,8 +816,8 @@
     <span class="doccomment">/// Exposes the previously built JSON specification with RapiDoc at the given path
     ///
     /// **NOTE:** you **MUST** call with_json_spec_at before calling this function
-    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
-    <span class="kw">pub fn </span>with_rapidoc_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]
+    </span><span class="kw">pub fn </span>with_rapidoc_at(<span class="kw-2">mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>spec_path = <span class="self">self</span>.spec_path.clone().expect(
             <span class="string">&quot;Specification not set, be sure to call `with_json_spec_at` before this function&quot;</span>,
         );
@@ -837,7 +836,6 @@
         ) -&gt; <span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt; {
             <span class="kw">let </span>data = data.into_inner();
             <span class="kw">let </span>(tmpl, spec_path) = data.as_ref();
-            <span class="kw">let </span>spec_path = <span class="macro">format!</span>(<span class="string">&quot;/{}&quot;</span>, spec_path);
             <span class="kw">let </span>ctx = <span class="macro">serde_json::json!</span>({ <span class="string">&quot;spec_url&quot;</span>: spec_path });
             <span class="kw">let </span>s = tmpl.render(<span class="string">&quot;index.html&quot;</span>, <span class="kw-2">&amp;</span>ctx).map_err(|<span class="kw">_</span>| {
                 actix_web::error::ErrorInternalServerError(<span class="string">&quot;Error rendering RapiDoc documentation&quot;</span>)
@@ -860,8 +858,8 @@
 
     <span class="doccomment">/// Builds and returns the `actix_web::App`.
     </span><span class="kw">pub fn </span>build(<span class="self">self</span>) -&gt; actix_web::App&lt;T&gt; {
-        <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(v3) = <span class="self">self</span>.spec_v3 {
+        <span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+        </span><span class="kw">if let </span><span class="prelude-val">Some</span>(v3) = <span class="self">self</span>.spec_v3 {
             <span class="kw">let </span><span class="kw-2">mut </span>v3 = v3.write();
             <span class="kw-2">*</span>v3 = paperclip_core::v3::openapiv2_to_v3(<span class="self">self</span>.spec.read().clone());
         }
@@ -907,8 +905,8 @@
     }
 }
 
-<span class="attribute">#[derive(Clone)]</span>
-<span class="kw">struct </span>SpecHandler(Arc&lt;RwLock&lt;DefaultApiRaw&gt;&gt;);
+<span class="attribute">#[derive(Clone)]
+</span><span class="kw">struct </span>SpecHandler(Arc&lt;RwLock&lt;DefaultApiRaw&gt;&gt;);
 
 <span class="kw">impl </span>actix_web::dev::Handler&lt;()&gt; <span class="kw">for </span>SpecHandler {
     <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;;
@@ -919,12 +917,12 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-<span class="attribute">#[derive(Clone)]</span>
-<span class="kw">struct </span>SpecHandlerV3(Arc&lt;RwLock&lt;openapiv3::OpenAPI&gt;&gt;);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+#[derive(Clone)]
+</span><span class="kw">struct </span>SpecHandlerV3(Arc&lt;RwLock&lt;openapiv3::OpenAPI&gt;&gt;);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]</span>
-<span class="kw">impl </span>actix_web::dev::Handler&lt;()&gt; <span class="kw">for </span>SpecHandlerV3 {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;v3&quot;</span>)]
+</span><span class="kw">impl </span>actix_web::dev::Handler&lt;()&gt; <span class="kw">for </span>SpecHandlerV3 {
     <span class="kw">type </span>Output = <span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;;
     <span class="kw">type </span>Future = Ready&lt;<span class="self">Self</span>::Output&gt;;
 
@@ -933,4 +931,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

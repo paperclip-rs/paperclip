@@ -70,21 +70,21 @@
 </pre><pre class="rust"><code><span class="doccomment">//! Core types and traits associated with the
 //! [OpenAPI v2 specification](https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md).
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">mod </span>actix;
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
+</span><span class="kw">mod </span>actix;
 <span class="kw">mod </span>extensions;
 <span class="kw">pub mod </span>models;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">mod </span>resolver;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="kw">mod </span>resolver;
 <span class="kw">pub mod </span>schema;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">pub use </span><span class="self">self</span>::actix::{
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
+</span><span class="kw">pub use </span><span class="self">self</span>::actix::{
     AcceptedJson, CreatedJson, NoContent, OperationModifier, ResponderWrapper, ResponseWrapper,
 };
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">pub use </span><span class="self">self</span>::actix::HttpResponseWrapper;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+</span><span class="kw">pub use </span><span class="self">self</span>::actix::HttpResponseWrapper;
 
 <span class="kw">pub use </span><span class="self">self</span>::{
     models::{DefaultSchema, ResolvableApi},
@@ -92,13 +92,13 @@
 };
 <span class="kw">pub use </span>paperclip_macros::<span class="kw-2">*</span>;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">use </span><span class="self">self</span>::resolver::Resolver;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">use </span><span class="kw">crate</span>::error::ValidationError;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="kw">use </span><span class="self">self</span>::resolver::Resolver;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="kw">use </span><span class="kw">crate</span>::error::ValidationError;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;S: Schema + Default&gt; ResolvableApi&lt;S&gt; {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="kw">impl</span>&lt;S: Schema + Default&gt; ResolvableApi&lt;S&gt; {
     <span class="doccomment">/// Consumes this API schema, resolves the references and returns
     /// the resolved schema.
     ///
@@ -137,4 +137,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

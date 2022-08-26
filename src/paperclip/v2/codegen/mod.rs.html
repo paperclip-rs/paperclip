@@ -85,8 +85,8 @@
 <span id="85">85</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Code generation for OpenAPI v2.
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">mod </span>author;
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="kw">mod </span>author;
 <span class="kw">mod </span>emitter;
 <span class="kw">mod </span>impls;
 <span class="kw">pub mod </span>object;
@@ -138,9 +138,9 @@
 }
 
 <span class="doccomment">/// Metadata for generating a crate.
-</span><span class="attribute">#[derive(Debug, Default, Clone)]</span>
-<span class="attribute">#[non_exhaustive]</span>
-<span class="kw">pub struct </span>CrateMeta {
+</span><span class="attribute">#[derive(Debug, Default, Clone)]
+#[non_exhaustive]
+</span><span class="kw">pub struct </span>CrateMeta {
     <span class="doccomment">/// Name of the crate. If this is not specified, then the name of the
     /// working directory is assumed to be crate name.
     </span><span class="kw">pub </span>name: <span class="prelude-ty">Option</span>&lt;String&gt;,
@@ -155,8 +155,8 @@
 }
 
 <span class="doccomment">/// Mode of codegen (module, crate or CLI app).
-</span><span class="attribute">#[derive(Debug, Clone, Copy, Eq, PartialEq)]</span>
-<span class="kw">pub enum </span>EmitMode {
+</span><span class="attribute">#[derive(Debug, Clone, Copy, Eq, PartialEq)]
+</span><span class="kw">pub enum </span>EmitMode {
     Module,
     Crate,
     App,
@@ -169,4 +169,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

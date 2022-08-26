@@ -304,11 +304,11 @@
 });
 
 <span class="doccomment">/// Wrapper for `mime::MediaRange` to support `BTree{Set, Map}`.
-</span><span class="attribute">#[derive(Debug, Clone)]</span>
-<span class="kw">pub struct </span>MediaRange(<span class="kw">pub </span>mime::Mime);
+</span><span class="attribute">#[derive(Debug, Clone)]
+</span><span class="kw">pub struct </span>MediaRange(<span class="kw">pub </span>mime::Mime);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">impl </span>MediaRange {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="kw">impl </span>MediaRange {
     <span class="doccomment">/// Implementation from https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L155
     </span><span class="kw">fn </span>matches_params(<span class="kw-2">&amp;</span><span class="self">self</span>, r: <span class="kw-2">&amp;</span><span class="self">Self</span>) -&gt; bool {
         <span class="kw">for </span>(name, value) <span class="kw">in </span><span class="self">self</span>.<span class="number">0</span>.params() {
@@ -322,11 +322,11 @@
 }
 
 <span class="doccomment">/// `x-rust-coders` global extension for custom encoders and decoders.
-</span><span class="attribute">#[derive(Debug, Default, Clone)]</span>
-<span class="kw">pub struct </span>Coders(BTreeMap&lt;MediaRange, Arc&lt;Coder&gt;&gt;);
+</span><span class="attribute">#[derive(Debug, Default, Clone)]
+</span><span class="kw">pub struct </span>Coders(BTreeMap&lt;MediaRange, Arc&lt;Coder&gt;&gt;);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span>
-<span class="kw">impl </span>Coders {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+</span><span class="kw">impl </span>Coders {
     <span class="doccomment">/// Returns the matching coder for the given media range (if any).
     ///
     /// Matching algorithm from &lt;https://github.com/hyperium/mime/blob/65ea9c3d0cad4cb548b41124050c545120134035/src/range.rs#L126&gt;
@@ -363,8 +363,8 @@
 }
 
 <span class="doccomment">/// Represents the en/decoder for some MIME media range.
-</span><span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize)]</span>
-<span class="kw">pub struct </span>Coder {
+</span><span class="attribute">#[derive(Debug, Default, Clone, Serialize, Deserialize)]
+</span><span class="kw">pub struct </span>Coder {
     <span class="doccomment">/// Path to the encoding function.
     </span><span class="kw">pub </span>encoder_path: String,
     <span class="doccomment">/// Path to the decoding function.
@@ -376,11 +376,11 @@
     <span class="doccomment">/// Whether this media type should be preferred when multiple
     /// types are available. When multiple types are preferred,
     /// it&#39;s unspecified as to which is chosen.
-    </span><span class="attribute">#[serde(default)]</span>
-    <span class="kw">pub </span>prefer: bool,
+    </span><span class="attribute">#[serde(default)]
+    </span><span class="kw">pub </span>prefer: bool,
     <span class="doccomment">/// Whether this en/decoder is built-in.
-    </span><span class="attribute">#[serde(skip)]</span>
-    <span class="kw">pub </span>builtin: bool,
+    </span><span class="attribute">#[serde(skip)]
+    </span><span class="kw">pub </span>builtin: bool,
 }
 
 <span class="comment">/* Common trait impls */
@@ -527,4 +527,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

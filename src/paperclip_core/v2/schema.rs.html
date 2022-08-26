@@ -678,7 +678,7 @@
     </span>}
 }
 
-<span class="macro">macro_rules!</span> impl_type_simple {
+<span class="macro">macro_rules! </span>impl_type_simple {
     (<span class="macro-nonterminal">$ty</span>:ty) =&gt; {
         <span class="kw">impl </span>TypedData <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
     };
@@ -735,45 +735,45 @@
 <span class="macro">impl_type_simple!</span>(u128, DataType::Integer, DataTypeFormat::Int64);
 <span class="macro">impl_type_simple!</span>(usize, DataType::Integer, DataTypeFormat::Int64);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(
     actix_multipart::Multipart,
     DataType::File,
     DataTypeFormat::Binary
 );
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-session&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(actix_session::Session);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-files&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-session&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(actix_session::Session);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-files&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(
     actix_files::NamedFile,
     DataType::File,
     DataTypeFormat::Binary
 );
-<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(
+<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(
     chrono::NaiveDateTime,
     DataType::String,
     DataTypeFormat::DateTime
 );
-<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(chrono::NaiveTime, DataType::String);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;rust_decimal&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(
+<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(chrono::NaiveTime, DataType::String);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rust_decimal&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(
     rust_decimal::Decimal,
     DataType::Number,
     DataTypeFormat::Float
 );
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(url::Url, DataType::String, DataTypeFormat::Url);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(url::Url, DataType::String, DataTypeFormat::Url);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;uuid&quot;</span>)]</span>
-<span class="macro">impl_type_simple!</span>(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;uuid&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::DateTime&lt;T&gt; {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+</span><span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::DateTime&lt;T&gt; {
     <span class="kw">fn </span>data_type() -&gt; DataType {
         DataType::String
     }
@@ -782,8 +782,8 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::Date&lt;T&gt; {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+</span><span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::Date&lt;T&gt; {
     <span class="kw">fn </span>data_type() -&gt; DataType {
         DataType::String
     }
@@ -881,8 +881,8 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt; {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt; {
     default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">None
     </span>}
@@ -926,8 +926,8 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]</span>
-<span class="kw">impl</span>&lt;T, E&gt; Apiv2Schema <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, E&gt; {
+<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="kw">impl</span>&lt;T, E&gt; Apiv2Schema <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, E&gt; {
     default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">None
     </span>}
@@ -987,7 +987,7 @@
     }
 }
 
-<span class="macro">macro_rules!</span> impl_schema_array {
+<span class="macro">macro_rules! </span>impl_schema_array {
     (<span class="macro-nonterminal">$ty</span>:ty) =&gt; {
         <span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
             <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
@@ -1001,7 +1001,7 @@
     };
 }
 
-<span class="macro">macro_rules!</span> impl_schema_map {
+<span class="macro">macro_rules! </span>impl_schema_map {
     (<span class="macro-nonterminal">$ty</span>:ty) =&gt; {
         <span class="kw">impl</span>&lt;K: ToString, V: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
             <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
@@ -1094,7 +1094,7 @@
 }
 
 <span class="kw">impl </span>Apiv2Errors <span class="kw">for </span>() {}
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]</span>
-<span class="kw">impl </span>Apiv2Errors <span class="kw">for </span>actix_web::Error {}
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
+</span><span class="kw">impl </span>Apiv2Errors <span class="kw">for </span>actix_web::Error {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

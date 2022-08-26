@@ -628,13 +628,13 @@
 };
 <span class="kw">use </span>anyhow::Error;
 <span class="kw">use </span>heck::ToPascalCase;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">use </span>heck::ToSnakeCase;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="kw">use </span>heck::ToSnakeCase;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>url_dep::Url;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">use </span>std::fs;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::{
     cell::RefCell,
     collections::{BTreeMap, BTreeSet, HashMap, HashSet},
@@ -647,8 +647,8 @@
 };
 
 <span class="doccomment">/// Holds the state for your schema emitter.
-</span><span class="attribute">#[derive(Debug)]</span>
-<span class="kw">pub struct </span>EmitterState {
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub struct </span>EmitterState {
     <span class="doccomment">/// Working directory - the path in which the necessary modules are generated.
     </span><span class="kw">pub </span>working_dir: PathBuf,
     <span class="doccomment">/// Namespace separation string.
@@ -663,8 +663,8 @@
     </span>default_encoding: RefCell&lt;SpecFormat&gt;,
     <span class="doccomment">/// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `&quot;cli&quot;` feature.
-    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-    crate_meta: Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;,
+    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+    </span>crate_meta: Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;,
 
     <span class="comment">/* MARK: Internal fields that should be reset for each session. */
     </span><span class="doccomment">/// Maps parent mod to immediate children. Used for declaring modules.
@@ -684,8 +684,8 @@
 }
 
 <span class="doccomment">/// Indicates a child module in codegen working directory.
-</span><span class="attribute">#[derive(Debug, Clone, Eq)]</span>
-<span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ChildModule {
+</span><span class="attribute">#[derive(Debug, Clone, Eq)]
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ChildModule {
     <span class="doccomment">/// Name of this child module.
     </span><span class="kw">pub </span>name: String,
     <span class="doccomment">/// Whether this module is the final child.
@@ -1010,8 +1010,8 @@ pub mod util {
 
 <span class="comment">/* Feature-specific impls */
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="kw">impl </span>EmitterState {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="kw">impl </span>EmitterState {
     <span class="doccomment">/// Sets the crate metadata for this session.
     </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, meta: CrateMeta) {
         <span class="kw-2">*</span><span class="self">self</span>.crate_meta.borrow_mut() = <span class="prelude-val">Some</span>(meta)
@@ -1111,8 +1111,8 @@ pub mod util {
     }
 }
 
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;cli&quot;</span>))]</span>
-<span class="kw">impl </span>EmitterState {
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;cli&quot;</span>))]
+</span><span class="kw">impl </span>EmitterState {
     <span class="doccomment">/// This is a no-op.
     </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: CrateMeta) {}
 
@@ -1150,8 +1150,8 @@ pub mod util {
             working_dir: <span class="self">self</span>.working_dir.clone(),
             mod_prefix: <span class="self">self</span>.mod_prefix,
             ns_sep: <span class="self">self</span>.ns_sep,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-            crate_meta: <span class="self">self</span>.crate_meta.clone(),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+            </span>crate_meta: <span class="self">self</span>.crate_meta.clone(),
             base_url: <span class="self">self</span>.base_url.clone(),
             default_encoding: <span class="self">self</span>.default_encoding.clone(),
             <span class="comment">// Get rid of all state-specific fields.
@@ -1166,8 +1166,8 @@ pub mod util {
             working_dir: PathBuf::from(<span class="string">&quot;.&quot;</span>),
             mod_prefix: <span class="string">&quot;crate::&quot;</span>,
             ns_sep: <span class="string">&quot;.&quot;</span>,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-            crate_meta: Rc::new(RefCell::new(<span class="prelude-val">None</span>)),
+            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+            </span>crate_meta: Rc::new(RefCell::new(<span class="prelude-val">None</span>)),
             base_url: RefCell::new(<span class="string">&quot;https://example.com&quot;</span>.parse().expect(<span class="string">&quot;invalid URL?&quot;</span>)),
             def_mods: RefCell::new(BTreeMap::new()),
             rel_paths: RefCell::new(HashSet::new()),
@@ -1195,9 +1195,9 @@ pub mod util {
 
 <span class="comment">/* Templating contexts */
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]</span>
-<span class="attribute">#[derive(serde::Serialize)]</span>
-<span class="kw">struct </span>ManifestContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+#[derive(serde::Serialize)]
+</span><span class="kw">struct </span>ManifestContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     authors: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
@@ -1205,34 +1205,34 @@ pub mod util {
     no_root: bool,
 }
 
-<span class="attribute">#[derive(serde::Serialize)]</span>
-<span class="kw">struct </span>CliUtilContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="attribute">#[derive(serde::Serialize)]
+</span><span class="kw">struct </span>CliUtilContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     match_arms: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
 }
 
-<span class="attribute">#[derive(serde::Serialize)]</span>
-<span class="kw">struct </span>ClientModContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="attribute">#[derive(serde::Serialize)]
+</span><span class="kw">struct </span>ClientModContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     base_url: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
 }
 
-<span class="attribute">#[derive(Debug, serde::Serialize)]</span>
-<span class="kw">struct </span>MediaCoder {
+<span class="attribute">#[derive(Debug, serde::Serialize)]
+</span><span class="kw">struct </span>MediaCoder {
     range: String,
     decoder: String,
     error_variant: String,
     error_ty_path: String,
 }
 
-<span class="attribute">#[derive(serde::Serialize)]</span>
-<span class="kw">struct </span>ClapYamlContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="attribute">#[derive(serde::Serialize)]
+</span><span class="kw">struct </span>ClapYamlContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
 }
 
-<span class="attribute">#[derive(serde::Serialize)]</span>
-<span class="kw">struct </span>EmptyContext {}
+<span class="attribute">#[derive(serde::Serialize)]
+</span><span class="kw">struct </span>EmptyContext {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

@@ -75,34 +75,34 @@
 <span id="75">75</span>
 <span id="76">76</span>
 <span id="77">77</span>
-</pre><pre class="rust"><code><span class="attribute">#![cfg(any(feature = <span class="string">&quot;actix2&quot;</span>, feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="attribute">#![allow(clippy::return_self_not_must_use)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![cfg(any(feature = <span class="string">&quot;actix2&quot;</span>, feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]
+#![allow(clippy::return_self_not_must_use)]
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix2&quot;</span>)]</span>
-<span class="kw">extern crate </span>actix_web2 <span class="kw">as </span>actix_web;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix3&quot;</span>)]</span>
-<span class="kw">extern crate </span>actix_web3 <span class="kw">as </span>actix_web;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
+#[cfg(feature = <span class="string">&quot;actix2&quot;</span>)]
+</span><span class="kw">extern crate </span>actix_web2 <span class="kw">as </span>actix_web;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix3&quot;</span>)]
+</span><span class="kw">extern crate </span>actix_web3 <span class="kw">as </span>actix_web;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+</span><span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
 
-<span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]</span>
-<span class="kw">use </span>include_dir::{include_dir, Dir};
+<span class="attribute">#[cfg(any(feature = <span class="string">&quot;swagger-ui&quot;</span>, feature = <span class="string">&quot;rapidoc&quot;</span>))]
+</span><span class="kw">use </span>include_dir::{include_dir, Dir};
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">pub mod </span>web;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+</span><span class="kw">pub mod </span>web;
 
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">pub mod </span>web3;
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">pub use </span>web3 <span class="kw">as </span>web;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+</span><span class="kw">pub mod </span>web3;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+</span><span class="kw">pub use </span>web3 <span class="kw">as </span>web;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]</span>
-<span class="kw">pub mod </span>app;
+<span class="attribute">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+</span><span class="kw">pub mod </span>app;
 
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">pub mod </span>app3;
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]</span>
-<span class="kw">pub use </span>app3 <span class="kw">as </span>app;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+</span><span class="kw">pub mod </span>app3;
+<span class="attribute">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+</span><span class="kw">pub use </span>app3 <span class="kw">as </span>app;
 
 <span class="kw">pub use </span><span class="self">self</span>::{
     app::{App, OpenApiExt},
@@ -119,10 +119,10 @@
 
 <span class="kw">use </span>std::collections::BTreeMap;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]</span>
-<span class="kw">static </span>SWAGGER_DIST: Dir = <span class="macro">include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/swagger-ui/dist&quot;</span>);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]</span>
-<span class="kw">static </span>RAPIDOC: Dir = <span class="macro">include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/rapidoc&quot;</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;swagger-ui&quot;</span>)]
+</span><span class="kw">static </span>SWAGGER_DIST: Dir = <span class="macro">include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/swagger-ui/dist&quot;</span>);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;rapidoc&quot;</span>)]
+</span><span class="kw">static </span>RAPIDOC: Dir = <span class="macro">include_dir!</span>(<span class="string">&quot;$CARGO_MANIFEST_DIR/rapidoc&quot;</span>);
 
 <span class="doccomment">/// Indicates that this thingmabob has a path and a bunch of definitions and operations.
 </span><span class="kw">pub trait </span>Mountable {
@@ -153,4 +153,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

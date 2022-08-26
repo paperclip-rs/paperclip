@@ -17,28 +17,28 @@ like to parse, then use the <code>#[api_v2_schema]</code> proc macro.</p>
 which uses some custom thingmabobs. Let’s say we’re only interested in the
 <code>x-kubernetes-patch-strategy</code> field for now.</p>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[macro_use]</span> <span class="kw">extern crate </span>serde_derive; <span class="comment">// NOTE: We&#39;re using serde for decoding stuff.
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[macro_use] </span><span class="kw">extern crate </span>serde_derive; <span class="comment">// NOTE: We&#39;re using serde for decoding stuff.
 
 </span><span class="kw">use </span>paperclip::v2::{<span class="self">self</span>, ResolvableApi};
 
 <span class="kw">use </span>std::fs::File;
 
-<span class="attribute">#[derive(Debug, Deserialize)]</span>
-<span class="attribute">#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]</span>
-<span class="kw">enum </span>PatchStrategy {
+<span class="attribute">#[derive(Debug, Deserialize)]
+#[serde(rename_all = <span class="string">&quot;camelCase&quot;</span>)]
+</span><span class="kw">enum </span>PatchStrategy {
     Merge,
     RetainKeys,
-    <span class="attribute">#[serde(rename = <span class="string">&quot;merge,retainKeys&quot;</span>)]</span>
-    MergeAndRetain,
-    <span class="attribute">#[serde(other)]</span>
-    Other,
+    <span class="attribute">#[serde(rename = <span class="string">&quot;merge,retainKeys&quot;</span>)]
+    </span>MergeAndRetain,
+    <span class="attribute">#[serde(other)]
+    </span>Other,
 }
 
-<span class="attribute">#[paperclip::api_v2_schema]</span>
-<span class="attribute">#[derive(Debug, Deserialize)]</span>
-<span class="kw">struct </span>K8sSchema {
-    <span class="attribute">#[serde(rename = <span class="string">&quot;x-kubernetes-patch-strategy&quot;</span>)]</span>
-    patch_strategy: <span class="prelude-ty">Option</span>&lt;PatchStrategy&gt;,
+<span class="attribute">#[paperclip::api_v2_schema]
+#[derive(Debug, Deserialize)]
+</span><span class="kw">struct </span>K8sSchema {
+    <span class="attribute">#[serde(rename = <span class="string">&quot;x-kubernetes-patch-strategy&quot;</span>)]
+    </span>patch_strategy: <span class="prelude-ty">Option</span>&lt;PatchStrategy&gt;,
 }
 
 <span class="comment">// K8sSchema now implements `Schema` trait.
@@ -54,12 +54,12 @@ the actual definitions.</li>
 and add them to the known map of definitions.</li>
 </ul>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span> {
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)] </span>{
 
 <span class="kw">let </span>resolved = api.resolve().unwrap();
 }</code></pre></div>
 
-<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]</span> {
+<div class="example-wrap"><pre class="rust rust-example-rendered"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)] </span>{
 <span class="kw">use </span>paperclip::v2::{DefaultEmitter, EmitterState, Emitter};
 
 <span class="kw">let </span><span class="kw-2">mut </span>state = EmitterState::default();
@@ -79,4 +79,4 @@ modules, API object definitions and the associated calls.</p>
 </div></div></div><h2 id="functions" class="small-section-header"><a href="#functions">Functions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="fn" href="fn.from_reader.html" title="paperclip::v2::from_reader fn">from_reader</a></div><div class="item-right docblock-short"><p>Deserialize the schema from the given reader. Currently, this only supports
 JSON and YAML formats.</p>
 </div></div></div><h2 id="types" class="small-section-header"><a href="#types">Type Definitions</a></h2><div class="item-table"><div class="item-row"><div class="item-left module-item"><a class="type" href="type.ResolvableApi.html" title="paperclip::v2::ResolvableApi type">ResolvableApi</a></div><div class="item-right docblock-short"><p>OpenAPI v2 spec which can be traversed and resolved for codegen.</p>
-</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</div></div></div></section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

@@ -768,9 +768,9 @@
 <span id="768">768</span>
 <span id="769">769</span>
 <span id="770">770</span>
-</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::return_self_not_must_use)]</span>
+</pre><pre class="rust"><code><span class="attribute">#![allow(clippy::return_self_not_must_use)]
 
-<span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
+</span><span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
 </span><span class="kw">extern crate </span>actix_service2 <span class="kw">as </span>actix_service;
 <span class="kw">extern crate </span>actix_web4 <span class="kw">as </span>actix_web;
 
@@ -1291,16 +1291,16 @@
             ServiceRequest,
         &gt;&gt;::Response;
 
-    <span class="attribute">#[allow(clippy::unit_arg)]</span>
-    <span class="kw">fn </span>new_service(<span class="kw-2">&amp;</span><span class="self">self</span>, cfg: <span class="self">Self</span>::Config) -&gt; <span class="self">Self</span>::Future {
+    <span class="attribute">#[allow(clippy::unit_arg)]
+    </span><span class="kw">fn </span>new_service(<span class="kw-2">&amp;</span><span class="self">self</span>, cfg: <span class="self">Self</span>::Config) -&gt; <span class="self">Self</span>::Future {
         <span class="self">self</span>.inner.new_service(cfg)
     }
 }
 
 <span class="kw">impl </span>Route {
     <span class="doccomment">/// Wrapper for [`actix_web::Route::new`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.new)
-    </span><span class="attribute">#[allow(clippy::new_without_default)]</span>
-    <span class="kw">pub fn </span>new() -&gt; Route {
+    </span><span class="attribute">#[allow(clippy::new_without_default)]
+    </span><span class="kw">pub fn </span>new() -&gt; Route {
         Route {
             method: <span class="prelude-val">None</span>,
             operation: <span class="prelude-val">None</span>,
@@ -1539,4 +1539,4 @@
     </span>}
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>

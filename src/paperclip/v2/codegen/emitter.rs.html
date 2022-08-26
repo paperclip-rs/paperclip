@@ -1312,8 +1312,8 @@
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>EXTRA_PROPS_FIELD: <span class="kw-2">&amp;</span>str = <span class="string">&quot;other_fields&quot;</span>;
 
 <span class="doccomment">/// Some &quot;thing&quot; emitted by the emitter.
-</span><span class="attribute">#[derive(Debug)]</span>
-<span class="kw">pub enum </span>EmittedUnit {
+</span><span class="attribute">#[derive(Debug)]
+</span><span class="kw">pub enum </span>EmittedUnit {
     <span class="doccomment">/// Some Rust type.
     </span>Known(String),
     <span class="doccomment">/// Bunch of emitted Rust objects.
@@ -1327,8 +1327,8 @@
 }
 
 <span class="kw">impl </span>EmittedUnit {
-    <span class="attribute">#[inline]</span>
-    <span class="kw">fn </span>known_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>known_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
         <span class="kw">match </span><span class="self">self </span>{
             EmittedUnit::Known(<span class="kw-2">ref </span>s) =&gt; s.clone(),
             EmittedUnit::KnownButAnonymous(<span class="kw-2">ref </span>s, <span class="kw">_</span>) =&gt; s.clone(),
@@ -1336,8 +1336,8 @@
         }
     }
 
-    <span class="attribute">#[inline]</span>
-    <span class="kw">fn </span>map_known(<span class="self">self</span>, ty: <span class="kw">impl </span>Into&lt;String&gt;) -&gt; <span class="self">Self </span>{
+    <span class="attribute">#[inline]
+    </span><span class="kw">fn </span>map_known(<span class="self">self</span>, ty: <span class="kw">impl </span>Into&lt;String&gt;) -&gt; <span class="self">Self </span>{
         <span class="kw">match </span><span class="self">self </span>{
             EmittedUnit::Known(<span class="kw">_</span>) =&gt; EmittedUnit::Known(ty.into()),
             EmittedUnit::KnownButAnonymous(<span class="kw">_</span>, o) =&gt; EmittedUnit::KnownButAnonymous(ty.into(), o),
@@ -1347,8 +1347,8 @@
 }
 
 <span class="doccomment">/// Context for building definitions.
-</span><span class="attribute">#[derive(Debug, Clone, Default)]</span>
-<span class="kw">pub struct </span>DefinitionContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="attribute">#[derive(Debug, Clone, Default)]
+</span><span class="kw">pub struct </span>DefinitionContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     <span class="doccomment">/// Whether we&#39;re planning to define the Rust type or whether we&#39;re
     /// reusing an existing type.
     </span><span class="kw">pub </span>define: bool,
@@ -1516,8 +1516,8 @@
     /// inside Rust modules in the configured working directory.
     ///
     /// **NOTE:** Not meant to be overridden.
-    </span><span class="attribute">#[allow(clippy::field_reassign_with_default)]</span>
-    <span class="kw">fn </span>generate(<span class="kw-2">&amp;</span><span class="self">self</span>, api: <span class="kw-2">&amp;</span>ResolvableApi&lt;<span class="self">Self</span>::Definition&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
+    </span><span class="attribute">#[allow(clippy::field_reassign_with_default)]
+    </span><span class="kw">fn </span>generate(<span class="kw-2">&amp;</span><span class="self">self</span>, api: <span class="kw-2">&amp;</span>ResolvableApi&lt;<span class="self">Self</span>::Definition&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>state = <span class="self">self</span>.state();
         state.reset_internal_fields();
 
@@ -2543,4 +2543,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (0b79f758c 2022-08-18)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (748038961 2022-08-25)" ></div></body></html>
