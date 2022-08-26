@@ -1419,7 +1419,7 @@ fn test_map_in_out() {
             let app = app.with_swagger_ui_at("/swagger");
 
             #[cfg(feature = "rapidoc")]
-            let app = app.with_swagger_ui_at("/rapidoc");
+            let app = app.with_rapidoc_at("/rapidoc");
 
             app.service(web::resource("/images").route(web::get().to(some_images)))
                 .service(web::resource("/catalogue").route(web::post().to(catalogue)))
