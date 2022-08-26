@@ -370,7 +370,6 @@ where
         ) -> Result<HttpResponse, Error> {
             let data = data.into_inner();
             let (tmpl, spec_path) = data.as_ref();
-            let spec_path = format!("/{}", spec_path);
             let ctx = serde_json::json!({ "spec_url": spec_path });
             let s = tmpl.render("index.html", &ctx).map_err(|_| {
                 actix_web::error::ErrorInternalServerError("Error rendering RapiDoc documentation")
