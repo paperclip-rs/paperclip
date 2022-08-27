@@ -60,12 +60,14 @@ use std::{
     sync::mpsc,
     thread,
 };
-use uuid_dev::Uuid;
 
 static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
 static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
-type OptionalUuid = Option<uuid_dev::Uuid>;
+use uuid0_dev::Uuid;
+
+type OptionalUuid0 = Option<uuid0_dev::Uuid>;
+type OptionalUuid1 = Option<uuid1_dev::Uuid>;
 
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "lowercase")]
@@ -86,8 +88,10 @@ struct Pet {
     id: Option<u64>,
     birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
-    #[serde(rename = "uuid")]
-    uid: OptionalUuid,
+    #[serde(rename = "uuid0")]
+    uid0: OptionalUuid0,
+    #[serde(rename = "uuid1")]
+    uid1: OptionalUuid1,
 }
 
 impl Default for Pet {
@@ -98,7 +102,8 @@ impl Default for Pet {
             birthday: chrono_dev::NaiveDate::from_ymd(2012, 3, 10),
             id: None,
             updated_on: None,
-            uid: None,
+            uid0: None,
+            uid1: None,
         }
     }
 }
@@ -240,7 +245,11 @@ fn test_simple_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -514,7 +523,11 @@ fn test_non_boxed_body_middleware() {
                           "format":"date-time",
                           "type":"string"
                         },
-                        "uuid":{
+                        "uuid0":{
+                          "format":"uuid",
+                          "type":"string"
+                        },
+                        "uuid1":{
                           "format":"uuid",
                           "type":"string"
                         }
@@ -2051,7 +2064,11 @@ fn test_list_in_out() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -2327,7 +2344,11 @@ fn test_impl_traits() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -2459,9 +2480,13 @@ fn test_operation_with_generics() {
                                  "format":"date-time",
                                  "type":"string"
                               },
-                              "uuid":{
-                                 "format":"uuid",
-                                 "type":"string"
+                              "uuid0":{
+                                "format":"uuid",
+                                "type":"string"
+                              },
+                              "uuid1":{
+                                "format":"uuid",
+                                "type":"string"
                               }
                            },
                            "required":[
@@ -2687,7 +2712,11 @@ fn test_operations_documentation() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -2976,7 +3005,11 @@ fn test_operations_macro_attributes() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3382,7 +3415,11 @@ fn test_errors_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3598,7 +3635,11 @@ fn test_security_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3789,7 +3830,11 @@ fn test_header_parameter_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3952,9 +3997,13 @@ fn test_method_macro() {
                                     "format": "date-time",
                                     "type": "string"
                                 },
-                                "uuid":{
-                                    "format": "uuid",
-                                    "type": "string"
+                                "uuid0":{
+                                  "format":"uuid",
+                                  "type":"string"
+                                },
+                                "uuid1":{
+                                  "format":"uuid",
+                                  "type":"string"
                                 }
                             },
                             "required":[
@@ -4157,9 +4206,13 @@ fn test_method_macro_subscope() {
                                     "format": "date-time",
                                     "type": "string"
                                 },
-                                "uuid":{
-                                    "format": "uuid",
-                                    "type": "string"
+                                "uuid0":{
+                                  "format":"uuid",
+                                  "type":"string"
+                                },
+                                "uuid1":{
+                                  "format":"uuid",
+                                  "type":"string"
                                 }
                             },
                             "required":[

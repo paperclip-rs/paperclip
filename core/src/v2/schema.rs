@@ -220,8 +220,10 @@ impl_type_simple!(
 #[cfg(feature = "url")]
 impl_type_simple!(url::Url, DataType::String, DataTypeFormat::Url);
 
-#[cfg(feature = "uuid")]
-impl_type_simple!(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
+#[cfg(feature = "uuid0")]
+impl_type_simple!(uuid0_dep::Uuid, DataType::String, DataTypeFormat::Uuid);
+#[cfg(feature = "uuid1")]
+impl_type_simple!(uuid1_dep::Uuid, DataType::String, DataTypeFormat::Uuid);
 
 #[cfg(feature = "chrono")]
 impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
