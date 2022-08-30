@@ -3,31 +3,20 @@ use super::v2;
 impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
     fn from(v2: v2::SecurityScheme) -> Self {
         match v2.type_.as_str() {
-            "basic" => openapiv3::SecurityScheme::HTTP {
-                scheme: "basic".to_string(),
-                bearer_format: None,
-                description: None,
+            "http" => openapiv3::SecurityScheme::HTTP {
+                scheme: v2.scheme.unwrap_or("basic".to_string()),
+                bearer_format: v2.bearer_format,
+                description: v2.description,
             },
-            "apiKey" => {
-                // how to determine when it should be JWT?
-                if v2.in_ == Some("header".into()) {
-                    openapiv3::SecurityScheme::HTTP {
-                        scheme: "bearer".to_string(),
-                        bearer_format: Some("JWT".into()),
-                        description: None,
-                    }
-                } else {
-                    openapiv3::SecurityScheme::APIKey {
-                        location: match v2.in_.unwrap_or_default().as_str() {
-                            "query" => openapiv3::APIKeyLocation::Query,
-                            "header" => openapiv3::APIKeyLocation::Header,
-                            _ => openapiv3::APIKeyLocation::Query,
-                        },
-                        name: v2.name.unwrap_or_default(),
-                        description: None,
-                    }
-                }
-            }
+            "apiKey" => openapiv3::SecurityScheme::APIKey {
+                location: match v2.in_.unwrap_or_default().as_str() {
+                    "query" => openapiv3::APIKeyLocation::Query,
+                    "header" => openapiv3::APIKeyLocation::Header,
+                    _ => openapiv3::APIKeyLocation::Query,
+                },
+                name: v2.name.unwrap_or_default(),
+                description: v2.description,
+            },
             "oauth2" => {
                 let scopes = v2
                     .scopes
@@ -73,7 +62,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             _ => None,
                         },
                     },
-                    description: None,
+                    description: v2.description,
                 }
             }
             type_ => {
