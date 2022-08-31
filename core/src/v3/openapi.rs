@@ -63,27 +63,32 @@ fn openapi3_servers(
     if schemes.is_empty() && host.is_none() && base.is_none() {
         vec![]
     } else if let Some(host) = host {
-        debug_assert!(
-            !schemes.is_empty(),
-            "`schemes` should not be empty when `host` is specified. OpenAPI v3 `servers` cannot be populated."
-        );
-        schemes
-            .into_iter()
-            .map(|scheme| {
-                let scheme_str = match scheme {
-                    v2::OperationProtocol::Http => "http",
-                    v2::OperationProtocol::Https => "https",
-                    v2::OperationProtocol::Ws => "ws",
-                    v2::OperationProtocol::Wss => "wss",
-                };
-                openapiv3::Server {
-                    url: format!("{}://{}{}", scheme_str, host, base.as_deref().unwrap_or("")),
-                    description: None,
-                    variables: None,
-                    extensions: indexmap::IndexMap::new(),
-                }
-            })
-            .collect()
+        if !schemes.is_empty() {
+            schemes
+                .into_iter()
+                .map(|scheme| {
+                    let scheme_str = match scheme {
+                        v2::OperationProtocol::Http => "http",
+                        v2::OperationProtocol::Https => "https",
+                        v2::OperationProtocol::Ws => "ws",
+                        v2::OperationProtocol::Wss => "wss",
+                    };
+                    openapiv3::Server {
+                        url: format!("{}://{}{}", scheme_str, host, base.as_deref().unwrap_or("")),
+                        description: None,
+                        variables: None,
+                        extensions: indexmap::IndexMap::new(),
+                    }
+                })
+                .collect()
+        } else {
+            vec![openapiv3::Server {
+                url: format!("//{}{}", host, base.as_deref().unwrap_or("")),
+                description: None,
+                variables: None,
+                extensions: indexmap::IndexMap::new(),
+            }]
+        }
     } else {
         vec![openapiv3::Server {
             url: base.unwrap_or_else(|| "/".to_string()),
