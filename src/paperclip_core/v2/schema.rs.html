@@ -547,6 +547,8 @@
 <span id="547">547</span>
 <span id="548">548</span>
 <span id="549">549</span>
+<span id="550">550</span>
+<span id="551">551</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.
 
 </span><span class="kw">use </span><span class="kw">super</span>::models::{
@@ -769,8 +771,10 @@
 <span class="attribute">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]
 </span><span class="macro">impl_type_simple!</span>(url::Url, DataType::String, DataTypeFormat::Url);
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;uuid&quot;</span>)]
-</span><span class="macro">impl_type_simple!</span>(uuid::Uuid, DataType::String, DataTypeFormat::Uuid);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;uuid0&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(uuid0_dep::Uuid, DataType::String, DataTypeFormat::Uuid);
+<span class="attribute">#[cfg(feature = <span class="string">&quot;uuid1&quot;</span>)]
+</span><span class="macro">impl_type_simple!</span>(uuid1_dep::Uuid, DataType::String, DataTypeFormat::Uuid);
 
 <span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
 </span><span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::DateTime&lt;T&gt; {
@@ -1097,4 +1101,4 @@
 <span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
 </span><span class="kw">impl </span>Apiv2Errors <span class="kw">for </span>actix_web::Error {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (2e35f954a 2022-09-01)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (78a891d36 2022-09-06)" ></div></body></html>

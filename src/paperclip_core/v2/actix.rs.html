@@ -901,6 +901,8 @@
 <span id="901">901</span>
 <span id="902">902</span>
 <span id="903">903</span>
+<span id="904">904</span>
+<span id="905">905</span>
 </pre><pre class="rust"><code><span class="attribute">#[cfg(feature = <span class="string">&quot;actix3-validator&quot;</span>)]
 </span><span class="kw">extern crate </span>actix_web_validator2 <span class="kw">as </span>actix_web_validator;
 <span class="attribute">#[cfg(feature = <span class="string">&quot;actix4-validator&quot;</span>)]
@@ -1187,8 +1189,10 @@
     </span><span class="macro">impl_simple!</span>(rust_decimal::Decimal);
     <span class="attribute">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]
     </span><span class="macro">impl_simple!</span>(url::Url);
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;uuid&quot;</span>)]
-    </span><span class="macro">impl_simple!</span>(uuid::Uuid);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;uuid0&quot;</span>)]
+    </span><span class="macro">impl_simple!</span>(uuid0_dep::Uuid);
+    <span class="attribute">#[cfg(feature = <span class="string">&quot;uuid1&quot;</span>)]
+    </span><span class="macro">impl_simple!</span>(uuid1_dep::Uuid);
 }
 
 <span class="attribute">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
@@ -1805,4 +1809,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (2e35f954a 2022-09-01)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-current-crate="paperclip_core" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.65.0-nightly (78a891d36 2022-09-06)" ></div></body></html>
