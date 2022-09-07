@@ -56,7 +56,8 @@ actix-web3 = { version = "3", default-features = false, package = "actix-web" }
 actix-web4 = { version = "4", default-features = false, package = "actix-web" }
 chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
 futures = "0.3"
-uuid_dev = { version = "0.8", features = ["serde"], package = "uuid" }
+uuid0_dev = { version = "0", features = ["serde"], package = "uuid" }
+uuid1_dev = { version = "1", features = ["serde"], package = "uuid" }
 reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
 insta = "1.0"
@@ -96,7 +97,9 @@ actix4-validator = ["paperclip-core/actix4-validator"]
 chrono = ["paperclip-core/chrono"]
 rust_decimal = ["paperclip-core/rust_decimal"]
 url = ["paperclip-core/url"]
-uuid = ["paperclip-core/uuid"]
+uuid = ["uuid0","uuid1"]
+uuid0 = ["paperclip-core/uuid0"]
+uuid1 = ["paperclip-core/uuid1"]
 serde_qs = ["paperclip-core/serde_qs"]
 
 [workspace]

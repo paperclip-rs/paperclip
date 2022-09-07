@@ -284,8 +284,10 @@ mod manual_impl {
     impl_simple!(rust_decimal::Decimal);
     #[cfg(feature = "url")]
     impl_simple!(url::Url);
-    #[cfg(feature = "uuid")]
-    impl_simple!(uuid::Uuid);
+    #[cfg(feature = "uuid0")]
+    impl_simple!(uuid0_dep::Uuid);
+    #[cfg(feature = "uuid1")]
+    impl_simple!(uuid1_dep::Uuid);
 }
 
 #[cfg(feature = "chrono")]
