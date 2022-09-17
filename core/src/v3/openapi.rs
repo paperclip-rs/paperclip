@@ -24,7 +24,7 @@ impl From<v2::DefaultApiRaw> for openapiv3::OpenAPI {
                 i.insert(b.0.to_string(), b.1.clone().into());
                 i
             });
-        components.extensions =
+        spec.extensions =
             v2.extensions
                 .into_iter()
                 .fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
