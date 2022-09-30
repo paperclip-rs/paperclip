@@ -37,6 +37,7 @@ use actix_service::ServiceFactory;
 use actix_web::rt::System;
 use actix_web::{
     dev::{Payload, ServiceRequest, ServiceResponse},
+    middleware::{DefaultHeaders, Logger},
     App, Error, FromRequest, HttpRequest, HttpServer, Responder,
 };
 #[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
@@ -59,12 +60,14 @@ use std::{
     sync::mpsc,
     thread,
 };
-use uuid_dev::Uuid;
 
 static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
 static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
-type OptionalUuid = Option<uuid_dev::Uuid>;
+use uuid0_dev::Uuid;
+
+type OptionalUuid0 = Option<uuid0_dev::Uuid>;
+type OptionalUuid1 = Option<uuid1_dev::Uuid>;
 
 #[derive(Deserialize, Serialize, Apiv2Schema)]
 #[serde(rename_all = "lowercase")]
@@ -85,8 +88,10 @@ struct Pet {
     id: Option<u64>,
     birthday: chrono_dev::NaiveDate,
     updated_on: Option<chrono_dev::NaiveDateTime>,
-    #[serde(rename = "uuid")]
-    uid: OptionalUuid,
+    #[serde(rename = "uuid0")]
+    uid0: OptionalUuid0,
+    #[serde(rename = "uuid1")]
+    uid1: OptionalUuid1,
 }
 
 impl Default for Pet {
@@ -97,7 +102,8 @@ impl Default for Pet {
             birthday: chrono_dev::NaiveDate::from_ymd(2012, 3, 10),
             id: None,
             updated_on: None,
-            uid: None,
+            uid0: None,
+            uid1: None,
         }
     }
 }
@@ -239,7 +245,11 @@ fn test_simple_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -446,6 +456,119 @@ fn test_simple_app() {
                   },
                   "swagger": "2.0"
                 }),
+            );
+        },
+    );
+}
+
+#[cfg(feature = "actix4")]
+#[test]
+fn test_non_boxed_body_middleware() {
+    #[api_v2_operation]
+    fn echo_pet(body: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
+        fut_ok(body)
+    }
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(
+            web::scope("/test")
+                .service(web::resource("/echo").route(web::post().to(echo_pet)))
+                .wrap(Logger::default())
+                .wrap(DefaultHeaders::default().add(("X-Test", "Value"))),
+        );
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::scope("/api").configure(config))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                "definitions":{
+                  "Pet":{
+                    "description":"Pets are awesome!",
+                    "properties":{
+                      "birthday":{
+                        "format":"date",
+                        "type":"string"
+                      },
+                      "class":{
+                        "enum":[
+                          "dog",
+                          "cat",
+                          "other"
+                          ],
+                          "type":"string"
+                        },
+                        "id":{
+                          "format":"int64",
+                          "type":"integer"
+                        },
+                        "name":{
+                          "description":"Pick a good one.",
+                          "type":"string"
+                        },
+                        "updatedOn":{
+                          "format":"date-time",
+                          "type":"string"
+                        },
+                        "uuid0":{
+                          "format":"uuid",
+                          "type":"string"
+                        },
+                        "uuid1":{
+                          "format":"uuid",
+                          "type":"string"
+                        }
+                      },
+                      "required":[
+                        "birthday",
+                        "class",
+                        "name"
+                        ],
+                        "type":"object"
+                      }
+                    },
+                    "info":{
+                      "title":"",
+                      "version":""
+                    },
+                    "paths":{
+                      "/api/test/echo":{
+                        "post":{
+                          "parameters":[{
+                            "in":"body",
+                            "name":"body",
+                            "required":true,
+                            "schema":{
+                              "$ref":"#/definitions/Pet"
+                            }
+                          }],
+                          "responses":{
+                            "200":{
+                              "description":"OK",
+                              "schema":{
+                                "$ref":"#/definitions/Pet"
+                              }
+                            }
+                          }
+                        }
+                      }
+                    },
+                    "swagger":"2.0"
+                  }
+                ),
             );
         },
     );
@@ -1309,7 +1432,7 @@ fn test_map_in_out() {
             let app = app.with_swagger_ui_at("/swagger");
 
             #[cfg(feature = "rapidoc")]
-            let app = app.with_swagger_ui_at("/rapidoc");
+            let app = app.with_rapidoc_at("/rapidoc");
 
             app.service(web::resource("/images").route(web::get().to(some_images)))
                 .service(web::resource("/catalogue").route(web::post().to(catalogue)))
@@ -1947,7 +2070,11 @@ fn test_list_in_out() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -2223,7 +2350,11 @@ fn test_impl_traits() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -2355,9 +2486,13 @@ fn test_operation_with_generics() {
                                  "format":"date-time",
                                  "type":"string"
                               },
-                              "uuid":{
-                                 "format":"uuid",
-                                 "type":"string"
+                              "uuid0":{
+                                "format":"uuid",
+                                "type":"string"
+                              },
+                              "uuid1":{
+                                "format":"uuid",
+                                "type":"string"
                               }
                            },
                            "required":[
@@ -2583,7 +2718,11 @@ fn test_operations_documentation() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -2872,7 +3011,11 @@ fn test_operations_macro_attributes() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3278,7 +3421,11 @@ fn test_errors_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3494,7 +3641,11 @@ fn test_security_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3685,7 +3836,11 @@ fn test_header_parameter_app() {
                           "format": "date-time",
                           "type": "string"
                         },
-                        "uuid": {
+                        "uuid0": {
+                          "format": "uuid",
+                          "type": "string"
+                        },
+                        "uuid1": {
                           "format": "uuid",
                           "type": "string"
                         }
@@ -3848,9 +4003,13 @@ fn test_method_macro() {
                                     "format": "date-time",
                                     "type": "string"
                                 },
-                                "uuid":{
-                                    "format": "uuid",
-                                    "type": "string"
+                                "uuid0":{
+                                  "format":"uuid",
+                                  "type":"string"
+                                },
+                                "uuid1":{
+                                  "format":"uuid",
+                                  "type":"string"
                                 }
                             },
                             "required":[
@@ -4053,9 +4212,13 @@ fn test_method_macro_subscope() {
                                     "format": "date-time",
                                     "type": "string"
                                 },
-                                "uuid":{
-                                    "format": "uuid",
-                                    "type": "string"
+                                "uuid0":{
+                                  "format":"uuid",
+                                  "type":"string"
+                                },
+                                "uuid1":{
+                                  "format":"uuid",
+                                  "type":"string"
                                 }
                             },
                             "required":[
