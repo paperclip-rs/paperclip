@@ -1440,11 +1440,17 @@ fn test_map_in_out() {
             #[cfg(feature = "swagger-ui")]
             {
                 let resp = CLIENT
-                    .get(&format!("http://{}/swagger", addr))
+                    .get(&format!("http://{}/swagger/swagger-ui.css", addr))
                     .send()
                     .expect("request failed?");
 
                 assert_eq!(resp.status().as_u16(), 200);
+                assert_eq!(
+                    resp.headers()
+                        .get(actix_web::http::header::CONTENT_TYPE)
+                        .expect("Could not get Content-Type header"),
+                    "text/css"
+                );
             }
 
             #[cfg(feature = "rapidoc")]
