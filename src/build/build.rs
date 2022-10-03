@@ -53,7 +53,7 @@ mod template {
     let source_path = PathBuf::from(&out_dir).join("template.rs");
     for (name, file) in files {
         println!("cargo:rerun-if-changed={}", file);
-        let thing = load_file(root.join(&file));
+        let thing = load_file(root.join(file));
         let _ = &write!(
             contents,
             "
