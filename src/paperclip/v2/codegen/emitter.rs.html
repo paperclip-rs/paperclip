@@ -1268,8 +1268,6 @@
 <span id="1268">1268</span>
 <span id="1269">1269</span>
 <span id="1270">1270</span>
-<span id="1271">1271</span>
-<span id="1272">1272</span>
 </pre><pre class="rust"><code><span class="kw">use super</span>::{
     object::{
         ApiObject, ObjectContainer, ObjectField, ObjectVariant, OpRequirement, Parameter, Response,
@@ -1444,10 +1442,7 @@
         <span class="kw">let _ </span>= def;
 
         <span class="kw">let </span>name = <span class="kw">match </span>value {
-            Value::Number(<span class="kw-2">ref </span>n) =&gt; <span class="macro">format!</span>(
-                <span class="string">&quot;Number_{}&quot;</span>,
-                n.to_string().replace(<span class="string">&#39;-&#39;</span>, <span class="string">&quot;_&quot;</span>).replace(<span class="string">&#39;.&#39;</span>, <span class="string">&quot;_&quot;</span>)
-            ),
+            Value::Number(<span class="kw-2">ref </span>n) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Number_{}&quot;</span>, n.to_string().replace([<span class="string">&#39;-&#39;</span>, <span class="string">&#39;.&#39;</span>], <span class="string">&quot;_&quot;</span>)),
             Value::Bool(b) =&gt; b.to_string().to_pascal_case(),
             Value::String(<span class="kw-2">ref </span>s) =&gt; s.to_string().to_pascal_case().replace(<span class="string">&#39;.&#39;</span>, <span class="string">&quot;_&quot;</span>),
             <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
@@ -1681,7 +1676,7 @@
             .parent()
             .ok_or_else(|| PaperClipError::InvalidDefinitionPath(mod_path.clone()))<span class="question-mark">?</span>;
         <span class="kw">if </span>!dir_path.exists() {
-            fs::create_dir_all(<span class="kw-2">&amp;</span>dir_path)<span class="question-mark">?</span>;
+            fs::create_dir_all(dir_path)<span class="question-mark">?</span>;
         }
 
         <span class="comment">// Get the path without the extension.
@@ -1966,6 +1961,7 @@
     <span class="doccomment">/// Returns the requirements of the &quot;deepest&quot; child type in the given definition.
     ///
     /// See `ObjectField.children_req` field for what it means.
+    </span><span class="attribute">#[allow(clippy::only_used_in_recursion)]
     </span><span class="kw">fn </span>children_requirements(<span class="kw-2">&amp;</span><span class="self">self</span>, schema: <span class="kw-2">&amp;</span>E::Definition) -&gt; Vec&lt;String&gt; {
         <span class="kw">match </span>schema.data_type() {
             <span class="prelude-val">Some</span>(DataType::Object) =&gt; {

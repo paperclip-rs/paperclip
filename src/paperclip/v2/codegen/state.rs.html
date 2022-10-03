@@ -746,7 +746,7 @@
         <span class="kw">let </span>is_app = <span class="self">self</span>.is_cli()<span class="question-mark">?</span>;
         <span class="kw">let </span>mods = <span class="self">self</span>.mod_children.borrow();
         <span class="kw">for </span>(rel_parent, children) <span class="kw">in </span><span class="kw-2">&amp;*</span>mods {
-            <span class="kw">let </span><span class="kw-2">mut </span>mod_path = <span class="self">self</span>.working_dir.join(<span class="kw-2">&amp;</span>rel_parent);
+            <span class="kw">let </span><span class="kw-2">mut </span>mod_path = <span class="self">self</span>.working_dir.join(rel_parent);
             <span class="kw">let </span><span class="kw-2">mut </span>contents = String::new();
 
             <span class="kw">if </span>rel_parent.parent().is_none() &amp;&amp; <span class="self">self</span>.needs_root_module() {
