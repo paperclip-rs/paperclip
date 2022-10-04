@@ -128,7 +128,7 @@ impl EmitterState {
         let is_app = self.is_cli()?;
         let mods = self.mod_children.borrow();
         for (rel_parent, children) in &*mods {
-            let mut mod_path = self.working_dir.join(&rel_parent);
+            let mut mod_path = self.working_dir.join(rel_parent);
             let mut contents = String::new();
 
             if rel_parent.parent().is_none() && self.needs_root_module() {

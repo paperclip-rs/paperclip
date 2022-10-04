@@ -172,10 +172,7 @@ pub trait Emitter: Sized {
         let _ = def;
 
         let name = match value {
-            Value::Number(ref n) => format!(
-                "Number_{}",
-                n.to_string().replace('-', "_").replace('.', "_")
-            ),
+            Value::Number(ref n) => format!("Number_{}", n.to_string().replace(['-', '.'], "_")),
             Value::Bool(b) => b.to_string().to_pascal_case(),
             Value::String(ref s) => s.to_string().to_pascal_case().replace('.', "_"),
             _ => return None,
@@ -409,7 +406,7 @@ where
             .parent()
             .ok_or_else(|| PaperClipError::InvalidDefinitionPath(mod_path.clone()))?;
         if !dir_path.exists() {
-            fs::create_dir_all(&dir_path)?;
+            fs::create_dir_all(dir_path)?;
         }
 
         // Get the path without the extension.
@@ -694,6 +691,7 @@ where
     /// Returns the requirements of the "deepest" child type in the given definition.
     ///
     /// See `ObjectField.children_req` field for what it means.
+    #[allow(clippy::only_used_in_recursion)]
     fn children_requirements(&self, schema: &E::Definition) -> Vec<String> {
         match schema.data_type() {
             Some(DataType::Object) => {

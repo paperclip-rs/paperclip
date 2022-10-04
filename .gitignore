@@ -11,3 +11,4 @@ Cargo.lock
 _book/
 .vscode/
 .idea/
+/rust-toolchain.toml

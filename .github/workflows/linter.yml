@@ -13,6 +13,7 @@ jobs:
     name: clippy
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable
@@ -35,6 +36,7 @@ jobs:
     name: rustfmt
     runs-on: ubuntu-latest
     strategy:
+      fail-fast: false
       matrix:
         rust:
           - stable

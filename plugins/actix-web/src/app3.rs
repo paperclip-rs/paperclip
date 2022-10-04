@@ -29,7 +29,6 @@ use parking_lot::RwLock;
 #[cfg(feature = "rapidoc")]
 use tinytemplate::TinyTemplate;
 
-use serde_json::json;
 use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
@@ -396,7 +395,7 @@ where
         ) -> Result<HttpResponse, Error> {
             let data = data.into_inner();
             let (tmpl, spec_path) = data.as_ref();
-            let ctx = json!({ "spec_url": spec_path });
+            let ctx = serde_json::json!({ "spec_url": spec_path });
             let s = tmpl.render("index.html", &ctx).map_err(|_| {
                 actix_web::error::ErrorInternalServerError("Error rendering RapiDoc documentation")
             })?;
