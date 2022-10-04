@@ -464,6 +464,19 @@
 <span id="464">464</span>
 <span id="465">465</span>
 <span id="466">466</span>
+<span id="467">467</span>
+<span id="468">468</span>
+<span id="469">469</span>
+<span id="470">470</span>
+<span id="471">471</span>
+<span id="472">472</span>
+<span id="473">473</span>
+<span id="474">474</span>
+<span id="475">475</span>
+<span id="476">476</span>
+<span id="477">477</span>
+<span id="478">478</span>
+<span id="479">479</span>
 </pre><pre class="rust"><code><span class="attribute">#![allow(clippy::return_self_not_must_use)]
 
 </span><span class="kw">extern crate </span>actix_service2 <span class="kw">as </span>actix_service;
@@ -796,14 +809,27 @@
                                     .append_header((<span class="string">&quot;Location&quot;</span>, redirect_url))
                                     .finish()
                             } <span class="kw">else </span>{
-                                HttpResponse::Ok().body(
+                                <span class="kw">let </span><span class="kw-2">mut </span>response = HttpResponse::Ok().body(
                                     SWAGGER_DIST
                                         .get_file(filename)
                                         .unwrap_or_else(|| {
                                             <span class="macro">panic!</span>(<span class="string">&quot;Failed to get file {}&quot;</span>, filename)
                                         })
                                         .contents(),
-                                )
+                                );
+                                <span class="kw">if let </span><span class="prelude-val">Some</span>(guess_result) = mime_guess::from_path(filename).first()
+                                {
+                                    <span class="kw">if let </span><span class="prelude-val">Ok</span>(header) =
+                                        actix_web::http::header::HeaderValue::from_str(
+                                            guess_result.essence_str(),
+                                        )
+                                    {
+                                        response
+                                            .headers_mut()
+                                            .insert(actix_web::http::header::CONTENT_TYPE, header);
+                                    }
+                                }
+                                response
                             }
                         }
                     }),
@@ -931,4 +957,4 @@
     }
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (57f097ea2 2022-10-01)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_actix" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (f83e0266c 2022-10-03)" ></div></body></html>
