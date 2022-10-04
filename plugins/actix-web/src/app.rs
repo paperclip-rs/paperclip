@@ -330,14 +330,27 @@ where
                                     .append_header(("Location", redirect_url))
                                     .finish()
                             } else {
-                                HttpResponse::Ok().body(
+                                let mut response = HttpResponse::Ok().body(
                                     SWAGGER_DIST
                                         .get_file(filename)
                                         .unwrap_or_else(|| {
                                             panic!("Failed to get file {}", filename)
                                         })
                                         .contents(),
-                                )
+                                );
+                                if let Some(guess_result) = mime_guess::from_path(filename).first()
+                                {
+                                    if let Ok(header) =
+                                        actix_web::http::header::HeaderValue::from_str(
+                                            guess_result.essence_str(),
+                                        )
+                                    {
+                                        response
+                                            .headers_mut()
+                                            .insert(actix_web::http::header::CONTENT_TYPE, header);
+                                    }
+                                }
+                                response
                             }
                         }
                     }),
