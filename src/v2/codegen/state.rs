@@ -1,7 +1,7 @@
 use super::{
     object,
     object::ApiObject,
-    template::{self, TEMPLATE},
+    template::{self, Template},
     CrateMeta, EmitMode,
 };
 use crate::{
@@ -283,7 +283,7 @@ pub mod util {
         self.write_contents(&content, &module)?;
 
         module.set_file_name("util.rs");
-        let contents = template::render(TEMPLATE::UTIL_MOD, &EmptyContext {})?;
+        let contents = template::render(Template::UTIL_MOD, &EmptyContext {})?;
         self.write_contents(&contents, &module)?;
 
         self.add_cli_deps_if_needed()?;
@@ -294,7 +294,7 @@ pub mod util {
     pub(crate) fn add_client_deps(&self) -> Result<(), Error> {
         let module = self.root_module_path();
         let contents = template::render(
-            TEMPLATE::CLIENT_MOD,
+            Template::CLIENT_MOD,
             &ClientModContext {
                 mod_prefix: &self.normalized_mod_prefix(),
                 media_coders: &self.media_coders.borrow(),
@@ -337,7 +337,7 @@ pub mod util {
             // Clap YAML
             let clap_yaml = root.with_file_name("app.yaml");
             let base_content = template::render(
-                TEMPLATE::CLAP_YAML,
+                Template::CLAP_YAML,
                 &ClapYamlContext {
                     name: meta.name.as_ref().unwrap(),
                     version: &format!("{:?}", meta.version.as_ref().unwrap()),
@@ -350,7 +350,7 @@ pub mod util {
 
             // CLI module
             let cli_content = template::render(
-                TEMPLATE::CLI_UTIL,
+                Template::CLI_UTIL,
                 &CliUtilContext {
                     match_arms: &self.cli_match_arms.borrow(),
                     media_coders: &self.media_coders.borrow(),
@@ -361,7 +361,7 @@ pub mod util {
         }
 
         // `main.rs`
-        let contents = template::render(TEMPLATE::CLI_MAIN, &EmptyContext {})?;
+        let contents = template::render(Template::CLI_MAIN, &EmptyContext {})?;
         self.append_contents(&contents, &root)
     }
 
@@ -442,7 +442,7 @@ impl EmitterState {
 
         if self.needs_root_module() {
             let contents = template::render(
-                TEMPLATE::CARGO_MANIFEST,
+                Template::CARGO_MANIFEST,
                 &ManifestContext {
                     name: &format!("{:?}", meta.name.as_ref().unwrap()),
                     version: &format!("{:?}", meta.version.as_ref().unwrap()),

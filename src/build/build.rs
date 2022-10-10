@@ -33,7 +33,7 @@ mod template {
 
     #[derive(Debug, Copy, Clone)]
     #[allow(dead_code, non_camel_case_types)]
-    pub enum TEMPLATE {",
+    pub enum Template {",
     );
 
     for (name, _) in files {
@@ -65,7 +65,7 @@ mod template {
 
     contents.push_str(
         "
-    pub fn render<C>(t: TEMPLATE, context: &C) -> tinytemplate::error::Result<String>
+    pub fn render<C>(t: Template, context: &C) -> tinytemplate::error::Result<String>
         where C: serde::Serialize
     {
         let mut temp = TinyTemplate::new();
@@ -76,7 +76,7 @@ mod template {
         let _ = &write!(
             contents,
             "
-            TEMPLATE::{name} => {name},",
+            Template::{name} => {name},",
             name = name
         );
     }
