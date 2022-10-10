@@ -48,7 +48,7 @@
 
     <span class="attribute">#[derive(Debug, Copy, Clone)]
     #[allow(dead_code, non_camel_case_types)]
-    </span><span class="kw">pub enum </span>TEMPLATE {
+    </span><span class="kw">pub enum </span>Template {
         CARGO_MANIFEST,
         CLIENT_MOD,
         CLAP_YAML,
@@ -68,17 +68,17 @@
 
     <span class="kw">pub const </span>CLI_UTIL: <span class="kw-2">&amp;</span>str = <span class="string">&quot;use clap::ArgMatches;\nuse crate::client::\\{ApiClient, ApiError, Sendable};\nuse serde::\\{Serialize, Deserialize};\n\nuse std::io::Read;\n\npub(crate) fn read_from_input&lt;T&gt;(matches: Option&lt;&amp;ArgMatches&lt;&#39;_&gt;&gt;) -&gt; Result&lt;T, crate::ClientError&gt;\nwhere\n    T: Serialize,\n    for&lt;&#39;de&gt; T: Deserialize&lt;&#39;de&gt;\n\\{\n    let path = matches\n        .expect(\&quot;no args for builder with body?\&quot;)\n        .value_of(\&quot;payload\&quot;).expect(\&quot;payload?\&quot;);\n\n    let mut bytes = vec![];\n    if path == \&quot;-\&quot; \\{\n        std::io::stdin().read_to_end(&amp;mut bytes).map_err(crate::ClientError::Io)?;\n    } else \\{\n        std::fs::File::open(&amp;path)\n            .and_then(|mut fd| fd.read_to_end(&amp;mut bytes))\n            .map_err(crate::ClientError::Io)?;\n    };\n\n    {{- for coder in media_coders }}\n\n    let err = match {coder.decoder | unescaped}(bytes.as_slice()) \\{\n        Ok(t) =&gt; return Ok(t),\n        Err(e) =&gt; crate::ClientError::Api(ApiError::{coder.error_variant | unescaped}(e)),\n    };\n\n    log::debug!(\&quot;Error decoding payload as {coder.range | unescaped}: \\{:?}\&quot;, err);\n    {{- endfor }}\n\n    Err(err)\n}\n\npub(super) async fn fetch_response&lt;&#39;a, C&gt;(client: &amp;&#39;a C,\n                                          _matches: &amp;ArgMatches&lt;&#39;_&gt;,\n                                          sub_cmd: &amp;str,\n                                          sub_matches: Option&lt;&amp;ArgMatches&lt;&#39;_&gt;&gt;)\n                                          -&gt; Result&lt;C::Response, crate::ClientError&gt;\nwhere\n    C: ApiClient + Send + Sync + &#39;static,\n    crate::ClientError: From&lt;ApiError&lt;C::Response&gt;&gt;\n\\{\n    let resp = match sub_cmd \\{\n{match_arms | unescaped}\n        _ =&gt; unimplemented!(),\n    };\n\n    match resp \\{\n        Ok(r) =&gt; Ok(r),\n        Err(ApiError::Failure(_, _, r)) =&gt; Ok(r.into_inner()),\n        Err(e) =&gt; return Err(e.into()),\n    }\n}\n&quot;</span>;
 
-    <span class="kw">pub fn </span>render&lt;C&gt;(t: TEMPLATE, context: <span class="kw-2">&amp;</span>C) -&gt; tinytemplate::error::Result&lt;String&gt;
+    <span class="kw">pub fn </span>render&lt;C&gt;(t: Template, context: <span class="kw-2">&amp;</span>C) -&gt; tinytemplate::error::Result&lt;String&gt;
         <span class="kw">where </span>C: serde::Serialize
     {
         <span class="kw">let </span><span class="kw-2">mut </span>temp = TinyTemplate::new();
         temp.add_template(<span class="string">&quot;file&quot;</span>, <span class="kw">match </span>t {
-            TEMPLATE::CARGO_MANIFEST =&gt; CARGO_MANIFEST,
-            TEMPLATE::CLIENT_MOD =&gt; CLIENT_MOD,
-            TEMPLATE::CLAP_YAML =&gt; CLAP_YAML,
-            TEMPLATE::CLI_MAIN =&gt; CLI_MAIN,
-            TEMPLATE::UTIL_MOD =&gt; UTIL_MOD,
-            TEMPLATE::CLI_UTIL =&gt; CLI_UTIL,
+            Template::CARGO_MANIFEST =&gt; CARGO_MANIFEST,
+            Template::CLIENT_MOD =&gt; CLIENT_MOD,
+            Template::CLAP_YAML =&gt; CLAP_YAML,
+            Template::CLI_MAIN =&gt; CLI_MAIN,
+            Template::UTIL_MOD =&gt; UTIL_MOD,
+            Template::CLI_UTIL =&gt; CLI_UTIL,
         })<span class="question-mark">?</span>;
 
         temp.render(<span class="string">&quot;file&quot;</span>, context)

@@ -619,7 +619,7 @@
 </pre><pre class="rust"><code><span class="kw">use super</span>::{
     object,
     object::ApiObject,
-    template::{<span class="self">self</span>, TEMPLATE},
+    template::{<span class="self">self</span>, Template},
     CrateMeta, EmitMode,
 };
 <span class="kw">use crate</span>::{
@@ -901,7 +901,7 @@ pub mod util {
         <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>content, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
         module.set_file_name(<span class="string">&quot;util.rs&quot;</span>);
-        <span class="kw">let </span>contents = template::render(TEMPLATE::UTIL_MOD, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
+        <span class="kw">let </span>contents = template::render(Template::UTIL_MOD, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
         <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.add_cli_deps_if_needed()<span class="question-mark">?</span>;
@@ -912,7 +912,7 @@ pub mod util {
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>add_client_deps(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>module = <span class="self">self</span>.root_module_path();
         <span class="kw">let </span>contents = template::render(
-            TEMPLATE::CLIENT_MOD,
+            Template::CLIENT_MOD,
             <span class="kw-2">&amp;</span>ClientModContext {
                 mod_prefix: <span class="kw-2">&amp;</span><span class="self">self</span>.normalized_mod_prefix(),
                 media_coders: <span class="kw-2">&amp;</span><span class="self">self</span>.media_coders.borrow(),
@@ -955,7 +955,7 @@ pub mod util {
             <span class="comment">// Clap YAML
             </span><span class="kw">let </span>clap_yaml = root.with_file_name(<span class="string">&quot;app.yaml&quot;</span>);
             <span class="kw">let </span>base_content = template::render(
-                TEMPLATE::CLAP_YAML,
+                Template::CLAP_YAML,
                 <span class="kw-2">&amp;</span>ClapYamlContext {
                     name: meta.name.as_ref().unwrap(),
                     version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.version.as_ref().unwrap()),
@@ -968,7 +968,7 @@ pub mod util {
 
             <span class="comment">// CLI module
             </span><span class="kw">let </span>cli_content = template::render(
-                TEMPLATE::CLI_UTIL,
+                Template::CLI_UTIL,
                 <span class="kw-2">&amp;</span>CliUtilContext {
                     match_arms: <span class="kw-2">&amp;</span><span class="self">self</span>.cli_match_arms.borrow(),
                     media_coders: <span class="kw-2">&amp;</span><span class="self">self</span>.media_coders.borrow(),
@@ -979,7 +979,7 @@ pub mod util {
         }
 
         <span class="comment">// `main.rs`
-        </span><span class="kw">let </span>contents = template::render(TEMPLATE::CLI_MAIN, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
+        </span><span class="kw">let </span>contents = template::render(Template::CLI_MAIN, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
         <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>root)
     }
 
@@ -1060,7 +1060,7 @@ pub mod util {
 
         <span class="kw">if </span><span class="self">self</span>.needs_root_module() {
             <span class="kw">let </span>contents = template::render(
-                TEMPLATE::CARGO_MANIFEST,
+                Template::CARGO_MANIFEST,
                 <span class="kw-2">&amp;</span>ManifestContext {
                     name: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.name.as_ref().unwrap()),
                     version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.version.as_ref().unwrap()),
