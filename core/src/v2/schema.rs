@@ -100,18 +100,18 @@ fn _schema_contains_any<'a, S: Schema>(schema: &'a S, mut nodes: Vec<&'a str>) -
         .properties()
         .map(|t| {
             t.values()
-                .any(|s| _schema_contains_any(&*s.read(), nodes.clone()))
+                .any(|s| _schema_contains_any(&*s.read().unwrap(), nodes.clone()))
         })
         .unwrap_or(false)
         || schema
             .items()
-            .map(|s| _schema_contains_any(&*s.read(), nodes.clone()))
+            .map(|s| _schema_contains_any(&*s.read().unwrap(), nodes.clone()))
             .unwrap_or(false)
         || schema
             .additional_properties()
             .map(|e| match e {
                 Either::Left(extra_props_allowed) => *extra_props_allowed,
-                Either::Right(s) => _schema_contains_any(&*s.read(), nodes),
+                Either::Right(s) => _schema_contains_any(&*s.read().unwrap(), nodes),
             })
             .unwrap_or(false)
 }

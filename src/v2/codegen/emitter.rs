@@ -21,14 +21,13 @@ use anyhow::Error;
 use heck::{ToPascalCase, ToSnakeCase};
 use http::{header::HeaderName, HeaderMap};
 use itertools::Itertools;
-use parking_lot::RwLock;
 use std::{
     collections::{BTreeMap, BTreeSet, HashSet},
     fmt::Debug,
     fs,
     ops::Deref,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, RwLock},
 };
 use url_dep::Host;
 
@@ -296,7 +295,7 @@ pub trait Emitter: Sized {
         // Generate file contents by accumulating definitions.
         for (name, schema) in &api.definitions {
             debug!("Creating definition {}", name);
-            let schema = schema.read();
+            let schema = schema.read().unwrap();
             gen.generate_from_definition(&schema)?;
         }
 
@@ -459,7 +458,7 @@ where
             ctx = ctx.add_parent(n);
         }
 
-        let schema = it.read();
+        let schema = it.read().unwrap();
         if schema.name().is_none() {
             // If the schema doesn't have a name, then add "item" as a suffix
             // so that it can be used for name generation later.
@@ -562,7 +561,7 @@ where
 
         match def.additional_properties() {
             Some(Either::Right(s)) => {
-                let schema = s.read();
+                let schema = s.read().unwrap();
                 let ty = self
                     .build_def(&schema, ctx.clone().define(false))?
                     .known_type();
@@ -644,7 +643,7 @@ where
             props
                 .iter()
                 .try_for_each(|(name, prop)| -> Result<(), Error> {
-                    let schema = prop.read();
+                    let schema = prop.read().unwrap();
                     let ctx = ctx.clone().define(false).add_parent(name);
                     let ty = self.build_def(&schema, ctx)?;
                     let ty_path = ty.known_type();
@@ -696,14 +695,14 @@ where
         match schema.data_type() {
             Some(DataType::Object) => {
                 if let Some(Either::Right(s)) = schema.additional_properties() {
-                    return self.children_requirements(&s.read());
+                    return self.children_requirements(&s.read().unwrap());
                 } else if let Some(s) = schema.required_properties() {
                     return s.iter().cloned().collect();
                 }
             }
             Some(DataType::Array) => {
                 if let Some(s) = schema.items() {
-                    return self.children_requirements(&s.read());
+                    return self.children_requirements(&s.read().unwrap());
                 }
             }
             _ => (),
@@ -836,7 +835,7 @@ where
     ) -> Vec<Parameter> {
         let mut map = HeaderMap::<Parameter>::with_capacity(2);
         for resp in responses.values() {
-            let r = resp.read();
+            let r = resp.read().unwrap();
             for (name, info) in &r.headers {
                 let name = match HeaderName::from_bytes(name.as_bytes()) {
                     Ok(n) => n,
@@ -894,12 +893,12 @@ where
         let mut schema_path = None;
         let mut params = vec![];
         for param in obj_params {
-            let p = param.read();
+            let p = param.read().unwrap();
             p.check(self.path)?; // validate the parameter
 
             if let Some(def) = p.schema.as_ref() {
                 // If a schema exists, then get its path for later use.
-                let pat = self.emitter.def_mod_path(&def.read())?;
+                let pat = self.emitter.def_mod_path(&def.read().unwrap())?;
                 if def_mods.get(&pat).is_some() {
                     schema_path = Some(pat);
                     continue;
@@ -978,7 +977,7 @@ where
 
         let mut response_contains_any = false;
         let response_ty_path = if let Some(s) = Self::get_2xx_response_schema(op) {
-            let schema = &*s.read();
+            let schema = &*s.read().unwrap();
             response_contains_any = schema.contains_any();
             Some(
                 self.emitter
@@ -1031,9 +1030,10 @@ where
             }
         };
 
-        let schema = &*s.read();
+        let schema = &*s.read().unwrap();
         let state = self.emitter.state();
-        let listable = schema.items().and_then(|s| s.read().data_type()) == Some(DataType::Object);
+        let listable =
+            schema.items().and_then(|s| s.read().unwrap().data_type()) == Some(DataType::Object);
 
         let mut unknown_schema_context = None;
         let s = match schema.data_type() {
@@ -1065,7 +1065,7 @@ where
             }
         };
 
-        let schema = &*s.read();
+        let schema = &*s.read().unwrap();
         let mut def_mods = state.def_mods.borrow_mut();
         let (obj, response_ty_path) = match unknown_schema_context {
             Some((p, ty)) => (
@@ -1127,7 +1127,7 @@ where
             .iter()
             .filter(|(c, _)| c.starts_with('2')) // 2xx response
             .filter_map(|(_, r)| {
-                let resp = r.read();
+                let resp = r.read().unwrap();
                 resp.schema.as_ref().map(|r| (**r).clone())
             })
             .next()

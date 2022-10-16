@@ -13,7 +13,7 @@ pub mod miscellaneous {
 
 pub mod client {
     use futures::Stream;
-    use parking_lot::Mutex;
+
 
     use std::borrow::Cow;
     use std::fmt::Debug;
@@ -23,9 +23,9 @@ pub mod client {
     #[derive(Debug, thiserror::Error)]
     pub enum ApiError<R: Debug + Send + 'static> {
         #[error("API request failed for path: {} (code: {})", _0, _1)]
-        Failure(String, http::status::StatusCode, Mutex<R>),
+        Failure(String, http::status::StatusCode, R),
         #[error("Unsupported media type in response: {}", _0)]
-        UnsupportedMediaType(String, Mutex<R>),
+        UnsupportedMediaType(String, R),
         #[error("An error has occurred while performing the API request: {}", _0)]
         Reqwest(reqwest::Error),
         #[error("I/O error: {}", _0)]
@@ -261,7 +261,7 @@ pub mod client {
             let ty = resp.header(http::header::CONTENT_TYPE.as_str())
                 .map(|v| String::from_utf8_lossy(v.as_bytes()).into_owned())
                 .unwrap_or_default();
-            Err(ApiError::UnsupportedMediaType(ty, Mutex::new(resp)))
+            Err(ApiError::UnsupportedMediaType(ty, resp))
         }
 
         /// Convenience method for returning a raw response after sending a request.
@@ -272,7 +272,7 @@ pub mod client {
             if resp.status().is_success() {
                 Ok(resp)
             } else {
-                Err(ApiError::Failure(rel_path.into_owned(), resp.status(), Mutex::new(resp)))
+                Err(ApiError::Failure(rel_path.into_owned(), resp.status(), resp))
             }
         }
     }

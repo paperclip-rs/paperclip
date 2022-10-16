@@ -201,20 +201,23 @@ mod tests_k8s {
 
         let json_props_def = &K8S_SCHEMA.definitions
             ["io.k8s.apiextensions-apiserver.pkg.apis.apiextensions.v1beta1.JSONSchemaProps"];
-        let desc = json_props_def.read().description.clone();
-        let all_of = json_props_def.read().properties["allOf"].clone();
-        let items = all_of.read().items.as_ref().unwrap().clone();
-        assert_eq!(items.read().description, desc); // both point to same `JSONSchemaProps`
+        let desc = json_props_def.read().unwrap().description.clone();
+        let all_of = json_props_def.read().unwrap().properties["allOf"].clone();
+        let items = all_of.read().unwrap().items.as_ref().unwrap().clone();
+        assert_eq!(items.read().unwrap().description, desc); // both point to same `JSONSchemaProps`
     }
 
     #[test]
     fn test_resolved_schema() {
-        let resp = &K8S_SCHEMA.paths["/api/"].methods[&HttpMethod::Get].responses["200"].read();
-        let schema = resp.schema.as_ref().expect("bleh?").read();
+        let resp = &K8S_SCHEMA.paths["/api/"].methods[&HttpMethod::Get].responses["200"]
+            .read()
+            .unwrap();
+        let schema = resp.schema.as_ref().expect("bleh?").read().unwrap();
         assert!(schema.reference.is_none()); // this was a reference
         assert_eq!(
             &K8S_SCHEMA.definitions["io.k8s.apimachinery.pkg.apis.meta.v1.APIVersions"]
                 .read()
+                .unwrap()
                 .description
                 .as_ref()
                 .unwrap()

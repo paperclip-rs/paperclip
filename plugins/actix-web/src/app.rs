@@ -21,11 +21,15 @@ use actix_web::{
 };
 use futures::future::{ok as fut_ok, Ready};
 use paperclip_core::v2::models::{DefaultApiRaw, SecurityScheme};
-use parking_lot::RwLock;
 #[cfg(feature = "rapidoc")]
 use tinytemplate::TinyTemplate;
 
-use std::{collections::BTreeMap, fmt::Debug, future::Future, sync::Arc};
+use std::{
+    collections::BTreeMap,
+    fmt::Debug,
+    future::Future,
+    sync::{Arc, RwLock},
+};
 
 /// Wrapper for [`actix_web::App`](https://docs.rs/actix-web/*/actix_web/struct.App.html).
 pub struct App<T> {
@@ -282,7 +286,7 @@ where
     where
         F: FnMut(Self, serde_json::Value) -> Self,
     {
-        let spec = serde_json::to_value(&*self.spec.read()).expect("generating json spec");
+        let spec = serde_json::to_value(&*self.spec.read().unwrap()).expect("generating json spec");
         call(self, spec)
     }
 
@@ -297,7 +301,7 @@ where
     where
         F: FnMut(Self, serde_json::Value) -> Self,
     {
-        let v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().clone());
+        let v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().unwrap().clone());
         let spec = serde_json::to_value(v3).expect("generating json spec");
         call(self, spec)
     }
@@ -407,8 +411,8 @@ where
     pub fn build(self) -> actix_web::App<T> {
         #[cfg(feature = "v3")]
         if let Some(v3) = self.spec_v3 {
-            let mut v3 = v3.write();
-            *v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().clone());
+            let mut v3 = v3.write().unwrap();
+            *v3 = paperclip_core::v3::openapiv2_to_v3(self.spec.read().unwrap().clone());
         }
         self.inner.expect("missing app?")
     }
@@ -419,7 +423,7 @@ where
     /// So, it's important to call this function after adding all route handlers.
     pub fn trim_base_path(self) -> Self {
         {
-            let mut spec = self.spec.write();
+            let mut spec = self.spec.write().unwrap();
             let base_path = spec.base_path.clone().unwrap_or_default();
             spec.paths = spec.paths.iter().fold(BTreeMap::new(), |mut i, (k, v)| {
                 i.insert(
@@ -437,7 +441,7 @@ where
     where
         F: Mountable,
     {
-        let mut api = self.spec.write();
+        let mut api = self.spec.write().unwrap();
         api.definitions.extend(factory.definitions().into_iter());
         SecurityScheme::append_map(
             factory.security_definitions(),
@@ -460,7 +464,7 @@ impl actix_web::dev::Handler<()> for SpecHandler {
     type Future = Ready<Self::Output>;
 
     fn call(&self, _: ()) -> Self::Future {
-        fut_ok(HttpResponse::Ok().json(&*self.0.read()))
+        fut_ok(HttpResponse::Ok().json(&*self.0.read().unwrap()))
     }
 }
 
@@ -474,6 +478,6 @@ impl actix_web::dev::Handler<()> for SpecHandlerV3 {
     type Future = Ready<Self::Output>;
 
     fn call(&self, _: ()) -> Self::Future {
-        fut_ok(HttpResponse::Ok().json(&*self.0.read()))
+        fut_ok(HttpResponse::Ok().json(&*self.0.read().unwrap()))
     }
 }

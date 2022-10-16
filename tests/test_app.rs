@@ -33,11 +33,12 @@ use actix_web::dev::MessageBody;
 #[cfg(feature = "actix2")]
 use actix_rt1::System;
 use actix_service::ServiceFactory;
+#[cfg(feature = "actix4")]
+use actix_web::middleware::{DefaultHeaders, Logger};
 #[cfg(not(feature = "actix2"))]
 use actix_web::rt::System;
 use actix_web::{
     dev::{Payload, ServiceRequest, ServiceResponse},
-    middleware::{DefaultHeaders, Logger},
     App, Error, FromRequest, HttpRequest, HttpServer, Responder,
 };
 #[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
@@ -51,7 +52,7 @@ use paperclip::{
     },
     v2::models::{DefaultApiRaw, Info, Tag},
 };
-use parking_lot::Mutex;
+use std::sync::Mutex;
 #[cfg(any(feature = "actix3-validator", feature = "actix4-validator"))]
 use validator::Validate;
 
@@ -1634,6 +1635,7 @@ fn test_serde_flatten() {
 
     /// Image author info
     #[derive(Deserialize, Apiv2Schema)]
+    #[allow(dead_code)]
     struct Author {
         name: String,
         address: Option<String>,
@@ -1642,6 +1644,7 @@ fn test_serde_flatten() {
 
     /// Image to persist
     #[derive(Deserialize, Apiv2Schema)]
+    #[allow(dead_code)]
     struct ImagePayload {
         data: String,
         id: Uuid,
@@ -1651,6 +1654,7 @@ fn test_serde_flatten() {
 
     /// Article to persist
     #[derive(Deserialize, Apiv2Schema)]
+    #[allow(dead_code)]
     struct Article {
         description: String,
         id: Uuid,
@@ -3734,6 +3738,7 @@ fn test_security_app() {
 #[test]
 fn test_header_parameter_app() {
     #[derive(Apiv2Header, Deserialize)]
+    #[allow(dead_code)]
     struct RequestHeaders {
         #[openapi(name = "X-Request-ID", description = "Allow to track request")]
         request_id: Uuid,
@@ -4340,7 +4345,7 @@ where
 
     let _ = thread::spawn(move || {
         for port in 3000..30000 {
-            if !PORTS.lock().insert(port) {
+            if !PORTS.lock().unwrap().insert(port) {
                 continue;
             }
 
@@ -4388,7 +4393,7 @@ where
     let _ = thread::spawn(move || {
         let sys = System::new("test");
         for port in 3000..30000 {
-            if !PORTS.lock().insert(port) {
+            if !PORTS.lock().unwrap().insert(port) {
                 continue;
             }
 
@@ -4696,7 +4701,7 @@ fn test_schema_with_r_literals() {
     let dog = Dog::raw_schema();
     assert_eq!(
         "bark",
-        dog.properties.iter().next().map(|(k, v)| k).unwrap()
+        dog.properties.iter().next().map(|(k, _v)| k).unwrap()
     );
 }
 
