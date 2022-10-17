@@ -127,8 +127,8 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
             {
                 let f = #wrapped_fn_call;
                 paperclip::actix::ResponseWrapper {
-                    0: f,
-                    1: #unit_struct #generics_call,
+                    responder: f,
+                    operations: #unit_struct #generics_call,
                 }
             }
         ))
