@@ -4,6 +4,24 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [Unreleased] :warning: Breaking Changes
+### Added
+- Support non-boxed bodies in scope middleware. [PR#457](https://github.com/paperclip-rs/paperclip/pull/457)
+- Add `uuid0` and `uuid1` features. [PR#461](https://github.com/paperclip-rs/paperclip/pull/461)
+- Add Content-Type Header to Swagger-UI Requests. [PR#467](https://github.com/paperclip-rs/paperclip/pull/467)
+
+### Changed
+- Updated copyrights to use "Paperclip Contributors". [PR#470](https://github.com/paperclip-rs/paperclip/pull/470)
+- Switch from `parking_lot` to `std::sync`. [PR#473](https://github.com/paperclip-rs/paperclip/pull/473)
+- Replaced dependency `pin-project` with `pin-project-lite`. [PR#472](https://github.com/paperclip-rs/paperclip/pull/472)
+
+### Fixed
+- Inconsistent behavior between `rapidoc` and `swagger_ui` (extra slash). [PR#460](https://github.com/paperclip-rs/paperclip/pull/460)
+- Fixed header-based `SecuritySchema` conversion for `OpenAPI v3`. [PR#458](https://github.com/paperclip-rs/paperclip/pull/458)
+- Respect host setting of v2 spec when converting to v3. [PR#463](https://github.com/paperclip-rs/paperclip/pull/463)
+- Move root level extensions to root. [PR#464](https://github.com/paperclip-rs/paperclip/pull/464)
+- `Apiv2Header` link in documentation. [PR#468](https://github.com/paperclip-rs/paperclip/pull/468)
+
 ## [0.7.1] - 2022-07-27
 ### Added
 - Add support for `PATCH` methods. [PR#422](https://github.com/paperclip-rs/paperclip/pull/422)

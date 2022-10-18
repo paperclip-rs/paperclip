@@ -82,7 +82,7 @@ where
 
         // Set the names of all schemas.
         for (name, schema) in &self.defs {
-            schema.write().set_name(name);
+            schema.write().unwrap().set_name(name);
         }
 
         for (name, schema) in &self.defs {
@@ -92,9 +92,9 @@ where
             for def in self.cyclic_defs.borrow_mut().drain(..) {
                 log::debug!(
                     "Cyclic definition detected: {:?}",
-                    def.read().name().unwrap()
+                    def.read().unwrap().name().unwrap()
                 );
-                def.write().set_cyclic(true);
+                def.write().unwrap().set_cyclic(true);
             }
         }
 
@@ -107,7 +107,7 @@ where
         &self,
         schema: &Resolvable<S>,
     ) -> Result<(), ValidationError> {
-        let mut schema = match schema.try_write() {
+        let mut schema = match schema.try_write().ok() {
             Some(s) => s,
             None => {
                 self.cyclic_defs.borrow_mut().push(schema.clone());
@@ -141,7 +141,7 @@ where
     /// otherwise traverse further.
     fn resolve_definitions(&self, schema: &mut Resolvable<S>) -> Result<(), ValidationError> {
         let ref_def = {
-            let s = match schema.try_read() {
+            let s = match schema.try_read().ok() {
                 Some(s) => s,
                 None => {
                     self.cyclic_defs.borrow_mut().push(schema.clone());
@@ -190,7 +190,7 @@ where
                     *resp = Either::Right(new);
                 }
 
-                let mut response = resp.write();
+                let mut response = resp.write().unwrap();
                 self.resolve_operation_schema(
                     &mut response.schema,
                     Some(method),
@@ -222,7 +222,7 @@ where
                 *p = Either::Right(new);
             }
 
-            let mut param = p.write();
+            let mut param = p.write().unwrap();
             self.resolve_operation_schema(&mut param.schema, method, path, "Body")?;
         }
 
@@ -243,7 +243,7 @@ where
         };
 
         match schema {
-            Resolvable::Raw(ref s) if s.read().reference().is_none() => {
+            Resolvable::Raw(ref s) if s.read().unwrap().reference().is_none() => {
                 // We've encountered an anonymous schema definition in some
                 // parameter/response. Give it a name and add it to global definitions.
                 let prefix = method.map(|s| s.to_string()).unwrap_or_default();

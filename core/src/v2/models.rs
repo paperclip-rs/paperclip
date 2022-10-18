@@ -13,13 +13,12 @@ use regex::{Captures, Regex};
 #[cfg(feature = "actix-base")]
 use actix_web::http::Method;
 
-use parking_lot::RwLock;
 use std::{
     borrow::Cow,
     collections::{BTreeMap, BTreeSet},
     fmt::{self, Display},
     ops::{Deref, DerefMut},
-    sync::Arc,
+    sync::{Arc, RwLock},
 };
 
 /// Regex that can be used for fetching templated path parameters.
@@ -882,9 +881,11 @@ where
     /// Fetch the description for this schema.
     pub fn get_description(&self) -> Option<String> {
         match *self {
-            Resolvable::Raw(ref s) => s.read().description().map(String::from),
-            // We don't want parameters/fields to describe the actual refrenced object.
-            Resolvable::Resolved { ref old, .. } => old.read().description().map(String::from),
+            Resolvable::Raw(ref s) => s.read().unwrap().description().map(String::from),
+            // We don't want parameters/fields to describe the actual referenced object.
+            Resolvable::Resolved { ref old, .. } => {
+                old.read().unwrap().description().map(String::from)
+            }
         }
     }
 }
