@@ -651,18 +651,18 @@
         .properties()
         .map(|t| {
             t.values()
-                .any(|s| _schema_contains_any(<span class="kw-2">&amp;*</span>s.read(), nodes.clone()))
+                .any(|s| _schema_contains_any(<span class="kw-2">&amp;*</span>s.read().unwrap(), nodes.clone()))
         })
         .unwrap_or(<span class="bool-val">false</span>)
         || schema
             .items()
-            .map(|s| _schema_contains_any(<span class="kw-2">&amp;*</span>s.read(), nodes.clone()))
+            .map(|s| _schema_contains_any(<span class="kw-2">&amp;*</span>s.read().unwrap(), nodes.clone()))
             .unwrap_or(<span class="bool-val">false</span>)
         || schema
             .additional_properties()
             .map(|e| <span class="kw">match </span>e {
                 Either::Left(extra_props_allowed) =&gt; <span class="kw-2">*</span>extra_props_allowed,
-                Either::Right(s) =&gt; _schema_contains_any(<span class="kw-2">&amp;*</span>s.read(), nodes),
+                Either::Right(s) =&gt; _schema_contains_any(<span class="kw-2">&amp;*</span>s.read().unwrap(), nodes),
             })
             .unwrap_or(<span class="bool-val">false</span>)
 }

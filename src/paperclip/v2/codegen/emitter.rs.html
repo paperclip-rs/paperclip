@@ -1291,14 +1291,13 @@
 <span class="kw">use </span>heck::{ToPascalCase, ToSnakeCase};
 <span class="kw">use </span>http::{header::HeaderName, HeaderMap};
 <span class="kw">use </span>itertools::Itertools;
-<span class="kw">use </span>parking_lot::RwLock;
 <span class="kw">use </span>std::{
     collections::{BTreeMap, BTreeSet, HashSet},
     fmt::Debug,
     fs,
     ops::Deref,
     path::{Path, PathBuf},
-    sync::Arc,
+    sync::{Arc, RwLock},
 };
 <span class="kw">use </span>url_dep::Host;
 
@@ -1566,7 +1565,7 @@
         <span class="comment">// Generate file contents by accumulating definitions.
         </span><span class="kw">for </span>(name, schema) <span class="kw">in </span><span class="kw-2">&amp;</span>api.definitions {
             <span class="macro">debug!</span>(<span class="string">&quot;Creating definition {}&quot;</span>, name);
-            <span class="kw">let </span>schema = schema.read();
+            <span class="kw">let </span>schema = schema.read().unwrap();
             gen.generate_from_definition(<span class="kw-2">&amp;</span>schema)<span class="question-mark">?</span>;
         }
 
@@ -1729,7 +1728,7 @@
             ctx = ctx.add_parent(n);
         }
 
-        <span class="kw">let </span>schema = it.read();
+        <span class="kw">let </span>schema = it.read().unwrap();
         <span class="kw">if </span>schema.name().is_none() {
             <span class="comment">// If the schema doesn&#39;t have a name, then add &quot;item&quot; as a suffix
             // so that it can be used for name generation later.
@@ -1832,7 +1831,7 @@
 
         <span class="kw">match </span>def.additional_properties() {
             <span class="prelude-val">Some</span>(Either::Right(s)) =&gt; {
-                <span class="kw">let </span>schema = s.read();
+                <span class="kw">let </span>schema = s.read().unwrap();
                 <span class="kw">let </span>ty = <span class="self">self
                     </span>.build_def(<span class="kw-2">&amp;</span>schema, ctx.clone().define(<span class="bool-val">false</span>))<span class="question-mark">?
                     </span>.known_type();
@@ -1914,7 +1913,7 @@
             props
                 .iter()
                 .try_for_each(|(name, prop)| -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-                    <span class="kw">let </span>schema = prop.read();
+                    <span class="kw">let </span>schema = prop.read().unwrap();
                     <span class="kw">let </span>ctx = ctx.clone().define(<span class="bool-val">false</span>).add_parent(name);
                     <span class="kw">let </span>ty = <span class="self">self</span>.build_def(<span class="kw-2">&amp;</span>schema, ctx)<span class="question-mark">?</span>;
                     <span class="kw">let </span>ty_path = ty.known_type();
@@ -1966,14 +1965,14 @@
         <span class="kw">match </span>schema.data_type() {
             <span class="prelude-val">Some</span>(DataType::Object) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(Either::Right(s)) = schema.additional_properties() {
-                    <span class="kw">return </span><span class="self">self</span>.children_requirements(<span class="kw-2">&amp;</span>s.read());
+                    <span class="kw">return </span><span class="self">self</span>.children_requirements(<span class="kw-2">&amp;</span>s.read().unwrap());
                 } <span class="kw">else if let </span><span class="prelude-val">Some</span>(s) = schema.required_properties() {
                     <span class="kw">return </span>s.iter().cloned().collect();
                 }
             }
             <span class="prelude-val">Some</span>(DataType::Array) =&gt; {
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = schema.items() {
-                    <span class="kw">return </span><span class="self">self</span>.children_requirements(<span class="kw-2">&amp;</span>s.read());
+                    <span class="kw">return </span><span class="self">self</span>.children_requirements(<span class="kw-2">&amp;</span>s.read().unwrap());
                 }
             }
             <span class="kw">_ </span>=&gt; (),
@@ -2106,7 +2105,7 @@
     ) -&gt; Vec&lt;Parameter&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>map = HeaderMap::&lt;Parameter&gt;::with_capacity(<span class="number">2</span>);
         <span class="kw">for </span>resp <span class="kw">in </span>responses.values() {
-            <span class="kw">let </span>r = resp.read();
+            <span class="kw">let </span>r = resp.read().unwrap();
             <span class="kw">for </span>(name, info) <span class="kw">in </span><span class="kw-2">&amp;</span>r.headers {
                 <span class="kw">let </span>name = <span class="kw">match </span>HeaderName::from_bytes(name.as_bytes()) {
                     <span class="prelude-val">Ok</span>(n) =&gt; n,
@@ -2164,12 +2163,12 @@
         <span class="kw">let </span><span class="kw-2">mut </span>schema_path = <span class="prelude-val">None</span>;
         <span class="kw">let </span><span class="kw-2">mut </span>params = <span class="macro">vec!</span>[];
         <span class="kw">for </span>param <span class="kw">in </span>obj_params {
-            <span class="kw">let </span>p = param.read();
+            <span class="kw">let </span>p = param.read().unwrap();
             p.check(<span class="self">self</span>.path)<span class="question-mark">?</span>; <span class="comment">// validate the parameter
 
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(def) = p.schema.as_ref() {
                 <span class="comment">// If a schema exists, then get its path for later use.
-                </span><span class="kw">let </span>pat = <span class="self">self</span>.emitter.def_mod_path(<span class="kw-2">&amp;</span>def.read())<span class="question-mark">?</span>;
+                </span><span class="kw">let </span>pat = <span class="self">self</span>.emitter.def_mod_path(<span class="kw-2">&amp;</span>def.read().unwrap())<span class="question-mark">?</span>;
                 <span class="kw">if </span>def_mods.get(<span class="kw-2">&amp;</span>pat).is_some() {
                     schema_path = <span class="prelude-val">Some</span>(pat);
                     <span class="kw">continue</span>;
@@ -2248,7 +2247,7 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>response_contains_any = <span class="bool-val">false</span>;
         <span class="kw">let </span>response_ty_path = <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = <span class="self">Self</span>::get_2xx_response_schema(op) {
-            <span class="kw">let </span>schema = <span class="kw-2">&amp;*</span>s.read();
+            <span class="kw">let </span>schema = <span class="kw-2">&amp;*</span>s.read().unwrap();
             response_contains_any = schema.contains_any();
             <span class="prelude-val">Some</span>(
                 <span class="self">self</span>.emitter
@@ -2301,9 +2300,10 @@
             }
         };
 
-        <span class="kw">let </span>schema = <span class="kw-2">&amp;*</span>s.read();
+        <span class="kw">let </span>schema = <span class="kw-2">&amp;*</span>s.read().unwrap();
         <span class="kw">let </span>state = <span class="self">self</span>.emitter.state();
-        <span class="kw">let </span>listable = schema.items().and_then(|s| s.read().data_type()) == <span class="prelude-val">Some</span>(DataType::Object);
+        <span class="kw">let </span>listable =
+            schema.items().and_then(|s| s.read().unwrap().data_type()) == <span class="prelude-val">Some</span>(DataType::Object);
 
         <span class="kw">let </span><span class="kw-2">mut </span>unknown_schema_context = <span class="prelude-val">None</span>;
         <span class="kw">let </span>s = <span class="kw">match </span>schema.data_type() {
@@ -2335,7 +2335,7 @@
             }
         };
 
-        <span class="kw">let </span>schema = <span class="kw-2">&amp;*</span>s.read();
+        <span class="kw">let </span>schema = <span class="kw-2">&amp;*</span>s.read().unwrap();
         <span class="kw">let </span><span class="kw-2">mut </span>def_mods = state.def_mods.borrow_mut();
         <span class="kw">let </span>(obj, response_ty_path) = <span class="kw">match </span>unknown_schema_context {
             <span class="prelude-val">Some</span>((p, ty)) =&gt; (
@@ -2397,7 +2397,7 @@
             .iter()
             .filter(|(c, <span class="kw">_</span>)| c.starts_with(<span class="string">&#39;2&#39;</span>)) <span class="comment">// 2xx response
             </span>.filter_map(|(<span class="kw">_</span>, r)| {
-                <span class="kw">let </span>resp = r.read();
+                <span class="kw">let </span>resp = r.read().unwrap();
                 resp.schema.as_ref().map(|r| (<span class="kw-2">**</span>r).clone())
             })
             .next()

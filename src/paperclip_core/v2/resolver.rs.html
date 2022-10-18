@@ -392,7 +392,7 @@
 
         <span class="comment">// Set the names of all schemas.
         </span><span class="kw">for </span>(name, schema) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.defs {
-            schema.write().set_name(name);
+            schema.write().unwrap().set_name(name);
         }
 
         <span class="kw">for </span>(name, schema) <span class="kw">in </span><span class="kw-2">&amp;</span><span class="self">self</span>.defs {
@@ -402,9 +402,9 @@
             <span class="kw">for </span>def <span class="kw">in </span><span class="self">self</span>.cyclic_defs.borrow_mut().drain(..) {
                 <span class="macro">log::debug!</span>(
                     <span class="string">&quot;Cyclic definition detected: {:?}&quot;</span>,
-                    def.read().name().unwrap()
+                    def.read().unwrap().name().unwrap()
                 );
-                def.write().set_cyclic(<span class="bool-val">true</span>);
+                def.write().unwrap().set_cyclic(<span class="bool-val">true</span>);
             }
         }
 
@@ -417,7 +417,7 @@
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         schema: <span class="kw-2">&amp;</span>Resolvable&lt;S&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
-        <span class="kw">let </span><span class="kw-2">mut </span>schema = <span class="kw">match </span>schema.try_write() {
+        <span class="kw">let </span><span class="kw-2">mut </span>schema = <span class="kw">match </span>schema.try_write().ok() {
             <span class="prelude-val">Some</span>(s) =&gt; s,
             <span class="prelude-val">None </span>=&gt; {
                 <span class="self">self</span>.cyclic_defs.borrow_mut().push(schema.clone());
@@ -451,7 +451,7 @@
     /// otherwise traverse further.
     </span><span class="kw">fn </span>resolve_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>, schema: <span class="kw-2">&amp;mut </span>Resolvable&lt;S&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), ValidationError&gt; {
         <span class="kw">let </span>ref_def = {
-            <span class="kw">let </span>s = <span class="kw">match </span>schema.try_read() {
+            <span class="kw">let </span>s = <span class="kw">match </span>schema.try_read().ok() {
                 <span class="prelude-val">Some</span>(s) =&gt; s,
                 <span class="prelude-val">None </span>=&gt; {
                     <span class="self">self</span>.cyclic_defs.borrow_mut().push(schema.clone());
@@ -500,7 +500,7 @@
                     <span class="kw-2">*</span>resp = Either::Right(new);
                 }
 
-                <span class="kw">let </span><span class="kw-2">mut </span>response = resp.write();
+                <span class="kw">let </span><span class="kw-2">mut </span>response = resp.write().unwrap();
                 <span class="self">self</span>.resolve_operation_schema(
                     <span class="kw-2">&amp;mut </span>response.schema,
                     <span class="prelude-val">Some</span>(method),
@@ -532,7 +532,7 @@
                 <span class="kw-2">*</span>p = Either::Right(new);
             }
 
-            <span class="kw">let </span><span class="kw-2">mut </span>param = p.write();
+            <span class="kw">let </span><span class="kw-2">mut </span>param = p.write().unwrap();
             <span class="self">self</span>.resolve_operation_schema(<span class="kw-2">&amp;mut </span>param.schema, method, path, <span class="string">&quot;Body&quot;</span>)<span class="question-mark">?</span>;
         }
 
@@ -553,7 +553,7 @@
         };
 
         <span class="kw">match </span>schema {
-            Resolvable::Raw(<span class="kw-2">ref </span>s) <span class="kw">if </span>s.read().reference().is_none() =&gt; {
+            Resolvable::Raw(<span class="kw-2">ref </span>s) <span class="kw">if </span>s.read().unwrap().reference().is_none() =&gt; {
                 <span class="comment">// We&#39;ve encountered an anonymous schema definition in some
                 // parameter/response. Give it a name and add it to global definitions.
                 </span><span class="kw">let </span>prefix = method.map(|s| s.to_string()).unwrap_or_default();

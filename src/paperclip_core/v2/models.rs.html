@@ -1007,6 +1007,7 @@
 <span id="1007">1007</span>
 <span id="1008">1008</span>
 <span id="1009">1009</span>
+<span id="1010">1010</span>
 </pre><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.
 
 </span><span class="kw">pub use </span><span class="kw">super</span>::extensions::{
@@ -1022,13 +1023,12 @@
 <span class="attribute">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
 </span><span class="kw">use </span>actix_web::http::Method;
 
-<span class="kw">use </span>parking_lot::RwLock;
 <span class="kw">use </span>std::{
     borrow::Cow,
     collections::{BTreeMap, BTreeSet},
     fmt::{<span class="self">self</span>, Display},
     ops::{Deref, DerefMut},
-    sync::Arc,
+    sync::{Arc, RwLock},
 };
 
 <span class="doccomment">/// Regex that can be used for fetching templated path parameters.
@@ -1891,9 +1891,11 @@
     <span class="doccomment">/// Fetch the description for this schema.
     </span><span class="kw">pub fn </span>get_description(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="kw">match </span><span class="kw-2">*</span><span class="self">self </span>{
-            Resolvable::Raw(<span class="kw-2">ref </span>s) =&gt; s.read().description().map(String::from),
-            <span class="comment">// We don&#39;t want parameters/fields to describe the actual refrenced object.
-            </span>Resolvable::Resolved { <span class="kw-2">ref </span>old, .. } =&gt; old.read().description().map(String::from),
+            Resolvable::Raw(<span class="kw-2">ref </span>s) =&gt; s.read().unwrap().description().map(String::from),
+            <span class="comment">// We don&#39;t want parameters/fields to describe the actual referenced object.
+            </span>Resolvable::Resolved { <span class="kw-2">ref </span>old, .. } =&gt; {
+                old.read().unwrap().description().map(String::from)
+            }
         }
     }
 }
