@@ -236,6 +236,7 @@ impl<T: chrono::offset::TimeZone> TypedData for chrono::DateTime<T> {
 }
 
 #[cfg(feature = "chrono")]
+#[allow(deprecated)]
 impl<T: chrono::offset::TimeZone> TypedData for chrono::Date<T> {
     fn data_type() -> DataType {
         DataType::String

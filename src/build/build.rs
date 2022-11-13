@@ -91,6 +91,6 @@ mod template {
 ",
     );
 
-    let mut fd = File::create(&source_path).unwrap();
+    let mut fd = File::create(source_path).unwrap();
     fd.write_all(contents.as_bytes()).unwrap();
 }
