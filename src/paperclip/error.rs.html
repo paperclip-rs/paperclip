@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../paperclip/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/error.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>error.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-eabf764633b9d7be.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-777f3e9583f8c92d.css"><link rel="stylesheet" disabled href="../../static.files/dark-e2f4109f2e82e3af.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c360e709a65bed99.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-c2d2a5dbaed13e6b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../paperclip/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -93,58 +93,58 @@
 </span><span class="kw">pub type </span>PaperClipResult&lt;T&gt; = <span class="prelude-ty">Result</span>&lt;T, PaperClipError&gt;;
 
 <span class="doccomment">/// Global error which encapsulates all related errors.
-</span><span class="attribute">#[derive(Debug, thiserror::Error)]
+</span><span class="attr">#[derive(Debug, thiserror::Error)]
 </span><span class="kw">pub enum </span>PaperClipError {
     <span class="doccomment">/// Error encountered during spec validation.
-    </span><span class="attribute">#[error(<span class="string">&quot;{}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;{}&quot;</span>, _0)]
     </span>Validation(paperclip_core::ValidationError),
     <span class="doccomment">/// The given directory cannot be used for generating code.
-    </span><span class="attribute">#[error(<span class="string">&quot;Cannot generate code in the given directory&quot;</span>)]
+    </span><span class="attr">#[error(<span class="string">&quot;Cannot generate code in the given directory&quot;</span>)]
     </span>InvalidCodegenDirectory,
     <span class="doccomment">/// Currently, we only support OpenAPI v2, and eventually v3.
-    </span><span class="attribute">#[error(<span class="string">&quot;This version of OpenAPI is unsupported.&quot;</span>)]
+    </span><span class="attr">#[error(<span class="string">&quot;This version of OpenAPI is unsupported.&quot;</span>)]
     #[allow(clippy::upper_case_acronyms)]
     </span>UnsupportedOpenAPIVersion,
     <span class="doccomment">/// Paths listed in the spec must be unique.
-    </span><span class="attribute">#[error(<span class="string">&quot;Path similar to {:?} already exists.&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;Path similar to {:?} already exists.&quot;</span>, _0)]
     </span>RelativePathNotUnique(String),
-    <span class="attribute">#[error(<span class="string">&quot;Parameter(s) {:?} aren&#39;t defined for templated path {:?}&quot;</span>, _1, _0)]
+    <span class="attr">#[error(<span class="string">&quot;Parameter(s) {:?} aren&#39;t defined for templated path {:?}&quot;</span>, _1, _0)]
     </span>MissingParametersInPath(String, HashSet&lt;String&gt;),
     <span class="doccomment">/// Invalid host for URL.
-    </span><span class="attribute">#[error(<span class="string">&quot;Cannot parse host {:?}: {}&quot;</span>, _0, _1)]
+    </span><span class="attr">#[error(<span class="string">&quot;Cannot parse host {:?}: {}&quot;</span>, _0, _1)]
     </span>InvalidHost(String, url_dep::ParseError),
     <span class="doccomment">/// Invalid base path URL.
-    </span><span class="attribute">#[error(<span class="string">&quot;Cannot set URL {:?}: {}&quot;</span>, _0, _1)]
+    </span><span class="attr">#[error(<span class="string">&quot;Cannot set URL {:?}: {}&quot;</span>, _0, _1)]
     #[allow(clippy::upper_case_acronyms)]
     </span>InvalidBasePathURL(String, url_dep::ParseError),
     <span class="doccomment">/// The given schema object is an array, but the `items` field is missing.
-    </span><span class="attribute">#[error(<span class="string">&quot;Missing item schema for array: {:?}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;Missing item schema for array: {:?}&quot;</span>, _0)]
     </span>MissingArrayItem(<span class="prelude-ty">Option</span>&lt;String&gt;),
     <span class="doccomment">/// The name for the given definition is invalid.
-    </span><span class="attribute">#[error(<span class="string">&quot;Invalid name for definition: &#39;{0}&#39;&quot;</span>)]
+    </span><span class="attr">#[error(<span class="string">&quot;Invalid name for definition: &#39;{0}&#39;&quot;</span>)]
     </span>InvalidDefinitionName(String),
     <span class="doccomment">/// The name for the given definition is missing.
-    </span><span class="attribute">#[error(<span class="string">&quot;Missing name for definition&quot;</span>)]
+    </span><span class="attr">#[error(<span class="string">&quot;Missing name for definition&quot;</span>)]
     </span>MissingDefinitionName,
     <span class="doccomment">/// A valid path cannot be obtained for the given definition.
-    </span><span class="attribute">#[error(<span class="string">&quot;Invalid path for definition: {:?}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;Invalid path for definition: {:?}&quot;</span>, _0)]
     </span>InvalidDefinitionPath(PathBuf),
     <span class="doccomment">/// I/O errors.
-    </span><span class="attribute">#[error(<span class="string">&quot;I/O error: {}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;I/O error: {}&quot;</span>, _0)]
     </span>Io(std::io::Error),
     <span class="doccomment">/// JSON coding errors.
-    </span><span class="attribute">#[error(<span class="string">&quot;JSON error: {}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;JSON error: {}&quot;</span>, _0)]
     </span>Json(serde_json::Error),
     <span class="doccomment">/// YAML coding errors.
-    </span><span class="attribute">#[error(<span class="string">&quot;YAML error: {}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;YAML error: {}&quot;</span>, _0)]
     </span>Yaml(serde_yaml::Error),
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]
     </span><span class="doccomment">/// Errors from rustfmt.
-    </span><span class="attribute">#[error(<span class="string">&quot;Rustfmt formatting error: {}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;Rustfmt formatting error: {}&quot;</span>, _0)]
     </span>RustFmt(rustfmt_nightly::ErrorKind),
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
     </span><span class="doccomment">/// Errors in templating.
-    </span><span class="attribute">#[error(<span class="string">&quot;Templating error: {}&quot;</span>, _0)]
+    </span><span class="attr">#[error(<span class="string">&quot;Templating error: {}&quot;</span>, _0)]
     </span>Templating(tinytemplate::error::Error),
 }
 
@@ -152,9 +152,9 @@
 <span class="macro">impl_err_from!</span>(PaperClipError::serde_json::Error &gt; Json);
 <span class="macro">impl_err_from!</span>(PaperClipError::serde_yaml::Error &gt; Yaml);
 <span class="macro">impl_err_from!</span>(PaperClipError::paperclip_core::ValidationError &gt; Validation);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;codegen-fmt&quot;</span>)]
 </span><span class="macro">impl_err_from!</span>(PaperClipError::rustfmt_nightly::ErrorKind &gt; RustFmt);
-<span class="attribute">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;codegen&quot;</span>)]
 </span><span class="macro">impl_err_from!</span>(PaperClipError::tinytemplate::error::Error &gt; Templating);
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (06f049a35 2022-10-17)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (42325c525 2022-11-11)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

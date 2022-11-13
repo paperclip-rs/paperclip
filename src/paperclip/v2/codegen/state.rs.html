@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../../../normalize.css"><link rel="stylesheet" href="../../../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../../../ayu.css" disabled><link rel="stylesheet" href="../../../../dark.css" disabled><link rel="stylesheet" href="../../../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../../../storage.js"></script><script defer src="../../../../source-script.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../main.js"></script><noscript><link rel="stylesheet" href="../../../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../../../paperclip/index.html"><div class="logo-container"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/state.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-eabf764633b9d7be.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../../static.files/light-777f3e9583f8c92d.css"><link rel="stylesheet" disabled href="../../../../static.files/dark-e2f4109f2e82e3af.css"><link rel="stylesheet" disabled href="../../../../static.files/ayu-c360e709a65bed99.css"><script id="default-settings" ></script><script src="../../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-c2d2a5dbaed13e6b.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -628,12 +628,12 @@
 };
 <span class="kw">use </span>anyhow::Error;
 <span class="kw">use </span>heck::ToPascalCase;
-<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
 </span><span class="kw">use </span>heck::ToSnakeCase;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>url_dep::Url;
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
 </span><span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::{
     cell::RefCell,
@@ -647,7 +647,7 @@
 };
 
 <span class="doccomment">/// Holds the state for your schema emitter.
-</span><span class="attribute">#[derive(Debug)]
+</span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub struct </span>EmitterState {
     <span class="doccomment">/// Working directory - the path in which the necessary modules are generated.
     </span><span class="kw">pub </span>working_dir: PathBuf,
@@ -663,7 +663,7 @@
     </span>default_encoding: RefCell&lt;SpecFormat&gt;,
     <span class="doccomment">/// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
     /// along with the modules. This is gated behind `&quot;cli&quot;` feature.
-    </span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+    </span><span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
     </span>crate_meta: Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;,
 
     <span class="comment">/* MARK: Internal fields that should be reset for each session. */
@@ -684,7 +684,7 @@
 }
 
 <span class="doccomment">/// Indicates a child module in codegen working directory.
-</span><span class="attribute">#[derive(Debug, Clone, Eq)]
+</span><span class="attr">#[derive(Debug, Clone, Eq)]
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>ChildModule {
     <span class="doccomment">/// Name of this child module.
     </span><span class="kw">pub </span>name: String,
@@ -1010,7 +1010,7 @@ pub mod util {
 
 <span class="comment">/* Feature-specific impls */
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
 </span><span class="kw">impl </span>EmitterState {
     <span class="doccomment">/// Sets the crate metadata for this session.
     </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, meta: CrateMeta) {
@@ -1111,7 +1111,7 @@ pub mod util {
     }
 }
 
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;cli&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">&quot;cli&quot;</span>))]
 </span><span class="kw">impl </span>EmitterState {
     <span class="doccomment">/// This is a no-op.
     </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: CrateMeta) {}
@@ -1150,7 +1150,7 @@ pub mod util {
             working_dir: <span class="self">self</span>.working_dir.clone(),
             mod_prefix: <span class="self">self</span>.mod_prefix,
             ns_sep: <span class="self">self</span>.ns_sep,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+            <span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
             </span>crate_meta: <span class="self">self</span>.crate_meta.clone(),
             base_url: <span class="self">self</span>.base_url.clone(),
             default_encoding: <span class="self">self</span>.default_encoding.clone(),
@@ -1166,7 +1166,7 @@ pub mod util {
             working_dir: PathBuf::from(<span class="string">&quot;.&quot;</span>),
             mod_prefix: <span class="string">&quot;crate::&quot;</span>,
             ns_sep: <span class="string">&quot;.&quot;</span>,
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+            <span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
             </span>crate_meta: Rc::new(RefCell::new(<span class="prelude-val">None</span>)),
             base_url: RefCell::new(<span class="string">&quot;https://example.com&quot;</span>.parse().expect(<span class="string">&quot;invalid URL?&quot;</span>)),
             def_mods: RefCell::new(BTreeMap::new()),
@@ -1195,7 +1195,7 @@ pub mod util {
 
 <span class="comment">/* Templating contexts */
 
-</span><span class="attribute">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
 #[derive(serde::Serialize)]
 </span><span class="kw">struct </span>ManifestContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
@@ -1205,20 +1205,20 @@ pub mod util {
     no_root: bool,
 }
 
-<span class="attribute">#[derive(serde::Serialize)]
+<span class="attr">#[derive(serde::Serialize)]
 </span><span class="kw">struct </span>CliUtilContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     match_arms: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
 }
 
-<span class="attribute">#[derive(serde::Serialize)]
+<span class="attr">#[derive(serde::Serialize)]
 </span><span class="kw">struct </span>ClientModContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     base_url: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
 }
 
-<span class="attribute">#[derive(Debug, serde::Serialize)]
+<span class="attr">#[derive(Debug, serde::Serialize)]
 </span><span class="kw">struct </span>MediaCoder {
     range: String,
     decoder: String,
@@ -1226,13 +1226,13 @@ pub mod util {
     error_ty_path: String,
 }
 
-<span class="attribute">#[derive(serde::Serialize)]
+<span class="attr">#[derive(serde::Serialize)]
 </span><span class="kw">struct </span>ClapYamlContext&lt;<span class="lifetime">&#39;a</span>&gt; {
     name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
     version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
 }
 
-<span class="attribute">#[derive(serde::Serialize)]
+<span class="attr">#[derive(serde::Serialize)]
 </span><span class="kw">struct </span>EmptyContext {}
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-current-crate="paperclip" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (06f049a35 2022-10-17)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (42325c525 2022-11-11)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/actix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>actix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Regular.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../FiraSans-Medium.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Regular.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceSerif4-Bold.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../SourceCodePro-Semibold.ttf.woff2"><link rel="stylesheet" href="../../normalize.css"><link rel="stylesheet" href="../../rustdoc.css" id="mainThemeStyle"><link rel="stylesheet" href="../../ayu.css" disabled><link rel="stylesheet" href="../../dark.css" disabled><link rel="stylesheet" href="../../light.css" id="themeStyle"><script id="default-settings" ></script><script src="../../storage.js"></script><script defer src="../../source-script.js"></script><script defer src="../../source-files.js"></script><script defer src="../../main.js"></script><noscript><link rel="stylesheet" href="../../noscript.css"></noscript><link rel="alternate icon" type="image/png" href="../../favicon-16x16.png"><link rel="alternate icon" type="image/png" href="../../favicon-32x32.png"><link rel="icon" type="image/svg+xml" href="../../favicon.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><a class="sidebar-logo" href="../../paperclip_macros/index.html"><div class="logo-container"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></div></a></nav><main><div class="width-limiter"><div class="sub-container"><a class="sub-logo-container" href="../../paperclip_macros/index.html"><img class="rust-logo" src="../../rust-logo.svg" alt="logo"></a><nav class="sub"><form class="search-form"><div class="search-container"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../wheel.svg"></a></div></div></form></nav></div><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/actix.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>actix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-eabf764633b9d7be.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../static.files/light-777f3e9583f8c92d.css"><link rel="stylesheet" disabled href="../../static.files/dark-e2f4109f2e82e3af.css"><link rel="stylesheet" disabled href="../../static.files/ayu-c360e709a65bed99.css"><script id="default-settings" ></script><script src="../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../static.files/source-script-74087aa2e88f4475.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-c2d2a5dbaed13e6b.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../paperclip_macros/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><span id="1">1</span>
 <span id="2">2</span>
 <span id="3">3</span>
 <span id="4">4</span>
@@ -2161,7 +2161,7 @@
                     Default::default()
                 }
 
-                <span class="attribute">#[allow(unused_mut)]
+                <span class="attr">#[allow(unused_mut)]
                 </span><span class="kw">fn </span>security_definitions() -&gt; std::collections::BTreeMap&lt;String, paperclip::v2::models::SecurityScheme&gt; {
                     Default::default()
                 }
@@ -2225,7 +2225,7 @@
                 op
             }
 
-            <span class="attribute">#[allow(unused_mut)]
+            <span class="attr">#[allow(unused_mut)]
             </span><span class="kw">fn </span>security_definitions() -&gt; std::collections::BTreeMap&lt;String, paperclip::v2::models::SecurityScheme&gt; {
                 <span class="kw">use </span>paperclip::actix::OperationModifier;
                 <span class="kw">let </span><span class="kw-2">mut </span>map = Default::default();
@@ -2853,7 +2853,7 @@
     };
     <span class="kw">let </span>props_gen_empty = props_gen.is_empty();
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
     </span><span class="kw">let </span>default_schema_raw_def = <span class="macro">quote! </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>schema = DefaultSchemaRaw {
             name: <span class="prelude-val">Some</span>(#schema_name.into()),
@@ -2862,7 +2862,7 @@
         };
     };
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
     </span><span class="kw">let </span>default_schema_raw_def = <span class="macro">quote! </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>schema = DefaultSchemaRaw {
             name: <span class="prelude-val">Some</span>(<span class="self">Self</span>::__paperclip_schema_name()), <span class="comment">// Add name for later use.
@@ -2871,10 +2871,10 @@
         };
     };
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
     </span><span class="kw">let </span>paperclip_schema_name_def = <span class="macro">quote!</span>();
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
     </span><span class="kw">let </span>paperclip_schema_name_def = <span class="macro">quote! </span>{
         <span class="kw">fn </span>__paperclip_schema_name() -&gt; String {
             <span class="comment">// The module path itself, e.g cratename::module
@@ -2890,22 +2890,22 @@
         }
     };
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
     </span><span class="kw">let </span>const_name_def = <span class="macro">quote! </span>{
         <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
             <span class="prelude-val">Some</span>(#schema_name.to_string())
         }
     };
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
     </span><span class="kw">let </span>const_name_def = <span class="macro">quote!</span>();
 
-    <span class="attribute">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">&quot;path-in-definition&quot;</span>))]
     </span><span class="kw">let </span>props_gen_empty_name_def = <span class="macro">quote! </span>{
         schema.name = <span class="prelude-val">Some</span>(#schema_name.into());
     };
 
-    <span class="attribute">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">&quot;path-in-definition&quot;</span>)]
     </span><span class="kw">let </span>props_gen_empty_name_def = <span class="macro">quote! </span>{
         schema.name = <span class="prelude-val">Some</span>(<span class="self">Self</span>::__paperclip_schema_name());
     };
@@ -3371,13 +3371,13 @@
     }
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
 </span><span class="kw">fn </span>add_optional_impl(<span class="kw">_</span>: <span class="kw-2">&amp;</span>Ident, <span class="kw">_</span>: <span class="kw-2">&amp;</span>Generics) -&gt; proc_macro2::TokenStream {
     <span class="comment">// Empty impl for &quot;nightly&quot; feature because specialization helps us there.
     </span><span class="macro">quote!</span>()
 }
 
-<span class="attribute">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
 </span><span class="kw">fn </span>add_optional_impl(name: <span class="kw-2">&amp;</span>Ident, generics: <span class="kw-2">&amp;</span>Generics) -&gt; proc_macro2::TokenStream {
     <span class="kw">let </span>(impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     <span class="macro">quote! </span>{
@@ -3680,23 +3680,23 @@
 <span class="comment">/* Serde attributes */
 
 </span><span class="doccomment">/// Supported renaming options in serde (https://serde.rs/variant-attrs.html).
-</span><span class="attribute">#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString)]
+</span><span class="attr">#[derive(Clone, Copy, Debug, Eq, PartialEq, EnumString)]
 </span><span class="kw">enum </span>SerdeRename {
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;lowercase&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;lowercase&quot;</span>)]
     </span>Lower,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;UPPERCASE&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;UPPERCASE&quot;</span>)]
     </span>Upper,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;PascalCase&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;PascalCase&quot;</span>)]
     </span>Pascal,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;camelCase&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;camelCase&quot;</span>)]
     </span>Camel,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;snake_case&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;snake_case&quot;</span>)]
     </span>Snake,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;SCREAMING_SNAKE_CASE&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;SCREAMING_SNAKE_CASE&quot;</span>)]
     </span>ScreamingSnake,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;kebab-case&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;kebab-case&quot;</span>)]
     </span>Kebab,
-    <span class="attribute">#[strum(serialize = <span class="string">&quot;SCREAMING-KEBAB-CASE&quot;</span>)]
+    <span class="attr">#[strum(serialize = <span class="string">&quot;SCREAMING-KEBAB-CASE&quot;</span>)]
     </span>ScreamingKebab,
 }
 
@@ -3792,7 +3792,7 @@
     </span>}
 }
 
-<span class="attribute">#[derive(Clone, Debug, Default)]
+<span class="attr">#[derive(Clone, Debug, Default)]
 </span><span class="kw">struct </span>SerdeProps {
     rename: <span class="prelude-ty">Option</span>&lt;SerdeRename&gt;,
 }
@@ -3875,12 +3875,12 @@
 
 <span class="macro">macro_rules! </span>doc_comment {
     (<span class="macro-nonterminal">$x</span>:expr; $(<span class="macro-nonterminal">$tt</span>:tt)<span class="kw-2">*</span>) =&gt; {
-        <span class="attribute">#[doc = <span class="macro-nonterminal">$x</span>]
+        <span class="attr">#[doc = <span class="macro-nonterminal">$x</span>]
         </span>$(<span class="macro-nonterminal">$tt</span>)*
     };
 }
 
-<span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
 </span><span class="kw">impl </span><span class="kw">super</span>::Method {
     <span class="kw">fn </span>handler_uri(attr: TokenStream) -&gt; TokenStream {
         <span class="kw">let </span>attr = <span class="macro">parse_macro_input!</span>(attr <span class="kw">as </span>syn::AttributeArgs);
@@ -3911,7 +3911,7 @@
         };
 
         <span class="prelude-val">Ok</span>(<span class="macro">quote! </span>{
-            <span class="attribute">#[allow(non_camel_case_types, missing_docs)]
+            <span class="attr">#[allow(non_camel_case_types, missing_docs)]
             </span><span class="kw">pub struct </span>#handler_name;
 
             <span class="kw">impl </span>#handler_name {
@@ -3969,7 +3969,7 @@
         $(<span class="macro-nonterminal">$variant</span>:ident, <span class="macro-nonterminal">$method</span>:ident, )+
     ) =&gt; {
         <span class="doccomment">/// All available Rest methods
-        </span><span class="attribute">#[derive(Debug, PartialEq, Eq, Hash)]
+        </span><span class="attr">#[derive(Debug, PartialEq, Eq, Hash)]
         </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">enum </span>Method {
             $(
                 <span class="macro-nonterminal">$variant</span>,
@@ -4011,7 +4011,7 @@ trait actix_web::Responder.
 /// async fn example() {
 /// }
 &quot;#</span>);
-            <span class="attribute">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
+            <span class="attr">#[cfg(feature = <span class="string">&quot;actix&quot;</span>)]
             #[proc_macro_attribute]
             </span><span class="kw">pub fn </span><span class="macro-nonterminal">$method</span>(attr: TokenStream, item: TokenStream) -&gt; TokenStream {
                 <span class="kw">match </span>Method::<span class="macro-nonterminal">$variant</span>.generate(attr, item) {
@@ -4023,4 +4023,4 @@ trait actix_web::Responder.
     };
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-current-crate="paperclip_macros" data-themes="ayu,dark,light" data-resource-suffix="" data-rustdoc-version="1.66.0-nightly (06f049a35 2022-10-17)" ></div></body></html>
+</section></div></main><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.67.0-nightly (42325c525 2022-11-11)" data-search-js="search-39ee4160c7dc16c9.js" data-settings-js="settings-3a0b9947ba1bd99a.js" data-settings-css="settings-a66f7524084a489a.css" ></div></body></html>
