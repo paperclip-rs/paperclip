@@ -140,6 +140,7 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
 
     if op_params.iter().any(|i| *i == "skip") {
         return quote!(
+            #[allow(non_camel_case_types, missing_docs)]
             #struct_definition
 
             #item_ast
