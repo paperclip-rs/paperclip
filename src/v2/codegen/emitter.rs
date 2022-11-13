@@ -510,7 +510,7 @@ where
             self.def_anon_name(def, &ctx.parents).ok_or(e)
         })?;
 
-        let mut obj = ApiObject::with_name(&name);
+        let mut obj = ApiObject::with_name(name);
         obj.description = def.description().map(String::from);
         obj.inner = ObjectContainer::Enum {
             variants: vec![],

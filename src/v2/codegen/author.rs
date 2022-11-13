@@ -14,7 +14,7 @@ fn get_environment_variable(variables: &[&str]) -> Option<String> {
 /// Attempts to find the name and email of the author from the current environment.
 pub(super) fn discover() -> Result<(String, Option<String>), Error> {
     let cwd = env::current_dir()?;
-    let git_config = if let Ok(repo) = GitRepository::discover(&cwd) {
+    let git_config = if let Ok(repo) = GitRepository::discover(cwd) {
         repo.config()
             .ok()
             .or_else(|| GitConfig::open_default().ok())
