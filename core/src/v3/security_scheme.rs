@@ -31,14 +31,14 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                         implicit: match flow.as_str() {
                             "implicit" => Some(openapiv3::OAuth2Flow::Implicit {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
-                                refresh_url: None,
+                                refresh_url: Some("".to_string()),
                                 scopes: scopes.clone(),
                             }),
                             _ => None,
                         },
                         password: match flow.as_str() {
                             "password" => Some(openapiv3::OAuth2Flow::Password {
-                                refresh_url: None,
+                                refresh_url: Some("".to_string()),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 scopes: scopes.clone(),
                             }),
@@ -46,7 +46,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                         },
                         client_credentials: match flow.as_str() {
                             "application" => Some(openapiv3::OAuth2Flow::ClientCredentials {
-                                refresh_url: None,
+                                refresh_url: Some("".to_string()),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 scopes: scopes.clone(),
                             }),
@@ -56,7 +56,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             "accessCode" => Some(openapiv3::OAuth2Flow::AuthorizationCode {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
-                                refresh_url: None,
+                                refresh_url: Some("".to_string()),
                                 scopes,
                             }),
                             _ => None,
