@@ -1,6 +1,5 @@
 //! Models used by OpenAPI v2.
 
-
 pub use super::extensions::{
     Coder, Coders, MediaRange, JSON_CODER, JSON_MIME, YAML_CODER, YAML_MIME,
 };
@@ -10,7 +9,7 @@ use crate::error::ValidationError;
 use once_cell::sync::Lazy;
 use paperclip_macros::api_v2_schema_struct;
 use regex::{Captures, Regex};
-use serde::ser::{Serializer, SerializeMap};
+use serde::ser::{SerializeMap, Serializer};
 
 #[cfg(feature = "actix-base")]
 use actix_web::http::Method;
@@ -138,10 +137,13 @@ pub type ResolvableApi<S> = Api<ResolvableParameter<S>, ResolvableResponse<S>, R
 /// OpenAPI v2 spec with defaults.
 pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultResponseRaw, DefaultSchemaRaw>;
 
-fn strip_templates_from_paths<P: serde::ser::Serialize, R: serde::ser::Serialize, S: Serializer>(tree: &BTreeMap<String, PathItem<P,R>>, serializer: S) -> Result<S::Ok, S::Error> {
+fn strip_templates_from_paths<P: serde::ser::Serialize, R: serde::ser::Serialize, S: Serializer>(
+    tree: &BTreeMap<String, PathItem<P, R>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
     let len = tree.len();
     let mut map = serializer.serialize_map(Some(len))?;
-    for (k,v) in tree {
+    for (k, v) in tree {
         let path = strip_pattern_from_template(&k);
         map.serialize_entry(&path, v)?;
     }
@@ -149,15 +151,20 @@ fn strip_templates_from_paths<P: serde::ser::Serialize, R: serde::ser::Serialize
 }
 
 fn strip_pattern_from_template(path: &str) -> String {
-            let mut clean_path = path.to_string();
-            for cap in PATH_TEMPLATE_REGEX.captures_iter(&path) {
-                let name_only = cap[1].split_once(':').map(|t| t.0.to_string()).unwrap_or(cap[1].to_string());
-                if cap[1] != name_only {
-                    clean_path = clean_path.replace(format!("{{{}}}", &cap[1]).as_str(), format!("{{{}}}", name_only).as_str());
-                }
-
-            }
-            clean_path
+    let mut clean_path = path.to_string();
+    for cap in PATH_TEMPLATE_REGEX.captures_iter(&path) {
+        let name_only = cap[1]
+            .split_once(':')
+            .map(|t| t.0.to_string())
+            .unwrap_or(cap[1].to_string());
+        if cap[1] != name_only {
+            clean_path = clean_path.replace(
+                format!("{{{}}}", &cap[1]).as_str(),
+                format!("{{{}}}", name_only).as_str(),
+            );
+        }
+    }
+    clean_path
 }
 
 /// OpenAPI v2 (swagger) spec generic over parameter and schema.
