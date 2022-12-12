@@ -144,7 +144,7 @@ fn strip_templates_from_paths<P: serde::ser::Serialize, R: serde::ser::Serialize
     let len = tree.len();
     let mut map = serializer.serialize_map(Some(len))?;
     for (k, v) in tree {
-        let path = strip_pattern_from_template(&k);
+        let path = strip_pattern_from_template(k);
         map.serialize_entry(&path, v)?;
     }
     map.end()
@@ -152,11 +152,11 @@ fn strip_templates_from_paths<P: serde::ser::Serialize, R: serde::ser::Serialize
 
 fn strip_pattern_from_template(path: &str) -> String {
     let mut clean_path = path.to_string();
-    for cap in PATH_TEMPLATE_REGEX.captures_iter(&path) {
+    for cap in PATH_TEMPLATE_REGEX.captures_iter(path) {
         let name_only = cap[1]
             .split_once(':')
             .map(|t| t.0.to_string())
-            .unwrap_or(cap[1].to_string());
+            .unwrap_or_else(|| cap[1].to_string());
         if cap[1] != name_only {
             clean_path = clean_path.replace(
                 format!("{{{}}}", &cap[1]).as_str(),
