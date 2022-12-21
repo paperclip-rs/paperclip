@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/models.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>models.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-9def1262ebc682c9.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-ebce58d0a40c3431.css"><link rel="stylesheet" disabled href="../../../static.files/dark-f23faae4a2daf9a6.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-94f39d4346842c1e.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-5cf2e01a42cc9858.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-c55e1eb52e1886b4.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><div class="width-limiter"><nav class="sub"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/models.rs`."><meta name="keywords" content="rust, rustlang, rust-lang"><title>models.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-1f7d512b176f0f72.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-124a1ca42af929b6.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-64113db173fe9e58.css" id="mainThemeStyle"><link rel="stylesheet" id="themeStyle" href="../../../static.files/light-8fe2cf7ee64a76fb.css"><link rel="stylesheet" disabled href="../../../static.files/dark-7aacebe982779e9a.css"><link rel="stylesheet" disabled href="../../../static.files/ayu-29dcc614f7a7b461.css"><script id="default-settings" ></script><script src="../../../static.files/storage-d43fa987303ecbbb.js"></script><script defer src="../../../static.files/source-script-ea63cb6500f71309.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-a211dbb005fb8161.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-5ec35bf9ca753509.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1008,6 +1008,43 @@
 <a href="#1008" id="1008">1008</a>
 <a href="#1009" id="1009">1009</a>
 <a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a>
+<a href="#1017" id="1017">1017</a>
+<a href="#1018" id="1018">1018</a>
+<a href="#1019" id="1019">1019</a>
+<a href="#1020" id="1020">1020</a>
+<a href="#1021" id="1021">1021</a>
+<a href="#1022" id="1022">1022</a>
+<a href="#1023" id="1023">1023</a>
+<a href="#1024" id="1024">1024</a>
+<a href="#1025" id="1025">1025</a>
+<a href="#1026" id="1026">1026</a>
+<a href="#1027" id="1027">1027</a>
+<a href="#1028" id="1028">1028</a>
+<a href="#1029" id="1029">1029</a>
+<a href="#1030" id="1030">1030</a>
+<a href="#1031" id="1031">1031</a>
+<a href="#1032" id="1032">1032</a>
+<a href="#1033" id="1033">1033</a>
+<a href="#1034" id="1034">1034</a>
+<a href="#1035" id="1035">1035</a>
+<a href="#1036" id="1036">1036</a>
+<a href="#1037" id="1037">1037</a>
+<a href="#1038" id="1038">1038</a>
+<a href="#1039" id="1039">1039</a>
+<a href="#1040" id="1040">1040</a>
+<a href="#1041" id="1041">1041</a>
+<a href="#1042" id="1042">1042</a>
+<a href="#1043" id="1043">1043</a>
+<a href="#1044" id="1044">1044</a>
+<a href="#1045" id="1045">1045</a>
+<a href="#1046" id="1046">1046</a>
+<a href="#1047" id="1047">1047</a>
 </pre><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.
 
 </span><span class="kw">pub use </span><span class="kw">super</span>::extensions::{
@@ -1019,6 +1056,7 @@
 <span class="kw">use </span>once_cell::sync::Lazy;
 <span class="kw">use </span>paperclip_macros::api_v2_schema_struct;
 <span class="kw">use </span>regex::{Captures, Regex};
+<span class="kw">use </span>serde::ser::{SerializeMap, Serializer};
 
 <span class="attr">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
 </span><span class="kw">use </span>actix_web::http::Method;
@@ -1145,6 +1183,36 @@
 <span class="doccomment">/// OpenAPI v2 spec with defaults.
 </span><span class="kw">pub type </span>DefaultApiRaw = Api&lt;DefaultParameterRaw, DefaultResponseRaw, DefaultSchemaRaw&gt;;
 
+<span class="kw">fn </span>strip_templates_from_paths&lt;P: serde::ser::Serialize, R: serde::ser::Serialize, S: Serializer&gt;(
+    tree: <span class="kw-2">&amp;</span>BTreeMap&lt;String, PathItem&lt;P, R&gt;&gt;,
+    serializer: S,
+) -&gt; <span class="prelude-ty">Result</span>&lt;S::Ok, S::Error&gt; {
+    <span class="kw">let </span>len = tree.len();
+    <span class="kw">let </span><span class="kw-2">mut </span>map = serializer.serialize_map(<span class="prelude-val">Some</span>(len))<span class="question-mark">?</span>;
+    <span class="kw">for </span>(k, v) <span class="kw">in </span>tree {
+        <span class="kw">let </span>path = strip_pattern_from_template(k);
+        map.serialize_entry(<span class="kw-2">&amp;</span>path, v)<span class="question-mark">?</span>;
+    }
+    map.end()
+}
+
+<span class="kw">fn </span>strip_pattern_from_template(path: <span class="kw-2">&amp;</span>str) -&gt; String {
+    <span class="kw">let </span><span class="kw-2">mut </span>clean_path = path.to_string();
+    <span class="kw">for </span>cap <span class="kw">in </span>PATH_TEMPLATE_REGEX.captures_iter(path) {
+        <span class="kw">let </span>name_only = cap[<span class="number">1</span>]
+            .split_once(<span class="string">&#39;:&#39;</span>)
+            .map(|t| t.<span class="number">0</span>.to_string())
+            .unwrap_or_else(|| cap[<span class="number">1</span>].to_string());
+        <span class="kw">if </span>cap[<span class="number">1</span>] != name_only {
+            clean_path = clean_path.replace(
+                <span class="macro">format!</span>(<span class="string">&quot;{{{}}}&quot;</span>, <span class="kw-2">&amp;</span>cap[<span class="number">1</span>]).as_str(),
+                <span class="macro">format!</span>(<span class="string">&quot;{{{}}}&quot;</span>, name_only).as_str(),
+            );
+        }
+    }
+    clean_path
+}
+
 <span class="doccomment">/// OpenAPI v2 (swagger) spec generic over parameter and schema.
 ///
 /// &lt;https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object&gt;
@@ -1153,7 +1221,8 @@
     <span class="kw">pub </span>swagger: Version,
     <span class="attr">#[serde(default = <span class="string">&quot;BTreeMap::new&quot;</span>)]
     </span><span class="kw">pub </span>definitions: BTreeMap&lt;String, S&gt;,
-    <span class="kw">pub </span>paths: BTreeMap&lt;String, PathItem&lt;P, R&gt;&gt;,
+    <span class="attr">#[serde(serialize_with = <span class="string">&quot;strip_templates_from_paths&quot;</span>)]
+    </span><span class="kw">pub </span>paths: BTreeMap&lt;String, PathItem&lt;P, R&gt;&gt;,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
     </span><span class="kw">pub </span>host: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="attr">#[serde(rename = <span class="string">&quot;basePath&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
@@ -1716,7 +1785,12 @@
             .rev()
         {
             <span class="kw">if let </span><span class="prelude-val">Some</span>(n) = names.pop() {
-                p.name = n.split_once(<span class="string">&#39;:&#39;</span>).map(|t| t.<span class="number">0</span>.to_string()).unwrap_or(n);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>((name, pattern)) = n.split_once(<span class="string">&#39;:&#39;</span>) {
+                    p.name = name.to_string();
+                    p.pattern = <span class="prelude-val">Some</span>(pattern.to_string());
+                } <span class="kw">else </span>{
+                    p.name = n;
+                }
             } <span class="kw">else </span>{
                 <span class="kw">break</span>;
             }
@@ -2019,4 +2093,4 @@
     !<span class="kw-2">*</span>val
 }
 </code></pre></div>
-</section></div></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (bdb07a8ec 2022-12-11)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-af96d9e2fc13e081.css" ></div></body></html>
+</section></main><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.68.0-nightly (1d12c3cea 2022-12-20)" data-search-js="search-444266647c4dba98.js" data-settings-js="settings-bebeae96e00e4617.js" data-settings-css="settings-58836c674e2f7bd2.css" ></div></body></html>
