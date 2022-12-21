@@ -9,6 +9,7 @@ use crate::error::ValidationError;
 use once_cell::sync::Lazy;
 use paperclip_macros::api_v2_schema_struct;
 use regex::{Captures, Regex};
+use serde::ser::{SerializeMap, Serializer};
 
 #[cfg(feature = "actix-base")]
 use actix_web::http::Method;
@@ -135,6 +136,36 @@ pub type ResolvableApi<S> = Api<ResolvableParameter<S>, ResolvableResponse<S>, R
 /// OpenAPI v2 spec with defaults.
 pub type DefaultApiRaw = Api<DefaultParameterRaw, DefaultResponseRaw, DefaultSchemaRaw>;
 
+fn strip_templates_from_paths<P: serde::ser::Serialize, R: serde::ser::Serialize, S: Serializer>(
+    tree: &BTreeMap<String, PathItem<P, R>>,
+    serializer: S,
+) -> Result<S::Ok, S::Error> {
+    let len = tree.len();
+    let mut map = serializer.serialize_map(Some(len))?;
+    for (k, v) in tree {
+        let path = strip_pattern_from_template(k);
+        map.serialize_entry(&path, v)?;
+    }
+    map.end()
+}
+
+fn strip_pattern_from_template(path: &str) -> String {
+    let mut clean_path = path.to_string();
+    for cap in PATH_TEMPLATE_REGEX.captures_iter(path) {
+        let name_only = cap[1]
+            .split_once(':')
+            .map(|t| t.0.to_string())
+            .unwrap_or_else(|| cap[1].to_string());
+        if cap[1] != name_only {
+            clean_path = clean_path.replace(
+                format!("{{{}}}", &cap[1]).as_str(),
+                format!("{{{}}}", name_only).as_str(),
+            );
+        }
+    }
+    clean_path
+}
+
 /// OpenAPI v2 (swagger) spec generic over parameter and schema.
 ///
 /// <https://github.com/OAI/OpenAPI-Specification/blob/master/versions/2.0.md#swagger-object>
@@ -143,6 +174,7 @@ pub struct Api<P, R, S> {
     pub swagger: Version,
     #[serde(default = "BTreeMap::new")]
     pub definitions: BTreeMap<String, S>,
+    #[serde(serialize_with = "strip_templates_from_paths")]
     pub paths: BTreeMap<String, PathItem<P, R>>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub host: Option<String>,
@@ -706,7 +738,12 @@ impl<S> Operation<Parameter<S>, Response<S>> {
             .rev()
         {
             if let Some(n) = names.pop() {
-                p.name = n.split_once(':').map(|t| t.0.to_string()).unwrap_or(n);
+                if let Some((name, pattern)) = n.split_once(':') {
+                    p.name = name.to_string();
+                    p.pattern = Some(pattern.to_string());
+                } else {
+                    p.name = n;
+                }
             } else {
                 break;
             }
