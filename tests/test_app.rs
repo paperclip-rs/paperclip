@@ -100,7 +100,8 @@ impl Default for Pet {
         Self {
             name: "".to_string(),
             class: PetClass::EverythingElse,
-            birthday: chrono_dev::NaiveDate::from_ymd(2012, 3, 10),
+            birthday: chrono_dev::NaiveDate::from_ymd_opt(2012, 3, 10)
+                .expect("invalid or out-of-range date"),
             id: None,
             updated_on: None,
             uid0: None,
