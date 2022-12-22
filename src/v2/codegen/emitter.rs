@@ -323,10 +323,10 @@ pub trait Emitter: Sized {
     /// and defines/reuses types based on the given context.
     ///
     /// **NOTE:** Not meant to be overridden.
-    fn build_def<'a>(
+    fn build_def(
         &self,
         def: &Self::Definition,
-        ctx: DefinitionContext<'a>,
+        ctx: DefinitionContext<'_>,
     ) -> Result<EmittedUnit, Error> {
         if let Some(u) = CodegenEmitter(self).try_emit_enum(def, ctx.clone())? {
             return Ok(u);
@@ -444,10 +444,10 @@ where
 
     /// Assumes that the given definition is an array and returns the corresponding
     /// vector type for it.
-    fn emit_array<'c>(
+    fn emit_array(
         &self,
         def: &E::Definition,
-        ctx: DefinitionContext<'c>,
+        ctx: DefinitionContext<'_>,
     ) -> Result<EmittedUnit, Error> {
         let it = def
             .items()
@@ -532,10 +532,10 @@ where
 
     /// Assumes that the given definition is an object and returns the corresponding
     /// Rust struct / map.
-    fn emit_object<'c>(
+    fn emit_object(
         &self,
         def: &E::Definition,
-        ctx: DefinitionContext<'c>,
+        ctx: DefinitionContext<'_>,
     ) -> Result<EmittedUnit, Error> {
         match self.try_emit_map(def, &ctx)? {
             EmittedUnit::None => (),
@@ -572,10 +572,10 @@ where
         }
     }
 
-    fn emit_known_object_path<'c>(
+    fn emit_known_object_path(
         &self,
         def: &E::Definition,
-        ctx: DefinitionContext<'c>,
+        ctx: DefinitionContext<'_>,
     ) -> Result<EmittedUnit, Error> {
         // Use absolute paths to save some pain.
         let mut ty_path = String::from(self.state().mod_prefix.trim_matches(':'));

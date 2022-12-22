@@ -12,12 +12,17 @@ jobs:
   clippy:
     name: clippy
     runs-on: ubuntu-latest
+    continue-on-error: ${{ matrix.experimental }}
     strategy:
       fail-fast: false
       matrix:
-        rust:
-          - stable
-          - nightly
+        experimental: [false]
+        include:
+          - profile: stable
+            experimental: false
+          - profile: nightly
+            experimental: true
+            exclude: -A clippy::uninlined-format-args
     steps:
       - uses: actions/checkout@v2
         with:
@@ -25,12 +30,13 @@ jobs:
       - uses: actions-rs/toolchain@v1
         with:
           components: clippy
-          toolchain: ${{ matrix.rust }}
+          toolchain: ${{ matrix.profile }}
           override: true
       - uses: actions-rs/clippy-check@v1
+        continue-on-error: ${{ matrix.experimental }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all --features "actix4 cli chrono url uuid swagger-ui v3" -- -D clippy::all
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3" -- -D clippy::all ${{ matrix.exclude }}
 
   fmt:
     name: rustfmt
