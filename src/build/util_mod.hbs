@@ -33,7 +33,7 @@ impl<T, E> ResponseStream<T, E>
     \{
         while let Some(r) = self.0.next().await \{
             let chunk = r.map_err(|e| io::Error::new(io::ErrorKind::Other, e))?;
-            writer.write(chunk.as_ref()).await?;
+            writer.write_all(chunk.as_ref()).await?;
         }
 
         Ok(())
