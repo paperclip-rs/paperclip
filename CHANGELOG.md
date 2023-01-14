@@ -4,7 +4,7 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [Unreleased] :warning: Breaking Changes
+## [0.8.0] - 2023-01-14 :warning: Breaking Changes
 ### Added
 - Support non-boxed bodies in scope middleware. [PR#457](https://github.com/paperclip-rs/paperclip/pull/457)
 - Add `uuid0` and `uuid1` features. [PR#461](https://github.com/paperclip-rs/paperclip/pull/461)
