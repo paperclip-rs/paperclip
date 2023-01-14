@@ -16,6 +16,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Replaced dependency `pin-project` with `pin-project-lite`. [PR#472](https://github.com/paperclip-rs/paperclip/pull/472)
 
 ### Fixed
+- Ensures that each chunk is written fully (code-gen). [PR#491](https://github.com/paperclip-rs/paperclip/pull/491)
+- Strip template pattern from paths. [PR#486](https://github.com/paperclip-rs/paperclip/pull/486)
 - Inconsistent behavior between `rapidoc` and `swagger_ui` (extra slash). [PR#460](https://github.com/paperclip-rs/paperclip/pull/460)
 - Fixed header-based `SecuritySchema` conversion for `OpenAPI v3`. [PR#458](https://github.com/paperclip-rs/paperclip/pull/458)
 - Respect host setting of v2 spec when converting to v3. [PR#463](https://github.com/paperclip-rs/paperclip/pull/463)
