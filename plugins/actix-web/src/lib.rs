@@ -32,7 +32,7 @@ pub use self::{
     web::{Resource, Route, Scope},
 };
 pub use paperclip_macros::{
-    api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, patch, post, put,
+    api_v2_errors, api_v2_errors_overlay, api_v2_operation, delete, get, head, patch, post, put,
     Apiv2Header, Apiv2Schema, Apiv2Security,
 };
 

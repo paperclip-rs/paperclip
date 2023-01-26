@@ -134,4 +134,5 @@ rest_methods! {
     Put,    put,
     Delete, delete,
     Patch,  patch,
+    Head,   head,
 }
