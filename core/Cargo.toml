@@ -15,6 +15,7 @@ actix-web3 = { version = "3", optional = true, default-features = false, package
 actix-web4 = { version = "4", optional = true, default-features = false, package = "actix-web" }
 actix-multipart = { version = "0", optional = true }
 actix-session = { version = "0", optional = true }
+actix-identity = { version = "0", optional = true }
 actix-files = { version = "0", optional = true }
 chrono = { version = "0.4", optional = true }
 heck = { version = "0.4", optional = true }

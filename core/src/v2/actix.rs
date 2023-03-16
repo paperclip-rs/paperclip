@@ -412,6 +412,11 @@ impl OperationModifier for actix_session::Session {
     fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
 }
 
+#[cfg(feature = "actix-identity")]
+impl OperationModifier for actix_identity::Identity {
+    fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
+}
+
 #[cfg(feature = "actix-files")]
 impl OperationModifier for actix_files::NamedFile {
     fn update_definitions(_map: &mut BTreeMap<String, DefaultSchemaRaw>) {}
