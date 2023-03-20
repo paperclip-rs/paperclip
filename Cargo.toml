@@ -21,7 +21,7 @@ paperclip-actix = { path = "plugins/actix-web", version = "0.6.0", optional = tr
 paperclip-core = { path = "core", version = "0.6.0" }
 paperclip-macros = { path = "macros", version = "0.6.2", optional = true }
 
-env_logger = { version = "0.8", optional = true }
+env_logger = { version = "0.10", optional = true }
 git2 = { version = "0.15", optional = true }
 heck = { version = "0.4", optional = true }
 http = { version = "0.2", optional = true }
@@ -59,7 +59,7 @@ uuid1_dev = { version = "1", features = ["serde"], package = "uuid" }
 reqwest = { version = "0.10", features = ["blocking", "json"] }
 log = { version = "0.4", features = ["kv_unstable"] }
 insta = "1.0"
-env_logger = "0.8"
+env_logger = "0.10"
 validator12 = { version = "0.12", features = ["derive"], package = "validator" }
 validator14 = { version = "0.14", features = ["derive"], package = "validator" }
 actix-web-httpauth3 = { version = "0.5", package = "actix-web-httpauth" }
