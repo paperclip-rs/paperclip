@@ -16,7 +16,7 @@ actix-web = "4.0"
 # channel (replace "actix4-nightly" feature with "actix4" in that case). There maybe compilation errors,
 # but those can be fixed.
 # Add the "v3" option if you want to expose an OpenAPI v3 document
-paperclip = { version = "0.6", features = ["actix4"] }
+paperclip = { version = "0.8", features = ["actix4"] }
 serde = { version = "1.0", features = ["derive"] }
 ```
 
