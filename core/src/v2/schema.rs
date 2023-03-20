@@ -194,6 +194,8 @@ impl_type_simple!(
 );
 #[cfg(feature = "actix-session")]
 impl_type_simple!(actix_session::Session);
+#[cfg(feature = "actix-identity")]
+impl_type_simple!(actix_identity::Identity);
 #[cfg(feature = "actix-files")]
 impl_type_simple!(
     actix_files::NamedFile,
