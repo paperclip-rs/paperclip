@@ -20,9 +20,10 @@ jobs:
         include:
           - profile: stable
             experimental: false
+            exclude: -A clippy::derivable-impls
           - profile: nightly
             experimental: true
-            exclude: -A clippy::uninlined-format-args
+            exclude: -A clippy::uninlined-format-args -A clippy::derivable-impls
     steps:
       - uses: actions/checkout@v2
         with:
