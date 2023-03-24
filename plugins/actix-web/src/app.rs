@@ -260,6 +260,11 @@ where
     /// recorded by the wrapper and serves them in the given path
     /// as a JSON.
     pub fn with_json_spec_v3_at(mut self, path: &str) -> Self {
+        #[cfg(any(feature = "swagger-ui", feature = "rapidoc"))]
+        {
+            self.spec_path = Some(path.to_owned());
+        }
+
         let spec_v3 = if let Some(spec_v3) = &self.spec_v3 {
             spec_v3.clone()
         } else {
