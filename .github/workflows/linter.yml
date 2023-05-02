@@ -37,7 +37,7 @@ jobs:
         continue-on-error: ${{ matrix.experimental }}
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
-          args: --all --features "actix4 cli chrono url uuid swagger-ui v3" -- -D clippy::all ${{ matrix.exclude }}
+          args: --all --features "actix4 cli chrono url uuid swagger-ui v3 v3-poc" -- -D clippy::all ${{ matrix.exclude }}
 
   fmt:
     name: rustfmt

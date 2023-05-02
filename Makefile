@@ -28,7 +28,7 @@ doc:
 build:
 	cargo build
 	cargo build --features actix4
-	cargo build --features cli
+	cargo build --features "cli v3-poc"
 
 test:
 	cargo test --all --features "actix4 cli chrono uuid swagger-ui rapidoc actix4-validator"
