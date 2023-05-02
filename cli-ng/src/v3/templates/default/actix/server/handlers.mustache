@@ -1,0 +1,60 @@
+#![allow(missing_docs, trivial_casts, unused_variables, unused_mut, unused_imports, unused_extern_crates, non_camel_case_types)]
+
+use crate::{
+    actix::server::{deserialize_option_stringified_list, deserialize_stringified_list},
+    apis::{
+        actix_server::{Body, NoContent, RestError},
+        {{{classFilename}}}::actix::server,
+    },
+};
+use actix_web::{
+    web::{Json, Path, Query, ServiceConfig},
+    FromRequest, HttpRequest,
+};
+
+
+/// Configure handlers for the {{{classname}}} resource
+pub fn configure<T: server::{{{classname}}} + 'static{{#operations}}{{#operation}}{{#-last}}{{#authMethods}}, A: FromRequest + 'static{{/authMethods}}{{/-last}}{{/operation}}{{/operations}}>(cfg: &mut ServiceConfig) {
+    cfg
+{{#operations}}
+{{#operation}}
+       .service(
+            actix_web::web::resource("{{#vendorExtensions.x-actixPath}}{{{vendorExtensions.x-actixPath}}}{{/vendorExtensions.x-actixPath}}{{^vendorExtensions.x-actixPath}}{{{path}}}{{/vendorExtensions.x-actixPath}}")
+                .name("{{{operationId}}}")
+                .guard(actix_web::guard::{{{httpMethod}}}())
+                .route(actix_web::web::{{#vendorExtensions}}{{x-httpMethodLower}}{{/vendorExtensions}}().to({{{operationId}}}::<T{{#hasAuthMethods}}, A{{/hasAuthMethods}}>))
+       ){{#-last}};{{/-last}}
+{{/operation}}
+{{/operations}}
+}
+
+{{#operations}}
+{{#operation}}
+{{#hasQueryParams}}
+#[derive(serde::Deserialize)]
+struct {{{operationId}}}QueryParams {
+{{#queryParams}}
+    {{#description}}/// {{{description}}}{{/description}}
+    #[serde(rename = "{{{baseName}}}"{{^required}}, default, skip_serializing_if = "Option::is_none"{{#isContainer}}{{#items}}{{#isString}}, deserialize_with = "deserialize_option_stringified_list"{{/isString}}{{/items}}{{/isContainer}}{{/required}}{{#required}}{{#isContainer}}{{#items}}{{#isString}}, deserialize_with = "deserialize_stringified_list"{{/isString}}{{/items}}{{/isContainer}}{{/required}})]
+    pub {{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{{dataType}}}{{/isString}}{{#isUuid}}uuid::Uuid{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}},
+{{/queryParams}}
+}
+{{/hasQueryParams}}
+{{/operation}}
+{{/operations}}
+
+{{#operations}}
+{{#operation}}
+{{#description}}
+/// {{{.}}}
+{{/description}}
+{{#notes}}
+/// {{{.}}}
+{{/notes}}
+async fn {{{operationId}}}<T: server::{{{classname}}} + 'static{{#hasAuthMethods}}, A: FromRequest + 'static{{/hasAuthMethods}}>({{#vendorExtensions.x-actix-query-string}}request: HttpRequest{{#hasParams}}, {{/hasParams}}{{^hasParams}}{{#hasAuthMethods}}, {{/hasAuthMethods}}{{/hasParams}}{{/vendorExtensions.x-actix-query-string}}{{#hasAuthMethods}}_token: A{{#hasParams}}, {{/hasParams}}{{/hasAuthMethods}}{{#hasPathParams}}path: Path<{{#pathParams.1}}({{/pathParams.1}}{{#pathParams}}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/pathParams}}{{#pathParams.1}}){{/pathParams.1}}>{{/hasPathParams}}{{#hasQueryParams}}{{#hasPathParams}}, {{/hasPathParams}}query: Query<{{{operationId}}}QueryParams>{{/hasQueryParams}}{{#hasBodyParam}}{{#hasQueryParams}}, {{/hasQueryParams}}{{^hasQueryParams}}{{#hasPathParams}}, {{/hasPathParams}}{{/hasQueryParams}}{{#bodyParam}}Json({{{paramName}}}): Json<{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}{{{dataType}}}{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}>{{/bodyParam}}{{/hasBodyParam}}) -> Result<{{#supportMultipleResponses}}Json<ResponseContent<{{{operationIdCamelCase}}}Success>>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}NoContent{{/returnType}}{{#returnType}}Json<{{{returnType}}}>{{/returnType}}{{/supportMultipleResponses}}, RestError<crate::models::RestJsonError>> {
+    {{#hasQueryParams}}let query = query.into_inner();
+    {{/hasQueryParams}}T::{{{operationId}}}({{#vendorExtensions.x-actix-query-string}}request.query_string(){{#hasParams}}, {{/hasParams}}{{/vendorExtensions.x-actix-query-string}}{{#hasPathParams}}crate::apis::actix_server::Path(path.into_inner()){{/hasPathParams}}{{#hasQueryParams}}{{#hasPathParams}}, {{/hasPathParams}}crate::apis::actix_server::Query({{#queryParams.1}}({{/queryParams.1}}{{#queryParams}}query.{{{paramName}}}{{^-last}}, {{/-last}}{{/queryParams}}{{#queryParams.1}}){{/queryParams.1}}){{/hasQueryParams}}{{#hasBodyParam}}{{#hasQueryParams}}, {{/hasQueryParams}}{{^hasQueryParams}}{{#hasPathParams}}, {{/hasPathParams}}{{/hasQueryParams}}{{#bodyParam}}Body({{{paramName}}}){{/bodyParam}}{{/hasBodyParam}}).await.map(Json){{^supportMultipleResponses}}{{^returnType}}.map(Into::into){{/returnType}}{{/supportMultipleResponses}}
+}
+
+{{/operation}}
+{{/operations}}

@@ -1,0 +1,21 @@
+#![allow(missing_docs, trivial_casts, unused_variables, unused_mut, unused_imports, unused_extern_crates, non_camel_case_types)]
+
+use crate::apis::actix_server::{Body, Path, Query, RestError};
+use actix_web::web::Json;
+
+#[async_trait::async_trait]
+pub trait {{{classname}}} {
+{{#operations}}
+{{#operation}}
+{{#description}}
+    /// {{{.}}}
+{{/description}}
+{{#notes}}
+    /// {{{.}}}
+{{/notes}}
+    async fn {{{operationId}}}({{#vendorExtensions.x-actix-query-string}}query: &str{{#hasParams}}, {{/hasParams}}{{/vendorExtensions.x-actix-query-string}}{{#hasPathParams}}Path({{#pathParams.1}}({{/pathParams.1}}{{#pathParams}}{{{paramName}}}{{^-last}}, {{/-last}}{{/pathParams}}{{#pathParams.1}}){{/pathParams.1}}): Path<{{#pathParams.1}}({{/pathParams.1}}{{#pathParams}}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/pathParams}}{{#pathParams.1}}){{/pathParams.1}}>{{/hasPathParams}}{{#hasQueryParams}}{{#hasPathParams}}, {{/hasPathParams}}Query({{#queryParams.1}}({{/queryParams.1}}{{#queryParams}}{{{paramName}}}{{^-last}}, {{/-last}}{{/queryParams}}{{#queryParams.1}}){{/queryParams.1}}): Query<{{#queryParams.1}}({{/queryParams.1}}{{#queryParams}}{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{{dataType}}}{{/isString}}{{#isUuid}}uuid::Uuid{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/queryParams}}{{#queryParams.1}}){{/queryParams.1}}>{{/hasQueryParams}}{{#hasBodyParam}}{{#hasQueryParams}}, {{/hasQueryParams}}{{^hasQueryParams}}{{#hasPathParams}}, {{/hasPathParams}}{{/hasQueryParams}}{{#bodyParam}}Body({{{paramName}}}): Body<{{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}String{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}>{{/bodyParam}}{{/hasBodyParam}}) -> Result<{{#returnType}}{{/returnType}}{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, RestError<crate::models::RestJsonError>>;
+{{/operation}}
+{{/operations}}
+}
+
+pub mod handlers;

@@ -25,9 +25,9 @@ pub use paperclip_macros::*;
 pub use serde_json;
 
 #[cfg(feature = "codegen")]
-use self::resolver::Resolver;
+pub(crate) use self::resolver::Resolver;
 #[cfg(feature = "codegen")]
-use crate::error::ValidationError;
+pub(crate) use crate::error::ValidationError;
 
 #[cfg(feature = "codegen")]
 impl<S: Schema + Default> ResolvableApi<S> {

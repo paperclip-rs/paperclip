@@ -61,14 +61,14 @@ jobs:
         timeout-minutes: 10
         with:
           command: build
-          args: --all --features "actix4 cli chrono url uuid swagger-ui rapidoc v3 actix4-validator"
+          args: --all --features "actix4 cli chrono url uuid swagger-ui rapidoc v3 actix4-validator cli-ng"
 
       - name: Build actix3 features
         uses: actions-rs/cargo@v1
         timeout-minutes: 10
         with:
           command: build
-          args: --all --features "actix3 cli chrono url uuid swagger-ui rapidoc v3 actix3-validator"
+          args: --all --features "actix3 cli chrono url uuid swagger-ui rapidoc v3 actix3-validator cli-ng"
 
       # - name: Build actix2 features
       #   uses: actions-rs/cargo@v1
@@ -82,14 +82,14 @@ jobs:
         timeout-minutes: 20
         with:
           command: test
-          args: --all --features "actix4 cli chrono url uuid swagger-ui rapidoc v3 actix4-validator"
+          args: --all --features "actix4 cli chrono url uuid swagger-ui rapidoc v3 actix4-validator cli-ng"
 
       - name: Run actix3 tests
         uses: actions-rs/cargo@v1
         timeout-minutes: 20
         with:
           command: test
-          args: --all --features "actix3 cli chrono url uuid swagger-ui rapidoc v3 actix3-validator"
+          args: --all --features "actix3 cli chrono url uuid swagger-ui rapidoc v3 actix3-validator cli-ng"
 
       # - name: Run actix2 tests
       #   uses: actions-rs/cargo@v1
