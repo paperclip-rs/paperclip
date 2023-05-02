@@ -26,6 +26,10 @@ fn parse_spec(s: &str) -> Result<ResolvableApi<DefaultSchema>, Error> {
     let fd = File::open(s)?;
     Ok(v2::from_reader(fd)?)
 }
+fn parse_spec_v3(s: &str) -> Result<openapiv3::OpenAPI, Error> {
+    let fd = File::open(s)?;
+    Ok(v2::from_reader_v3(fd)?)
+}
 
 #[derive(Debug)]
 enum OApiVersion {
@@ -36,8 +40,8 @@ enum OApiVersion {
 #[derive(Debug, StructOpt)]
 struct Opt {
     /// Path to OpenAPI spec in JSON/YAML format (also supports publicly accessible URLs).
-    #[structopt(parse(try_from_str = parse_spec))]
-    spec: ResolvableApi<DefaultSchema>,
+    #[structopt(long)]
+    spec: std::path::PathBuf,
     /// OpenAPI version (e.g., v2).
     #[structopt(long = "api", parse(try_from_str = parse_version))]
     api: OApiVersion,
@@ -47,6 +51,9 @@ struct Opt {
     /// Emit CLI target instead.
     #[structopt(long = "cli")]
     cli: bool,
+    /// Render.
+    #[structopt(long)]
+    models: bool,
     /// Do not make the crate a root crate.
     #[structopt(long = "no-root")]
     no_root: bool,
@@ -60,12 +67,15 @@ struct Opt {
 }
 
 fn parse_args_and_run() -> Result<(), Error> {
-    let opt = Opt::from_args();
+    let opt: Opt = Opt::from_args();
+
     if let OApiVersion::V3 = opt.api {
-        return Err(PaperClipError::UnsupportedOpenAPIVersion.into());
+        let spec = parse_spec_v3(&opt.spec.to_string_lossy().to_string())?;
+        paperclip::v3::OpenApiV3::new(spec, opt.output).run(opt.models)?;
+        return Ok(());
     }
 
-    let spec = opt.spec.resolve()?;
+    let spec = parse_spec(&opt.spec.to_string_lossy().to_string())?.resolve()?;
     let mut state = EmitterState::default();
 
     if let Some(o) = opt.output {

@@ -32,3 +32,6 @@ pub mod actix {
     #[cfg(feature = "actix4")]
     pub use paperclip_core::v2::HttpResponseWrapper;
 }
+
+#[cfg(feature = "openapiv3")]
+pub mod v3;
