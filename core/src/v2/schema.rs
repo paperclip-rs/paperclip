@@ -170,6 +170,7 @@ impl<'a, T: TypedData> TypedData for &'a T {
 
 impl_type_simple!(char, DataType::String);
 impl_type_simple!(String, DataType::String);
+impl_type_simple!(PathBuf, DataType::String);
 impl_type_simple!(bool, DataType::Boolean);
 impl_type_simple!(f32, DataType::Number, DataTypeFormat::Float);
 impl_type_simple!(f64, DataType::Number, DataTypeFormat::Double);
@@ -472,7 +473,7 @@ macro_rules! impl_schema_map {
 }
 
 use crate::v2::models::Parameter;
-use std::collections::*;
+use std::{collections::*, path::PathBuf};
 
 impl_schema_array!(Vec<T>);
 impl_schema_array!(HashSet<T>);
