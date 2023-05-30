@@ -58,6 +58,7 @@ use validator::Validate;
 
 use std::{
     collections::{BTreeMap, HashMap, HashSet},
+    path::PathBuf,
     sync::mpsc,
     thread,
 };
@@ -4561,6 +4562,13 @@ fn test_example() {
         name: String,
     }
 
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    struct ImageFile {
+        /// filename.
+        #[openapi(example = "batman.png")]
+        path: PathBuf,
+    }
+
     #[api_v2_operation]
     fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
         fut_ok(web::Json(vec![]))
@@ -4571,12 +4579,18 @@ fn test_example() {
         fut_ok(web::Json(vec![]))
     }
 
+    #[api_v2_operation]
+    fn echo_files() -> impl Future<Output = Result<web::Json<Vec<ImageFile>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
     run_and_check_app(
         || {
             App::new()
                 .wrap_api()
                 .route("/pets", web::get().to(echo_pets))
                 .route("/cars", web::get().to(echo_cars))
+                .route("/files", web::get().to(echo_files))
                 .with_json_spec_at("/api/spec")
                 .build()
         },
@@ -4625,6 +4639,19 @@ fn test_example() {
                         "name"
                       ],
                       "type": "object"
+                    },
+                    "ImageFile": {
+                      "properties": {
+                        "path": {
+                          "description": "filename.",
+                          "example": "batman.png",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "path",
+                      ],
+                      "type": "object"
                     }
                   },
                   "info": {
@@ -4661,6 +4688,21 @@ fn test_example() {
                           }
                         }
                       }
+                    },
+                    "/files": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/ImageFile"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
                     }
                   },
                   "swagger": "2.0"
@@ -4681,10 +4723,13 @@ mod module_path_in_definition_name {
         }
 
         pub mod other_bar {
+            use std::path::PathBuf;
+
             #[derive(serde::Serialize, paperclip::actix::Apiv2Schema)]
             pub struct Baz {
                 pub a: String,
                 pub b: bool,
+                pub c: PathBuf,
             }
         }
     }
@@ -4919,6 +4964,7 @@ fn test_module_path_in_definition_name() {
         web::Json(module_path_in_definition_name::foo::other_bar::Baz {
             a: String::default(),
             b: true,
+            c: PathBuf::default(),
         })
     }
 
@@ -4965,11 +5011,15 @@ fn test_module_path_in_definition_name() {
                           },
                           "b": {
                             "type": "boolean"
+                          },
+                          "c": {
+                            "type": "string"
                           }
                         },
                         "required": [
                           "a",
-                          "b"
+                          "b",
+                          "c"
                         ],
                         "type": "object"
                       }
