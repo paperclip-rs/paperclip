@@ -141,6 +141,220 @@ impl Responder for Pet {
 }
 
 #[test]
+fn test_path_order() {
+    #[derive(Deserialize, Apiv2Schema)]
+    #[allow(unused)]
+    struct PathInfo {
+        friend: String,
+        user_id: u32,
+        ace: bool,
+    }
+    #[api_v2_operation]
+    #[get("/struct/users/{ace}/{user_id}/{friend}")]
+    async fn get_user_struct(_info: web::Path<PathInfo>) -> NoContent {
+        NoContent
+    }
+
+    #[api_v2_operation]
+    #[get("/users/{b}/{u}/{friend}/{user_id}/{ace}")]
+    #[allow(unused)]
+    async fn get_user_mix(
+        b: web::Path<bool>,
+        u: web::Path<u32>,
+        p: web::Path<PathInfo>,
+    ) -> NoContent {
+        NoContent
+    }
+
+    #[api_v2_operation]
+    #[get("/tuple/users/{ace}/{user_id}/{friend}")]
+    async fn get_user_tuple(_p: web::Path<(bool, u32, String)>) -> NoContent {
+        NoContent
+    }
+
+    #[api_v2_operation]
+    #[get("/users/{ace}/{user_id}/{friend}")]
+    #[allow(unused)]
+    async fn get_user(
+        ace: web::Path<bool>,
+        user_id: web::Path<u32>,
+        friend: web::Path<String>,
+    ) -> NoContent {
+        NoContent
+    }
+
+    fn config(cfg: &mut web::ServiceConfig) {
+        cfg.service(get_user_mix)
+            .service(get_user_struct)
+            .service(get_user_tuple)
+            .service(get_user);
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .with_json_spec_at("/api/spec")
+                .service(web::scope("/api").configure(config))
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "definitions": {},
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/api/users/{b}/{u}/{friend}/{user_id}/{ace}": {
+                      "get": {
+                        "parameters": [
+                          {
+                            "in": "path",
+                            "name": "b",
+                            "required": true,
+                            "type": "boolean",
+                          },
+                          {
+                            "format": "int32",
+                            "in": "path",
+                            "name": "u",
+                            "required": true,
+                            "type": "integer",
+                          },
+                          {
+                            "in": "path",
+                            "name": "ace",
+                            "required": true,
+                            "type": "boolean",
+                          },
+                          {
+                            "in": "path",
+                            "name": "friend",
+                            "required": true,
+                            "type": "string",
+                          },
+                          {
+                            "format": "int32",
+                            "in": "path",
+                            "name": "user_id",
+                            "required": true,
+                            "type": "integer",
+                          },
+                        ],
+                        "responses": {
+                          "204": {
+                            "description": "No Content",
+                          }
+                        }
+                      }
+                    },
+                    "/api/struct/users/{ace}/{user_id}/{friend}": {
+                      "get": {
+                        "parameters": [
+                          {
+                            "in": "path",
+                            "name": "ace",
+                            "required": true,
+                            "type": "boolean",
+                          },
+                          {
+                            "in": "path",
+                            "name": "friend",
+                            "required": true,
+                            "type": "string",
+                          },
+                          {
+                            "format": "int32",
+                            "in": "path",
+                            "name": "user_id",
+                            "required": true,
+                            "type": "integer",
+                          },
+                        ],
+                        "responses": {
+                          "204": {
+                            "description": "No Content",
+                          }
+                        }
+                      }
+                    },
+                    "/api/tuple/users/{ace}/{user_id}/{friend}": {
+                      "get": {
+                        "parameters": [
+                          {
+                            "in": "path",
+                            "name": "ace",
+                            "required": true,
+                            "type": "boolean",
+                          },
+                          {
+                            "format": "int32",
+                            "in": "path",
+                            "name": "user_id",
+                            "required": true,
+                            "type": "integer",
+                          },
+                          {
+                            "in": "path",
+                            "name": "friend",
+                            "required": true,
+                            "type": "string",
+                          },
+                        ],
+                        "responses": {
+                          "204": {
+                            "description": "No Content",
+                          }
+                        }
+                      }
+                    },
+                    "/api/users/{ace}/{user_id}/{friend}": {
+                      "get": {
+                        "parameters": [
+                          {
+                            "in": "path",
+                            "name": "ace",
+                            "required": true,
+                            "type": "boolean",
+                          },
+                          {
+                            "format": "int32",
+                            "in": "path",
+                            "name": "user_id",
+                            "required": true,
+                            "type": "integer",
+                          },
+                          {
+                            "in": "path",
+                            "name": "friend",
+                            "required": true,
+                            "type": "string",
+                          },
+                        ],
+                        "responses": {
+                          "204": {
+                            "description": "No Content",
+                          }
+                        }
+                      }
+                    },
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
+
+#[test]
 fn test_simple_app() {
     #[api_v2_operation]
     fn echo_pet(body: web::Json<Pet>) -> impl Future<Output = Result<web::Json<Pet>, Error>> {
@@ -587,7 +801,7 @@ fn test_params() {
     )]
     struct KnownResourceBadge {
         resource: String,
-        name: String,
+        name: u32,
     }
 
     /// KnownBadge Id Doc
@@ -887,14 +1101,15 @@ fn test_params() {
                             "delete": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -920,14 +1135,15 @@ fn test_params() {
                             "get": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -953,14 +1169,15 @@ fn test_params() {
                             "head": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -986,14 +1203,15 @@ fn test_params() {
                             "options": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -1019,14 +1237,15 @@ fn test_params() {
                             "patch": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -1052,14 +1271,15 @@ fn test_params() {
                             "post": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -1091,14 +1311,15 @@ fn test_params() {
                             "put": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
-                                        "name": "resource",
+                                        "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
-                                        "name": "name",
+                                        "name": "resource",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -1121,6 +1342,18 @@ fn test_params() {
                                 "responses": {
                                 }
                             }
+                        },
+                        "/api/v2/check_data": {
+                          "get": {
+                              "responses": {
+                                  "200":{
+                                      "description": "OK",
+                                      "schema":{
+                                         "type": "boolean"
+                                      }
+                                   }
+                              }
+                          }
                         },
                         "/api/v2/{resource}/foo": {
                             "get": {
@@ -1245,7 +1478,7 @@ fn test_params() {
                                 "parameters": [
                                     {
                                         "in": "path",
-                                        "name": "id5",
+                                        "name": "id",
                                         "required": true,
                                         "type": "string"
                                     },
@@ -1321,10 +1554,11 @@ fn test_params() {
                             "patch": {
                                 "parameters": [
                                     {
+                                        "format": "int32",
                                         "in": "path",
                                         "name": "name",
                                         "required": true,
-                                        "type": "string"
+                                        "type": "integer"
                                     },
                                     {
                                         "in": "path",
@@ -1370,18 +1604,6 @@ fn test_params() {
                                     }
                                 ],
                                 "responses": {
-                                }
-                            }
-                        },
-                        "/api/v2/check_data": {
-                            "get": {
-                                "responses": {
-                                    "200":{
-                                        "description": "OK",
-                                        "schema":{
-                                           "type": "boolean"
-                                        }
-                                     }
                                 }
                             }
                         },

@@ -726,8 +726,16 @@ impl<S> Operation<Parameter<S>, Response<S>> {
     /// given path template.
     pub fn set_parameter_names_from_path_template(&mut self, path: &str) {
         let mut names = vec![];
-        Api::<(), (), ()>::path_parameters_map(path, |p| {
-            names.push(p.to_owned());
+        Api::<(), (), ()>::path_parameters_map(path, |name| {
+            if self
+                .parameters
+                .iter()
+                .filter(|p| p.in_ == ParameterIn::Path)
+                .all(|p| p.name != name)
+            {
+                names.push(name.to_owned());
+            }
+
             ":".into()
         });
 
@@ -735,6 +743,7 @@ impl<S> Operation<Parameter<S>, Response<S>> {
             .parameters
             .iter_mut()
             .filter(|p| p.in_ == ParameterIn::Path)
+            .filter(|p| p.name.is_empty())
             .rev()
         {
             if let Some(n) = names.pop() {
