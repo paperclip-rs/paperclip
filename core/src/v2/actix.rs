@@ -568,7 +568,7 @@ macro_rules! impl_path_tuple ({ $($ty:ident),+ } => {
                         description: v.description,
                         collection_format: None, // this defaults to csv
                         items: v.items.as_deref().map(map_schema_to_items),
-                        name: k,
+                        name: String::new(),
                         ..Default::default()
                     }));
                 }
