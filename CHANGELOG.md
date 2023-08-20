@@ -4,6 +4,16 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.8.1] - 2023-08-20
+### Added
+- Add support for `PathBuf` type. [PR#502](https://github.com/paperclip-rs/paperclip/pull/502)
+- Add support for `actix-identity` type. [PR#495](https://github.com/paperclip-rs/paperclip/pull/495)
+- Add support for `head` method type. [PR#493](https://github.com/paperclip-rs/paperclip/pull/493)
+
+### Fixed
+- Correct parameter name ordering. [PR#504](https://github.com/paperclip-rs/paperclip/pull/504)
+- No spec path for `json_spec_v3` and `swagger-ui` combination. [PR#498](https://github.com/paperclip-rs/paperclip/pull/498)
+
 ## [0.8.0] - 2023-01-14 :warning: Breaking Changes
 ### Added
 - Support non-boxed bodies in scope middleware. [PR#457](https://github.com/paperclip-rs/paperclip/pull/457)
