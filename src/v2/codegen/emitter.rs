@@ -423,7 +423,7 @@ where
         let mut mods = state.mod_children.borrow_mut();
         for (i, path) in rel_path.ancestors().enumerate() {
             if let (Some(parent), Some(name)) = (path.parent(), path.file_name()) {
-                let entry = mods.entry(parent.into()).or_insert_with(HashSet::new);
+                let entry = mods.entry(parent.into()).or_default();
                 entry.insert(ChildModule {
                     name: name.to_string_lossy().into_owned(),
                     is_final: i == 0,
@@ -973,7 +973,7 @@ where
         let ops = obj[0] // first object is always the globally defined object.
             .paths
             .entry(self.path.into())
-            .or_insert_with(Default::default);
+            .or_default();
 
         let mut response_contains_any = false;
         let response_ty_path = if let Some(s) = Self::get_2xx_response_schema(op) {
@@ -1093,7 +1093,7 @@ where
         let ops = obj[0] // first object is always the globally defined object.
             .paths
             .entry(self.path.into())
-            .or_insert_with(Default::default);
+            .or_default();
 
         ops.req.insert(
             meth,

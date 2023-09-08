@@ -447,7 +447,7 @@ where
         F: Mountable,
     {
         let mut api = self.spec.write().unwrap();
-        api.definitions.extend(factory.definitions().into_iter());
+        api.definitions.extend(factory.definitions());
         SecurityScheme::append_map(
             factory.security_definitions(),
             &mut api.security_definitions,

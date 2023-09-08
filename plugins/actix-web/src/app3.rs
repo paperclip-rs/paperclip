@@ -16,7 +16,7 @@ use super::{
     Mountable,
 };
 use actix_service1::ServiceFactory;
-#[cfg(any(feature = "swagger-ui"))]
+#[cfg(feature = "swagger-ui")]
 use actix_web::web::HttpRequest;
 use actix_web::{
     dev::{HttpServiceFactory, MessageBody, ServiceRequest, ServiceResponse, Transform},
@@ -454,7 +454,7 @@ where
         F: Mountable,
     {
         let mut api = self.spec.write().unwrap();
-        api.definitions.extend(factory.definitions().into_iter());
+        api.definitions.extend(factory.definitions());
         SecurityScheme::append_map(
             factory.security_definitions(),
             &mut api.security_definitions,
