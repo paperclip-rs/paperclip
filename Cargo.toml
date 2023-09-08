@@ -49,7 +49,7 @@ actix-service1 = { version = "1", package = "actix-service" }
 actix-service2 = { version = "2", package = "actix-service" }
 actix-web-validator2 = { version = "2.2", package = "actix-web-validator" }
 actix-web-validator3 = { version = "3.0", package = "actix-web-validator" }
-actix-web2 = { version = "2", default-features = false, package = "actix-web" }
+#actix-web2 = { version = "2", default-features = false, package = "actix-web" }
 actix-web3 = { version = "3", default-features = false, package = "actix-web" }
 actix-web4 = { version = "4", default-features = false, package = "actix-web" }
 chrono_dev = { version = "0.4", features = ["serde"], package = "chrono" }
