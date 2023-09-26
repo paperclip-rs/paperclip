@@ -832,7 +832,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
         quote! { #base_name }
     } else {
         let type_names = quote! {
-            vec![#(#type_params::name()),*]
+            [#(#type_params::name()),*]
                 .iter()
                 .filter_map(|n| n.to_owned())
                 .collect::<Vec<String>>()
