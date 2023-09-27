@@ -68,10 +68,8 @@ pub trait Mountable {
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         let operations = self.operations();
         if !operations.is_empty() {
-            let op_map = map
-                .entry(self.path().into())
-                .or_insert_with(Default::default);
-            op_map.methods.extend(operations.into_iter());
+            let op_map = map.entry(self.path().into()).or_default();
+            op_map.methods.extend(operations);
         }
     }
 }

@@ -121,8 +121,8 @@ where
     /// Wrapper for [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
     pub fn route(mut self, route: Route) -> Self {
         let w = RouteWrapper::from(&self.path, route);
-        self.operations.extend(w.operations.into_iter());
-        self.definitions.extend(w.definitions.into_iter());
+        self.operations.extend(w.operations);
+        self.definitions.extend(w.definitions);
         SecurityScheme::append_map(w.security, &mut self.security);
         self.inner = self.inner.route(w.inner);
         self
@@ -248,7 +248,7 @@ where
                 self.operations.insert(method.into(), op.clone());
             }
 
-            self.definitions.extend(U::definitions().into_iter());
+            self.definitions.extend(U::definitions());
             SecurityScheme::append_map(U::security_definitions(), &mut self.security);
         }
     }
@@ -444,7 +444,7 @@ where
     where
         M: Mountable,
     {
-        self.definitions.extend(factory.definitions().into_iter());
+        self.definitions.extend(factory.definitions());
         let mut path_map = BTreeMap::new();
         factory.update_operations(&mut path_map);
         for (path, mut map) in path_map {
@@ -488,8 +488,8 @@ impl<T> Mountable for Scope<T> {
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         for (path, item) in mem::take(&mut self.path_map) {
-            let op_map = map.entry(path).or_insert_with(Default::default);
-            op_map.methods.extend(item.methods.into_iter());
+            let op_map = map.entry(path).or_default();
+            op_map.methods.extend(item.methods);
         }
     }
 }
@@ -719,8 +719,8 @@ impl<'a> Mountable for ServiceConfig<'a> {
 
     fn update_operations(&mut self, map: &mut BTreeMap<String, DefaultPathItemRaw>) {
         for (path, item) in mem::take(&mut self.path_map) {
-            let op_map = map.entry(path).or_insert_with(Default::default);
-            op_map.methods.extend(item.methods.into_iter());
+            let op_map = map.entry(path).or_default();
+            op_map.methods.extend(item.methods);
         }
     }
 }
@@ -729,7 +729,7 @@ impl<'a> ServiceConfig<'a> {
     /// Wrapper for [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
     pub fn route(&mut self, path: &str, route: Route) -> &mut Self {
         let mut w = RouteWrapper::from(path, route);
-        self.definitions.extend(w.definitions().into_iter());
+        self.definitions.extend(w.definitions());
         w.update_operations(&mut self.path_map);
         SecurityScheme::append_map(w.security, &mut self.security);
         self.inner.route(path, w.inner);
@@ -741,7 +741,7 @@ impl<'a> ServiceConfig<'a> {
     where
         F: Mountable + HttpServiceFactory + 'static,
     {
-        self.definitions.extend(factory.definitions().into_iter());
+        self.definitions.extend(factory.definitions());
         factory.update_operations(&mut self.path_map);
         SecurityScheme::append_map(factory.security_definitions(), &mut self.security);
         self.inner.service(factory);
