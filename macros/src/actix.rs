@@ -44,7 +44,10 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
     let unit_struct = Ident::new(&s_name, default_span);
     let generics = &item_ast.sig.generics;
     let mut generics_call = quote!();
-    let mut struct_definition = quote!(struct #unit_struct;);
+    let mut struct_definition = quote!(
+        #[allow(non_camel_case_types, missing_docs)]
+        struct #unit_struct;
+    );
     let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
     if !generics.params.is_empty() {
         let turbofish = ty_generics.as_turbofish();
