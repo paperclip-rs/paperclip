@@ -3,7 +3,7 @@ mod parameter;
 mod property;
 mod templates;
 
-use std::ops::Deref;
+use std::{cell::RefCell, collections::HashSet, ops::Deref};
 
 use operation::Operation;
 use parameter::Parameter;
@@ -25,6 +25,7 @@ pub struct OpenApiV3 {
     supporting_templates: Vec<SuppTemplateFile>,
 
     suppress_errors: bool,
+    circ_ref_checker: RefCell<CircularRefChecker>,
 }
 impl OpenApiV3 {
     /// Creates a new OpenApi V3 Generator.
@@ -39,6 +40,7 @@ impl OpenApiV3 {
             model_templates,
             supporting_templates,
             suppress_errors: false,
+            circ_ref_checker: RefCell::new(CircularRefChecker::default()),
         }
     }
 }
@@ -91,9 +93,9 @@ pub(super) struct OperationsApi {
 
 impl OpenApiV3 {
     /// Run the OpenApi V3 Code Generator.
-    pub fn run(&self, models: bool) -> Result<(), std::io::Error> {
+    pub fn run(&self, models: bool, ops: bool) -> Result<(), std::io::Error> {
         let models = if models { self.models()? } else { vec![] };
-        let operations = self.operations()?;
+        let operations = if ops { self.operations()? } else { vec![] };
         let apis = self.apis(&operations)?;
         let apis = apis
             .iter()
@@ -269,7 +271,7 @@ impl OpenApiV3 {
             .unwrap()
             .schemas
             .iter()
-            //.filter(|(name, _)| name.starts_with("VolumeSpec"))
+            //.filter(|(name, _)| name.starts_with("Status"))
             .map(|(name, ref_or)| {
                 let model = self.resolve_reference_or(ref_or, None, None, Some(name));
                 trace!("Model: {} => {}", name, model);
@@ -336,6 +338,18 @@ impl OpenApiV3 {
         trace!("Contains {} => {}", type_, contains);
         contains
     }
+    fn set_resolving(&self, type_name: &str) {
+        let mut checker = self.circ_ref_checker.borrow_mut();
+        checker.add(type_name);
+    }
+    fn resolving(&self, property: &Property) -> bool {
+        let checker = self.circ_ref_checker.borrow();
+        checker.exists(property.type_ref())
+    }
+    fn clear_resolving(&self, type_name: &str) {
+        let mut checker = self.circ_ref_checker.borrow_mut();
+        checker.remove(type_name);
+    }
     fn resolve_schema_name(&self, var_name: Option<&str>, reference: &str) -> Property {
         let type_name = match reference.strip_prefix("#/components/schemas/") {
             Some(type_name) => type_name,
@@ -358,8 +372,16 @@ impl OpenApiV3 {
         type_: Option<&str>,
     ) -> Property {
         trace!("ResolvingSchema: {:?}/{:?}", name, type_);
-        Property::from_schema(self, parent, schema, name, type_)
+        if let Some(type_) = &type_ {
+            self.set_resolving(type_);
+        }
+        let property = Property::from_schema(self, parent, schema, name, type_);
+        if let Some(type_) = &type_ {
+            self.clear_resolving(type_);
+        }
+        property
     }
+
     fn resolve_reference_or(
         &self,
         reference: &openapiv3::ReferenceOr<openapiv3::Schema>,
@@ -432,6 +454,36 @@ impl From<&Operation> for OperationsApi {
             class_filename: src.class_filename().into(),
             classname: src.classname().into(),
             operations: vec![src.clone()],
+        }
+    }
+}
+
+/// Circular Reference Checker
+/// If a model's member variable references a model currently being resolved
+/// (either parent, or another elder) then a reference check must be used
+/// to break out of an infinit loop.
+/// In this case we don't really need to re-resolve the entire model
+/// because the model itself will resolve itself.
+#[derive(Clone, Debug, Default)]
+struct CircularRefChecker {
+    /// List of type_names in the resolve chain.
+    type_names: HashSet<String>,
+    /// Current type being resolved.
+    current: String,
+}
+impl CircularRefChecker {
+    fn add(&mut self, type_name: &str) {
+        if self.type_names.insert(type_name.to_string()) {
+            // trace!("Added cache: {type_name}");
+            self.current = type_name.to_string();
+        }
+    }
+    fn exists(&self, type_name: &str) -> bool {
+        self.current.as_str() != type_name && self.type_names.contains(type_name)
+    }
+    fn remove(&mut self, type_name: &str) {
+        if self.type_names.remove(type_name) {
+            // trace!("Removed cache: {type_name}");
         }
     }
 }

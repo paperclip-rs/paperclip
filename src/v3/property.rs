@@ -314,6 +314,9 @@ impl Property {
         }
         self
     }
+    pub fn type_ref(&self) -> &str {
+        &self.type_
+    }
     pub fn data_type(&self) -> String {
         self.data_type.to_string()
     }
@@ -735,15 +738,6 @@ impl Property {
     fn with_obj(mut self, root: &super::OpenApiV3, by: &openapiv3::ObjectType) -> Self {
         self.min_properties = by.min_properties;
         self.max_properties = by.max_properties;
-        let vars = by
-            .properties
-            .iter()
-            .map(|(k, v)| root.resolve_reference_or(&v.clone().unbox(), Some(&self), Some(k), None))
-            .map(|m| {
-                let required = by.required.contains(&m.name);
-                m.with_required(required)
-            })
-            .collect::<Vec<_>>();
 
         if let Some(props) = &by.additional_properties {
             match props {
@@ -769,28 +763,46 @@ impl Property {
                 },
             }
         }
-        if vars.is_empty() {
-            return self.with_data_type_any(false);
+
+        if !root.resolving(&self) {
+            let vars = by
+                .properties
+                .iter()
+                .map(|(k, v)| {
+                    root.resolve_reference_or(&v.clone().unbox(), Some(&self), Some(k), None)
+                })
+                .map(|m| {
+                    let required = by.required.contains(&m.name);
+                    m.with_required(required)
+                })
+                .collect::<Vec<_>>();
+
+            if vars.is_empty() {
+                return self.with_data_type_any(false);
+            }
+            self.is_model = true;
+
+            self.discovered_props = Rc::new(vars.clone());
+            let vars = vars
+                .into_iter()
+                .map(|p| p.with_is_var(true))
+                .collect::<Vec<_>>();
+
+            self.required_vars = vars
+                .iter()
+                .filter(|m| m.required)
+                .cloned()
+                .collect::<Vec<_>>();
+            self.optional_vars = vars
+                .iter()
+                .filter(|m| !m.required)
+                .cloned()
+                .collect::<Vec<_>>();
+            self.vars = vars;
+        } else {
+            // it's a circular reference, we must be a model
+            self.is_model = true;
         }
-        self.is_model = true;
-
-        self.discovered_props = Rc::new(vars.clone());
-        let vars = vars
-            .into_iter()
-            .map(|p| p.with_is_var(true))
-            .collect::<Vec<_>>();
-
-        self.required_vars = vars
-            .iter()
-            .filter(|m| m.required)
-            .cloned()
-            .collect::<Vec<_>>();
-        self.optional_vars = vars
-            .iter()
-            .filter(|m| !m.required)
-            .cloned()
-            .collect::<Vec<_>>();
-        self.vars = vars;
 
         if let Some(one_of) = &by.one_of {
             let mut vars_ = self.vars.iter().filter(|p| !p.required).collect::<Vec<_>>();

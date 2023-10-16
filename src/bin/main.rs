@@ -51,9 +51,12 @@ struct Opt {
     /// Emit CLI target instead.
     #[structopt(long = "cli")]
     cli: bool,
-    /// Render.
+    /// Don't Render models.
     #[structopt(long)]
-    models: bool,
+    no_models: bool,
+    /// Don't Render operations.
+    #[structopt(long)]
+    no_ops: bool,
     /// Do not make the crate a root crate.
     #[structopt(long = "no-root")]
     no_root: bool,
@@ -71,7 +74,7 @@ fn parse_args_and_run() -> Result<(), Error> {
 
     if let OApiVersion::V3 = opt.api {
         let spec = parse_spec_v3(&opt.spec.to_string_lossy().to_string())?;
-        paperclip::v3::OpenApiV3::new(spec, opt.output).run(opt.models)?;
+        paperclip::v3::OpenApiV3::new(spec, opt.output).run(!opt.no_models, !opt.no_ops)?;
         return Ok(());
     }
 
