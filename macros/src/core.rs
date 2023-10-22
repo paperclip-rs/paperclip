@@ -320,6 +320,11 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
         pub required: std::collections::BTreeSet<String>,
     ));
 
+    gen.extend(quote!(
+        #[serde(skip_serializing_if = "std::collections::BTreeMap::is_empty", default = "std::collections::BTreeMap::default")]
+        pub extensions: std::collections::BTreeMap<String, serde_json::Value>,
+    ));
+
     if is_ref {
         gen.extend(quote!(
             #[serde(skip)]
