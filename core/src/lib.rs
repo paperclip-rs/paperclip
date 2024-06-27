@@ -15,7 +15,7 @@ pub mod im;
 pub mod util;
 #[cfg(feature = "v2")]
 pub mod v2;
-#[cfg(feature = "v3")]
+// #[cfg(feature = "v3")]
 pub mod v3;
 
 pub use self::error::ValidationError;

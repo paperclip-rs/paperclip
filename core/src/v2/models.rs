@@ -84,6 +84,7 @@ pub enum DataTypeFormat {
     Other,
 }
 
+#[allow(clippy::to_string_trait_impl)]
 impl ToString for DataTypeFormat {
     fn to_string(&self) -> String {
         match self {
@@ -439,7 +440,7 @@ pub struct PathItem<P, R> {
 impl<S> PathItem<Parameter<S>, Response<S>> {
     /// Normalizes this operation map.
     /// - Collects and removes parameters shared across operations
-    /// and adds them to the list global to this map.
+    ///   and adds them to the list global to this map.
     pub fn normalize(&mut self) {
         // We're using `Option<BTreeSet>` over `BTreeSet` because we need to
         // differentiate between the first operation that we use for initial

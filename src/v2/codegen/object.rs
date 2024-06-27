@@ -1005,7 +1005,7 @@ impl ApiObject {
 
         // FIXME: Currently, we're implementing the first value as enum default.
         // If "default" field exists, then we should use that instead.
-        if let Some(var) = self.variants().get(0) {
+        if let Some(var) = self.variants().first() {
             writeln!(
                 f,
                 "impl Default for {name} {{

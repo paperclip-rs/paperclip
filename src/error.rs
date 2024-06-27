@@ -59,10 +59,6 @@ pub enum PaperClipError {
     /// YAML coding errors.
     #[error("YAML error: {}", _0)]
     Yaml(serde_yaml::Error),
-    #[cfg(feature = "codegen-fmt")]
-    /// Errors from rustfmt.
-    #[error("Rustfmt formatting error: {}", _0)]
-    RustFmt(rustfmt_nightly::ErrorKind),
     #[cfg(feature = "codegen")]
     /// Errors in templating.
     #[error("Templating error: {}", _0)]
@@ -73,7 +69,5 @@ impl_err_from!(PaperClipError::std::io::Error > Io);
 impl_err_from!(PaperClipError::serde_json::Error > Json);
 impl_err_from!(PaperClipError::serde_yaml::Error > Yaml);
 impl_err_from!(PaperClipError::paperclip_core::ValidationError > Validation);
-#[cfg(feature = "codegen-fmt")]
-impl_err_from!(PaperClipError::rustfmt_nightly::ErrorKind > RustFmt);
 #[cfg(feature = "codegen")]
 impl_err_from!(PaperClipError::tinytemplate::error::Error > Templating);
