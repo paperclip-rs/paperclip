@@ -1055,6 +1055,8 @@
 <a href="#1055" id="1055">1055</a>
 <a href="#1056" id="1056">1056</a>
 <a href="#1057" id="1057">1057</a>
+<a href="#1058" id="1058">1058</a>
+<a href="#1059" id="1059">1059</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Models used by OpenAPI v2.
 
 </span><span class="kw">pub use </span><span class="kw">super</span>::extensions::{
@@ -1363,6 +1365,8 @@
     <span class="kw">pub </span>title: String,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
     </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
+    <span class="attr">#[serde(rename = <span class="string">"termsOfService"</span>, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
+    </span><span class="kw">pub </span>terms_of_service: <span class="prelude-ty">Option</span>&lt;String&gt;,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
     </span><span class="kw">pub </span>contact: <span class="prelude-ty">Option</span>&lt;Contact&gt;,
     <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]

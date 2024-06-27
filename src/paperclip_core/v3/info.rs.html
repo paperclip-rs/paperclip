@@ -26,7 +26,7 @@
         openapiv3::Info {
             title: v2.title,
             description: v2.description,
-            terms_of_service: <span class="prelude-val">None</span>,
+            terms_of_service: v2.terms_of_service,
             contact: v2.contact.map(|c| c.into()),
             license: v2.license.map(From::from),
             version: v2.version,
