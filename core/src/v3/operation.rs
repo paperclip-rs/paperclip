@@ -85,10 +85,9 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
             request_body,
             responses: openapiv3::Responses {
                 default: None,
-                responses: v2
-                    .responses
-                    .iter()
-                    .fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
+                responses: v2.responses.iter().fold(
+                    openapiv3::Responses::default().responses,
+                    |mut i, (k, v)| {
                         if let Ok(code) = k.parse::<u16>() {
                             let code = openapiv3::StatusCode::Code(code);
                             i.insert(
@@ -101,7 +100,8 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
                             );
                         }
                         i
-                    }),
+                    },
+                ),
                 ..Default::default()
             },
             deprecated: v2.deprecated,
@@ -112,16 +112,19 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
                     v2.security
                         .iter()
                         .map(|s| {
-                            s.iter().fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
-                                i.insert(k.to_string(), v.clone());
-                                i
-                            })
+                            s.iter().fold(
+                                openapiv3::SecurityRequirement::default(),
+                                |mut i, (k, v)| {
+                                    i.insert(k.to_string(), v.clone());
+                                    i
+                                },
+                            )
                         })
                         .collect(),
                 )
             },
             servers: vec![],
-            extensions: indexmap::IndexMap::new(),
+            extensions: Default::default(),
         }
     }
 }

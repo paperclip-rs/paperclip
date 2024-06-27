@@ -6,7 +6,7 @@ impl From<v2::Contact> for openapiv3::Contact {
             name: v2.name,
             url: v2.url,
             email: v2.email,
-            extensions: indexmap::IndexMap::new(),
+            extensions: Default::default(),
         }
     }
 }
