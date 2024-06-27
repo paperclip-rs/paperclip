@@ -2389,6 +2389,7 @@ fn test_tags() {
             spec.info = Info {
                 version: "0.1".into(),
                 title: "Image server".into(),
+                terms_of_service: Some("http://test.io/terms/".into()),
                 extensions,
                 ..Default::default()
             };
@@ -2439,6 +2440,7 @@ fn test_tags() {
                     "info":{
                         "title":"Image server",
                         "version":"0.1",
+                        "termsOfService":"http://test.io/terms/",
                         "x-my-attr":true
                     },
                     "x-root-level-extension": false,
