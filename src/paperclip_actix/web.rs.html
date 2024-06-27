@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `plugins/actix-web/src/web.rs`."><title>web.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_actix" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../paperclip_actix/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `plugins/actix-web/src/web.rs`."><title>web.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_actix" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -768,7 +768,7 @@
 <a href="#768" id="768">768</a>
 <a href="#769" id="769">769</a>
 <a href="#770" id="770">770</a>
-</pre><pre class="rust"><code><span class="attr">#![allow(clippy::return_self_not_must_use)]
+</pre></div><pre class="rust"><code><span class="attr">#![allow(clippy::return_self_not_must_use)]
 
 </span><span class="doccomment">//! Proxy module for [`actix_web::web`](https://docs.rs/actix-web/*/actix_web/web/index.html).
 </span><span class="kw">extern crate </span>actix_service2 <span class="kw">as </span>actix_service;
@@ -842,8 +842,8 @@
             Response = ServiceResponse&lt;B&gt;,
             Error = Error,
             InitError = (),
-        &gt; + <span class="lifetime">&#39;static</span>,
-    B: MessageBody + <span class="lifetime">&#39;static</span>,
+        &gt; + <span class="lifetime">'static</span>,
+    B: MessageBody + <span class="lifetime">'static</span>,
 {
     <span class="kw">fn </span>register(<span class="self">self</span>, config: <span class="kw-2">&amp;mut </span>AppService) {
         <span class="self">self</span>.inner.register(config)
@@ -874,7 +874,7 @@
 {
     <span class="doccomment">/// Proxy for [`actix_web::Resource::name`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.name).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>name(<span class="kw-2">mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.name(name);
         <span class="self">self
@@ -882,8 +882,8 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::Resource::guard`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.guard).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
-    </span><span class="kw">pub fn </span>guard&lt;G: Guard + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, guard: G) -&gt; <span class="self">Self </span>{
+    /// **NOTE:** This doesn't affect spec generation.
+    </span><span class="kw">pub fn </span>guard&lt;G: Guard + <span class="lifetime">'static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, guard: G) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.guard(guard);
         <span class="self">self
     </span>}
@@ -891,8 +891,8 @@
     <span class="doccomment">/// Wrapper for [`actix_web::Resource::route`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.route).
     </span><span class="kw">pub fn </span>route(<span class="kw-2">mut </span><span class="self">self</span>, route: Route) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>w = RouteWrapper::from(<span class="kw-2">&amp;</span><span class="self">self</span>.path, route);
-        <span class="self">self</span>.operations.extend(w.operations.into_iter());
-        <span class="self">self</span>.definitions.extend(w.definitions.into_iter());
+        <span class="self">self</span>.operations.extend(w.operations);
+        <span class="self">self</span>.definitions.extend(w.definitions);
         SecurityScheme::append_map(w.security, <span class="kw-2">&amp;mut </span><span class="self">self</span>.security);
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.route(w.inner);
         <span class="self">self
@@ -900,8 +900,8 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::Resource::app_data`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.app_data).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
-    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, data: U) -&gt; <span class="self">Self </span>{
+    /// **NOTE:** This doesn't affect spec generation.
+    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">'static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, data: U) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>w = <span class="self">self</span>.inner.app_data(data);
         <span class="self">self</span>.inner = w;
         <span class="self">self
@@ -911,8 +911,8 @@
     </span><span class="kw">pub fn </span>to&lt;F, Args&gt;(<span class="kw-2">mut </span><span class="self">self</span>, handler: F) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>F: Handler&lt;Args&gt;,
-        Args: FromRequest + <span class="lifetime">&#39;static</span>,
-        F::Output: Responder + <span class="lifetime">&#39;static</span>,
+        Args: FromRequest + <span class="lifetime">'static</span>,
+        F::Output: Responder + <span class="lifetime">'static</span>,
         F::Future: Apiv2Operation,
     {
         <span class="self">self</span>.update_from_handler::&lt;F::Future&gt;();
@@ -922,7 +922,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::Resource::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>wrap&lt;M, B&gt;(
         <span class="self">self</span>,
         mw: M,
@@ -945,7 +945,7 @@
                 Response = ServiceResponse&lt;B&gt;,
                 Error = Error,
                 InitError = (),
-            &gt; + <span class="lifetime">&#39;static</span>,
+            &gt; + <span class="lifetime">'static</span>,
     {
         Resource {
             path: <span class="self">self</span>.path,
@@ -958,7 +958,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::Resource::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.wrap_fn).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>wrap_fn&lt;F, R, B&gt;(
         <span class="self">self</span>,
         mw: F,
@@ -975,7 +975,7 @@
     &gt;
     <span class="kw">where
         </span>B: MessageBody,
-        F: Fn(ServiceRequest, <span class="kw-2">&amp;</span>T::Service) -&gt; R + Clone + <span class="lifetime">&#39;static</span>,
+        F: Fn(ServiceRequest, <span class="kw-2">&amp;</span>T::Service) -&gt; R + Clone + <span class="lifetime">'static</span>,
         R: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;ServiceResponse&lt;B&gt;, Error&gt;&gt;,
     {
         Resource {
@@ -989,7 +989,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::Resource::default_service`](https://docs.rs/actix-web/*/actix_web/struct.Resource.html#method.default_service).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>default_service&lt;F, U&gt;(<span class="kw-2">mut </span><span class="self">self</span>, f: F) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>F: actix_service::IntoServiceFactory&lt;U, ServiceRequest&gt;,
@@ -999,7 +999,7 @@
                 Response = ServiceResponse,
                 Error = Error,
                 InitError = (),
-            &gt; + <span class="lifetime">&#39;static</span>,
+            &gt; + <span class="lifetime">'static</span>,
         U::InitError: Debug,
     {
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.default_service(f);
@@ -1018,7 +1018,7 @@
                 <span class="self">self</span>.operations.insert(method.into(), op.clone());
             }
 
-            <span class="self">self</span>.definitions.extend(U::definitions().into_iter());
+            <span class="self">self</span>.definitions.extend(U::definitions());
             SecurityScheme::append_map(U::security_definitions(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.security);
         }
     }
@@ -1061,8 +1061,8 @@
             Response = ServiceResponse&lt;B&gt;,
             Error = Error,
             InitError = (),
-        &gt; + <span class="lifetime">&#39;static</span>,
-    B: MessageBody + <span class="lifetime">&#39;static</span>,
+        &gt; + <span class="lifetime">'static</span>,
+    B: MessageBody + <span class="lifetime">'static</span>,
 {
     <span class="kw">fn </span>register(<span class="self">self</span>, config: <span class="kw-2">&amp;mut </span>AppService) {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = <span class="self">self</span>.inner {
@@ -1077,16 +1077,16 @@
 {
     <span class="doccomment">/// Proxy for [`actix_web::Scope::guard`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.guard).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
-    </span><span class="kw">pub fn </span>guard&lt;G: Guard + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, guard: G) -&gt; <span class="self">Self </span>{
+    /// **NOTE:** This doesn't affect spec generation.
+    </span><span class="kw">pub fn </span>guard&lt;G: Guard + <span class="lifetime">'static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, guard: G) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|s| s.guard(guard));
         <span class="self">self
     </span>}
 
     <span class="doccomment">/// Proxy for [`actix_web::Scope::app_data`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.data).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
-    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, data: U) -&gt; <span class="self">Self </span>{
+    /// **NOTE:** This doesn't affect spec generation.
+    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">'static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, data: U) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|s| s.app_data(data));
         <span class="self">self
     </span>}
@@ -1109,7 +1109,7 @@
     <span class="doccomment">/// Wrapper for [`actix_web::Scope::service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.service).
     </span><span class="kw">pub fn </span>service&lt;F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, <span class="kw-2">mut </span>factory: F) -&gt; <span class="self">Self
     </span><span class="kw">where
-        </span>F: Mountable + HttpServiceFactory + <span class="lifetime">&#39;static</span>,
+        </span>F: Mountable + HttpServiceFactory + <span class="lifetime">'static</span>,
     {
         <span class="self">self</span>.update_from_mountable(<span class="kw-2">&amp;mut </span>factory);
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.take().map(|s| s.service(factory));
@@ -1126,7 +1126,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::Scope::default_service`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.default_service).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>default_service&lt;F, U&gt;(<span class="kw-2">mut </span><span class="self">self</span>, f: F) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>F: actix_service::IntoServiceFactory&lt;U, ServiceRequest&gt;,
@@ -1136,7 +1136,7 @@
                 Response = ServiceResponse,
                 Error = Error,
                 InitError = (),
-            &gt; + <span class="lifetime">&#39;static</span>,
+            &gt; + <span class="lifetime">'static</span>,
         U::InitError: Debug,
     {
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.map(|s| s.default_service(f));
@@ -1145,7 +1145,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::Scope::wrap`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.wrap).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>wrap&lt;M, B&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         mw: M,
@@ -1167,7 +1167,7 @@
                 Response = ServiceResponse&lt;B&gt;,
                 Error = Error,
                 InitError = (),
-            &gt; + <span class="lifetime">&#39;static</span>,
+            &gt; + <span class="lifetime">'static</span>,
         B: MessageBody,
     {
         Scope {
@@ -1181,7 +1181,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::Scope::wrap_fn`](https://docs.rs/actix-web/*/actix_web/struct.Scope.html#method.wrap_fn).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>wrap_fn&lt;F, R&gt;(
         <span class="kw-2">mut </span><span class="self">self</span>,
         mw: F,
@@ -1197,7 +1197,7 @@
         &gt;,
     &gt;
     <span class="kw">where
-        </span>F: Fn(ServiceRequest, <span class="kw-2">&amp;</span>T::Service) -&gt; R + Clone + <span class="lifetime">&#39;static</span>,
+        </span>F: Fn(ServiceRequest, <span class="kw-2">&amp;</span>T::Service) -&gt; R + Clone + <span class="lifetime">'static</span>,
         R: Future&lt;Output = <span class="prelude-ty">Result</span>&lt;ServiceResponse, Error&gt;&gt;,
     {
         Scope {
@@ -1214,12 +1214,12 @@
     <span class="kw">where
         </span>M: Mountable,
     {
-        <span class="self">self</span>.definitions.extend(factory.definitions().into_iter());
+        <span class="self">self</span>.definitions.extend(factory.definitions());
         <span class="kw">let </span><span class="kw-2">mut </span>path_map = BTreeMap::new();
         factory.update_operations(<span class="kw-2">&amp;mut </span>path_map);
         <span class="kw">for </span>(path, <span class="kw-2">mut </span>map) <span class="kw">in </span>path_map {
-            <span class="kw">let </span>p = <span class="kw">if </span>!<span class="self">self</span>.path.ends_with(<span class="string">&#39;/&#39;</span>) &amp;&amp; !path.starts_with(<span class="string">&#39;/&#39;</span>) {
-                <span class="self">self</span>.path.clone() + <span class="string">&quot;/&quot; </span>+ <span class="kw-2">&amp;</span>path
+            <span class="kw">let </span>p = <span class="kw">if </span>!<span class="self">self</span>.path.ends_with(<span class="string">'/'</span>) &amp;&amp; !path.starts_with(<span class="string">'/'</span>) {
+                <span class="self">self</span>.path.clone() + <span class="string">"/" </span>+ <span class="kw-2">&amp;</span>path
             } <span class="kw">else </span>{
                 <span class="self">self</span>.path.clone() + <span class="kw-2">&amp;</span>path
             };
@@ -1241,11 +1241,11 @@
 
 <span class="kw">impl</span>&lt;T&gt; Mountable <span class="kw">for </span>Scope&lt;T&gt; {
     <span class="kw">fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Scope has multiple paths. Use `update_operations` object instead.&quot;</span>);
+        <span class="macro">unimplemented!</span>(<span class="string">"Scope has multiple paths. Use `update_operations` object instead."</span>);
     }
 
     <span class="kw">fn </span>operations(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; BTreeMap&lt;HttpMethod, DefaultOperationRaw&gt; {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;Scope has multiple operation maps. Use `update_operations` object instead.&quot;</span>)
+        <span class="macro">unimplemented!</span>(<span class="string">"Scope has multiple operation maps. Use `update_operations` object instead."</span>)
     }
 
     <span class="kw">fn </span>security_definitions(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; BTreeMap&lt;String, SecurityScheme&gt; {
@@ -1258,8 +1258,8 @@
 
     <span class="kw">fn </span>update_operations(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultPathItemRaw&gt;) {
         <span class="kw">for </span>(path, item) <span class="kw">in </span>mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.path_map) {
-            <span class="kw">let </span>op_map = map.entry(path).or_insert_with(Default::default);
-            op_map.methods.extend(item.methods.into_iter());
+            <span class="kw">let </span>op_map = map.entry(path).or_default();
+            op_map.methods.extend(item.methods);
         }
     }
 }
@@ -1319,8 +1319,8 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::Route::guard`](https://docs.rs/actix-web/*/actix_web/struct.Route.html#method.guard).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
-    </span><span class="kw">pub fn </span>guard&lt;G: Guard + <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, guard: G) -&gt; <span class="self">Self </span>{
+    /// **NOTE:** This doesn't affect spec generation.
+    </span><span class="kw">pub fn </span>guard&lt;G: Guard + <span class="lifetime">'static</span>&gt;(<span class="kw-2">mut </span><span class="self">self</span>, guard: G) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.inner = <span class="self">self</span>.inner.guard(guard);
         <span class="self">self
     </span>}
@@ -1329,8 +1329,8 @@
     </span><span class="kw">pub fn </span>to&lt;F, Args&gt;(<span class="kw-2">mut </span><span class="self">self</span>, handler: F) -&gt; <span class="self">Self
     </span><span class="kw">where
         </span>F: Handler&lt;Args&gt;,
-        Args: FromRequest + <span class="lifetime">&#39;static</span>,
-        F::Output: Responder + <span class="lifetime">&#39;static</span>,
+        Args: FromRequest + <span class="lifetime">'static</span>,
+        F::Output: Responder + <span class="lifetime">'static</span>,
         F::Future: Apiv2Operation,
     {
         <span class="kw">if </span>F::Future::is_visible() {
@@ -1450,15 +1450,15 @@
 <span class="comment">/* Service config */
 
 </span><span class="doccomment">/// Wrapper for [`actix_web::web::ServiceConfig`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html).
-</span><span class="kw">pub struct </span>ServiceConfig&lt;<span class="lifetime">&#39;a</span>&gt; {
+</span><span class="kw">pub struct </span>ServiceConfig&lt;<span class="lifetime">'a</span>&gt; {
     path_map: BTreeMap&lt;String, DefaultPathItemRaw&gt;,
     definitions: BTreeMap&lt;String, DefaultSchemaRaw&gt;,
     security: BTreeMap&lt;String, SecurityScheme&gt;,
-    inner: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>actix_web::web::ServiceConfig,
+    inner: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>actix_web::web::ServiceConfig,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>actix_web::web::ServiceConfig&gt; <span class="kw">for </span>ServiceConfig&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="kw">fn </span>from(cfg: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="kw-2">mut </span>actix_web::web::ServiceConfig) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>actix_web::web::ServiceConfig&gt; <span class="kw">for </span>ServiceConfig&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="kw">fn </span>from(cfg: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="kw-2">mut </span>actix_web::web::ServiceConfig) -&gt; <span class="self">Self </span>{
         ServiceConfig {
             path_map: BTreeMap::new(),
             definitions: BTreeMap::new(),
@@ -1468,14 +1468,14 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Mountable <span class="kw">for </span>ServiceConfig&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Mountable <span class="kw">for </span>ServiceConfig&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-        <span class="macro">unimplemented!</span>(<span class="string">&quot;ServiceConfig has multiple paths. Use `update_operations` object instead.&quot;</span>);
+        <span class="macro">unimplemented!</span>(<span class="string">"ServiceConfig has multiple paths. Use `update_operations` object instead."</span>);
     }
 
     <span class="kw">fn </span>operations(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; BTreeMap&lt;HttpMethod, DefaultOperationRaw&gt; {
         <span class="macro">unimplemented!</span>(
-            <span class="string">&quot;ServiceConfig has multiple operation maps. Use `update_operations` object instead.&quot;
+            <span class="string">"ServiceConfig has multiple operation maps. Use `update_operations` object instead."
         </span>)
     }
 
@@ -1489,17 +1489,17 @@
 
     <span class="kw">fn </span>update_operations(<span class="kw-2">&amp;mut </span><span class="self">self</span>, map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultPathItemRaw&gt;) {
         <span class="kw">for </span>(path, item) <span class="kw">in </span>mem::take(<span class="kw-2">&amp;mut </span><span class="self">self</span>.path_map) {
-            <span class="kw">let </span>op_map = map.entry(path).or_insert_with(Default::default);
-            op_map.methods.extend(item.methods.into_iter());
+            <span class="kw">let </span>op_map = map.entry(path).or_default();
+            op_map.methods.extend(item.methods);
         }
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ServiceConfig&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; ServiceConfig&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Wrapper for [`actix_web::web::ServiceConfig::route`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.route).
     </span><span class="kw">pub fn </span>route(<span class="kw-2">&amp;mut </span><span class="self">self</span>, path: <span class="kw-2">&amp;</span>str, route: Route) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="kw">let </span><span class="kw-2">mut </span>w = RouteWrapper::from(path, route);
-        <span class="self">self</span>.definitions.extend(w.definitions().into_iter());
+        <span class="self">self</span>.definitions.extend(w.definitions());
         w.update_operations(<span class="kw-2">&amp;mut </span><span class="self">self</span>.path_map);
         SecurityScheme::append_map(w.security, <span class="kw-2">&amp;mut </span><span class="self">self</span>.security);
         <span class="self">self</span>.inner.route(path, w.inner);
@@ -1509,9 +1509,9 @@
     <span class="doccomment">/// Wrapper for [`actix_web::web::ServiceConfig::service`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.service).
     </span><span class="kw">pub fn </span>service&lt;F&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, <span class="kw-2">mut </span>factory: F) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self
     </span><span class="kw">where
-        </span>F: Mountable + HttpServiceFactory + <span class="lifetime">&#39;static</span>,
+        </span>F: Mountable + HttpServiceFactory + <span class="lifetime">'static</span>,
     {
-        <span class="self">self</span>.definitions.extend(factory.definitions().into_iter());
+        <span class="self">self</span>.definitions.extend(factory.definitions());
         factory.update_operations(<span class="kw-2">&amp;mut </span><span class="self">self</span>.path_map);
         SecurityScheme::append_map(factory.security_definitions(), <span class="kw-2">&amp;mut </span><span class="self">self</span>.security);
         <span class="self">self</span>.inner.service(factory);
@@ -1520,7 +1520,7 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::ServiceConfig::external_resource`](https://docs.rs/actix-web/*/actix_web/web/struct.ServiceConfig.html#method.external_resource).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
+    /// **NOTE:** This doesn't affect spec generation.
     </span><span class="kw">pub fn </span>external_resource&lt;N, U&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: N, url: U) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self
     </span><span class="kw">where
         </span>N: AsRef&lt;str&gt;,
@@ -1532,8 +1532,8 @@
 
     <span class="doccomment">/// Proxy for [`actix_web::web::ServiceConfig::app_data`](https://docs.rs/actix-web/4.0.1/actix_web/web/struct.ServiceConfig.html#method.app_data).
     ///
-    /// **NOTE:** This doesn&#39;t affect spec generation.
-    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">&#39;static</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: U) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
+    /// **NOTE:** This doesn't affect spec generation.
+    </span><span class="kw">pub fn </span>app_data&lt;U: <span class="lifetime">'static</span>&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, data: U) -&gt; <span class="kw-2">&amp;mut </span><span class="self">Self </span>{
         <span class="self">self</span>.inner.app_data(data);
         <span class="self">self
     </span>}

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/actix.rs`."><title>actix.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/actix.rs`."><title>actix.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -913,12 +913,12 @@
 <a href="#913" id="913">913</a>
 <a href="#914" id="914">914</a>
 <a href="#915" id="915">915</a>
-</pre><pre class="rust"><code><span class="attr">#[cfg(feature = <span class="string">&quot;actix3-validator&quot;</span>)]
+</pre></div><pre class="rust"><code><span class="attr">#[cfg(feature = <span class="string">"actix3-validator"</span>)]
 </span><span class="kw">extern crate </span>actix_web_validator2 <span class="kw">as </span>actix_web_validator;
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4-validator&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4-validator"</span>)]
 </span><span class="kw">extern crate </span>actix_web_validator3 <span class="kw">as </span>actix_web_validator;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-multipart"</span>)]
 </span><span class="kw">use </span><span class="kw">super</span>::schema::TypedData;
 <span class="kw">use super</span>::{
     models::{
@@ -927,13 +927,13 @@
     },
     schema::{Apiv2Errors, Apiv2Operation, Apiv2Schema},
 };
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">use </span><span class="kw">crate</span>::util::{ready, Ready};
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix3"</span>, feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">use </span>actix_web::web::ReqData;
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">use </span>actix_web::Error;
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">use </span>actix_web::{body::BoxBody, ResponseError};
 <span class="kw">use </span>actix_web::{
     http::StatusCode,
@@ -943,13 +943,13 @@
 
 <span class="kw">use </span>pin_project_lite::pin_project;
 
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
 </span><span class="kw">use </span>actix_web_validator::{
     Json <span class="kw">as </span>ValidatedJson, Path <span class="kw">as </span>ValidatedPath, QsQuery <span class="kw">as </span>ValidatedQsQuery,
     Query <span class="kw">as </span>ValidatedQuery,
 };
 <span class="kw">use </span>serde::Serialize;
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde_qs&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde_qs"</span>)]
 </span><span class="kw">use </span>serde_qs::actix::QsQuery;
 
 <span class="kw">use </span>std::{
@@ -988,7 +988,7 @@
 }
 
 <span class="doccomment">/// All schema types default to updating the definitions map.
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>T
 <span class="kw">where
     </span>T: Apiv2Schema,
@@ -1037,7 +1037,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T, E&gt; OperationModifier <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, E&gt;
 <span class="kw">where
     </span>T: OperationModifier,
@@ -1083,26 +1083,26 @@
     }
 }
 
-<span class="comment">// We don&#39;t know what we should do with these abstractions
+<span class="comment">// We don't know what we should do with these abstractions
 // as they could be anything.
 </span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span>Data&lt;T&gt; {}
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
 </span><span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>Data&lt;T&gt; {}
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix3"</span>, feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">impl</span>&lt;T: std::clone::Clone&gt; Apiv2Schema <span class="kw">for </span>ReqData&lt;T&gt; {}
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
-#[cfg(any(feature = <span class="string">&quot;actix3&quot;</span>, feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
+#[cfg(any(feature = <span class="string">"actix3"</span>, feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">impl</span>&lt;T: std::clone::Clone&gt; OperationModifier <span class="kw">for </span>ReqData&lt;T&gt; {}
 
-<span class="macro">macro_rules! </span>impl_empty({ $(<span class="macro-nonterminal">$ty</span>:ty),+ } =&gt; {
+<span class="macro">macro_rules!</span> impl_empty({ $(<span class="macro-nonterminal">$ty</span>:ty),+ } =&gt; {
     $(
         <span class="kw">impl </span>Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
-        <span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+        <span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
         </span><span class="kw">impl </span>OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
     )+
 });
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="doccomment">/// Workaround for possibility to directly return HttpResponse from closure handler.
 ///
 /// This is needed after actix removed `impl Future` from `HttpResponse`:
@@ -1114,14 +1114,14 @@
 /// .route(web::get().to(||
 ///     async move {
 ///         paperclip::actix::HttpResponseWrapper(
-///             HttpResponse::Ok().body(&quot;Hi there!&quot;)
+///             HttpResponse::Ok().body("Hi there!")
 ///         )
 ///     }
 /// ))
 /// ```
 </span><span class="kw">pub struct </span>HttpResponseWrapper(<span class="kw">pub </span>HttpResponse);
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl </span>Responder <span class="kw">for </span>HttpResponseWrapper {
     <span class="kw">type </span>Body = &lt;HttpResponse <span class="kw">as </span>Responder&gt;::Body;
 
@@ -1130,7 +1130,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl</span>&lt;F&gt; Apiv2Operation <span class="kw">for </span>F
 <span class="kw">where
     </span>F: Future&lt;Output = HttpResponseWrapper&gt;,
@@ -1148,7 +1148,7 @@
     }
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">impl </span>Apiv2Operation <span class="kw">for </span>HttpResponse {
     <span class="kw">fn </span>operation() -&gt; DefaultOperationRaw {
         Default::default()
@@ -1165,14 +1165,14 @@
 
 <span class="macro">impl_empty!</span>(HttpRequest, HttpResponse, Bytes, Payload);
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
 </span><span class="kw">mod </span>manual_impl {
     <span class="kw">use </span><span class="kw">super</span>::OperationModifier;
 
-    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; OperationModifier <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {}
-    <span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: OperationModifier&gt; OperationModifier <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T] {}
+    <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; OperationModifier <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>str {}
+    <span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: OperationModifier&gt; OperationModifier <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>[T] {}
 
-    <span class="macro">macro_rules! </span>impl_simple({ <span class="macro-nonterminal">$ty</span>:ty } =&gt; {
+    <span class="macro">macro_rules!</span> impl_simple({ <span class="macro-nonterminal">$ty</span>:ty } =&gt; {
         <span class="kw">impl </span>OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
     });
 
@@ -1193,24 +1193,24 @@
     <span class="macro">impl_simple!</span>(u64);
     <span class="macro">impl_simple!</span>(u128);
     <span class="macro">impl_simple!</span>(usize);
-    <span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
     </span><span class="macro">impl_simple!</span>(chrono::NaiveDateTime);
-    <span class="attr">#[cfg(feature = <span class="string">&quot;rust_decimal&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"rust_decimal"</span>)]
     </span><span class="macro">impl_simple!</span>(rust_decimal::Decimal);
-    <span class="attr">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"url"</span>)]
     </span><span class="macro">impl_simple!</span>(url::Url);
-    <span class="attr">#[cfg(feature = <span class="string">&quot;uuid0&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"uuid0"</span>)]
     </span><span class="macro">impl_simple!</span>(uuid0_dep::Uuid);
-    <span class="attr">#[cfg(feature = <span class="string">&quot;uuid1&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"uuid1"</span>)]
     </span><span class="macro">impl_simple!</span>(uuid1_dep::Uuid);
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
 </span><span class="kw">impl</span>&lt;T: chrono::TimeZone&gt; OperationModifier <span class="kw">for </span>chrono::DateTime&lt;T&gt; {}
 
 <span class="comment">// Other extractors
 
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span>Json&lt;T&gt; {
     default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">None
@@ -1240,7 +1240,7 @@
         op.parameters.push(Either::Right(Parameter {
             description: <span class="prelude-val">None</span>,
             in_: ParameterIn::Body,
-            name: <span class="string">&quot;body&quot;</span>.into(),
+            name: <span class="string">"body"</span>.into(),
             required: <span class="bool-val">true</span>,
             schema: <span class="prelude-val">Some</span>({
                 <span class="kw">let </span><span class="kw-2">mut </span>def = T::schema_with_ref();
@@ -1253,10 +1253,10 @@
 
     <span class="kw">fn </span>update_response(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
         op.responses.insert(
-            <span class="string">&quot;200&quot;</span>.into(),
+            <span class="string">"200"</span>.into(),
             Either::Right(Response {
                 <span class="comment">// TODO: Support configuring other 2xx codes using macro attribute.
-                </span>description: <span class="prelude-val">Some</span>(<span class="string">&quot;OK&quot;</span>.into()),
+                </span>description: <span class="prelude-val">Some</span>(<span class="string">"OK"</span>.into()),
                 schema: <span class="prelude-val">Some</span>({
                     <span class="kw">let </span><span class="kw-2">mut </span>def = T::schema_with_ref();
                     def.retain_ref();
@@ -1269,8 +1269,8 @@
 }
 
 <span class="attr">#[cfg(all(
-    any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>),
-    feature = <span class="string">&quot;nightly&quot;
+    any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>),
+    feature = <span class="string">"nightly"
 </span>))]
 </span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span>ValidatedJson&lt;T&gt; {
     <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
@@ -1282,7 +1282,7 @@
     }
 }
 
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
 </span><span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span>ValidatedJson&lt;T&gt; {
     <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         T::name()
@@ -1293,7 +1293,7 @@
     }
 }
 
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
 </span><span class="kw">impl</span>&lt;T&gt; OperationModifier <span class="kw">for </span>ValidatedJson&lt;T&gt;
 <span class="kw">where
     </span>T: Apiv2Schema,
@@ -1307,13 +1307,13 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-multipart"</span>)]
 </span><span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_multipart::Multipart {
     <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
         op.parameters.push(Either::Right(Parameter {
             description: <span class="prelude-val">None</span>,
             in_: ParameterIn::FormData,
-            name: <span class="string">&quot;file_data&quot;</span>.into(),
+            name: <span class="string">"file_data"</span>.into(),
             required: <span class="bool-val">true</span>,
             data_type: <span class="prelude-val">Some</span>(&lt;actix_multipart::Multipart <span class="kw">as </span>TypedData&gt;::data_type()),
             format: &lt;actix_multipart::Multipart <span class="kw">as </span>TypedData&gt;::format(),
@@ -1322,23 +1322,23 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-session&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-session"</span>)]
 </span><span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_session::Session {
     <span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-identity&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-identity"</span>)]
 </span><span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_identity::Identity {
     <span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-files&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-files"</span>)]
 </span><span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_files::NamedFile {
     <span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
 }
 
-<span class="macro">macro_rules! </span>impl_param_extractor ({ <span class="macro-nonterminal">$ty</span>:ty =&gt; <span class="macro-nonterminal">$container</span>:ident } =&gt; {
-    <span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="macro">macro_rules!</span> impl_param_extractor ({ <span class="macro-nonterminal">$ty</span>:ty =&gt; <span class="macro-nonterminal">$container</span>:ident } =&gt; {
+    <span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
     </span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
         default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
             <span class="prelude-val">None
@@ -1349,13 +1349,13 @@
         }
     }
 
-    <span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
     </span><span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
 
     <span class="kw">impl</span>&lt;T: Apiv2Schema&gt; OperationModifier <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
         <span class="kw">fn </span>update_parameter(op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {
             <span class="kw">let </span>def = T::raw_schema();
-            <span class="comment">// If there aren&#39;t any properties and if it&#39;s a path parameter,
+            <span class="comment">// If there aren't any properties and if it's a path parameter,
             // then add a parameter whose name will be overridden later.
             </span><span class="kw">if </span>def.properties.is_empty() &amp;&amp; ParameterIn::<span class="macro-nonterminal">$container </span>== ParameterIn::Path {
                 op.parameters.push(Either::Right(Parameter {
@@ -1385,7 +1385,7 @@
             }
         }
 
-        <span class="comment">// These don&#39;t require updating definitions, as we use them only
+        <span class="comment">// These don't require updating definitions, as we use them only
         // to get their properties.
         </span><span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
     }
@@ -1406,7 +1406,7 @@
 }
 
 <span class="doccomment">/// `formData` can refer to the global definitions.
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span>Form&lt;T&gt; {
     <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         T::name()
@@ -1420,23 +1420,23 @@
 <span class="macro">impl_param_extractor!</span>(Path&lt;T&gt; =&gt; Path);
 <span class="macro">impl_param_extractor!</span>(Query&lt;T&gt; =&gt; Query);
 <span class="macro">impl_param_extractor!</span>(Form&lt;T&gt; =&gt; FormData);
-<span class="attr">#[cfg(feature = <span class="string">&quot;serde_qs&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"serde_qs"</span>)]
 </span><span class="macro">impl_param_extractor!</span>(QsQuery&lt;T&gt; =&gt; Query);
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
 </span><span class="macro">impl_param_extractor!</span>(ValidatedPath&lt;T&gt; =&gt; Path);
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
 </span><span class="macro">impl_param_extractor!</span>(ValidatedQuery&lt;T&gt; =&gt; Query);
-<span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+<span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
 </span><span class="macro">impl_param_extractor!</span>(ValidatedQsQuery&lt;T&gt; =&gt; Query);
 
-<span class="macro">macro_rules! </span>impl_path_tuple ({ $(<span class="macro-nonterminal">$ty</span>:ident),+ } =&gt; {
-    <span class="attr">#[cfg(all(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>), feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="macro">macro_rules!</span> impl_path_tuple ({ $(<span class="macro-nonterminal">$ty</span>:ident),+ } =&gt; {
+    <span class="attr">#[cfg(all(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>), feature = <span class="string">"nightly"</span>))]
     </span><span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; Apiv2Schema <span class="kw">for </span>ValidatedPath&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-    <span class="attr">#[cfg(all(not(feature = <span class="string">&quot;nightly&quot;</span>), any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>)))]
+    <span class="attr">#[cfg(all(not(feature = <span class="string">"nightly"</span>), any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>)))]
     </span><span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+&gt; Apiv2Schema <span class="kw">for </span>ValidatedPath&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-    <span class="attr">#[cfg(any(feature = <span class="string">&quot;actix4-validator&quot;</span>, feature = <span class="string">&quot;actix3-validator&quot;</span>))]
+    <span class="attr">#[cfg(any(feature = <span class="string">"actix4-validator"</span>, feature = <span class="string">"actix3-validator"</span>))]
     </span><span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; OperationModifier <span class="kw">for </span>ValidatedPath&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt;
         <span class="kw">where </span>$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+
     {
@@ -1447,10 +1447,10 @@
         }
     }
 
-    <span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+    <span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
     </span><span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; Apiv2Schema <span class="kw">for </span>Path&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
-    <span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+    <span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
     </span><span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>: Apiv2Schema,)+&gt; Apiv2Schema <span class="kw">for </span>Path&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt; {}
 
     <span class="kw">impl</span>&lt;$(<span class="macro-nonterminal">$ty</span>,)+&gt; OperationModifier <span class="kw">for </span>Path&lt;($(<span class="macro-nonterminal">$ty</span>,)+)&gt;
@@ -1461,8 +1461,8 @@
                 <span class="kw">let </span>def = <span class="macro-nonterminal">$ty::raw_schema</span>();
                 <span class="kw">if </span>def.properties.is_empty() {
                     op.parameters.push(Either::Right(Parameter {
-                        <span class="comment">// NOTE: We&#39;re setting empty name, because we don&#39;t know
-                        // the name in this context. We&#39;ll get it when we add services.
+                        <span class="comment">// NOTE: We're setting empty name, because we don't know
+                        // the name in this context. We'll get it when we add services.
                         </span>name: String::new(),
                         in_: ParameterIn::Path,
                         required: <span class="bool-val">true</span>,
@@ -1483,7 +1483,7 @@
                         description: v.description,
                         collection_format: <span class="prelude-val">None</span>, <span class="comment">// this defaults to csv
                         </span>items: v.items.as_deref().map(map_schema_to_items),
-                        name: k,
+                        name: String::new(),
                         ..Default::default()
                     }));
                 }
@@ -1509,7 +1509,7 @@
 <span class="doccomment">/// Wrapper for wrapping over `impl Responder` thingies (to avoid breakage).
 </span><span class="kw">pub struct </span>ResponderWrapper&lt;T&gt;(<span class="kw">pub </span>T);
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T: Responder&gt; Apiv2Schema <span class="kw">for </span>ResponderWrapper&lt;T&gt; {
     default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">None
@@ -1520,19 +1520,19 @@
     }
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
 </span><span class="kw">impl</span>&lt;T: Responder&gt; Apiv2Schema <span class="kw">for </span>ResponderWrapper&lt;T&gt; {}
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;nightly&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"nightly"</span>))]
 </span><span class="kw">impl</span>&lt;T: Responder&gt; OperationModifier <span class="kw">for </span>ResponderWrapper&lt;T&gt; {}
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl </span>Apiv2Schema <span class="kw">for </span>actix_web::dev::Response&lt;actix_web::body::BoxBody&gt; {}
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl </span>OperationModifier <span class="kw">for </span>actix_web::dev::Response&lt;actix_web::body::BoxBody&gt; {}
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl</span>&lt;T: Responder&gt; Responder <span class="kw">for </span>ResponderWrapper&lt;T&gt; {
     <span class="kw">type </span>Body = T::Body;
 
@@ -1542,7 +1542,7 @@
     }
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">impl</span>&lt;T: Responder&gt; Responder <span class="kw">for </span>ResponderWrapper&lt;T&gt; {
     <span class="kw">type </span>Error = T::Error;
     <span class="kw">type </span>Future = T::Future;
@@ -1556,7 +1556,7 @@
 <span class="comment">// Wrapper for all response types from handlers. This holds the actual value
 // returned by the handler and a unit struct (autogenerated by the plugin) which
 // is used for generating operation information.
-</span><span class="macro">pin_project! </span>{
+</span><span class="macro">pin_project!</span> {
     <span class="kw">pub struct </span>ResponseWrapper&lt;T, H&gt; {
         <span class="attr">#[pin]
         </span><span class="kw">pub </span>responder: T,
@@ -1564,7 +1564,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl</span>&lt;T: Responder, H&gt; Responder <span class="kw">for </span>ResponseWrapper&lt;T, H&gt; {
     <span class="kw">type </span>Body = T::Body;
 
@@ -1574,7 +1574,7 @@
     }
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">impl</span>&lt;T: Responder, H&gt; Responder <span class="kw">for </span>ResponseWrapper&lt;T, H&gt; {
     <span class="kw">type </span>Error = &lt;T <span class="kw">as </span>Responder&gt;::Error;
     <span class="kw">type </span>Future = &lt;T <span class="kw">as </span>Responder&gt;::Future;
@@ -1594,7 +1594,7 @@
     <span class="kw">type </span>Output = T;
 
     <span class="attr">#[inline]
-    </span><span class="kw">fn </span>poll(<span class="kw-2">mut </span><span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, ctx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; Poll&lt;<span class="self">Self</span>::Output&gt; {
+    </span><span class="kw">fn </span>poll(<span class="kw-2">mut </span><span class="self">self</span>: Pin&lt;<span class="kw-2">&amp;mut </span><span class="self">Self</span>&gt;, ctx: <span class="kw-2">&amp;mut </span>Context&lt;<span class="lifetime">'_</span>&gt;) -&gt; Poll&lt;<span class="self">Self</span>::Output&gt; {
         <span class="kw">let </span>this = <span class="self">self</span>.as_mut().project();
         this.responder.poll(ctx)
     }
@@ -1677,7 +1677,7 @@
     }
 }
 
-<span class="macro">macro_rules! </span>json_with_status {
+<span class="macro">macro_rules!</span> json_with_status {
     (<span class="macro-nonterminal">$name</span>:ident =&gt; <span class="macro-nonterminal">$status</span>:expr) =&gt; {
         <span class="kw">pub struct </span><span class="macro-nonterminal">$name</span>&lt;T: Serialize + Apiv2Schema&gt;(<span class="kw">pub </span>T);
 
@@ -1685,10 +1685,10 @@
         <span class="kw">where
             </span>T: fmt::Debug + Serialize + Apiv2Schema,
         {
-            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
                 <span class="kw">let </span>status: StatusCode = <span class="macro-nonterminal">$status</span>;
                 <span class="kw">let </span>status_str = status.canonical_reason().unwrap_or(status.as_str());
-                <span class="macro">write!</span>(f, <span class="string">&quot;{} Json: {:?}&quot;</span>, status_str, <span class="self">self</span>.<span class="number">0</span>)
+                <span class="macro">write!</span>(f, <span class="string">"{} Json: {:?}"</span>, status_str, <span class="self">self</span>.<span class="number">0</span>)
             }
         }
 
@@ -1696,12 +1696,12 @@
         <span class="kw">where
             </span>T: fmt::Display + Serialize + Apiv2Schema,
         {
-            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
+            <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
                 fmt::Display::fmt(<span class="kw-2">&amp;</span><span class="self">self</span>.<span class="number">0</span>, f)
             }
         }
 
-        <span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+        <span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
         </span><span class="kw">impl</span>&lt;T&gt; Responder <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
         <span class="kw">where
             </span>T: Serialize + Apiv2Schema,
@@ -1716,12 +1716,12 @@
                 };
 
                 HttpResponse::build(status)
-                    .content_type(<span class="string">&quot;application/json&quot;</span>)
+                    .content_type(<span class="string">"application/json"</span>)
                     .body(body)
             }
         }
 
-        <span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+        <span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
         </span><span class="kw">impl</span>&lt;T&gt; Responder <span class="kw">for </span><span class="macro-nonterminal">$name</span>&lt;T&gt;
         <span class="kw">where
             </span>T: Serialize + Apiv2Schema,
@@ -1737,7 +1737,7 @@
                 };
 
                 ready(<span class="prelude-val">Ok</span>(HttpResponse::build(status)
-                    .content_type(<span class="string">&quot;application/json&quot;</span>)
+                    .content_type(<span class="string">"application/json"</span>)
                     .body(body)))
             }
         }
@@ -1785,30 +1785,30 @@
 </span><span class="kw">pub struct </span>NoContent;
 
 <span class="kw">impl </span>fmt::Display <span class="kw">for </span>NoContent {
-    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; fmt::Result {
-        f.write_str(<span class="string">&quot;No Content&quot;</span>)
+    <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter&lt;<span class="lifetime">'_</span>&gt;) -&gt; fmt::Result {
+        f.write_str(<span class="string">"No Content"</span>)
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix4&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix4"</span>)]
 </span><span class="kw">impl </span>Responder <span class="kw">for </span>NoContent {
     <span class="kw">type </span>Body = BoxBody;
 
     <span class="kw">fn </span>respond_to(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>HttpRequest) -&gt; HttpResponse&lt;BoxBody&gt; {
         HttpResponse::build(StatusCode::NO_CONTENT)
-            .content_type(<span class="string">&quot;application/json&quot;</span>)
+            .content_type(<span class="string">"application/json"</span>)
             .finish()
     }
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;actix4&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"actix4"</span>))]
 </span><span class="kw">impl </span>Responder <span class="kw">for </span>NoContent {
     <span class="kw">type </span>Error = Error;
     <span class="kw">type </span>Future = Ready&lt;<span class="prelude-ty">Result</span>&lt;HttpResponse, Error&gt;&gt;;
 
     <span class="kw">fn </span>respond_to(<span class="self">self</span>, <span class="kw">_</span>: <span class="kw-2">&amp;</span>HttpRequest) -&gt; <span class="self">Self</span>::Future {
         ready(<span class="prelude-val">Ok</span>(HttpResponse::build(StatusCode::NO_CONTENT)
-            .content_type(<span class="string">&quot;application/json&quot;</span>)
+            .content_type(<span class="string">"application/json"</span>)
             .finish()))
     }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/core.rs`."><title>core.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../source-files.js"></script><script defer src="../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../paperclip_macros/index.html"><img class="rust-logo" src="../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/core.rs`."><title>core.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -334,7 +334,7 @@
 <a href="#334" id="334">334</a>
 <a href="#335" id="335">335</a>
 <a href="#336" id="336">336</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Convenience macros for paperclip (exposed by default).
+</pre></div><pre class="rust"><code><span class="doccomment">//! Convenience macros for paperclip (exposed by default).
 
 </span><span class="kw">use </span>proc_macro::TokenStream;
 <span class="kw">use </span>quote::quote;
@@ -362,7 +362,7 @@
     <span class="kw">let </span><span class="kw-2">mut </span>gen = <span class="macro">quote!</span>(
         <span class="doccomment">/// Raw version of schema.
         ///
-        /// **NOTE:** This doesn&#39;t have smart pointers to reuse definitions
+        /// **NOTE:** This doesn't have smart pointers to reuse definitions
         /// throughout the spec. Instead, it contains the actual schema with
         /// unresolvable `$ref` fields.
         ///
@@ -374,7 +374,7 @@
         <span class="prelude-val">Err</span>(ts) =&gt; <span class="kw">return </span>ts,
     };
 
-    gen.extend(<span class="macro">quote! </span>{
+    gen.extend(<span class="macro">quote!</span> {
         #item_ast
 
         <span class="kw">impl </span>Default <span class="kw">for </span>#name {
@@ -524,22 +524,22 @@
     gen.into()
 }
 
-<span class="doccomment">/// Generates a raw schema struct with suffix &quot;{structName}Raw&quot;.
+<span class="doccomment">/// Generates a raw schema struct with suffix "{structName}Raw".
 </span><span class="kw">fn </span>raw_schema(item_ast: <span class="kw-2">&amp;mut </span>DeriveInput) -&gt; <span class="prelude-ty">Result</span>&lt;proc_macro2::TokenStream, TokenStream&gt; {
     <span class="kw">let </span>ident = Ident::new(
-        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{}Raw&quot;</span>, item_ast.ident),
+        <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}Raw"</span>, item_ast.ident),
         proc_macro2::Span::call_site(),
     );
     item_ast.ident = ident.clone();
 
     <span class="kw">let </span>fields = named_fields(item_ast)<span class="question-mark">?</span>;
     <span class="kw">let </span>default_fields: FieldsNamed =
-        syn::parse2(schema_fields(<span class="kw-2">&amp;</span>ident, <span class="bool-val">false</span>)).expect(<span class="string">&quot;parsing schema fields?&quot;</span>);
+        syn::parse2(schema_fields(<span class="kw-2">&amp;</span>ident, <span class="bool-val">false</span>)).expect(<span class="string">"parsing schema fields?"</span>);
     fields.named.extend(default_fields.named);
 
     <span class="kw">let </span><span class="kw-2">mut </span>defaults = <span class="macro">quote!</span>();
     <span class="kw">for </span>field <span class="kw">in </span><span class="kw-2">&amp;</span>fields.named {
-        <span class="kw">let </span>f_name = field.ident.as_ref().expect(<span class="string">&quot;fields not named?&quot;</span>);
+        <span class="kw">let </span>f_name = field.ident.as_ref().expect(<span class="string">"fields not named?"</span>);
         defaults.extend(<span class="macro">quote!</span>(#f_name: Default::default(),));
     }
 
@@ -552,12 +552,12 @@
     <span class="kw">let </span>fields = named_fields(item_ast)<span class="question-mark">?</span>;
 
     <span class="kw">let </span>default_fields: FieldsNamed =
-        syn::parse2(schema_fields(<span class="kw-2">&amp;</span>name, <span class="bool-val">true</span>)).expect(<span class="string">&quot;parsing schema fields?&quot;</span>);
+        syn::parse2(schema_fields(<span class="kw-2">&amp;</span>name, <span class="bool-val">true</span>)).expect(<span class="string">"parsing schema fields?"</span>);
     fields.named.extend(default_fields.named);
 
     <span class="kw">let </span><span class="kw-2">mut </span>defaults = <span class="macro">quote!</span>();
     <span class="kw">for </span>field <span class="kw">in </span><span class="kw-2">&amp;</span>fields.named {
-        <span class="kw">let </span>f_name = field.ident.as_ref().expect(<span class="string">&quot;fields not named?&quot;</span>);
+        <span class="kw">let </span>f_name = field.ident.as_ref().expect(<span class="string">"fields not named?"</span>);
         defaults.extend(<span class="macro">quote!</span>(#f_name: Default::default(),));
     }
 
@@ -572,10 +572,10 @@
             Fields::Named(<span class="kw-2">ref mut </span>f) =&gt; <span class="prelude-val">Ok</span>(f),
             Fields::Unnamed(<span class="kw-2">ref </span>f) =&gt; <span class="prelude-val">Err</span>(<span class="kw">crate</span>::span_error_with_msg(
                 f,
-                <span class="string">&quot;expected struct with zero or more fields for schema&quot;</span>,
+                <span class="string">"expected struct with zero or more fields for schema"</span>,
             )),
             f @ Fields::Unit =&gt; {
-                <span class="kw-2">*</span>f = Fields::Named(syn::parse2(<span class="macro">quote!</span>({})).expect(<span class="string">&quot;parsing empty named fields&quot;</span>));
+                <span class="kw-2">*</span>f = Fields::Named(syn::parse2(<span class="macro">quote!</span>({})).expect(<span class="string">"parsing empty named fields"</span>));
                 <span class="kw">match </span>f {
                     Fields::Named(<span class="kw-2">ref mut </span>f) =&gt; <span class="prelude-val">Ok</span>(f),
                     <span class="kw">_ </span>=&gt; <span class="macro">unreachable!</span>(),
@@ -583,13 +583,13 @@
             }
         }
     } <span class="kw">else </span>{
-        <span class="macro">emit_error!</span>(span.unwrap(), <span class="string">&quot;expected struct for schema&quot;</span>);
+        <span class="macro">emit_error!</span>(span.unwrap(), <span class="string">"expected struct for schema"</span>);
         <span class="prelude-val">Err</span>(<span class="macro">quote!</span>().into())
     }
 }
 
 <span class="doccomment">/// Generates fields for a schema struct using its name. Also takes a
-/// boolean to indicate whether this struct&#39;s fields hold references.
+/// boolean to indicate whether this struct's fields hold references.
 </span><span class="kw">fn </span>schema_fields(name: <span class="kw-2">&amp;</span>Ident, is_ref: bool) -&gt; proc_macro2::TokenStream {
     <span class="kw">let </span><span class="kw-2">mut </span>gen = <span class="macro">quote!</span>();
     <span class="kw">let </span>add_self = |gen: <span class="kw-2">&amp;mut </span>proc_macro2::TokenStream| {
@@ -601,58 +601,58 @@
     };
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(rename = <span class="string">&quot;$ref&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(rename = <span class="string">"$ref"</span>, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>reference: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>title: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>description: <span class="prelude-ty">Option</span>&lt;String&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(rename = <span class="string">&quot;type&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(rename = <span class="string">"type"</span>, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>data_type: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataType&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>format: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::DataTypeFormat&gt;,
     ));
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>example: <span class="prelude-ty">Option</span>&lt;serde_json::Value&gt;,
     ));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(default, skip_serializing_if = <span class="string">&quot;std::collections::BTreeMap::is_empty&quot;</span>)]
+        <span class="attr">#[serde(default, skip_serializing_if = <span class="string">"std::collections::BTreeMap::is_empty"</span>)]
         </span><span class="kw">pub </span>properties: std::collections::BTreeMap&lt;String,
     ));
     add_self(<span class="kw-2">&amp;mut </span>gen);
     gen.extend(<span class="macro">quote!</span>(&gt;,));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>items: <span class="prelude-ty">Option</span>&lt;
     ));
     add_self(<span class="kw-2">&amp;mut </span>gen);
     gen.extend(<span class="macro">quote!</span>(&gt;,));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(default, rename = <span class="string">&quot;enum&quot;</span>, skip_serializing_if = <span class="string">&quot;Vec::is_empty&quot;</span>)]
+        <span class="attr">#[serde(default, rename = <span class="string">"enum"</span>, skip_serializing_if = <span class="string">"Vec::is_empty"</span>)]
         </span><span class="kw">pub </span>enum_: Vec&lt;serde_json::Value&gt;,
     ));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(rename = <span class="string">&quot;additionalProperties&quot;</span>, skip_serializing_if = <span class="string">&quot;Option::is_none&quot;</span>)]
+        <span class="attr">#[serde(rename = <span class="string">"additionalProperties"</span>, skip_serializing_if = <span class="string">"Option::is_none"</span>)]
         </span><span class="kw">pub </span>extra_props: <span class="prelude-ty">Option</span>&lt;paperclip::v2::models::Either&lt;bool,
     ));
     add_self(<span class="kw-2">&amp;mut </span>gen);
     gen.extend(<span class="macro">quote!</span>(&gt;&gt;,));
 
     gen.extend(<span class="macro">quote!</span>(
-        <span class="attr">#[serde(default, skip_serializing_if = <span class="string">&quot;std::collections::BTreeSet::is_empty&quot;</span>)]
+        <span class="attr">#[serde(default, skip_serializing_if = <span class="string">"std::collections::BTreeSet::is_empty"</span>)]
         </span><span class="kw">pub </span>required: std::collections::BTreeSet&lt;String&gt;,
     ));
 

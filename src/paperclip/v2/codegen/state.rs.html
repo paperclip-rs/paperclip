@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/state.rs`."><title>state.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/state.rs`."><title>state.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -616,7 +616,7 @@
 <a href="#616" id="616">616</a>
 <a href="#617" id="617">617</a>
 <a href="#618" id="618">618</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::{
+</pre></div><pre class="rust"><code><span class="kw">use super</span>::{
     object,
     object::ApiObject,
     template::{<span class="self">self</span>, Template},
@@ -628,12 +628,12 @@
 };
 <span class="kw">use </span>anyhow::Error;
 <span class="kw">use </span>heck::ToPascalCase;
-<span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
 </span><span class="kw">use </span>heck::ToSnakeCase;
 <span class="kw">use </span>itertools::Itertools;
 <span class="kw">use </span>url_dep::Url;
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
 </span><span class="kw">use </span>std::fs;
 <span class="kw">use </span>std::{
     cell::RefCell,
@@ -652,18 +652,18 @@
     <span class="doccomment">/// Working directory - the path in which the necessary modules are generated.
     </span><span class="kw">pub </span>working_dir: PathBuf,
     <span class="doccomment">/// Namespace separation string.
-    </span><span class="kw">pub </span>ns_sep: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    </span><span class="kw">pub </span>ns_sep: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
     <span class="doccomment">/// Module prefix for using in generated code.
-    </span><span class="kw">pub </span>mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str,
+    </span><span class="kw">pub </span>mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str,
 
     <span class="comment">/* MARK: Private fields. */
     </span><span class="doccomment">/// Base URL for the API.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) base_url: RefCell&lt;Url&gt;,
-    <span class="doccomment">/// Fallback encoding when we don&#39;t have a choice (obtained from `Api.spec_format`).
+    <span class="doccomment">/// Fallback encoding when we don't have a choice (obtained from `Api.spec_format`).
     </span>default_encoding: RefCell&lt;SpecFormat&gt;,
     <span class="doccomment">/// If crate metadata is specified, then `lib.rs` and `Cargo.toml` are generated
-    /// along with the modules. This is gated behind `&quot;cli&quot;` feature.
-    </span><span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+    /// along with the modules. This is gated behind `"cli"` feature.
+    </span><span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
     </span>crate_meta: Rc&lt;RefCell&lt;<span class="prelude-ty">Option</span>&lt;CrateMeta&gt;&gt;&gt;,
 
     <span class="comment">/* MARK: Internal fields that should be reset for each session. */
@@ -673,7 +673,7 @@
     </span><span class="kw">pub</span>(<span class="kw">super</span>) def_mods: RefCell&lt;BTreeMap&lt;PathBuf, Vec&lt;ApiObject&gt;&gt;&gt;,
     <span class="doccomment">/// Relative paths
     </span><span class="kw">pub</span>(<span class="kw">super</span>) rel_paths: RefCell&lt;HashSet&lt;String&gt;&gt;,
-    <span class="doccomment">/// Media ranges and the corresponding decoders we&#39;ve registered.
+    <span class="doccomment">/// Media ranges and the corresponding decoders we've registered.
     </span>media_coders: RefCell&lt;Vec&lt;MediaCoder&gt;&gt;,
     <span class="doccomment">/// Unit types used by builders.
     </span>unit_types: RefCell&lt;BTreeSet&lt;String&gt;&gt;,
@@ -731,7 +731,7 @@
             .map(|(r, c)| (r.<span class="number">0</span>.as_ref(), c))
             .map(|(r, c)| MediaCoder {
                 range: r.into(),
-                error_variant: r.replace(<span class="string">&#39;*&#39;</span>, <span class="string">&quot;wildcard&quot;</span>).to_pascal_case(),
+                error_variant: r.replace(<span class="string">'*'</span>, <span class="string">"wildcard"</span>).to_pascal_case(),
                 error_ty_path: c.error_path.clone(),
                 decoder: c.decoder_path.clone(),
             })
@@ -742,7 +742,7 @@
     /// we can call this method to generate the module declarations
     /// from root.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>declare_modules(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="macro">info!</span>(<span class="string">&quot;Writing module declarations.&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">"Writing module declarations."</span>);
         <span class="kw">let </span>is_app = <span class="self">self</span>.is_cli()<span class="question-mark">?</span>;
         <span class="kw">let </span>mods = <span class="self">self</span>.mod_children.borrow();
         <span class="kw">for </span>(rel_parent, children) <span class="kw">in </span><span class="kw-2">&amp;*</span>mods {
@@ -752,40 +752,40 @@
             <span class="kw">if </span>rel_parent.parent().is_none() &amp;&amp; <span class="self">self</span>.needs_root_module() {
                 mod_path = <span class="self">self</span>.root_module_path();
                 contents.push_str(
-                    <span class="string">&quot;
+                    <span class="string">"
 #[macro_use]
 extern crate serde;
-&quot;</span>,
+"</span>,
                 );
 
                 <span class="kw">if </span>is_app {
                     contents.push_str(
-                        <span class="string">&quot;
+                        <span class="string">"
 #[macro_use]
 extern crate clap;
 
 pub mod cli {
-    include!(\&quot;./cli.rs\&quot;);
+    include!(\"./cli.rs\");
 }
-&quot;</span>,
+"</span>,
                     )
                 }
             } <span class="kw">else </span>{
-                mod_path.push(<span class="string">&quot;mod.rs&quot;</span>);
+                mod_path.push(<span class="string">"mod.rs"</span>);
             }
 
             <span class="kw">for </span>child <span class="kw">in </span>children.iter().sorted_by(|a, b| a.name.cmp(<span class="kw-2">&amp;</span>b.name)) {
                 <span class="macro">writeln!</span>(
                     contents,
-                    <span class="string">&quot;
+                    <span class="string">"
 pub mod {name} {{
-    include!(\&quot;./{path}\&quot;);
-}}&quot;</span>,
+    include!(\"./{path}\");
+}}"</span>,
                     name = child.name,
                     path = <span class="kw">if </span>child.is_final {
-                        child.name.clone() + <span class="string">&quot;.rs&quot;
+                        child.name.clone() + <span class="string">".rs"
                     </span>} <span class="kw">else </span>{
-                        child.name.clone() + <span class="string">&quot;/mod.rs&quot;
+                        child.name.clone() + <span class="string">"/mod.rs"
                     </span>}
                 )<span class="question-mark">?</span>;
             }
@@ -800,7 +800,7 @@ pub mod {name} {{
     /// we can call this method to write the definitions to leaf modules.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>write_definitions(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>def_mods = <span class="self">self</span>.def_mods.borrow();
-        <span class="macro">info!</span>(<span class="string">&quot;Writing definitions.&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">"Writing definitions."</span>);
         <span class="kw">for </span>(i, (mod_path, object)) <span class="kw">in </span>def_mods
             .iter()
             .flat_map(<span class="kw">move </span>|(p, l)| l.iter().map(<span class="kw">move </span>|o| (p, o)).enumerate())
@@ -820,7 +820,7 @@ pub mod {name} {{
     /// we can use this method to add builder structs and their impls.
     </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>add_builders(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>module_prefix = <span class="self">self</span>.normalized_mod_prefix();
-        <span class="macro">info!</span>(<span class="string">&quot;Adding builders to definitions.&quot;</span>);
+        <span class="macro">info!</span>(<span class="string">"Adding builders to definitions."</span>);
         <span class="kw">let </span><span class="kw-2">mut </span>unit_types = <span class="self">self</span>.unit_types.borrow_mut();
         <span class="kw">let </span>def_mods = <span class="self">self</span>.def_mods.borrow();
         <span class="kw">let </span><span class="kw-2">mut </span>cli_yaml = <span class="self">self</span>.cli_yaml.borrow_mut();
@@ -841,11 +841,11 @@ pub mod {name} {{
                         unit_types.insert(object::to_pascal_case(f.name));
                     });
 
-                builder_content.push(<span class="string">&#39;\n&#39;</span>);
-                <span class="kw">let _ </span>= <span class="macro">write!</span>(builder_content, <span class="string">&quot;{}&quot;</span>, builder);
-                builder_content.push(<span class="string">&#39;\n&#39;</span>);
+                builder_content.push(<span class="string">'\n'</span>);
+                <span class="kw">let _ </span>= <span class="macro">write!</span>(builder_content, <span class="string">"{}"</span>, builder);
+                builder_content.push(<span class="string">'\n'</span>);
                 <span class="kw">let </span>inner_repr = builder.impl_repr();
-                <span class="kw">let _ </span>= <span class="macro">write!</span>(builder_content, <span class="string">&quot;{}&quot;</span>, inner_repr);
+                <span class="kw">let _ </span>= <span class="macro">write!</span>(builder_content, <span class="string">"{}"</span>, inner_repr);
                 <span class="kw">if </span>is_cli {
                     inner_repr.write_arg_parsing(<span class="kw-2">&amp;mut </span>builder_content)<span class="question-mark">?</span>;
                 }
@@ -856,8 +856,8 @@ pub mod {name} {{
                 repr.write_arg_match_arms(<span class="kw-2">&amp;mut *</span>match_arms)<span class="question-mark">?</span>;
             }
 
-            <span class="kw">let </span><span class="kw-2">mut </span>impl_content = String::from(<span class="string">&quot;\n&quot;</span>);
-            <span class="macro">write!</span>(impl_content, <span class="string">&quot;{}&quot;</span>, repr)<span class="question-mark">?</span>;
+            <span class="kw">let </span><span class="kw-2">mut </span>impl_content = String::from(<span class="string">"\n"</span>);
+            <span class="macro">write!</span>(impl_content, <span class="string">"{}"</span>, repr)<span class="question-mark">?</span>;
 
             <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>impl_content, mod_path)<span class="question-mark">?</span>;
             <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>builder_content, mod_path)<span class="question-mark">?</span>;
@@ -873,34 +873,34 @@ pub mod {name} {{
         <span class="kw">let </span>types = <span class="self">self</span>.unit_types.borrow();
         <span class="kw">let </span><span class="kw-2">mut </span>content = String::new();
         content.push_str(
-            <span class="string">&quot;
+            <span class="string">"
 pub mod generics {
-    include!(\&quot;./generics.rs\&quot;);
+    include!(\"./generics.rs\");
 }
 
 pub mod util {
-    include!(\&quot;./util.rs\&quot;);
+    include!(\"./util.rs\");
 }
-&quot;</span>,
+"</span>,
         );
         <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span>content, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
         content.clear();
-        module.set_file_name(<span class="string">&quot;generics.rs&quot;</span>);
+        module.set_file_name(<span class="string">"generics.rs"</span>);
 
         <span class="kw">for </span>ty <span class="kw">in </span><span class="kw-2">&amp;*</span>types {
-            content.push_str(<span class="string">&quot;\npub struct Missing&quot;</span>);
+            content.push_str(<span class="string">"\npub struct Missing"</span>);
             content.push_str(ty);
-            content.push(<span class="string">&#39;;&#39;</span>);
-            content.push_str(<span class="string">&quot;\npub struct &quot;</span>);
+            content.push(<span class="string">';'</span>);
+            content.push_str(<span class="string">"\npub struct "</span>);
             content.push_str(ty);
-            content.push_str(<span class="string">&quot;Exists;&quot;</span>);
+            content.push_str(<span class="string">"Exists;"</span>);
         }
 
-        content.push(<span class="string">&#39;\n&#39;</span>);
+        content.push(<span class="string">'\n'</span>);
         <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>content, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
-        module.set_file_name(<span class="string">&quot;util.rs&quot;</span>);
+        module.set_file_name(<span class="string">"util.rs"</span>);
         <span class="kw">let </span>contents = template::render(Template::UTIL_MOD, <span class="kw-2">&amp;</span>EmptyContext {})<span class="question-mark">?</span>;
         <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>contents, <span class="kw-2">&amp;</span>module)<span class="question-mark">?</span>;
 
@@ -936,7 +936,7 @@ pub mod util {
 
     <span class="doccomment">/// Appends the given contents to an existing file at the given path.
     ///
-    /// **NOTE:** This doesn&#39;t create a file if it is non-existent.
+    /// **NOTE:** This doesn't create a file if it is non-existent.
     </span><span class="kw">fn </span>append_contents(<span class="kw-2">&amp;</span><span class="self">self</span>, contents: <span class="kw-2">&amp;</span>str, path: <span class="kw-2">&amp;</span>Path) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>fd = OpenOptions::new().append(<span class="bool-val">true</span>).open(path)<span class="question-mark">?</span>;
         fd.write_all(contents.as_bytes())<span class="question-mark">?</span>;
@@ -953,16 +953,16 @@ pub mod util {
         <span class="kw">let </span>cm = <span class="self">self</span>.infer_crate_meta()<span class="question-mark">?</span>;
         <span class="kw">if let </span><span class="prelude-val">Some</span>(meta) = cm.borrow().as_ref() {
             <span class="comment">// Clap YAML
-            </span><span class="kw">let </span>clap_yaml = root.with_file_name(<span class="string">&quot;app.yaml&quot;</span>);
+            </span><span class="kw">let </span>clap_yaml = root.with_file_name(<span class="string">"app.yaml"</span>);
             <span class="kw">let </span>base_content = template::render(
                 Template::CLAP_YAML,
                 <span class="kw-2">&amp;</span>ClapYamlContext {
                     name: meta.name.as_ref().unwrap(),
-                    version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.version.as_ref().unwrap()),
+                    version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{:?}"</span>, meta.version.as_ref().unwrap()),
                 },
             )<span class="question-mark">?</span>;
 
-            <span class="kw">let </span>cli_mod = root.with_file_name(<span class="string">&quot;cli.rs&quot;</span>);
+            <span class="kw">let </span>cli_mod = root.with_file_name(<span class="string">"cli.rs"</span>);
             <span class="self">self</span>.write_contents(<span class="kw-2">&amp;</span>base_content, <span class="kw-2">&amp;</span>clap_yaml)<span class="question-mark">?</span>;
             <span class="self">self</span>.append_contents(<span class="kw-2">&amp;</span><span class="self">self</span>.cli_yaml.borrow(), <span class="kw-2">&amp;</span>clap_yaml)<span class="question-mark">?</span>;
 
@@ -1004,13 +1004,13 @@ pub mod util {
 
     <span class="doccomment">/// Normalized module prefix used by codegen.
     </span><span class="kw">fn </span>normalized_mod_prefix(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; String {
-        <span class="macro">format!</span>(<span class="string">&quot;{}::&quot;</span>, <span class="self">self</span>.mod_prefix.trim_matches(<span class="string">&#39;:&#39;</span>))
+        <span class="macro">format!</span>(<span class="string">"{}::"</span>, <span class="self">self</span>.mod_prefix.trim_matches(<span class="string">':'</span>))
     }
 }
 
 <span class="comment">/* Feature-specific impls */
 
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
 </span><span class="kw">impl </span>EmitterState {
     <span class="doccomment">/// Sets the crate metadata for this session.
     </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, meta: CrateMeta) {
@@ -1035,21 +1035,21 @@ pub mod util {
         <span class="kw">let </span>cm = <span class="self">self</span>.crate_meta.borrow();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(meta) = cm.as_ref() {
             <span class="kw">match </span>meta.mode {
-                EmitMode::Crate =&gt; <span class="kw">return </span><span class="self">self</span>.working_dir.join(<span class="string">&quot;lib.rs&quot;</span>),
-                EmitMode::App =&gt; <span class="kw">return </span><span class="self">self</span>.working_dir.join(<span class="string">&quot;main.rs&quot;</span>),
+                EmitMode::Crate =&gt; <span class="kw">return </span><span class="self">self</span>.working_dir.join(<span class="string">"lib.rs"</span>),
+                EmitMode::App =&gt; <span class="kw">return </span><span class="self">self</span>.working_dir.join(<span class="string">"main.rs"</span>),
                 EmitMode::Module =&gt; (),
             }
         }
 
-        <span class="self">self</span>.working_dir.join(<span class="string">&quot;mod.rs&quot;</span>)
+        <span class="self">self</span>.working_dir.join(<span class="string">"mod.rs"</span>)
     }
 
-    <span class="doccomment">/// Creates a Cargo.toml manifest in the working directory (if it&#39;s a crate).
+    <span class="doccomment">/// Creates a Cargo.toml manifest in the working directory (if it's a crate).
     </span><span class="kw">fn </span>create_manifest(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>man_path = <span class="self">self</span>.root_module_path();
         <span class="kw">let </span>is_cli = <span class="self">self</span>.is_cli()<span class="question-mark">?</span>;
         <span class="kw">let </span>no_root = <span class="self">self</span>.no_root()<span class="question-mark">?</span>;
-        man_path.set_file_name(<span class="string">&quot;Cargo.toml&quot;</span>);
+        man_path.set_file_name(<span class="string">"Cargo.toml"</span>);
 
         <span class="kw">let </span>cm = <span class="self">self</span>.infer_crate_meta()<span class="question-mark">?</span>;
         <span class="kw">let </span>m = cm.borrow();
@@ -1062,9 +1062,9 @@ pub mod util {
             <span class="kw">let </span>contents = template::render(
                 Template::CARGO_MANIFEST,
                 <span class="kw-2">&amp;</span>ManifestContext {
-                    name: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.name.as_ref().unwrap()),
-                    version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.version.as_ref().unwrap()),
-                    authors: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, meta.authors.as_ref().unwrap()),
+                    name: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{:?}"</span>, meta.name.as_ref().unwrap()),
+                    version: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{:?}"</span>, meta.version.as_ref().unwrap()),
+                    authors: <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{:?}"</span>, meta.authors.as_ref().unwrap()),
                     is_cli,
                     no_root,
                 },
@@ -1092,15 +1092,15 @@ pub mod util {
             }
 
             <span class="kw">if </span>meta.version.is_none() {
-                meta.version = <span class="prelude-val">Some</span>(<span class="string">&quot;0.1.0&quot;</span>.into());
+                meta.version = <span class="prelude-val">Some</span>(<span class="string">"0.1.0"</span>.into());
             }
 
             <span class="kw">if </span>meta.authors.is_none() {
                 <span class="kw">let </span>(<span class="kw-2">mut </span>name, email) = <span class="kw">super</span>::author::discover()<span class="question-mark">?</span>;
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(e) = email {
-                    name.push_str(<span class="string">&quot; &lt;&quot;</span>);
+                    name.push_str(<span class="string">" &lt;"</span>);
                     name.push_str(<span class="kw-2">&amp;</span>e);
-                    name.push(<span class="string">&#39;&gt;&#39;</span>);
+                    name.push(<span class="string">'&gt;'</span>);
                 }
 
                 meta.authors = <span class="prelude-val">Some</span>(<span class="macro">vec!</span>[name]);
@@ -1111,7 +1111,7 @@ pub mod util {
     }
 }
 
-<span class="attr">#[cfg(not(feature = <span class="string">&quot;cli&quot;</span>))]
+<span class="attr">#[cfg(not(feature = <span class="string">"cli"</span>))]
 </span><span class="kw">impl </span>EmitterState {
     <span class="doccomment">/// This is a no-op.
     </span><span class="kw">pub fn </span>set_meta(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw">_</span>: CrateMeta) {}
@@ -1128,7 +1128,7 @@ pub mod util {
 
     <span class="doccomment">/// Always returns the path to `mod.rs` in root.
     </span><span class="kw">fn </span>root_module_path(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; PathBuf {
-        <span class="self">self</span>.working_dir.join(<span class="string">&quot;mod.rs&quot;</span>)
+        <span class="self">self</span>.working_dir.join(<span class="string">"mod.rs"</span>)
     }
 
     <span class="doccomment">/// This always returns `false`.
@@ -1150,7 +1150,7 @@ pub mod util {
             working_dir: <span class="self">self</span>.working_dir.clone(),
             mod_prefix: <span class="self">self</span>.mod_prefix,
             ns_sep: <span class="self">self</span>.ns_sep,
-            <span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+            <span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
             </span>crate_meta: <span class="self">self</span>.crate_meta.clone(),
             base_url: <span class="self">self</span>.base_url.clone(),
             default_encoding: <span class="self">self</span>.default_encoding.clone(),
@@ -1163,12 +1163,12 @@ pub mod util {
 <span class="kw">impl </span>Default <span class="kw">for </span>EmitterState {
     <span class="kw">fn </span>default() -&gt; EmitterState {
         EmitterState {
-            working_dir: PathBuf::from(<span class="string">&quot;.&quot;</span>),
-            mod_prefix: <span class="string">&quot;crate::&quot;</span>,
-            ns_sep: <span class="string">&quot;.&quot;</span>,
-            <span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+            working_dir: PathBuf::from(<span class="string">"."</span>),
+            mod_prefix: <span class="string">"crate::"</span>,
+            ns_sep: <span class="string">"."</span>,
+            <span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
             </span>crate_meta: Rc::new(RefCell::new(<span class="prelude-val">None</span>)),
-            base_url: RefCell::new(<span class="string">&quot;https://example.com&quot;</span>.parse().expect(<span class="string">&quot;invalid URL?&quot;</span>)),
+            base_url: RefCell::new(<span class="string">"https://example.com"</span>.parse().expect(<span class="string">"invalid URL?"</span>)),
             def_mods: RefCell::new(BTreeMap::new()),
             rel_paths: RefCell::new(HashSet::new()),
             mod_children: RefCell::new(HashMap::new()),
@@ -1195,27 +1195,27 @@ pub mod util {
 
 <span class="comment">/* Templating contexts */
 
-</span><span class="attr">#[cfg(feature = <span class="string">&quot;cli&quot;</span>)]
+</span><span class="attr">#[cfg(feature = <span class="string">"cli"</span>)]
 #[derive(serde::Serialize)]
-</span><span class="kw">struct </span>ManifestContext&lt;<span class="lifetime">&#39;a</span>&gt; {
-    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    authors: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+</span><span class="kw">struct </span>ManifestContext&lt;<span class="lifetime">'a</span>&gt; {
+    name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    version: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    authors: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
     is_cli: bool,
     no_root: bool,
 }
 
 <span class="attr">#[derive(serde::Serialize)]
-</span><span class="kw">struct </span>CliUtilContext&lt;<span class="lifetime">&#39;a</span>&gt; {
-    match_arms: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
+</span><span class="kw">struct </span>CliUtilContext&lt;<span class="lifetime">'a</span>&gt; {
+    match_arms: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    media_coders: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[MediaCoder],
 }
 
 <span class="attr">#[derive(serde::Serialize)]
-</span><span class="kw">struct </span>ClientModContext&lt;<span class="lifetime">&#39;a</span>&gt; {
-    base_url: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    media_coders: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[MediaCoder],
+</span><span class="kw">struct </span>ClientModContext&lt;<span class="lifetime">'a</span>&gt; {
+    base_url: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    mod_prefix: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    media_coders: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>[MediaCoder],
 }
 
 <span class="attr">#[derive(Debug, serde::Serialize)]
@@ -1227,9 +1227,9 @@ pub mod util {
 }
 
 <span class="attr">#[derive(serde::Serialize)]
-</span><span class="kw">struct </span>ClapYamlContext&lt;<span class="lifetime">&#39;a</span>&gt; {
-    name: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    version: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
+</span><span class="kw">struct </span>ClapYamlContext&lt;<span class="lifetime">'a</span>&gt; {
+    name: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    version: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
 }
 
 <span class="attr">#[derive(serde::Serialize)]

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/parameter.rs`."><title>parameter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/parameter.rs`."><title>parameter.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -173,9 +173,9 @@
 <a href="#173" id="173">173</a>
 <a href="#174" id="174">174</a>
 <a href="#175" id="175">175</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
 
-<span class="doccomment">/// helper function to convert a default raw parameter when we already know it&#39;s not part of a body
+<span class="doccomment">/// helper function to convert a default raw parameter when we already know it's not part of a body
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">fn </span>non_body_parameter_to_v3_parameter(
     form_data: bool,
     v2: <span class="kw-2">&amp;</span>v2::DefaultParameterRaw,
@@ -199,7 +199,7 @@
                                     )
                                 }
                                 other =&gt; {
-                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: {:?}&quot;</span>, other);
+                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">"Invalid data type format: {:?}"</span>, other);
                                     openapiv3::VariantOrUnknownOrEmpty::Empty
                                 }
                             },
@@ -233,7 +233,7 @@
                                     )
                                 }
                                 other =&gt; {
-                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: {:?}&quot;</span>, other);
+                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">"Invalid data type format: {:?}"</span>, other);
                                     openapiv3::VariantOrUnknownOrEmpty::Empty
                                 }
                             },
@@ -282,7 +282,7 @@
                                     )
                                 }
                                 v2::DataTypeFormat::Other =&gt; {
-                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid data type format: other&quot;</span>);
+                                    <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">"Invalid data type format: other"</span>);
                                     openapiv3::VariantOrUnknownOrEmpty::Unknown(
                                         v2::DataTypeFormat::Other.to_string(),
                                     )
@@ -330,14 +330,14 @@
                 }
             };
             <span class="kw">let </span>schema_data = <span class="kw">if </span>form_data {
-                <span class="comment">// formData has the description and default values in the schema&#39;s properties
+                <span class="comment">// formData has the description and default values in the schema's properties
                 </span>openapiv3::SchemaData {
                     description: v2.description.clone(),
                     default: v2.default.clone(),
                     ..Default::default()
                 }
             } <span class="kw">else </span>{
-                <span class="comment">// properties set on the parameter and not on the schema&#39;s properties
+                <span class="comment">// properties set on the parameter and not on the schema's properties
                 </span>openapiv3::SchemaData::default()
             };
             <span class="prelude-val">Some</span>(openapiv3::Schema {

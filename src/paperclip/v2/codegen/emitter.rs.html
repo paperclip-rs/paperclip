@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/emitter.rs`."><title>emitter.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/emitter.rs`."><title>emitter.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1268,7 +1268,7 @@
 <a href="#1268" id="1268">1268</a>
 <a href="#1269" id="1269">1269</a>
 <a href="#1270" id="1270">1270</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::{
+</pre></div><pre class="rust"><code><span class="kw">use super</span>::{
     object::{
         ApiObject, ObjectContainer, ObjectField, ObjectVariant, OpRequirement, Parameter, Response,
     },
@@ -1302,20 +1302,20 @@
 <span class="kw">use </span>url_dep::Host;
 
 <span class="doccomment">/// Identifier used for `Any` generic parameters in struct definitions.
-</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>ANY_GENERIC_PARAMETER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;Any&quot;</span>;
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>ANY_GENERIC_PARAMETER: <span class="kw-2">&amp;</span>str = <span class="string">"Any"</span>;
 <span class="doccomment">/// Identifier used for file types in schema. This will be replaced with `ResponseStream`.
-</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>FILE_MARKER: <span class="kw-2">&amp;</span>str = <span class="string">&quot;--FILE--&quot;</span>;
-<span class="doccomment">/// Field that collects all properties when &quot;additionalProperties&quot; is set to &quot;true&quot;
-</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>EXTRA_PROPS_FIELD: <span class="kw-2">&amp;</span>str = <span class="string">&quot;other_fields&quot;</span>;
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>FILE_MARKER: <span class="kw-2">&amp;</span>str = <span class="string">"--FILE--"</span>;
+<span class="doccomment">/// Field that collects all properties when "additionalProperties" is set to "true"
+</span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">const </span>EXTRA_PROPS_FIELD: <span class="kw-2">&amp;</span>str = <span class="string">"other_fields"</span>;
 
-<span class="doccomment">/// Some &quot;thing&quot; emitted by the emitter.
+<span class="doccomment">/// Some "thing" emitted by the emitter.
 </span><span class="attr">#[derive(Debug)]
 </span><span class="kw">pub enum </span>EmittedUnit {
     <span class="doccomment">/// Some Rust type.
     </span>Known(String),
     <span class="doccomment">/// Bunch of emitted Rust objects.
     </span>Objects(Vec&lt;ApiObject&gt;),
-    <span class="doccomment">/// We&#39;ve identified the Rust type, but then we also have a
+    <span class="doccomment">/// We've identified the Rust type, but then we also have a
     /// bunch of generated Rust objects. This happens in the
     /// presence of anonymously defined schema.
     </span>KnownButAnonymous(String, Vec&lt;ApiObject&gt;),
@@ -1329,7 +1329,7 @@
         <span class="kw">match </span><span class="self">self </span>{
             EmittedUnit::Known(<span class="kw-2">ref </span>s) =&gt; s.clone(),
             EmittedUnit::KnownButAnonymous(<span class="kw-2">ref </span>s, <span class="kw">_</span>) =&gt; s.clone(),
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Emitted unit {:?} is not a known type&quot;</span>, <span class="self">self</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"Emitted unit {:?} is not a known type"</span>, <span class="self">self</span>),
         }
     }
 
@@ -1338,34 +1338,34 @@
         <span class="kw">match </span><span class="self">self </span>{
             EmittedUnit::Known(<span class="kw">_</span>) =&gt; EmittedUnit::Known(ty.into()),
             EmittedUnit::KnownButAnonymous(<span class="kw">_</span>, o) =&gt; EmittedUnit::KnownButAnonymous(ty.into(), o),
-            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">&quot;Cannot map unknown emitted units&quot;</span>),
+            <span class="kw">_ </span>=&gt; <span class="macro">panic!</span>(<span class="string">"Cannot map unknown emitted units"</span>),
         }
     }
 }
 
 <span class="doccomment">/// Context for building definitions.
 </span><span class="attr">#[derive(Debug, Clone, Default)]
-</span><span class="kw">pub struct </span>DefinitionContext&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Whether we&#39;re planning to define the Rust type or whether we&#39;re
+</span><span class="kw">pub struct </span>DefinitionContext&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="doccomment">/// Whether we're planning to define the Rust type or whether we're
     /// reusing an existing type.
     </span><span class="kw">pub </span>define: bool,
     <span class="doccomment">/// Names of parents. In JSON schema, object types are allowed to
-    /// define a new object in their schema without &#39;$ref&#39;erencing them
-    /// from elsewhere. This means, we&#39;ll have an anonymous object. So,
+    /// define a new object in their schema without '$ref'erencing them
+    /// from elsewhere. This means, we'll have an anonymous object. So,
     /// we make use of parents (object names or property names) to
     /// autogenerate struct names at will.
-    </span><span class="kw">pub </span>parents: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;,
+    </span><span class="kw">pub </span>parents: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; DefinitionContext&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; DefinitionContext&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Specify whether the object needs to be defined.
     </span><span class="kw">pub fn </span>define(<span class="kw-2">mut </span><span class="self">self</span>, define: bool) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.define = define;
         <span class="self">self
     </span>}
 
-    <span class="doccomment">/// Creates a new context by appending the immediate parent&#39;s name.
-    </span><span class="kw">pub fn </span>add_parent(<span class="kw-2">mut </span><span class="self">self</span>, parent: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; <span class="self">Self </span>{
+    <span class="doccomment">/// Creates a new context by appending the immediate parent's name.
+    </span><span class="kw">pub fn </span>add_parent(<span class="kw-2">mut </span><span class="self">self</span>, parent: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.parents.push(parent);
         DefinitionContext {
             define: <span class="self">self</span>.define,
@@ -1389,15 +1389,15 @@
     ///
     /// **NOTE:** All components are [snake_cased](https://docs.rs/heck/*/heck/trait.SnakeCase.html)
     /// (including the definition name).
-    </span><span class="kw">fn </span>def_ns_name&lt;<span class="lifetime">&#39;a</span>&gt;(
+    </span><span class="kw">fn </span>def_ns_name&lt;<span class="lifetime">'a</span>&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
-        def: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">Self</span>::Definition,
-    ) -&gt; <span class="prelude-ty">Result</span>&lt;Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = String&gt; + <span class="lifetime">&#39;a</span>&gt;, Error&gt; {
+        def: <span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">Self</span>::Definition,
+    ) -&gt; <span class="prelude-ty">Result</span>&lt;Box&lt;<span class="kw">dyn </span>Iterator&lt;Item = String&gt; + <span class="lifetime">'a</span>&gt;, Error&gt; {
         <span class="kw">let </span>state = <span class="self">self</span>.state();
         def.name()
             .map(|n| n.split(state.ns_sep).map(ToSnakeCase::to_snake_case))
             .ok_or_else(|| {
-                <span class="macro">trace!</span>(<span class="string">&quot;Missing name for definition: &#39;{:?}&#39;&quot;</span>, def);
+                <span class="macro">trace!</span>(<span class="string">"Missing name for definition: '{:?}'"</span>, def);
                 PaperClipError::MissingDefinitionName.into()
             })
             .map(|i| Box::new(i) <span class="kw">as </span>Box&lt;<span class="kw">_</span>&gt;)
@@ -1410,21 +1410,21 @@
             </span>.def_ns_name(def)<span class="question-mark">?
             </span>.last()
             .map(|s| s.to_pascal_case())
-            .expect(<span class="string">&quot;last item always exists for split?&quot;</span>))
+            .expect(<span class="string">"last item always exists for split?"</span>))
     }
 
     <span class="doccomment">/// Returns the [CamelCase](https://docs.rs/heck/*/heck/trait.CamelCase.html)
     /// name for some definition based on its parent names. This is called whenever
-    /// a definition doesn&#39;t have a name (i.e., through `$ref`) and we have to generate it.
+    /// a definition doesn't have a name (i.e., through `$ref`) and we have to generate it.
     </span><span class="kw">fn </span>def_anon_name(<span class="kw-2">&amp;</span><span class="self">self</span>, def: <span class="kw-2">&amp;</span><span class="self">Self</span>::Definition, parents: <span class="kw-2">&amp;</span>[<span class="kw-2">&amp;</span>str]) -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>name = String::new();
         parents.iter().for_each(|s| {
             name.push_str(s);
-            name.push(<span class="string">&#39;_&#39;</span>);
+            name.push(<span class="string">'_'</span>);
         });
 
         <span class="kw">if </span>name.is_empty() {
-            <span class="macro">trace!</span>(<span class="string">&quot;Unable to get name for anonymous schema: {:?}&quot;</span>, def);
+            <span class="macro">trace!</span>(<span class="string">"Unable to get name for anonymous schema: {:?}"</span>, def);
             <span class="prelude-val">None
         </span>} <span class="kw">else </span>{
             <span class="prelude-val">Some</span>(name.to_pascal_case())
@@ -1441,9 +1441,9 @@
         <span class="kw">let _ </span>= def;
 
         <span class="kw">let </span>name = <span class="kw">match </span>value {
-            Value::Number(<span class="kw-2">ref </span>n) =&gt; <span class="macro">format!</span>(<span class="string">&quot;Number_{}&quot;</span>, n.to_string().replace([<span class="string">&#39;-&#39;</span>, <span class="string">&#39;.&#39;</span>], <span class="string">&quot;_&quot;</span>)),
+            Value::Number(<span class="kw-2">ref </span>n) =&gt; <span class="macro">format!</span>(<span class="string">"Number_{}"</span>, n.to_string().replace([<span class="string">'-'</span>, <span class="string">'.'</span>], <span class="string">"_"</span>)),
             Value::Bool(b) =&gt; b.to_string().to_pascal_case(),
-            Value::String(<span class="kw-2">ref </span>s) =&gt; s.to_string().to_pascal_case().replace(<span class="string">&#39;.&#39;</span>, <span class="string">&quot;_&quot;</span>),
+            Value::String(<span class="kw-2">ref </span>s) =&gt; s.to_string().to_pascal_case().replace(<span class="string">'.'</span>, <span class="string">"_"</span>),
             <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">None</span>,
         };
 
@@ -1460,11 +1460,11 @@
         <span class="kw">let </span>state = <span class="self">self</span>.state();
         <span class="kw">let </span><span class="kw-2">mut </span>path = state.working_dir.clone();
         path.extend(<span class="self">self</span>.def_ns_name(def)<span class="question-mark">?</span>);
-        path.set_extension(<span class="string">&quot;rs&quot;</span>);
+        path.set_extension(<span class="string">"rs"</span>);
         <span class="prelude-val">Ok</span>(path)
     }
 
-    <span class="doccomment">/// Called whenever we encounter an operation that can&#39;t be added to
+    <span class="doccomment">/// Called whenever we encounter an operation that can't be added to
     /// any modules. By default, this returns `miscellaneous.rs` module in root.
     ///
     /// **NOTE:** This should set `.rs` extension to the leaf path component.
@@ -1476,12 +1476,12 @@
     ) -&gt; <span class="prelude-ty">Result</span>&lt;PathBuf, Error&gt; {
         <span class="kw">let </span>state = <span class="self">self</span>.state();
         <span class="kw">let </span><span class="kw-2">mut </span>path = state.working_dir.clone();
-        path.push(<span class="string">&quot;miscellaneous&quot;</span>);
-        path.set_extension(<span class="string">&quot;rs&quot;</span>);
+        path.push(<span class="string">"miscellaneous"</span>);
+        path.set_extension(<span class="string">"rs"</span>);
         <span class="prelude-val">Ok</span>(path)
     }
 
-    <span class="doccomment">/// Called whenever we don&#39;t have an object for the module path returned by
+    <span class="doccomment">/// Called whenever we don't have an object for the module path returned by
     /// `Emitter::unknown_op_mod_path` method. By default, this returns an object
     /// (named `Miscellaneous`) representing an unit struct.
     ///
@@ -1494,10 +1494,10 @@
         _op: <span class="kw-2">&amp;</span>ResolvableOperation&lt;<span class="self">Self</span>::Definition&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;ApiObject, Error&gt; {
         <span class="prelude-val">Ok</span>(ApiObject {
-            name: <span class="string">&quot;Miscellaneous&quot;</span>.into(),
+            name: <span class="string">"Miscellaneous"</span>.into(),
             description: <span class="prelude-val">Some</span>(
-                <span class="string">&quot;Namespace for operations that cannot be added \
-                 to any other modules.&quot;
+                <span class="string">"Namespace for operations that cannot be added \
+                 to any other modules."
                     </span>.into(),
             ),
             ..Default::default()
@@ -1522,7 +1522,7 @@
             <span class="kw">if </span>semver::Version::parse(<span class="kw-2">&amp;</span>api.info.version).is_ok() {
                 meta.version = <span class="prelude-val">Some</span>(api.info.version.clone());
             } <span class="kw">else </span>{
-                <span class="macro">warn!</span>(<span class="string">&quot;Unable to parse {:?} as semver version.&quot;</span>, api.info.version);
+                <span class="macro">warn!</span>(<span class="string">"Unable to parse {:?} as semver version."</span>, api.info.version);
             }
 
             state.set_meta(meta);
@@ -1542,18 +1542,18 @@
 
         <span class="comment">// Set host and base path.
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(h) = api.host.as_ref() {
-            <span class="kw">let </span><span class="kw-2">mut </span>parts = h.split(<span class="string">&#39;:&#39;</span>);
+            <span class="kw">let </span><span class="kw-2">mut </span>parts = h.split(<span class="string">':'</span>);
             <span class="kw">let </span><span class="kw-2">mut </span>u = state.base_url.borrow_mut();
             <span class="kw">if let </span><span class="prelude-val">Some</span>(host) = parts.next() {
                 Host::parse(host).map_err(|e| PaperClipError::InvalidHost(h.into(), e))<span class="question-mark">?</span>;
-                u.set_host(<span class="prelude-val">Some</span>(host)).expect(<span class="string">&quot;expected valid host in URL?&quot;</span>);
+                u.set_host(<span class="prelude-val">Some</span>(host)).expect(<span class="string">"expected valid host in URL?"</span>);
             }
 
             <span class="kw">if let </span><span class="prelude-val">Some</span>(port) = parts.next() {
                 <span class="kw">let </span>p = port.parse::&lt;u16&gt;().map_err(|<span class="kw">_</span>| {
                     PaperClipError::InvalidHost(h.into(), url_dep::ParseError::InvalidPort)
                 })<span class="question-mark">?</span>;
-                u.set_port(<span class="prelude-val">Some</span>(p)).expect(<span class="string">&quot;expected valid port in URL?&quot;</span>);
+                u.set_port(<span class="prelude-val">Some</span>(p)).expect(<span class="string">"expected valid port in URL?"</span>);
             }
         }
 
@@ -1564,7 +1564,7 @@
         <span class="kw">let </span>gen = CodegenEmitter(<span class="self">self</span>);
         <span class="comment">// Generate file contents by accumulating definitions.
         </span><span class="kw">for </span>(name, schema) <span class="kw">in </span><span class="kw-2">&amp;</span>api.definitions {
-            <span class="macro">debug!</span>(<span class="string">&quot;Creating definition {}&quot;</span>, name);
+            <span class="macro">debug!</span>(<span class="string">"Creating definition {}"</span>, name);
             <span class="kw">let </span>schema = schema.read().unwrap();
             gen.generate_from_definition(<span class="kw-2">&amp;</span>schema)<span class="question-mark">?</span>;
         }
@@ -1596,14 +1596,14 @@
     </span><span class="kw">fn </span>build_def(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span><span class="self">Self</span>::Definition,
-        ctx: DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;EmittedUnit, Error&gt; {
         <span class="kw">if let </span><span class="prelude-val">Some</span>(u) = CodegenEmitter(<span class="self">self</span>).try_emit_enum(def, ctx.clone())<span class="question-mark">? </span>{
             <span class="kw">return </span><span class="prelude-val">Ok</span>(u);
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(ty) = matching_unit_type(def.format(), def.data_type()) {
-            <span class="macro">trace!</span>(<span class="string">&quot;Matches unit type: {}&quot;</span>, ty);
+            <span class="macro">trace!</span>(<span class="string">"Matches unit type: {}"</span>, ty);
             <span class="kw">if </span>ctx.define {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(EmittedUnit::None);
             }
@@ -1615,12 +1615,12 @@
             <span class="prelude-val">Some</span>(DataType::Array) =&gt; CodegenEmitter(<span class="self">self</span>).emit_array(def, ctx),
             <span class="prelude-val">Some</span>(DataType::Object) =&gt; CodegenEmitter(<span class="self">self</span>).emit_object(def, ctx),
             <span class="prelude-val">Some</span>(DataType::File) =&gt; <span class="prelude-val">Ok</span>(EmittedUnit::Known(FILE_MARKER.into())),
-            <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">&quot;bleh?&quot;</span>), <span class="comment">// we&#39;ve already handled everything else
+            <span class="prelude-val">Some</span>(<span class="kw">_</span>) =&gt; <span class="macro">unreachable!</span>(<span class="string">"bleh?"</span>), <span class="comment">// we've already handled everything else
             </span><span class="prelude-val">None </span>=&gt; {
                 <span class="kw">if </span>ctx.define {
                     <span class="prelude-val">Ok</span>(EmittedUnit::None)
                 } <span class="kw">else </span>{
-                    <span class="comment">// We&#39;re using `Any` as a known type, because in the context of
+                    <span class="comment">// We're using `Any` as a known type, because in the context of
                     // the emitted generic struct, it *is* a known type.
                     </span><span class="prelude-val">Ok</span>(EmittedUnit::Known(ANY_GENERIC_PARAMETER.into()))
                 }
@@ -1630,11 +1630,11 @@
 }
 
 <span class="doccomment">/// Abstraction for segregating `Emitter` trait methods from internal methods.
-</span><span class="kw">struct </span>CodegenEmitter&lt;<span class="lifetime">&#39;a</span>, E&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>E)
+</span><span class="kw">struct </span>CodegenEmitter&lt;<span class="lifetime">'a</span>, E&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>E)
 <span class="kw">where
     </span><span class="self">Self</span>: Sized;
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, E&gt; Deref <span class="kw">for </span>CodegenEmitter&lt;<span class="lifetime">&#39;a</span>, E&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, E&gt; Deref <span class="kw">for </span>CodegenEmitter&lt;<span class="lifetime">'a</span>, E&gt; {
     <span class="kw">type </span>Target = E;
 
     <span class="kw">fn </span>deref(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>E {
@@ -1642,7 +1642,7 @@
     </span>}
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, E&gt; CodegenEmitter&lt;<span class="lifetime">&#39;a</span>, E&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, E&gt; CodegenEmitter&lt;<span class="lifetime">'a</span>, E&gt;
 <span class="kw">where
     </span>E: Emitter,
     E::Definition: Debug,
@@ -1653,7 +1653,7 @@
         <span class="comment">// Generate the object.
         </span><span class="kw">let </span>objects = <span class="kw">match </span><span class="self">self</span>.build_def(def, DefinitionContext::default().define(<span class="bool-val">true</span>))<span class="question-mark">? </span>{
             EmittedUnit::Objects(o) =&gt; o,
-            <span class="comment">// We don&#39;t care about type aliases because we resolve them anyway.
+            <span class="comment">// We don't care about type aliases because we resolve them anyway.
             </span><span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
         };
 
@@ -1693,7 +1693,7 @@
         </span><span class="kw">let </span><span class="kw-2">mut </span>mods = state.mod_children.borrow_mut();
         <span class="kw">for </span>(i, path) <span class="kw">in </span>rel_path.ancestors().enumerate() {
             <span class="kw">if let </span>(<span class="prelude-val">Some</span>(parent), <span class="prelude-val">Some</span>(name)) = (path.parent(), path.file_name()) {
-                <span class="kw">let </span>entry = mods.entry(parent.into()).or_insert_with(HashSet::new);
+                <span class="kw">let </span>entry = mods.entry(parent.into()).or_default();
                 entry.insert(ChildModule {
                     name: name.to_string_lossy().into_owned(),
                     is_final: i == <span class="number">0</span>,
@@ -1703,7 +1703,7 @@
 
         <span class="comment">// Set the relative path to objects for future reference.
         </span><span class="kw">for </span>obj <span class="kw">in </span><span class="kw-2">&amp;mut </span>objects {
-            obj.path = rel_path.to_string_lossy().into_owned().replace(<span class="string">&#39;/&#39;</span>, <span class="string">&quot;::&quot;</span>);
+            obj.path = rel_path.to_string_lossy().into_owned().replace(<span class="string">'/'</span>, <span class="string">"::"</span>);
         }
 
         <span class="comment">// Add generated object to state.
@@ -1717,7 +1717,7 @@
     </span><span class="kw">fn </span>emit_array(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span>E::Definition,
-        ctx: DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;EmittedUnit, Error&gt; {
         <span class="kw">let </span>it = def
             .items()
@@ -1730,9 +1730,9 @@
 
         <span class="kw">let </span>schema = it.read().unwrap();
         <span class="kw">if </span>schema.name().is_none() {
-            <span class="comment">// If the schema doesn&#39;t have a name, then add &quot;item&quot; as a suffix
+            <span class="comment">// If the schema doesn't have a name, then add "item" as a suffix
             // so that it can be used for name generation later.
-            </span>ctx = ctx.add_parent(<span class="string">&quot;item&quot;</span>);
+            </span>ctx = ctx.add_parent(<span class="string">"item"</span>);
         }
 
         <span class="kw">if </span>ctx.define {
@@ -1747,7 +1747,7 @@
         }
 
         <span class="kw">let </span>obj = <span class="self">self</span>.build_def(<span class="kw-2">&amp;</span>schema, ctx.define(<span class="bool-val">false</span>))<span class="question-mark">?</span>;
-        <span class="kw">let </span>ty = String::from(<span class="string">&quot;Vec&lt;&quot;</span>) + <span class="kw-2">&amp;</span>obj.known_type() + <span class="string">&quot;&gt;&quot;</span>;
+        <span class="kw">let </span>ty = String::from(<span class="string">"Vec&lt;"</span>) + <span class="kw-2">&amp;</span>obj.known_type() + <span class="string">"&gt;"</span>;
         <span class="prelude-val">Ok</span>(obj.map_known(ty))
     }
 
@@ -1756,7 +1756,7 @@
     </span><span class="kw">fn </span>try_emit_enum(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span>E::Definition,
-        ctx: DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;EmittedUnit&gt;, Error&gt; {
         <span class="comment">// FIXME: Research on how we can support complex enums.
         </span><span class="kw">if </span>def.data_type().is_some() &amp;&amp; matching_unit_type(def.format(), def.data_type()).is_none()
@@ -1805,7 +1805,7 @@
     </span><span class="kw">fn </span>emit_object(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span>E::Definition,
-        ctx: DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;EmittedUnit, Error&gt; {
         <span class="kw">match </span><span class="self">self</span>.try_emit_map(def, <span class="kw-2">&amp;</span>ctx)<span class="question-mark">? </span>{
             EmittedUnit::None =&gt; (),
@@ -1823,7 +1823,7 @@
     </span><span class="kw">fn </span>try_emit_map(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span>E::Definition,
-        ctx: <span class="kw-2">&amp;</span>DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: <span class="kw-2">&amp;</span>DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;EmittedUnit, Error&gt; {
         <span class="kw">if </span>ctx.define {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(EmittedUnit::None);
@@ -1835,7 +1835,7 @@
                 <span class="kw">let </span>ty = <span class="self">self
                     </span>.build_def(<span class="kw-2">&amp;</span>schema, ctx.clone().define(<span class="bool-val">false</span>))<span class="question-mark">?
                     </span>.known_type();
-                <span class="kw">let </span>map = <span class="macro">format!</span>(<span class="string">&quot;std::collections::BTreeMap&lt;String, {}&gt;&quot;</span>, ty);
+                <span class="kw">let </span>map = <span class="macro">format!</span>(<span class="string">"std::collections::BTreeMap&lt;String, {}&gt;"</span>, ty);
                 <span class="prelude-val">Ok</span>(EmittedUnit::Known(map))
             }
             <span class="kw">_ </span>=&gt; <span class="prelude-val">Ok</span>(EmittedUnit::None),
@@ -1845,10 +1845,10 @@
     <span class="kw">fn </span>emit_known_object_path(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span>E::Definition,
-        ctx: DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;EmittedUnit, Error&gt; {
         <span class="comment">// Use absolute paths to save some pain.
-        </span><span class="kw">let </span><span class="kw-2">mut </span>ty_path = String::from(<span class="self">self</span>.state().mod_prefix.trim_matches(<span class="string">&#39;:&#39;</span>));
+        </span><span class="kw">let </span><span class="kw-2">mut </span>ty_path = String::from(<span class="self">self</span>.state().mod_prefix.trim_matches(<span class="string">':'</span>));
 
         <span class="comment">// If this is an anonymous object, then address it directly.
         </span><span class="kw">if </span>def.name().is_none() {
@@ -1860,10 +1860,10 @@
             <span class="comment">// If the object has an anonymous name, then it would definitely
             // be in its own module, which is identified by the initial parent name.
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(name) = <span class="self">self</span>.def_anon_name(def, <span class="kw-2">&amp;</span>ctx.parents) {
-                ty_path.push_str(<span class="string">&quot;::&quot;</span>);
-                <span class="kw">let </span>parent = ctx.parents.first().expect(<span class="string">&quot;expected first parent name&quot;</span>);
+                ty_path.push_str(<span class="string">"::"</span>);
+                <span class="kw">let </span>parent = ctx.parents.first().expect(<span class="string">"expected first parent name"</span>);
                 ty_path.push_str(<span class="kw-2">&amp;</span>parent.to_snake_case());
-                ty_path.push_str(<span class="string">&quot;::&quot;</span>);
+                ty_path.push_str(<span class="string">"::"</span>);
                 ty_path.push_str(<span class="kw-2">&amp;</span>name);
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(EmittedUnit::KnownButAnonymous(ty_path, objects));
             }
@@ -1871,10 +1871,10 @@
 
         <span class="kw">let </span><span class="kw-2">mut </span>iter = <span class="self">self</span>.def_ns_name(def)<span class="question-mark">?</span>.peekable();
         <span class="kw">while let </span><span class="prelude-val">Some</span>(<span class="kw-2">mut </span>c) = iter.next() {
-            ty_path.push_str(<span class="string">&quot;::&quot;</span>);
+            ty_path.push_str(<span class="string">"::"</span>);
             <span class="kw">if </span>iter.peek().is_none() {
                 ty_path.push_str(<span class="kw-2">&amp;</span>c);
-                ty_path.push_str(<span class="string">&quot;::&quot;</span>);
+                ty_path.push_str(<span class="string">"::"</span>);
                 c = c.to_pascal_case();
             }
 
@@ -1889,7 +1889,7 @@
     </span><span class="kw">fn </span>emit_struct(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         def: <span class="kw-2">&amp;</span>E::Definition,
-        ctx: DefinitionContext&lt;<span class="lifetime">&#39;_</span>&gt;,
+        ctx: DefinitionContext&lt;<span class="lifetime">'_</span>&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;EmittedUnit, Error&gt; {
         <span class="kw">let </span>name = <span class="self">self</span>.def_name(def).or_else(|e| {
             <span class="comment">// anonymous object
@@ -1898,15 +1898,15 @@
         <span class="kw">let </span><span class="kw-2">mut </span>obj = ApiObject::with_name(<span class="kw-2">&amp;</span>name);
         obj.description = def.description().map(String::from);
 
-        <span class="comment">// If we don&#39;t have any parents and there&#39;s a name for this object,
-        // then it&#39;s the root object - add the name to parents before checking
+        <span class="comment">// If we don't have any parents and there's a name for this object,
+        // then it's the root object - add the name to parents before checking
         // its properties.
         </span><span class="kw">let </span><span class="kw-2">mut </span>ctx = ctx.clone();
         <span class="kw">if </span>ctx.parents.is_empty() &amp;&amp; def.name().is_some() {
             ctx = ctx.add_parent(<span class="kw-2">&amp;</span>name);
         }
 
-        <span class="comment">// Anonymous objects that we&#39;ve collected along the way.
+        <span class="comment">// Anonymous objects that we've collected along the way.
         </span><span class="kw">let </span><span class="kw-2">mut </span>objects = <span class="macro">vec!</span>[];
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(props) = def.properties() {
@@ -1943,7 +1943,7 @@
             </span><span class="kw">if let </span><span class="prelude-val">Some</span>(Either::Left(<span class="bool-val">true</span>)) = def.additional_properties() {
                 obj.fields_mut().push(ObjectField {
                     name: EXTRA_PROPS_FIELD.into(),
-                    ty_path: <span class="string">&quot;std::collections::BTreeMap&lt;String, Any&gt;&quot;</span>.into(),
+                    ty_path: <span class="string">"std::collections::BTreeMap&lt;String, Any&gt;"</span>.into(),
                     description: <span class="prelude-val">None</span>,
                     is_required: <span class="bool-val">false</span>,
                     needs_any: <span class="bool-val">true</span>,
@@ -1957,7 +1957,7 @@
         <span class="prelude-val">Ok</span>(EmittedUnit::Objects(objects))
     }
 
-    <span class="doccomment">/// Returns the requirements of the &quot;deepest&quot; child type in the given definition.
+    <span class="doccomment">/// Returns the requirements of the "deepest" child type in the given definition.
     ///
     /// See `ObjectField.children_req` field for what it means.
     </span><span class="attr">#[allow(clippy::only_used_in_recursion)]
@@ -1983,15 +1983,15 @@
 }
 
 <span class="doccomment">/// Abstraction which takes care of adding requirements for operations.
-</span><span class="kw">struct </span>RequirementCollector&lt;<span class="lifetime">&#39;a</span>, E: Emitter&gt; {
-    path: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str,
-    emitter: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>E,
-    api: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ResolvableApi&lt;E::Definition&gt;,
-    map: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ResolvablePathItem&lt;E::Definition&gt;,
+</span><span class="kw">struct </span>RequirementCollector&lt;<span class="lifetime">'a</span>, E: Emitter&gt; {
+    path: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    emitter: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>E,
+    api: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ResolvableApi&lt;E::Definition&gt;,
+    map: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ResolvablePathItem&lt;E::Definition&gt;,
     template_params: HashSet&lt;String&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, E&gt; RequirementCollector&lt;<span class="lifetime">&#39;a</span>, E&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, E&gt; RequirementCollector&lt;<span class="lifetime">'a</span>, E&gt;
 <span class="kw">where
     </span>E: Emitter,
     E::Definition: Debug,
@@ -2000,11 +2000,11 @@
     /// for generating builders later.
     </span><span class="kw">fn </span>collect(<span class="kw-2">mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="self">self</span>.validate_path_and_add_params()<span class="question-mark">?</span>;
-        <span class="macro">debug!</span>(<span class="string">&quot;Collecting builder requirement for {:?}&quot;</span>, <span class="self">self</span>.path);
+        <span class="macro">debug!</span>(<span class="string">"Collecting builder requirement for {:?}"</span>, <span class="self">self</span>.path);
 
         <span class="comment">// Collect all the parameters local to some API call.
         </span><span class="kw">let </span>(unused_params, <span class="kw">_</span>) = <span class="self">self</span>.collect_parameters(<span class="kw-2">&amp;</span><span class="self">self</span>.map.parameters)<span class="question-mark">?</span>;
-        <span class="comment">// FIXME: What if a body is &quot;required&quot; globally (for all operations)?
+        <span class="comment">// FIXME: What if a body is "required" globally (for all operations)?
         // This means, operations can override the body with some other schema
         // and we may need to map it to the appropriate builders.
 
@@ -2017,12 +2017,12 @@
         // a builder and forward `unused_params` to it?
         </span><span class="kw">if </span><span class="self">self</span>.map.methods.is_empty() {
             <span class="macro">warn!</span>(
-                <span class="string">&quot;Missing operations for path: {:?}{}&quot;</span>,
+                <span class="string">"Missing operations for path: {:?}{}"</span>,
                 <span class="self">self</span>.path,
                 <span class="kw">if </span>unused_params.is_empty() {
-                    <span class="string">&quot;&quot;
+                    <span class="string">""
                 </span>} <span class="kw">else </span>{
-                    <span class="string">&quot;, but &#39;parameters&#39; field is specified.&quot;
+                    <span class="string">", but 'parameters' field is specified."
                 </span>}
             );
         }
@@ -2046,7 +2046,7 @@
     </span><span class="kw">fn </span>validate_path_and_add_params(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Result</span>&lt;(), PaperClipError&gt; {
         <span class="kw">let </span>path_fmt = ResolvableApi::&lt;()&gt;::path_parameters_map(<span class="self">self</span>.path, |p| {
             <span class="self">self</span>.template_params.insert(p.into());
-            <span class="string">&quot;:&quot;</span>.into()
+            <span class="string">":"</span>.into()
         });
 
         <span class="kw">let </span>state = <span class="self">self</span>.emitter.state();
@@ -2067,7 +2067,7 @@
         unused_params: <span class="kw-2">&amp;</span>[Parameter],
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="kw">let </span>(<span class="kw-2">mut </span>params, schema_path) = <span class="self">self</span>.collect_parameters(<span class="kw-2">&amp;</span>op.parameters)<span class="question-mark">?</span>;
-        <span class="comment">// If we have unused params which don&#39;t exist in the method-specific
+        <span class="comment">// If we have unused params which don't exist in the method-specific
         // params (which take higher precedence), then we can copy those inside.
         </span><span class="kw">for </span>global_param <span class="kw">in </span>unused_params {
             <span class="kw">if </span>!params.iter().any(|p| p.name == global_param.name) {
@@ -2079,8 +2079,8 @@
             <span class="kw">let </span>skip = p.presence == ParameterIn::FormData &amp;&amp; schema_path.is_some();
             <span class="kw">if </span>skip {
                 <span class="macro">warn!</span>(
-                    <span class="string">&quot;Skipping form data parameter {:?} in path {:?} because \
-                         the operation already has a body.&quot;</span>,
+                    <span class="string">"Skipping form data parameter {:?} in path {:?} because \
+                         the operation already has a body."</span>,
                     p.name, <span class="self">self</span>.path
                 );
             }
@@ -2088,7 +2088,7 @@
             !skip
         });
 
-        <span class="comment">// If there&#39;s a matching object, add the params to its operation.
+        <span class="comment">// If there's a matching object, add the params to its operation.
         </span><span class="kw">if let </span><span class="prelude-val">Some</span>(pat) = schema_path.as_ref() {
             <span class="self">self</span>.bind_schema_to_operation(pat, meth, op, params)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
@@ -2110,7 +2110,7 @@
                 <span class="kw">let </span>name = <span class="kw">match </span>HeaderName::from_bytes(name.as_bytes()) {
                     <span class="prelude-val">Ok</span>(n) =&gt; n,
                     <span class="prelude-val">Err</span>(<span class="kw">_</span>) =&gt; {
-                        <span class="macro">warn!</span>(<span class="string">&quot;Skipping response header {:?} because it&#39;s invalid.&quot;</span>, name);
+                        <span class="macro">warn!</span>(<span class="string">"Skipping response header {:?} because it's invalid."</span>, name);
                         <span class="kw">continue</span>;
                     }
                 };
@@ -2124,7 +2124,7 @@
                     <span class="prelude-val">Some</span>(t) =&gt; t,
                     <span class="prelude-val">None </span>=&gt; {
                         <span class="macro">warn!</span>(
-                            <span class="string">&quot;Skipping response header {:?} with unknown type {:?} in path {:?}&quot;</span>,
+                            <span class="string">"Skipping response header {:?} with unknown type {:?} in path {:?}"</span>,
                             name, info.data_type, <span class="self">self</span>.path
                         );
                         <span class="kw">continue</span>;
@@ -2175,7 +2175,7 @@
                 }
 
                 <span class="macro">warn!</span>(
-                    <span class="string">&quot;Unregistered schema for parameter {:?} in path {:?}: {:?}&quot;</span>,
+                    <span class="string">"Unregistered schema for parameter {:?} in path {:?}: {:?}"</span>,
                     p.name, <span class="self">self</span>.path, def
                 );
                 <span class="kw">continue</span>;
@@ -2193,7 +2193,7 @@
                     <span class="prelude-val">Some</span>(t) =&gt; t,
                     <span class="prelude-val">None </span>=&gt; {
                         <span class="macro">warn!</span>(
-                            <span class="string">&quot;Skipping parameter {:?} with unknown type {:?} in path {:?}&quot;</span>,
+                            <span class="string">"Skipping parameter {:?} with unknown type {:?} in path {:?}"</span>,
                             p.name, p.data_type, <span class="self">self</span>.path
                         );
                         <span class="kw">continue</span>;
@@ -2213,7 +2213,7 @@
                 description: p.description.clone(),
                 ty_path: ty,
                 presence: p.in_,
-                <span class="comment">// NOTE: parameter is required if it&#39;s in path
+                <span class="comment">// NOTE: parameter is required if it's in path
                 </span>required: p.required || p.in_ == ParameterIn::Path,
                 delimiting: it_fmts,
             });
@@ -2231,7 +2231,7 @@
         params: Vec&lt;Parameter&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
         <span class="macro">trace!</span>(
-            <span class="string">&quot;Binding {:?} operation in path {:?} to module {:?}&quot;</span>,
+            <span class="string">"Binding {:?} operation in path {:?} to module {:?}"</span>,
             meth,
             <span class="self">self</span>.path,
             schema_path
@@ -2239,11 +2239,11 @@
 
         <span class="kw">let </span>state = <span class="self">self</span>.emitter.state();
         <span class="kw">let </span><span class="kw-2">mut </span>def_mods = state.def_mods.borrow_mut();
-        <span class="kw">let </span>obj = def_mods.get_mut(schema_path).expect(<span class="string">&quot;bleh?&quot;</span>);
+        <span class="kw">let </span>obj = def_mods.get_mut(schema_path).expect(<span class="string">"bleh?"</span>);
         <span class="kw">let </span>ops = obj[<span class="number">0</span>] <span class="comment">// first object is always the globally defined object.
             </span>.paths
             .entry(<span class="self">self</span>.path.into())
-            .or_insert_with(Default::default);
+            .or_default();
 
         <span class="kw">let </span><span class="kw-2">mut </span>response_contains_any = <span class="bool-val">false</span>;
         <span class="kw">let </span>response_ty_path = <span class="kw">if let </span><span class="prelude-val">Some</span>(s) = <span class="self">Self</span>::get_2xx_response_schema(op) {
@@ -2280,7 +2280,7 @@
         <span class="prelude-val">Ok</span>(())
     }
 
-    <span class="doccomment">/// We couldn&#39;t attach this operation to any object. Now, we&#39;re
+    <span class="doccomment">/// We couldn't attach this operation to any object. Now, we're
     /// just attempting out of desperation.
     </span><span class="kw">fn </span>bind_operation_blindly(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
@@ -2288,12 +2288,12 @@
         op: <span class="kw-2">&amp;</span>ResolvableOperation&lt;E::Definition&gt;,
         params: Vec&lt;Parameter&gt;,
     ) -&gt; <span class="prelude-ty">Result</span>&lt;(), Error&gt; {
-        <span class="comment">// Let&#39;s try from the response maybe...
+        <span class="comment">// Let's try from the response maybe...
         </span><span class="kw">let </span>s = <span class="kw">match </span><span class="self">Self</span>::get_2xx_response_schema(op) {
             <span class="prelude-val">Some</span>(s) =&gt; s,
             <span class="prelude-val">None </span>=&gt; {
                 <span class="macro">warn!</span>(
-                    <span class="string">&quot;Unable to bind {:?} operation in path {:?} to any known schema.&quot;</span>,
+                    <span class="string">"Unable to bind {:?} operation in path {:?} to any known schema."</span>,
                     meth, <span class="self">self</span>.path
                 );
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(());
@@ -2312,12 +2312,12 @@
             <span class="comment">// We can also deal with array of objects by mapping
             // the operation to that object.
             </span><span class="kw">_ if </span>listable =&gt; Clone::clone(<span class="kw-2">&amp;**</span>schema.items().unwrap()),
-            <span class="comment">// But... we can&#39;t deal with simple types or nested arrays, so we
+            <span class="comment">// But... we can't deal with simple types or nested arrays, so we
             // let the emitter guess something based on this operation.
             </span><span class="kw">_ </span>=&gt; {
                 <span class="kw">let </span>path = <span class="self">self</span>.emitter.unknown_op_mod_path(<span class="self">self</span>.path, meth, op)<span class="question-mark">?</span>;
                 <span class="kw">if </span>!state.def_mods.borrow().contains_key(<span class="kw-2">&amp;</span>path) {
-                    <span class="comment">// NOTE: Don&#39;t add `ApiObject` directly, because we have to
+                    <span class="comment">// NOTE: Don't add `ApiObject` directly, because we have to
                     // set appropriate paths.
                     </span>CodegenEmitter(<span class="self">self</span>.emitter).add_objects_to_path(
                         <span class="macro">vec!</span>[<span class="self">self</span>.emitter.unknown_op_object(<span class="self">self</span>.path, meth, op)<span class="question-mark">?</span>],
@@ -2339,7 +2339,7 @@
         <span class="kw">let </span><span class="kw-2">mut </span>def_mods = state.def_mods.borrow_mut();
         <span class="kw">let </span>(obj, response_ty_path) = <span class="kw">match </span>unknown_schema_context {
             <span class="prelude-val">Some</span>((p, ty)) =&gt; (
-                def_mods.get_mut(<span class="kw-2">&amp;</span>p).expect(<span class="string">&quot;expected misc API object&quot;</span>),
+                def_mods.get_mut(<span class="kw-2">&amp;</span>p).expect(<span class="string">"expected misc API object"</span>),
                 <span class="prelude-val">Some</span>(ty),
             ),
             <span class="comment">// If this is known, then we should be able to get the object.
@@ -2352,7 +2352,7 @@
                 <span class="prelude-val">Some</span>(o) =&gt; (o, <span class="self">self</span>.emitter.def_name(schema).ok()),
                 <span class="prelude-val">None </span>=&gt; {
                     <span class="macro">warn!</span>(
-                        <span class="string">&quot;Skipping unknown response schema for path {:?}: {:?}&quot;</span>,
+                        <span class="string">"Skipping unknown response schema for path {:?}: {:?}"</span>,
                         <span class="self">self</span>.path, schema
                     );
                     <span class="kw">return </span><span class="prelude-val">Ok</span>(());
@@ -2363,7 +2363,7 @@
         <span class="kw">let </span>ops = obj[<span class="number">0</span>] <span class="comment">// first object is always the globally defined object.
             </span>.paths
             .entry(<span class="self">self</span>.path.into())
-            .or_insert_with(Default::default);
+            .or_default();
 
         ops.req.insert(
             meth,
@@ -2395,7 +2395,7 @@
     ) -&gt; <span class="prelude-ty">Option</span>&lt;Arc&lt;RwLock&lt;E::Definition&gt;&gt;&gt; {
         op.responses
             .iter()
-            .filter(|(c, <span class="kw">_</span>)| c.starts_with(<span class="string">&#39;2&#39;</span>)) <span class="comment">// 2xx response
+            .filter(|(c, <span class="kw">_</span>)| c.starts_with(<span class="string">'2'</span>)) <span class="comment">// 2xx response
             </span>.filter_map(|(<span class="kw">_</span>, r)| {
                 <span class="kw">let </span>resp = r.read().unwrap();
                 resp.schema.as_ref().map(|r| (<span class="kw-2">**</span>r).clone())
@@ -2404,15 +2404,15 @@
     }
 
     <span class="doccomment">/// Returns the coder based on the given local and global media range, and `None`
-    /// if it&#39;s JSON (as we already support it).
+    /// if it's JSON (as we already support it).
     </span><span class="kw">fn </span>get_coder(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         local_ref: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>BTreeSet&lt;MediaRange&gt;&gt;,
         global_ref: <span class="kw-2">&amp;</span>BTreeSet&lt;MediaRange&gt;,
     ) -&gt; <span class="prelude-ty">Option</span>&lt;(String, Arc&lt;Coder&gt;)&gt; {
         <span class="kw">let </span>ranges = <span class="kw">match </span>local_ref {
-            <span class="comment">// We don&#39;t care if this is empty - if it&#39;s empty, then we can assume
-            // that it&#39;s overridden the global set.
+            <span class="comment">// We don't care if this is empty - if it's empty, then we can assume
+            // that it's overridden the global set.
             </span><span class="prelude-val">Some</span>(s) =&gt; s,
             <span class="prelude-val">None </span>=&gt; global_ref,
         };
@@ -2449,9 +2449,9 @@
                     resolve_parameter_type(i.data_type, i.format.as_ref(), i.items.as_deref())
                 {
                     fmts.insert(<span class="number">0</span>, i.collection_format.unwrap_or_default());
-                    <span class="comment">// We collect it as `Vec` for now - we&#39;ll replace it with our
+                    <span class="comment">// We collect it as `Vec` for now - we'll replace it with our
                     // `Delimited` wrapper when we actually write the code.
-                    </span><span class="kw">return </span><span class="prelude-val">Some</span>((String::from(<span class="string">&quot;Vec&lt;&quot;</span>) + ty.as_str() + <span class="string">&quot;&gt;&quot;</span>, fmts));
+                    </span><span class="kw">return </span><span class="prelude-val">Some</span>((String::from(<span class="string">"Vec&lt;"</span>) + ty.as_str() + <span class="string">"&gt;"</span>, fmts));
                 }
             }
         }
@@ -2465,17 +2465,17 @@
 </span><span class="kw">fn </span>matching_unit_type(
     format: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>DataTypeFormat&gt;,
     type_: <span class="prelude-ty">Option</span>&lt;DataType&gt;,
-) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str&gt; {
+) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span><span class="lifetime">'static </span>str&gt; {
     <span class="kw">match </span>format {
-        <span class="prelude-val">Some</span>(DataTypeFormat::Int32) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;i32&quot;</span>),
-        <span class="prelude-val">Some</span>(DataTypeFormat::Int64) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;i64&quot;</span>),
-        <span class="prelude-val">Some</span>(DataTypeFormat::Float) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;f32&quot;</span>),
-        <span class="prelude-val">Some</span>(DataTypeFormat::Double) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;f64&quot;</span>),
+        <span class="prelude-val">Some</span>(DataTypeFormat::Int32) =&gt; <span class="prelude-val">Some</span>(<span class="string">"i32"</span>),
+        <span class="prelude-val">Some</span>(DataTypeFormat::Int64) =&gt; <span class="prelude-val">Some</span>(<span class="string">"i64"</span>),
+        <span class="prelude-val">Some</span>(DataTypeFormat::Float) =&gt; <span class="prelude-val">Some</span>(<span class="string">"f32"</span>),
+        <span class="prelude-val">Some</span>(DataTypeFormat::Double) =&gt; <span class="prelude-val">Some</span>(<span class="string">"f64"</span>),
         <span class="kw">_ </span>=&gt; <span class="kw">match </span>type_ {
-            <span class="prelude-val">Some</span>(DataType::Integer) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;i64&quot;</span>),
-            <span class="prelude-val">Some</span>(DataType::Number) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;f64&quot;</span>),
-            <span class="prelude-val">Some</span>(DataType::Boolean) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;bool&quot;</span>),
-            <span class="prelude-val">Some</span>(DataType::String) =&gt; <span class="prelude-val">Some</span>(<span class="string">&quot;String&quot;</span>),
+            <span class="prelude-val">Some</span>(DataType::Integer) =&gt; <span class="prelude-val">Some</span>(<span class="string">"i64"</span>),
+            <span class="prelude-val">Some</span>(DataType::Number) =&gt; <span class="prelude-val">Some</span>(<span class="string">"f64"</span>),
+            <span class="prelude-val">Some</span>(DataType::Boolean) =&gt; <span class="prelude-val">Some</span>(<span class="string">"bool"</span>),
+            <span class="prelude-val">Some</span>(DataType::String) =&gt; <span class="prelude-val">Some</span>(<span class="string">"String"</span>),
             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
         },
     }
@@ -2496,7 +2496,7 @@
 
     <span class="kw">let </span>default_fmt = CollectionFormat::default();
     it_fmts.insert(<span class="number">0</span>, collection_format.unwrap_or(default_fmt));
-    it_fmts.pop(); <span class="comment">// pop the final format, as it&#39;s unnecessary.
+    it_fmts.pop(); <span class="comment">// pop the final format, as it's unnecessary.
     </span><span class="kw">let </span>is_url_encoded = in_ == ParameterIn::Query || in_ == ParameterIn::FormData;
     <span class="kw">if </span>it_fmts.contains(<span class="kw-2">&amp;</span>CollectionFormat::Multi) {
         <span class="kw">let </span>needs_override = <span class="kw">if </span>is_url_encoded {
@@ -2504,8 +2504,8 @@
                 .iter()
                 .enumerate()
                 .filter(|<span class="kw-2">&amp;</span>(<span class="kw">_</span>, <span class="kw-2">&amp;</span>fmt)| fmt == CollectionFormat::Multi);
-            fmt_idx_iter.next().expect(<span class="string">&quot;expected collection format?&quot;</span>);
-            <span class="comment">// We support URL encoding multiple values only when it&#39;s specified in root.
+            fmt_idx_iter.next().expect(<span class="string">"expected collection format?"</span>);
+            <span class="comment">// We support URL encoding multiple values only when it's specified in root.
             </span>fmt_idx_iter.next().is_some()
         } <span class="kw">else </span>{
             <span class="bool-val">true
@@ -2514,14 +2514,14 @@
         <span class="kw">if </span>needs_override {
             <span class="kw">if </span>is_url_encoded {
                 <span class="macro">info!</span>(
-                    <span class="string">&quot;Parameter {:?} in {:?} doesn&#39;t allow multiple instances in nested arrays. \
-                            Replacing with default ({:?}).&quot;</span>,
+                    <span class="string">"Parameter {:?} in {:?} doesn't allow multiple instances in nested arrays. \
+                            Replacing with default ({:?})."</span>,
                     name, in_, default_fmt
                 );
             } <span class="kw">else </span>{
                 <span class="macro">info!</span>(
-                    <span class="string">&quot;Parameter {:?} is in {:?}, which doesn&#39;t allow array values as multiple \
-                        instances. Replacing with default ({:?}).&quot;</span>,
+                    <span class="string">"Parameter {:?} is in {:?}, which doesn't allow array values as multiple \
+                        instances. Replacing with default ({:?})."</span>,
                     name, in_, default_fmt
                 );
             }

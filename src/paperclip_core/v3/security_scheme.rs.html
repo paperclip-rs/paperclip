@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/security_scheme.rs`."><title>security_scheme.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/security_scheme.rs`."><title>security_scheme.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -76,66 +76,70 @@
 <a href="#76" id="76">76</a>
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
-</pre><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
+<a href="#79" id="79">79</a>
+<a href="#80" id="80">80</a>
+</pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
+
+<span class="macro">macro_rules!</span> to_indexmap {
+    (<span class="macro-nonterminal">$v2</span>:expr) =&gt; {
+        <span class="macro-nonterminal">$v2</span>.scopes.iter().fold(Default::default(), |<span class="kw-2">mut </span>i, (k, v)| {
+            i.insert(k.to_string(), v.to_string());
+            i
+        })
+    };
+}
 
 <span class="kw">impl </span>From&lt;v2::SecurityScheme&gt; <span class="kw">for </span>openapiv3::SecurityScheme {
     <span class="kw">fn </span>from(v2: v2::SecurityScheme) -&gt; <span class="self">Self </span>{
         <span class="kw">match </span>v2.type_.as_str() {
-            <span class="string">&quot;basic&quot; </span>=&gt; openapiv3::SecurityScheme::HTTP {
-                scheme: <span class="string">&quot;basic&quot;</span>.to_string(),
+            <span class="string">"basic" </span>=&gt; openapiv3::SecurityScheme::HTTP {
+                scheme: <span class="string">"basic"</span>.to_string(),
                 bearer_format: <span class="prelude-val">None</span>,
                 description: v2.description,
             },
-            <span class="string">&quot;apiKey&quot; </span>=&gt; openapiv3::SecurityScheme::APIKey {
+            <span class="string">"apiKey" </span>=&gt; openapiv3::SecurityScheme::APIKey {
                 location: <span class="kw">match </span>v2.in_.unwrap_or_default().as_str() {
-                    <span class="string">&quot;query&quot; </span>=&gt; openapiv3::APIKeyLocation::Query,
-                    <span class="string">&quot;header&quot; </span>=&gt; openapiv3::APIKeyLocation::Header,
+                    <span class="string">"query" </span>=&gt; openapiv3::APIKeyLocation::Query,
+                    <span class="string">"header" </span>=&gt; openapiv3::APIKeyLocation::Header,
                     <span class="kw">_ </span>=&gt; openapiv3::APIKeyLocation::Query,
                 },
                 name: v2.name.unwrap_or_default(),
                 description: v2.description,
             },
-            <span class="string">&quot;oauth2&quot; </span>=&gt; {
-                <span class="kw">let </span>scopes = v2
-                    .scopes
-                    .iter()
-                    .fold(indexmap::IndexMap::new(), |<span class="kw-2">mut </span>i, (k, v)| {
-                        i.insert(k.clone(), v.clone());
-                        i
-                    });
+            <span class="string">"oauth2" </span>=&gt; {
                 <span class="kw">let </span>flow = v2.flow.unwrap_or_default();
                 openapiv3::SecurityScheme::OAuth2 {
                     flows: openapiv3::OAuth2Flows {
                         implicit: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">&quot;implicit&quot; </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::Implicit {
+                            <span class="string">"implicit" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::Implicit {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 refresh_url: <span class="prelude-val">None</span>,
-                                scopes: scopes.clone(),
+                                scopes: <span class="macro">to_indexmap!</span>(v2),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
                         password: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">&quot;password&quot; </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::Password {
+                            <span class="string">"password" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::Password {
                                 refresh_url: <span class="prelude-val">None</span>,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
-                                scopes: scopes.clone(),
+                                scopes: <span class="macro">to_indexmap!</span>(v2),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
                         client_credentials: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">&quot;application&quot; </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::ClientCredentials {
+                            <span class="string">"application" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::ClientCredentials {
                                 refresh_url: <span class="prelude-val">None</span>,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
-                                scopes: scopes.clone(),
+                                scopes: <span class="macro">to_indexmap!</span>(v2),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
                         authorization_code: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">&quot;accessCode&quot; </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::AuthorizationCode {
+                            <span class="string">"accessCode" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::AuthorizationCode {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 refresh_url: <span class="prelude-val">None</span>,
-                                scopes,
+                                scopes: <span class="macro">to_indexmap!</span>(v2),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
@@ -144,9 +148,9 @@
                 }
             }
             type_ =&gt; {
-                <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">&quot;Invalid Security Type: {}&quot;</span>, type_);
+                <span class="macro">debug_assert!</span>(<span class="bool-val">false</span>, <span class="string">"Invalid Security Type: {}"</span>, type_);
                 openapiv3::SecurityScheme::HTTP {
-                    scheme: <span class="string">&quot;invalid&quot;</span>.to_string(),
+                    scheme: <span class="string">"invalid"</span>.to_string(),
                     bearer_format: <span class="prelude-val">None</span>,
                     description: v2.description,
                 }

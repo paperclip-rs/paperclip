@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/schema.rs`."><title>schema.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../source-files.js"></script><script defer src="../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../paperclip_core/index.html"><img class="rust-logo" src="../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v2/schema.rs`."><title>schema.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -552,7 +552,8 @@
 <a href="#552" id="552">552</a>
 <a href="#553" id="553">553</a>
 <a href="#554" id="554">554</a>
-</pre><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.
+<a href="#555" id="555">555</a>
+</pre></div><pre class="rust"><code><span class="doccomment">//! Traits used for code and spec generation.
 
 </span><span class="kw">use </span><span class="kw">super</span>::models::{
     DataType, DataTypeFormat, DefaultOperationRaw, DefaultSchemaRaw, Either, Resolvable,
@@ -565,7 +566,7 @@
 ///
 /// This is only used for resolving the definitions.
 ///
-/// **NOTE:** Don&#39;t implement this by yourself! Please use the `#[api_v2_schema]`
+/// **NOTE:** Don't implement this by yourself! Please use the `#[api_v2_schema]`
 /// proc macro attribute instead.
 </span><span class="kw">pub trait </span>Schema: Sized {
     <span class="doccomment">/// Description for this schema, if any (`description` field).
@@ -589,10 +590,10 @@
     <span class="doccomment">/// Value schema for maps (`additional_properties` field).
     </span><span class="kw">fn </span>additional_properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>Either&lt;bool, Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt;;
 
-    <span class="doccomment">/// Mutable access to `additional_properties` field, if it&#39;s a map.
+    <span class="doccomment">/// Mutable access to `additional_properties` field, if it's a map.
     </span><span class="kw">fn </span>additional_properties_mut(<span class="kw-2">&amp;mut </span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;mut </span>Either&lt;bool, Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt;;
 
-    <span class="doccomment">/// Map of names and schema for properties, if it&#39;s an object (`properties` field)
+    <span class="doccomment">/// Map of names and schema for properties, if it's an object (`properties` field)
     </span><span class="kw">fn </span>properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>BTreeMap&lt;String, Resolvable&lt;<span class="self">Self</span>&gt;&gt;&gt;;
 
     <span class="doccomment">/// Mutable access to `properties` field.
@@ -601,14 +602,14 @@
     <span class="doccomment">/// Returns the required properties (if any) for this object.
     </span><span class="kw">fn </span>required_properties(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>BTreeSet&lt;String&gt;&gt;;
 
-    <span class="doccomment">/// Enum variants in this schema (if any). It&#39;s `serde_json::Value`
+    <span class="doccomment">/// Enum variants in this schema (if any). It's `serde_json::Value`
     /// because:
     ///
     /// - Enum variants are allowed to have any type of value.
     /// - `serde_json::Value` works for both JSON and YAML.
     </span><span class="kw">fn </span>enum_variants(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>[serde_json::Value]&gt;;
 
-    <span class="doccomment">/// Returns whether this definition &quot;is&quot; or &quot;has&quot; `Any` type.
+    <span class="doccomment">/// Returns whether this definition "is" or "has" `Any` type.
     </span><span class="kw">fn </span>contains_any(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         _schema_contains_any(<span class="self">self</span>, <span class="macro">vec!</span>[])
     }
@@ -623,13 +624,13 @@
 
     <span class="doccomment">/// Returns whether this definition is cyclic.
     ///
-    /// **NOTE:** This is not part of the schema object, but it&#39;s
+    /// **NOTE:** This is not part of the schema object, but it's
     /// set by the resolver using `set_cyclic` for codegen.
     </span><span class="kw">fn </span>is_cyclic(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool;
 
     <span class="doccomment">/// Name of this schema, if any.
     ///
-    /// **NOTE:** This is not part of the schema object, but it&#39;s
+    /// **NOTE:** This is not part of the schema object, but it's
     /// set by the resolver using `set_name` for codegen.
     </span><span class="kw">fn </span>name(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>str&gt;;
 
@@ -637,14 +638,14 @@
     </span><span class="kw">fn </span>set_name(<span class="kw-2">&amp;mut </span><span class="self">self</span>, name: <span class="kw-2">&amp;</span>str);
 }
 
-<span class="kw">fn </span>_schema_contains_any&lt;<span class="lifetime">&#39;a</span>, S: Schema&gt;(schema: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>S, <span class="kw-2">mut </span>nodes: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str&gt;) -&gt; bool {
+<span class="kw">fn </span>_schema_contains_any&lt;<span class="lifetime">'a</span>, S: Schema&gt;(schema: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>S, <span class="kw-2">mut </span>nodes: Vec&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>str&gt;) -&gt; bool {
     <span class="kw">if </span>schema.data_type().is_none() {
         <span class="kw">return </span><span class="bool-val">true</span>;
     }
 
     <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = schema.name() {
         <span class="kw">if </span>nodes.iter().any(|<span class="kw-2">&amp;</span>n| n == name) {
-            <span class="kw">return </span><span class="bool-val">false</span>; <span class="comment">// We&#39;ve encountered a cycle.
+            <span class="kw">return </span><span class="bool-val">false</span>; <span class="comment">// We've encountered a cycle.
         </span>} <span class="kw">else </span>{
             nodes.push(name);
         }
@@ -683,7 +684,7 @@
     </span>}
 }
 
-<span class="macro">macro_rules! </span>impl_type_simple {
+<span class="macro">macro_rules!</span> impl_type_simple {
     (<span class="macro-nonterminal">$ty</span>:ty) =&gt; {
         <span class="kw">impl </span>TypedData <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{}
     };
@@ -706,13 +707,13 @@
     };
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; TypedData <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; TypedData <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>str {
     <span class="kw">fn </span>data_type() -&gt; DataType {
         DataType::String
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: TypedData&gt; TypedData <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>T {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: TypedData&gt; TypedData <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>T {
     <span class="kw">fn </span>data_type() -&gt; DataType {
         T::data_type()
     }
@@ -724,6 +725,7 @@
 
 <span class="macro">impl_type_simple!</span>(char, DataType::String);
 <span class="macro">impl_type_simple!</span>(String, DataType::String);
+<span class="macro">impl_type_simple!</span>(PathBuf, DataType::String);
 <span class="macro">impl_type_simple!</span>(bool, DataType::Boolean);
 <span class="macro">impl_type_simple!</span>(f32, DataType::Number, DataTypeFormat::Float);
 <span class="macro">impl_type_simple!</span>(f64, DataType::Number, DataTypeFormat::Double);
@@ -740,48 +742,48 @@
 <span class="macro">impl_type_simple!</span>(u128, DataType::Integer, DataTypeFormat::Int64);
 <span class="macro">impl_type_simple!</span>(usize, DataType::Integer, DataTypeFormat::Int64);
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-multipart&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-multipart"</span>)]
 </span><span class="macro">impl_type_simple!</span>(
     actix_multipart::Multipart,
     DataType::File,
     DataTypeFormat::Binary
 );
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-session&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-session"</span>)]
 </span><span class="macro">impl_type_simple!</span>(actix_session::Session);
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-identity&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-identity"</span>)]
 </span><span class="macro">impl_type_simple!</span>(actix_identity::Identity);
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-files&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-files"</span>)]
 </span><span class="macro">impl_type_simple!</span>(
     actix_files::NamedFile,
     DataType::File,
     DataTypeFormat::Binary
 );
-<span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
 </span><span class="macro">impl_type_simple!</span>(
     chrono::NaiveDateTime,
     DataType::String,
     DataTypeFormat::DateTime
 );
-<span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
 </span><span class="macro">impl_type_simple!</span>(chrono::NaiveDate, DataType::String, DataTypeFormat::Date);
-<span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
 </span><span class="macro">impl_type_simple!</span>(chrono::NaiveTime, DataType::String);
-<span class="attr">#[cfg(feature = <span class="string">&quot;rust_decimal&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"rust_decimal"</span>)]
 </span><span class="macro">impl_type_simple!</span>(
     rust_decimal::Decimal,
     DataType::Number,
     DataTypeFormat::Float
 );
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;url&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"url"</span>)]
 </span><span class="macro">impl_type_simple!</span>(url::Url, DataType::String, DataTypeFormat::Url);
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;uuid0&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"uuid0"</span>)]
 </span><span class="macro">impl_type_simple!</span>(uuid0_dep::Uuid, DataType::String, DataTypeFormat::Uuid);
-<span class="attr">#[cfg(feature = <span class="string">&quot;uuid1&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"uuid1"</span>)]
 </span><span class="macro">impl_type_simple!</span>(uuid1_dep::Uuid, DataType::String, DataTypeFormat::Uuid);
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
 </span><span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::DateTime&lt;T&gt; {
     <span class="kw">fn </span>data_type() -&gt; DataType {
         DataType::String
@@ -791,7 +793,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;chrono&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"chrono"</span>)]
 #[allow(deprecated)]
 </span><span class="kw">impl</span>&lt;T: chrono::offset::TimeZone&gt; TypedData <span class="kw">for </span>chrono::Date&lt;T&gt; {
     <span class="kw">fn </span>data_type() -&gt; DataType {
@@ -810,11 +812,11 @@
 /// framework-specific macros:
 ///
 /// - [`Apiv2Schema`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Schema.html)
-/// for schema objects.
+///   for schema objects.
 /// - [`Apiv2Security`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Security.html)
-/// for security scheme objects.
+///   for security scheme objects.
 /// - [`Apiv2Header`](https://paperclip-rs.github.io/paperclip/paperclip_actix/derive.Apiv2Header.html)
-/// for header parameters objects.
+///   for header parameters objects.
 ///
 /// This is implemented for primitive types by default.
 </span><span class="kw">pub trait </span>Apiv2Schema {
@@ -824,8 +826,8 @@
     </span>}
 
     <span class="doccomment">/// Description of this schema. In case the trait is derived, uses the documentation on the type.
-    </span><span class="kw">fn </span>description() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str {
-        <span class="string">&quot;&quot;
+    </span><span class="kw">fn </span>description() -&gt; <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str {
+        <span class="string">""
     </span>}
 
     <span class="doccomment">/// Indicates the requirement of this schema.
@@ -843,22 +845,22 @@
     /// Here, we set the global reference to this object using its name,
     /// and we either remove the reference (`remove_refs`) or remove all
     /// properties other than the reference (`retain_ref`) based on where
-    /// we&#39;re storing this object in the spec i.e., in an operation/response
+    /// we're storing this object in the spec i.e., in an operation/response
     /// or in the map of definitions.
     ///
     /// And we do that because at the time of this writing, statically
     /// collecting all models for all operations involved a lot of work,
     /// and so I went for runtime collection. Even though this happens at
-    /// runtime, we&#39;re only doing this once at the start of the application,
-    /// so it won&#39;t affect the incoming requests at all.
+    /// runtime, we're only doing this once at the start of the application,
+    /// so it won't affect the incoming requests at all.
     </span><span class="kw">fn </span>schema_with_ref() -&gt; DefaultSchemaRaw {
         <span class="kw">let </span><span class="kw-2">mut </span>def = <span class="self">Self</span>::raw_schema();
         <span class="kw">if let </span><span class="prelude-val">Some</span>(n) = <span class="self">Self</span>::name() {
             def.reference =
-                <span class="prelude-val">Some</span>(String::from(<span class="string">&quot;#/definitions/&quot;</span>) + <span class="kw-2">&amp;</span>n.replace(<span class="string">&#39;&lt;&#39;</span>, <span class="string">&quot;%3C&quot;</span>).replace(<span class="string">&#39;&gt;&#39;</span>, <span class="string">&quot;%3E&quot;</span>));
+                <span class="prelude-val">Some</span>(String::from(<span class="string">"#/definitions/"</span>) + <span class="kw-2">&amp;</span>n.replace(<span class="string">'&lt;'</span>, <span class="string">"%3C"</span>).replace(<span class="string">'&gt;'</span>, <span class="string">"%3E"</span>));
         } <span class="kw">else if let </span><span class="prelude-val">Some</span>(n) = def.name.as_ref() {
             def.reference =
-                <span class="prelude-val">Some</span>(String::from(<span class="string">&quot;#/definitions/&quot;</span>) + <span class="kw-2">&amp;</span>n.replace(<span class="string">&#39;&lt;&#39;</span>, <span class="string">&quot;%3C&quot;</span>).replace(<span class="string">&#39;&gt;&#39;</span>, <span class="string">&quot;%3E&quot;</span>));
+                <span class="prelude-val">Some</span>(String::from(<span class="string">"#/definitions/"</span>) + <span class="kw-2">&amp;</span>n.replace(<span class="string">'&lt;'</span>, <span class="string">"%3C"</span>).replace(<span class="string">'&gt;'</span>, <span class="string">"%3E"</span>));
         }
         <span class="kw">if </span>!<span class="self">Self</span>::description().is_empty() {
             def.description = <span class="prelude-val">Some</span>(<span class="self">Self</span>::description().to_owned());
@@ -891,7 +893,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T&gt; Apiv2Schema <span class="kw">for </span><span class="prelude-ty">Option</span>&lt;T&gt; {
     default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">None
@@ -936,7 +938,7 @@
     }
 }
 
-<span class="attr">#[cfg(feature = <span class="string">&quot;nightly&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"nightly"</span>)]
 </span><span class="kw">impl</span>&lt;T, E&gt; Apiv2Schema <span class="kw">for </span><span class="prelude-ty">Result</span>&lt;T, E&gt; {
     default <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         <span class="prelude-val">None
@@ -973,7 +975,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;T: Apiv2Schema + Clone&gt; Apiv2Schema <span class="kw">for </span>std::borrow::Cow&lt;<span class="lifetime">&#39;_</span>, T&gt; {
+<span class="kw">impl</span>&lt;T: Apiv2Schema + Clone&gt; Apiv2Schema <span class="kw">for </span>std::borrow::Cow&lt;<span class="lifetime">'_</span>, T&gt; {
     <span class="kw">fn </span>name() -&gt; <span class="prelude-ty">Option</span>&lt;String&gt; {
         T::name()
     }
@@ -991,13 +993,13 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>[T] {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="kw-2">&amp;</span><span class="lifetime">'a </span>[T] {
     <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
         Vec::&lt;T&gt;::raw_schema()
     }
 }
 
-<span class="macro">macro_rules! </span>impl_schema_array {
+<span class="macro">macro_rules!</span> impl_schema_array {
     (<span class="macro-nonterminal">$ty</span>:ty) =&gt; {
         <span class="kw">impl</span>&lt;T: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
             <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
@@ -1011,7 +1013,7 @@
     };
 }
 
-<span class="macro">macro_rules! </span>impl_schema_map {
+<span class="macro">macro_rules!</span> impl_schema_map {
     (<span class="macro-nonterminal">$ty</span>:ty) =&gt; {
         <span class="kw">impl</span>&lt;K: ToString, V: Apiv2Schema&gt; Apiv2Schema <span class="kw">for </span><span class="macro-nonterminal">$ty </span>{
             <span class="kw">fn </span>raw_schema() -&gt; DefaultSchemaRaw {
@@ -1026,7 +1028,7 @@
 }
 
 <span class="kw">use </span><span class="kw">crate</span>::v2::models::Parameter;
-<span class="kw">use </span>std::collections::<span class="kw-2">*</span>;
+<span class="kw">use </span>std::{collections::<span class="kw-2">*</span>, path::PathBuf};
 
 <span class="macro">impl_schema_array!</span>(Vec&lt;T&gt;);
 <span class="macro">impl_schema_array!</span>(HashSet&lt;T&gt;);
@@ -1076,7 +1078,7 @@
 ///
 /// - [`paperclip_actix::api_v2_operation`](https://paperclip-rs.github.io/paperclip/paperclip_actix/attr.api_v2_operation.html).
 ///
-/// **NOTE:** The type parameters specified here aren&#39;t used by the trait itself,
+/// **NOTE:** The type parameters specified here aren't used by the trait itself,
 /// but *can* be used for constraining stuff in framework-related impls.
 </span><span class="kw">pub trait </span>Apiv2Operation {
     <span class="doccomment">/// Returns the definition for this operation.
@@ -1098,12 +1100,12 @@
 ///
 /// - [`paperclip_actix::api_v2_errors`](https://paperclip-rs.github.io/paperclip/paperclip_actix/attr.api_v2_errors.html).
 </span><span class="kw">pub trait </span>Apiv2Errors {
-    <span class="kw">const </span>ERROR_MAP: <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>[(u16, <span class="kw-2">&amp;</span><span class="lifetime">&#39;static </span>str)] = <span class="kw-2">&amp;</span>[];
+    <span class="kw">const </span>ERROR_MAP: <span class="kw-2">&amp;</span><span class="lifetime">'static </span>[(u16, <span class="kw-2">&amp;</span><span class="lifetime">'static </span>str)] = <span class="kw-2">&amp;</span>[];
     <span class="kw">fn </span>update_error_definitions(_op: <span class="kw-2">&amp;mut </span>DefaultOperationRaw) {}
     <span class="kw">fn </span>update_definitions(_map: <span class="kw-2">&amp;mut </span>BTreeMap&lt;String, DefaultSchemaRaw&gt;) {}
 }
 
 <span class="kw">impl </span>Apiv2Errors <span class="kw">for </span>() {}
-<span class="attr">#[cfg(feature = <span class="string">&quot;actix-base&quot;</span>)]
+<span class="attr">#[cfg(feature = <span class="string">"actix-base"</span>)]
 </span><span class="kw">impl </span>Apiv2Errors <span class="kw">for </span>actix_web::Error {}
 </code></pre></div></section></main></body></html>

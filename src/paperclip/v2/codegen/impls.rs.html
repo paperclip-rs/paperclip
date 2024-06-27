@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/impls.rs`."><title>impls.rs - source</title><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Regular-46f98efaafac5295.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Regular-018c141bf0843ffd.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/FiraSans-Medium-8f9a781e4970d388.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceSerif4-Bold-a2c9cd1067f8b328.ttf.woff2"><link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2"><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-d8cc97c322676e1b.css" id="mainThemeStyle"><div id="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.70.0-nightly (1459b3128 2023-03-23)" data-search-js="search-a6dd7f063a44c279.js" data-settings-js="settings-f0c5c39777a9a2f6.js" data-settings-css="settings-0bcba95ff279c1db.css" data-theme-light-css="light-db279b6232be9c13.css" data-theme-dark-css="dark-cf923f49f397b216.css" data-theme-ayu-css="ayu-be46fdc453a55015.css" ></div><script src="../../../../static.files/storage-9184409068f70b79.js"></script><script defer src="../../../../static.files/source-script-1b95b7cca98b26e5.js"></script><script defer src="../../../../source-files.js"></script><script defer src="../../../../static.files/main-f5a2577c5297a973.js"></script><noscript><link rel="stylesheet" media="(prefers-color-scheme:light)" href="../../../../static.files/light-db279b6232be9c13.css"><link rel="stylesheet" media="(prefers-color-scheme:dark)" href="../../../../static.files/dark-cf923f49f397b216.css"><link rel="stylesheet" href="../../../../static.files/noscript-13285aec31fa243e.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-16x16-8b506e7a72182f1c.png"><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc source"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"></nav><main><nav class="sub"><a class="sub-logo-container" href="../../../../paperclip/index.html"><img class="rust-logo" src="../../../../static.files/rust-logo-151179464ae7ed46.svg" alt="logo"></a><form class="search-form"><span></span><input class="search-input" name="search" aria-label="Run search in the documentation" autocomplete="off" spellcheck="false" placeholder="Click or press ‘S’ to search, ‘?’ for more options…" type="search"><div id="help-button" title="help" tabindex="-1"><a href="../../../../help.html">?</a></div><div id="settings-menu" tabindex="-1"><a href="../../../../settings.html" title="settings"><img width="22" height="22" alt="Change settings" src="../../../../static.files/wheel-7b819b6101059cd0.svg"></a></div></form></nav><section id="main-content" class="content"><div class="example-wrap"><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `src/v2/codegen/impls.rs`."><title>impls.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -1210,7 +1210,7 @@
 <a href="#1210" id="1210">1210</a>
 <a href="#1211" id="1211">1211</a>
 <a href="#1212" id="1212">1212</a>
-</pre><pre class="rust"><code><span class="kw">use super</span>::{
+</pre></div><pre class="rust"><code><span class="kw">use super</span>::{
     emitter::ANY_GENERIC_PARAMETER,
     object,
     object::{ApiObject, ApiObjectBuilder, Response, StructField, TypeParameters},
@@ -1232,20 +1232,20 @@
 //   - tests (once) if this issue exists in the current context (depends on which version of rustc was used)
 //   - provides a function to escape/format strings that works in both cases
 </span><span class="kw">static </span>CORRECT_ESCAPING: once_cell::sync::Lazy&lt;bool&gt; =
-    once_cell::sync::Lazy::new(|| <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, <span class="string">&quot;&#39;&quot;</span>) != <span class="string">&quot;\&quot;\\&#39;\&quot;&quot;</span>);
+    once_cell::sync::Lazy::new(|| <span class="macro">format!</span>(<span class="string">"{:?}"</span>, <span class="string">"'"</span>) != <span class="string">"\"\\'\""</span>);
 <span class="kw">fn </span>mk_description_text(str: <span class="kw-2">&amp;</span>str) -&gt; String {
     <span class="kw">if </span><span class="kw-2">*</span>CORRECT_ESCAPING {
-        <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, str)
+        <span class="macro">format!</span>(<span class="string">"{:?}"</span>, str)
     } <span class="kw">else </span>{
-        <span class="macro">format!</span>(<span class="string">&quot;{:?}&quot;</span>, str).replace(<span class="string">&quot;\\&#39;&quot;</span>, <span class="string">&quot;&#39;&quot;</span>)
+        <span class="macro">format!</span>(<span class="string">"{:?}"</span>, str).replace(<span class="string">"\\'"</span>, <span class="string">"'"</span>)
     }
 }
 
 <span class="doccomment">/// Represents the API object impl.
-</span><span class="kw">pub struct </span>ApiObjectImpl&lt;<span class="lifetime">&#39;a</span>&gt; {
-    inner: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ApiObject,
-    <span class="comment">// NOTE: `Rc&lt;[T]&gt;` because we shouldn&#39;t mutate the stuff later.
-    </span><span class="kw">pub</span>(<span class="kw">super</span>) builders: Rc&lt;[ApiObjectBuilder&lt;<span class="lifetime">&#39;a</span>&gt;]&gt;,
+</span><span class="kw">pub struct </span>ApiObjectImpl&lt;<span class="lifetime">'a</span>&gt; {
+    inner: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ApiObject,
+    <span class="comment">// NOTE: `Rc&lt;[T]&gt;` because we shouldn't mutate the stuff later.
+    </span><span class="kw">pub</span>(<span class="kw">super</span>) builders: Rc&lt;[ApiObjectBuilder&lt;<span class="lifetime">'a</span>&gt;]&gt;,
 }
 
 <span class="kw">impl </span>ApiObject {
@@ -1257,7 +1257,7 @@
     /// for building the actual object.
     </span><span class="comment">// FIXME: Make operations generic across builders. This will reduce the
     // number of structs generated.
-    </span><span class="kw">pub fn </span>impl_repr&lt;<span class="lifetime">&#39;a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span><span class="self">self</span>, helper_module_prefix: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>str) -&gt; ApiObjectImpl&lt;<span class="lifetime">&#39;a</span>&gt; {
+    </span><span class="kw">pub fn </span>impl_repr&lt;<span class="lifetime">'a</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'a </span><span class="self">self</span>, helper_module_prefix: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str) -&gt; ApiObjectImpl&lt;<span class="lifetime">'a</span>&gt; {
         <span class="kw">if </span><span class="self">self</span>.inner.is_enum() {
             <span class="kw">return </span>ApiObjectImpl {
                 inner: <span class="self">self</span>,
@@ -1330,16 +1330,16 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ApiObjectImpl&lt;<span class="lifetime">&#39;a</span>&gt; {
-    <span class="doccomment">/// Writes the required &quot;clap&quot; subcommand for this object in YAML.
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; ApiObjectImpl&lt;<span class="lifetime">'a</span>&gt; {
+    <span class="doccomment">/// Writes the required "clap" subcommand for this object in YAML.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>write_clap_yaml&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
     <span class="kw">where
         </span>F: Write,
     {
         <span class="self">self</span>.with_cli_cmd_and_builder(|name, builder| {
-            <span class="macro">write!</span>(f, <span class="string">&quot;\n  - {}:&quot;</span>, name)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(f, <span class="string">"\n  - {}:"</span>, name)<span class="question-mark">?</span>;
             <span class="kw">if let </span><span class="prelude-val">Some</span>(desc) = builder.description {
-                <span class="macro">write!</span>(f, <span class="string">&quot;\n      about: {}&quot;</span>, <span class="kw-2">&amp;</span>mk_description_text(desc))<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(f, <span class="string">"\n      about: {}"</span>, <span class="kw-2">&amp;</span>mk_description_text(desc))<span class="question-mark">?</span>;
             }
 
             <span class="kw">let </span><span class="kw-2">mut </span>iter = builder
@@ -1349,16 +1349,16 @@
 
             <span class="comment">// Has at least one argument or body.
             </span><span class="kw">if </span>iter.peek().is_some() || builder.body_required {
-                f.write_str(<span class="string">&quot;\n      args:&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"\n      args:"</span>)<span class="question-mark">?</span>;
                 <span class="kw">if </span>builder.body_required {
                     <span class="macro">write!</span>(
                         f,
-                        <span class="string">&quot;
+                        <span class="string">"
         - payload:
             long: payload
-            help: \&quot;Path to payload (schema: {obj}) or pass &#39;-&#39; for stdin\&quot;
+            help: \"Path to payload (schema: {obj}) or pass '-' for stdin\"
             takes_value: true
-            required: true&quot;</span>,
+            required: true"</span>,
                         obj = <span class="self">self</span>.inner.name
                     )<span class="question-mark">?</span>;
                 }
@@ -1366,41 +1366,41 @@
 
             iter.try_for_each(|field| {
                 <span class="kw">let </span>field_name = field.name.to_kebab_case();
-                <span class="macro">write!</span>(f, <span class="string">&quot;\n        - {}:&quot;</span>, <span class="kw-2">&amp;</span>field_name)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;\n            long: &quot;</span>)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(f, <span class="string">"\n        - {}:"</span>, <span class="kw-2">&amp;</span>field_name)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"\n            long: "</span>)<span class="question-mark">?</span>;
                 f.write_str(<span class="kw-2">&amp;</span>field_name)<span class="question-mark">?</span>;
                 <span class="kw">if </span>field.prop.is_required() {
-                    f.write_str(<span class="string">&quot;\n            required: true&quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">"\n            required: true"</span>)<span class="question-mark">?</span>;
                 }
 
                 <span class="kw">if let </span><span class="prelude-val">Some</span>(desc) = field.desc {
-                    <span class="macro">write!</span>(f, <span class="string">&quot;\n            help: {}&quot;</span>, <span class="kw-2">&amp;</span>mk_description_text(desc))<span class="question-mark">?</span>;
+                    <span class="macro">write!</span>(f, <span class="string">"\n            help: {}"</span>, <span class="kw-2">&amp;</span>mk_description_text(desc))<span class="question-mark">?</span>;
                 }
 
-                f.write_str(<span class="string">&quot;\n            takes_value: true&quot;</span>)
+                f.write_str(<span class="string">"\n            takes_value: true"</span>)
             })
         })<span class="question-mark">?</span>;
 
-        f.write_str(<span class="string">&quot;\n&quot;</span>)
+        f.write_str(<span class="string">"\n"</span>)
     }
 
-    <span class="doccomment">/// Writes the match arms associated with this object&#39;s operations.
+    <span class="doccomment">/// Writes the match arms associated with this object's operations.
     </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>write_arg_match_arms&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
     <span class="kw">where
         </span>F: Write,
     {
         <span class="self">self</span>.with_cli_cmd_and_builder(|name, builder| {
-            f.write_str(<span class="string">&quot;\n        \&quot;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        \""</span>)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span>name)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;\&quot; =&gt; {\n            let builder = &quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\" =&gt; {\n            let builder = "</span>)<span class="question-mark">?</span>;
             f.write_str(builder.helper_module_prefix)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.inner.path)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;::&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"::"</span>)<span class="question-mark">?</span>;
             builder.write_name(f)<span class="question-mark">?</span>;
             f.write_str(
-                <span class="string">&quot;::from_args(sub_matches)?;
+                <span class="string">"::from_args(sub_matches)?;
             builder.send_raw(client).await
-        },&quot;</span>,
+        },"</span>,
             )
         })
     }
@@ -1409,7 +1409,7 @@
     /// name of the builder (operation) and the actual builder.
     </span><span class="kw">fn </span>with_cli_cmd_and_builder&lt;F, E&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, <span class="kw-2">mut </span>call: F) -&gt; <span class="prelude-ty">Result</span>&lt;(), E&gt;
     <span class="kw">where
-        </span>F: FnMut(String, <span class="kw-2">&amp;</span>ApiObjectBuilder&lt;<span class="lifetime">&#39;_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), E&gt;,
+        </span>F: FnMut(String, <span class="kw-2">&amp;</span>ApiObjectBuilder&lt;<span class="lifetime">'_</span>&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;(), E&gt;,
     {
         <span class="comment">// Ignore objects without any operations (all objects have a default builder).
         </span><span class="kw">if </span><span class="self">self</span>.builders.len() &lt; <span class="number">2 </span>{
@@ -1422,7 +1422,7 @@
                 <span class="prelude-val">None </span>=&gt; {
                     <span class="comment">// FIXME: Investigate what we should do in the absence of operation ID.
                     </span><span class="macro">warn!</span>(
-                        <span class="string">&quot;Unable to generate name for operation ({:?} {:?}). Skipping.&quot;</span>,
+                        <span class="string">"Unable to generate name for operation ({:?} {:?}). Skipping."</span>,
                         builder.method, builder.rel_path,
                     );
 
@@ -1445,80 +1445,80 @@
             <span class="kw">let </span><span class="kw-2">mut </span>temp = String::new();
             <span class="kw">let </span>has_fields = builder.has_atleast_one_field();
             <span class="kw">if </span>builder.description.is_none() {
-                temp.write_str(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+                temp.write_str(<span class="string">"\n"</span>)<span class="question-mark">?</span>;
             }
 
             <span class="kw">if </span>builder.deprecated {
-                temp.write_str(<span class="string">&quot;    #[deprecated]\n&quot;</span>)<span class="question-mark">?</span>;
+                temp.write_str(<span class="string">"    #[deprecated]\n"</span>)<span class="question-mark">?</span>;
             }
 
             <span class="comment">// All builder constructor functions are inlined.
-            </span>temp.write_str(<span class="string">&quot;    #[inline]\n    pub fn &quot;</span>)<span class="question-mark">?</span>;
+            </span>temp.write_str(<span class="string">"    #[inline]\n    pub fn "</span>)<span class="question-mark">?</span>;
             <span class="kw">if let </span><span class="prelude-val">Some</span>(name) = builder.constructor_fn_name() {
                 temp.write_str(<span class="kw-2">&amp;</span>name)<span class="question-mark">?</span>;
                 ApiObject::write_docs(builder.description.as_ref(), f, <span class="number">1</span>)<span class="question-mark">?</span>;
             } <span class="kw">else </span>{
-                <span class="comment">// If we can&#39;t generate a name of a builder, then we go for a
+                <span class="comment">// If we can't generate a name of a builder, then we go for a
                 // simple object builder.
-                </span>f.write_str(<span class="string">&quot;\n    /// Create a builder for this object.&quot;</span>)<span class="question-mark">?</span>;
-                temp.write_str(<span class="string">&quot;builder&quot;</span>)<span class="question-mark">?</span>;
+                </span>f.write_str(<span class="string">"\n    /// Create a builder for this object."</span>)<span class="question-mark">?</span>;
+                temp.write_str(<span class="string">"builder"</span>)<span class="question-mark">?</span>;
             }
 
-            <span class="comment">// Now that we&#39;ve written the docs, we can write the actual method signature.
+            <span class="comment">// Now that we've written the docs, we can write the actual method signature.
             </span>f.write_str(<span class="kw-2">&amp;</span>temp)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;() -&gt; &quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"() -&gt; "</span>)<span class="question-mark">?</span>;
             builder.write_name(f)<span class="question-mark">?</span>;
             builder.write_generics_if_necessary(f, <span class="prelude-val">None</span>, TypeParameters::ReplaceAll)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot; {\n        &quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">" {\n        "</span>)<span class="question-mark">?</span>;
             builder.write_name(f)<span class="question-mark">?</span>;
 
             <span class="kw">if </span>has_fields || builder.body_required {
-                f.write_str(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">" {"</span>)<span class="question-mark">?</span>;
             }
 
             <span class="kw">let </span>needs_container = builder.needs_container();
             <span class="kw">if </span>needs_container {
-                f.write_str(<span class="string">&quot;\n            &quot;</span>)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;inner: Default::default(),&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"\n            "</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"inner: Default::default(),"</span>)<span class="question-mark">?</span>;
             } <span class="kw">else if </span>builder.body_required {
-                f.write_str(<span class="string">&quot;\n            &quot;</span>)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;body: Default::default(),&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"\n            "</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"body: Default::default(),"</span>)<span class="question-mark">?</span>;
             }
 
             builder
                 .struct_fields_iter()
                 .try_for_each::&lt;<span class="kw">_</span>, fmt::Result&gt;(|field| {
                     <span class="kw">if </span>field.prop.is_required() {
-                        f.write_str(<span class="string">&quot;\n            &quot;</span>)<span class="question-mark">?</span>;
+                        f.write_str(<span class="string">"\n            "</span>)<span class="question-mark">?</span>;
                         <span class="kw">if </span>field.prop.is_parameter() {
-                            f.write_str(<span class="string">&quot;_param&quot;</span>)<span class="question-mark">?</span>;
+                            f.write_str(<span class="string">"_param"</span>)<span class="question-mark">?</span>;
                         }
 
-                        f.write_str(<span class="string">&quot;_&quot;</span>)<span class="question-mark">?</span>;
+                        f.write_str(<span class="string">"_"</span>)<span class="question-mark">?</span>;
                         f.write_str(<span class="kw-2">&amp;</span>object::to_snake_case(field.name))<span class="question-mark">?</span>;
-                        f.write_str(<span class="string">&quot;: core::marker::PhantomData,&quot;</span>)<span class="question-mark">?</span>;
+                        f.write_str(<span class="string">": core::marker::PhantomData,"</span>)<span class="question-mark">?</span>;
                     <span class="comment">// If we have a container, then we store parameters inside that.
                     </span>} <span class="kw">else if </span>field.prop.is_parameter() &amp;&amp; !needs_container {
-                        f.write_str(<span class="string">&quot;\n            param_&quot;</span>)<span class="question-mark">?</span>;
+                        f.write_str(<span class="string">"\n            param_"</span>)<span class="question-mark">?</span>;
                         f.write_str(<span class="kw-2">&amp;</span>object::to_snake_case(field.name))<span class="question-mark">?</span>;
-                        f.write_str(<span class="string">&quot;: None,&quot;</span>)<span class="question-mark">?</span>;
+                        f.write_str(<span class="string">": None,"</span>)<span class="question-mark">?</span>;
                     }
 
                     <span class="prelude-val">Ok</span>(())
                 })<span class="question-mark">?</span>;
 
             <span class="kw">if </span>has_fields || builder.body_required {
-                f.write_str(<span class="string">&quot;\n        }&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"\n        }"</span>)<span class="question-mark">?</span>;
             }
 
-            f.write_str(<span class="string">&quot;\n    }\n&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n    }\n"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(())
     }
 
     <span class="doccomment">/// Writes the `Into` impl for fulfilled builders (if they have a body).
-    </span><span class="kw">fn </span>write_into_impl&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, builder: <span class="kw-2">&amp;</span>ApiObjectBuilder&lt;<span class="lifetime">&#39;_</span>&gt;, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
+    </span><span class="kw">fn </span>write_into_impl&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, builder: <span class="kw-2">&amp;</span>ApiObjectBuilder&lt;<span class="lifetime">'_</span>&gt;, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
     <span class="kw">where
         </span>F: Write,
     {
@@ -1527,49 +1527,49 @@
         }
 
         <span class="kw">let </span>needs_container = builder.needs_container();
-        f.write_str(<span class="string">&quot;\nimpl&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\nimpl"</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>builder.needs_any {
             ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot; Into&lt;&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" Into&lt;"</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.inner.name)<span class="question-mark">?</span>;
         <span class="kw">if </span>builder.needs_any {
             ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;&gt; for &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"&gt; for "</span>)<span class="question-mark">?</span>;
         builder.write_name(f)<span class="question-mark">?</span>;
         builder.write_generics_if_necessary(f, <span class="prelude-val">None</span>, TypeParameters::ChangeAll)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot; {\n    fn into(self) -&gt; &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" {\n    fn into(self) -&gt; "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.inner.name)<span class="question-mark">?</span>;
         <span class="kw">if </span>builder.needs_any {
             ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot; {\n        self.&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" {\n        self."</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if </span>needs_container {
-            f.write_str(<span class="string">&quot;inner.&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"inner."</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;body\n    }\n}\n&quot;</span>)
+        f.write_str(<span class="string">"body\n    }\n}\n"</span>)
     }
 }
 
 <span class="doccomment">/// Represents the API object builder impl.
-</span><span class="kw">pub struct </span>ApiObjectBuilderImpl&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ApiObjectBuilder&lt;<span class="lifetime">&#39;b</span>&gt;);
+</span><span class="kw">pub struct </span>ApiObjectBuilderImpl&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt;(<span class="kw-2">&amp;</span><span class="lifetime">'a </span>ApiObjectBuilder&lt;<span class="lifetime">'b</span>&gt;);
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; ApiObjectBuilder&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; ApiObjectBuilder&lt;<span class="lifetime">'a</span>&gt; {
     <span class="doccomment">/// Returns a struct representing the impl for this builder.
-    </span><span class="kw">pub fn </span>impl_repr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ApiObjectBuilderImpl&lt;<span class="lifetime">&#39;_</span>, <span class="lifetime">&#39;_</span>&gt; {
+    </span><span class="kw">pub fn </span>impl_repr(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; ApiObjectBuilderImpl&lt;<span class="lifetime">'_</span>, <span class="lifetime">'_</span>&gt; {
         ApiObjectBuilderImpl(<span class="self">self</span>)
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; ApiObjectBuilderImpl&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt;
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; ApiObjectBuilderImpl&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt;
 <span class="kw">where
-    </span><span class="lifetime">&#39;b</span>: <span class="lifetime">&#39;a</span>,
+    </span><span class="lifetime">'b</span>: <span class="lifetime">'a</span>,
 {
     <span class="doccomment">/// Writes impl for getting args from `clap::ArgMatches`
     </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">fn </span>write_arg_parsing&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
@@ -1581,7 +1581,7 @@
         }
 
         <span class="kw">let </span>needs_container = <span class="self">self</span>.<span class="number">0</span>.needs_container();
-        f.write_str(<span class="string">&quot;\n#[allow(unused_variables)]\nimpl &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n#[allow(unused_variables)]\nimpl "</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="number">0</span>.write_name(f)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="number">0</span>.write_generics_if_necessary(
             f,
@@ -1594,26 +1594,26 @@
             TypeParameters::ChangeAll,
         )<span class="question-mark">?</span>;
 
-        <span class="comment">// NOTE: We&#39;re assuming that we&#39;ve correctly given all the arg requirements to clap.
+        <span class="comment">// NOTE: We're assuming that we've correctly given all the arg requirements to clap.
         </span>f.write_str(
-            <span class="string">&quot; {
-    pub(crate) fn from_args(matches: Option&lt;&amp;clap::ArgMatches&lt;&#39;_&gt;&gt;) -&gt; Result&lt;Self, crate::ClientError&gt; {&quot;</span>,
+            <span class="string">" {
+    pub(crate) fn from_args(matches: Option&lt;&amp;clap::ArgMatches&lt;'_&gt;&gt;) -&gt; Result&lt;Self, crate::ClientError&gt; {"</span>,
         )<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;\n        let thing = &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n        let thing = "</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.<span class="number">0</span>.write_name(f)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" {"</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if </span>needs_container {
-            f.write_str(<span class="string">&quot;\n            inner: &quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n            inner: "</span>)<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="number">0</span>.write_container_name(f)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">" {"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span><span class="self">self</span>.<span class="number">0</span>.body_required {
             <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;
-            body: crate::cli::read_from_input(matches)?,&quot;
+                <span class="string">"
+            body: crate::cli::read_from_input(matches)?,"
             </span>)<span class="question-mark">?</span>;
         }
 
@@ -1624,19 +1624,19 @@
                 field.name.to_kebab_case(),
             );
             <span class="kw">if </span>field.prop.is_required() {
-                phantom.push_str(<span class="string">&quot;\n            _&quot;</span>);
+                phantom.push_str(<span class="string">"\n            _"</span>);
                 <span class="kw">if </span>field.prop.is_parameter() {
-                    phantom.push_str(<span class="string">&quot;param_&quot;</span>);
+                    phantom.push_str(<span class="string">"param_"</span>);
                 }
                 phantom.push_str(<span class="kw-2">&amp;</span>sk);
-                phantom.push_str(<span class="string">&quot;: core::marker::PhantomData,&quot;</span>);
+                phantom.push_str(<span class="string">": core::marker::PhantomData,"</span>);
             }
 
             <span class="kw">if </span>field.prop.is_field() {
                 <span class="kw">return </span><span class="prelude-val">Ok</span>(());
             }
 
-            f.write_str(<span class="string">&quot;\n            param_&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n            param_"</span>)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span>sk)<span class="question-mark">?</span>;
             <span class="kw">let </span><span class="kw-2">mut </span>ty = String::new();
             ApiObjectBuilder::write_wrapped_ty(
@@ -1647,35 +1647,35 @@
             )<span class="question-mark">?</span>;
 
             <span class="kw">if </span>field.needs_file {
-                ty = <span class="string">&quot;std::path::PathBuf&quot;</span>.into();
+                ty = <span class="string">"std::path::PathBuf"</span>.into();
             }
 
-            <span class="comment">// We&#39;re enforcing requirements in the CLI. We can relax here.
+            <span class="comment">// We're enforcing requirements in the CLI. We can relax here.
             </span><span class="macro">writeln!</span>(
                 f,
-                <span class="string">&quot;: matches.and_then(|m| {{
-                    m.value_of(\&quot;{arg}\&quot;).map(|_| {{
-                        value_t!(m, \&quot;{arg}\&quot;, {ty}).unwrap_or_else(|e| e.exit())
+                <span class="string">": matches.and_then(|m| {{
+                    m.value_of(\"{arg}\").map(|_| {{
+                        value_t!(m, \"{arg}\", {ty}).unwrap_or_else(|e| e.exit())
                     }})
-                }}),&quot;</span>,
+                }}),"</span>,
                 arg = kk,
                 ty = ty
             )
         })<span class="question-mark">?</span>;
 
         <span class="kw">if </span>needs_container {
-            f.write_str(<span class="string">&quot;\n            },&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n            },"</span>)<span class="question-mark">?</span>;
         }
 
         f.write_str(<span class="kw-2">&amp;</span>phantom)<span class="question-mark">?</span>;
         f.write_str(
-            <span class="string">&quot;
+            <span class="string">"
         };
 
         Ok(thing)
     }
 }
-&quot;</span>,
+"</span>,
         )
     }
 
@@ -1685,7 +1685,7 @@
     /// with `impl Iterator&lt;Item=Into&lt;T&gt;&gt;`, and if we had `BTreeMap&lt;String, T&gt;`,
     /// then we replace it with `impl Iterator&lt;Item = (String, T)&gt;` and
     /// we do this... recursively.
-    </span><span class="comment">// FIXME: Investigate if there&#39;s a better way.
+    </span><span class="comment">// FIXME: Investigate if there's a better way.
     </span><span class="kw">fn </span>write_builder_ty&lt;F&gt;(
         <span class="kw-2">&amp;</span><span class="self">self</span>,
         ty: <span class="kw-2">&amp;</span>str,
@@ -1696,44 +1696,44 @@
     <span class="kw">where
         </span>F: Write,
     {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = ty.find(<span class="string">&#39;&lt;&#39;</span>) {
-            <span class="kw">if </span>ty[..i].ends_with(<span class="string">&quot;Vec&quot;</span>) {
-                f.write_str(<span class="string">&quot;impl Iterator&lt;Item = &quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = ty.find(<span class="string">'&lt;'</span>) {
+            <span class="kw">if </span>ty[..i].ends_with(<span class="string">"Vec"</span>) {
+                f.write_str(<span class="string">"impl Iterator&lt;Item = "</span>)<span class="question-mark">?</span>;
                 <span class="self">self</span>.write_builder_ty(<span class="kw-2">&amp;</span>ty[i + <span class="number">1</span>..ty.len() - <span class="number">1</span>], req, needs_any, f)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;&gt;&quot;</span>)<span class="question-mark">?</span>;
-            } <span class="kw">else if </span>ty[..i].ends_with(<span class="string">&quot;std::collections::BTreeMap&quot;</span>) {
-                f.write_str(<span class="string">&quot;impl Iterator&lt;Item = (String, &quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"&gt;"</span>)<span class="question-mark">?</span>;
+            } <span class="kw">else if </span>ty[..i].ends_with(<span class="string">"std::collections::BTreeMap"</span>) {
+                f.write_str(<span class="string">"impl Iterator&lt;Item = (String, "</span>)<span class="question-mark">?</span>;
                 <span class="self">self</span>.write_builder_ty(<span class="kw-2">&amp;</span>ty[i + <span class="number">9</span>..ty.len() - <span class="number">1</span>], req, needs_any, f)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;)&gt;&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">")&gt;"</span>)<span class="question-mark">?</span>;
             }
         } <span class="kw">else if </span>ApiObject::is_simple_type(ty) {
-            <span class="macro">write!</span>(f, <span class="string">&quot;impl Into&lt;{}&quot;</span>, ty)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(f, <span class="string">"impl Into&lt;{}"</span>, ty)<span class="question-mark">?</span>;
             <span class="kw">if </span>needs_any &amp;&amp; ty != ANY_GENERIC_PARAMETER {
                 ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
             }
 
-            <span class="kw">return </span>f.write_str(<span class="string">&quot;&gt;&quot;</span>);
+            <span class="kw">return </span>f.write_str(<span class="string">"&gt;"</span>);
         } <span class="kw">else </span>{
             f.write_str(ty)<span class="question-mark">?</span>;
             <span class="kw">if </span>!req.is_empty() {
-                f.write_str(<span class="string">&quot;Builder&lt;&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"Builder&lt;"</span>)<span class="question-mark">?</span>;
                 req.iter().enumerate().try_for_each(|(i, n)| {
                     <span class="kw">if </span>i &gt; <span class="number">0 </span>{
-                        f.write_str(<span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
+                        f.write_str(<span class="string">", "</span>)<span class="question-mark">?</span>;
                     }
 
                     f.write_str(<span class="self">self</span>.<span class="number">0</span>.helper_module_prefix)<span class="question-mark">?</span>;
-                    f.write_str(<span class="string">&quot;generics::&quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">"generics::"</span>)<span class="question-mark">?</span>;
                     f.write_str(<span class="kw-2">&amp;</span>object::to_pascal_case(n))<span class="question-mark">?</span>;
-                    f.write_str(<span class="string">&quot;Exists&quot;</span>)
+                    f.write_str(<span class="string">"Exists"</span>)
                 })<span class="question-mark">?</span>;
 
                 <span class="kw">if </span>needs_any {
-                    f.write_str(<span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">", "</span>)<span class="question-mark">?</span>;
                     f.write_str(ANY_GENERIC_PARAMETER)<span class="question-mark">?</span>;
                 }
 
-                f.write_str(<span class="string">&quot;&gt;&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"&gt;"</span>)<span class="question-mark">?</span>;
             } <span class="kw">else if </span>needs_any {
                 ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
             }
@@ -1747,32 +1747,32 @@
     /// Once we get the value from a builder method (whose type is
     /// generated by `Self::write_builder_ty`), we need to convert it
     /// appropriately. So, whenever we encounter collections, we recursively
-    /// collect the iterator items and if it&#39;s not a collection, we go for
+    /// collect the iterator items and if it's not a collection, we go for
     /// `value.into()`.
     </span><span class="kw">fn </span>write_value_map&lt;F&gt;(ty: <span class="kw-2">&amp;</span>str, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
     <span class="kw">where
         </span>F: Write,
     {
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = ty.find(<span class="string">&#39;&lt;&#39;</span>) {
-            <span class="kw">if </span>ty[..i].ends_with(<span class="string">&quot;Vec&quot;</span>) {
-                f.write_str(<span class="string">&quot;value.map(|value| &quot;</span>)<span class="question-mark">?</span>;
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(i) = ty.find(<span class="string">'&lt;'</span>) {
+            <span class="kw">if </span>ty[..i].ends_with(<span class="string">"Vec"</span>) {
+                f.write_str(<span class="string">"value.map(|value| "</span>)<span class="question-mark">?</span>;
                 <span class="self">Self</span>::write_value_map(<span class="kw-2">&amp;</span>ty[i + <span class="number">1</span>..ty.len() - <span class="number">1</span>], f)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;).collect::&lt;Vec&lt;_&gt;&gt;()&quot;</span>)<span class="question-mark">?</span>;
-            } <span class="kw">else if </span>ty[..i].ends_with(<span class="string">&quot;std::collections::BTreeMap&quot;</span>) {
-                f.write_str(<span class="string">&quot;value.map(|(key, value)| (key, &quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">").collect::&lt;Vec&lt;_&gt;&gt;()"</span>)<span class="question-mark">?</span>;
+            } <span class="kw">else if </span>ty[..i].ends_with(<span class="string">"std::collections::BTreeMap"</span>) {
+                f.write_str(<span class="string">"value.map(|(key, value)| (key, "</span>)<span class="question-mark">?</span>;
                 <span class="self">Self</span>::write_value_map(<span class="kw-2">&amp;</span>ty[i + <span class="number">9</span>..ty.len() - <span class="number">1</span>], f)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;)).collect::&lt;std::collections::BTreeMap&lt;_, _&gt;&gt;()&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">")).collect::&lt;std::collections::BTreeMap&lt;_, _&gt;&gt;()"</span>)<span class="question-mark">?</span>;
             }
         } <span class="kw">else </span>{
-            f.write_str(<span class="string">&quot;value&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"value"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="comment">// Always write `into` to ease conversions.
-        </span>f.write_str(<span class="string">&quot;.into()&quot;</span>)
+        </span>f.write_str(<span class="string">".into()"</span>)
     }
 
     <span class="doccomment">/// Writes the property-related methods to the given formatter.
-    </span><span class="kw">fn </span>write_property_method&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, field: StructField&lt;<span class="lifetime">&#39;b</span>&gt;, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
+    </span><span class="kw">fn </span>write_property_method&lt;F&gt;(<span class="kw-2">&amp;</span><span class="self">self</span>, field: StructField&lt;<span class="lifetime">'b</span>&gt;, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
     <span class="kw">where
         </span>F: Write,
     {
@@ -1787,99 +1787,99 @@
 
         ApiObject::write_docs(field.desc, f, <span class="number">1</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>field.desc.is_none() {
-            f.write_str(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="comment">// Inline property methods.
-        </span>f.write_str(<span class="string">&quot;    #[inline]\n    pub fn &quot;</span>)<span class="question-mark">?</span>;
+        </span>f.write_str(<span class="string">"    #[inline]\n    pub fn "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="kw-2">&amp;</span>field_name)<span class="question-mark">?</span>;
         <span class="kw">if </span>collides_with_keyword {
-            f.write_str(<span class="string">&quot;_&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"_"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;(mut self, value: &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"(mut self, value: "</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>field.needs_file {
-            f.write_str(<span class="string">&quot;impl AsRef&lt;std::path::Path&gt;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"impl AsRef&lt;std::path::Path&gt;"</span>)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
             <span class="self">self</span>.write_builder_ty(field.ty, field.strict_child_fields, field.needs_any, f)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;) -&gt; &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">") -&gt; "</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>prop_is_required {
             <span class="self">self</span>.<span class="number">0</span>.write_name(f)<span class="question-mark">?</span>;
             <span class="self">self</span>.<span class="number">0
                 </span>.write_generics_if_necessary(f, <span class="prelude-val">None</span>, TypeParameters::ChangeOne(field.name))<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
-            f.write_str(<span class="string">&quot;Self&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"Self"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot; {\n        self.&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" {\n        self."</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>needs_container {
-            f.write_str(<span class="string">&quot;inner.&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"inner."</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span>prop_is_parameter {
-            f.write_str(<span class="string">&quot;param_&quot;</span>)<span class="question-mark">?</span>;
-        <span class="comment">// If it&#39;s not a parameter, then it&#39;s definitely a body field.
+            f.write_str(<span class="string">"param_"</span>)<span class="question-mark">?</span>;
+        <span class="comment">// If it's not a parameter, then it's definitely a body field.
         </span>} <span class="kw">else if </span><span class="self">self</span>.<span class="number">0</span>.body_required {
-            f.write_str(<span class="string">&quot;body.&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"body."</span>)<span class="question-mark">?</span>;
         }
 
         f.write_str(<span class="kw-2">&amp;</span>field_name)<span class="question-mark">?</span>;
         <span class="kw">if </span>needs_trailing_dash {
-            f.write_str(<span class="string">&quot;_&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"_"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot; = &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" = "</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span>prop_is_parameter || !prop_is_required {
-            f.write_str(<span class="string">&quot;Some(&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"Some("</span>)<span class="question-mark">?</span>;
         } <span class="kw">else if </span>field.boxed {
-            f.write_str(<span class="string">&quot;Box::new(&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"Box::new("</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span>field.needs_file {
-            f.write_str(<span class="string">&quot;value.as_ref().into()&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"value.as_ref().into()"</span>)<span class="question-mark">?</span>;
         } <span class="kw">else if </span>field.overridden &amp;&amp; <span class="self">self</span>.<span class="number">0</span>.body_required {
-            <span class="comment">// If there&#39;s a field in the body with similar name and type,
+            <span class="comment">// If there's a field in the body with similar name and type,
             // then override it with this value.
-            </span>f.write_str(<span class="string">&quot;{\n            let val = &quot;</span>)<span class="question-mark">?</span>;
+            </span>f.write_str(<span class="string">"{\n            let val = "</span>)<span class="question-mark">?</span>;
             <span class="self">Self</span>::write_value_map(field.ty, f)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;;\n            self.&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">";\n            self."</span>)<span class="question-mark">?</span>;
             <span class="kw">if </span>needs_container {
-                f.write_str(<span class="string">&quot;inner.&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"inner."</span>)<span class="question-mark">?</span>;
             }
 
-            f.write_str(<span class="string">&quot;body.&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"body."</span>)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span>field_name)<span class="question-mark">?</span>;
             <span class="kw">if </span>needs_trailing_dash {
-                f.write_str(<span class="string">&quot;_&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"_"</span>)<span class="question-mark">?</span>;
             }
 
-            f.write_str(<span class="string">&quot; = val.clone().into();&quot;</span>)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;\n            val\n        }&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">" = val.clone().into();"</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n            val\n        }"</span>)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
             <span class="self">Self</span>::write_value_map(field.ty, f)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span>prop_is_parameter || !prop_is_required || field.boxed {
-            f.write_str(<span class="string">&quot;)&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">")"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;;\n        &quot;</span>)<span class="question-mark">?</span>;
-        <span class="comment">// We need to transmute only if there&#39;s a required field/parameter.
+        f.write_str(<span class="string">";\n        "</span>)<span class="question-mark">?</span>;
+        <span class="comment">// We need to transmute only if there's a required field/parameter.
         </span><span class="kw">if </span>prop_is_required {
-            f.write_str(<span class="string">&quot;unsafe { std::mem::transmute(self) }&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"unsafe { std::mem::transmute(self) }"</span>)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
-            f.write_str(<span class="string">&quot;self&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"self"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;\n    }\n&quot;</span>)
+        f.write_str(<span class="string">"\n    }\n"</span>)
     }
 }
 
 <span class="doccomment">/// Codegen for `Sendable` trait for operation builders.
-</span><span class="kw">struct </span>SendableCodegen&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; {
-    builder: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ApiObjectBuilder&lt;<span class="lifetime">&#39;b</span>&gt;,
+</span><span class="kw">struct </span>SendableCodegen&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; {
+    builder: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ApiObjectBuilder&lt;<span class="lifetime">'b</span>&gt;,
     needs_container: bool,
     is_multipart: bool,
     path_items: String,
@@ -1889,8 +1889,8 @@
     multi_value_query: Vec&lt;String&gt;,
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ApiObjectBuilder&lt;<span class="lifetime">&#39;b</span>&gt;&gt; <span class="kw">for </span>SendableCodegen&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; {
-    <span class="kw">fn </span>from(builder: <span class="kw-2">&amp;</span><span class="lifetime">&#39;a </span>ApiObjectBuilder&lt;<span class="lifetime">&#39;b</span>&gt;) -&gt; <span class="self">Self </span>{
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; From&lt;<span class="kw-2">&amp;</span><span class="lifetime">'a </span>ApiObjectBuilder&lt;<span class="lifetime">'b</span>&gt;&gt; <span class="kw">for </span>SendableCodegen&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; {
+    <span class="kw">fn </span>from(builder: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>ApiObjectBuilder&lt;<span class="lifetime">'b</span>&gt;) -&gt; <span class="self">Self </span>{
         SendableCodegen {
             builder,
             needs_container: builder.needs_container(),
@@ -1904,8 +1904,8 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; SendableCodegen&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; {
-    <span class="doccomment">/// Determine and write `Sendable` impl (if it&#39;s needed for this builder).
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; SendableCodegen&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; {
+    <span class="doccomment">/// Determine and write `Sendable` impl (if it's needed for this builder).
     </span><span class="kw">fn </span>write_impl_if_needed&lt;F&gt;(<span class="kw-2">mut </span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>F) -&gt; fmt::Result
     <span class="kw">where
         </span>F: Write,
@@ -1915,31 +1915,31 @@
             <span class="kw">_ </span>=&gt; <span class="kw">return </span><span class="prelude-val">Ok</span>(()),
         };
 
-        f.write_str(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n"</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span><span class="self">self</span>.builder.response.is_file() {
-            f.write_str(<span class="string">&quot;#[async_trait::async_trait]\n&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"#[async_trait::async_trait]\n"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;impl&lt;Client: &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"impl&lt;Client: "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="self">self</span>.builder.helper_module_prefix)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;client::ApiClient + Sync + &#39;static&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"client::ApiClient + Sync + 'static"</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if </span><span class="self">self</span>.builder.needs_any {
-            f.write_str(<span class="string">&quot;, Any: serde::Serialize&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">", Any: serde::Serialize"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;&gt; &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"&gt; "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="self">self</span>.builder.helper_module_prefix)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;client::Sendable&lt;Client&gt; for &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"client::Sendable&lt;Client&gt; for "</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.builder.write_name(f)<span class="question-mark">?</span>;
         <span class="self">self</span>.builder
             .write_generics_if_necessary(f, <span class="prelude-val">None</span>, TypeParameters::ChangeAll)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot; {\n    type Output = &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" {\n    type Output = "</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>accepted_range = <span class="self">self</span>.write_output_ty(f)<span class="question-mark">?</span>;
 
-        f.write_str(<span class="string">&quot;;\n\n    const METHOD: http::Method = http::Method::&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">";\n\n    const METHOD: http::Method = http::Method::"</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="kw-2">&amp;</span>method.to_string().to_uppercase())<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;;\n\n    fn rel_path(&amp;self) -&gt; std::borrow::Cow&lt;&#39;static, str&gt; {\n        &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">";\n\n    fn rel_path(&amp;self) -&gt; std::borrow::Cow&lt;'static, str&gt; {\n        "</span>)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.builder
             .struct_fields_iter()
@@ -1951,14 +1951,14 @@
                 <span class="kw">_ </span>=&gt; (),
             });
 
-        <span class="comment">// Determine if we need a `&amp;&#39;static str` or `String`
+        <span class="comment">// Determine if we need a `&amp;'static str` or `String`
         </span><span class="kw">if </span><span class="self">self</span>.path_items.is_empty() {
-            <span class="macro">write!</span>(f, <span class="string">&quot;\&quot;{}\&quot;.into()&quot;</span>, path)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(f, <span class="string">"\"{}\".into()"</span>, path)<span class="question-mark">?</span>;
         } <span class="kw">else </span>{
-            <span class="macro">write!</span>(f, <span class="string">&quot;format!(\&quot;{}\&quot;{}).into()&quot;</span>, path, <span class="self">self</span>.path_items)<span class="question-mark">?</span>;
+            <span class="macro">write!</span>(f, <span class="string">"format!(\"{}\"{}).into()"</span>, path, <span class="self">self</span>.path_items)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;\n    }&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n    }"</span>)<span class="question-mark">?</span>;
 
         <span class="comment">// Check whether `modify` method needs to be overridden (i.e. body and other params).
         </span><span class="kw">if </span><span class="self">self</span>.builder.body_required
@@ -1974,7 +1974,7 @@
             <span class="self">self</span>.write_file_acceptor(f)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;\n}\n&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n}\n"</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.write_response_headers_impl(f)
     }
 
@@ -1983,22 +1983,22 @@
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        f.write_str(<span class="string">&quot;\nimpl&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\nimpl"</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span><span class="self">self</span>.builder.needs_any {
             ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
         }
 
         <span class="macro">write!</span>(
             f,
-            <span class="string">&quot; {}client::ResponseWrapper&lt;&quot;</span>,
+            <span class="string">" {}client::ResponseWrapper&lt;"</span>,
             <span class="self">self</span>.builder.helper_module_prefix
         )<span class="question-mark">?</span>;
         <span class="self">self</span>.write_output_ty(f)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;, &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">", "</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.builder.write_name(f)<span class="question-mark">?</span>;
         <span class="self">self</span>.builder
             .write_generics_if_necessary(f, <span class="prelude-val">None</span>, TypeParameters::ChangeAll)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;&gt; {&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"&gt; {"</span>)<span class="question-mark">?</span>;
 
         <span class="self">self</span>.builder
             .response
@@ -2009,17 +2009,17 @@
                 <span class="kw">let </span>collides_with_keyword = RUST_KEYWORDS.iter().any(|<span class="kw-2">&amp;</span>k| k == name);
                 ApiObject::write_docs(header.description.as_ref(), f, <span class="number">1</span>)<span class="question-mark">?</span>;
                 <span class="kw">if </span>header.description.is_none() {
-                    f.write_str(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">"\n"</span>)<span class="question-mark">?</span>;
                 }
 
                 <span class="comment">// Inline property methods.
-                </span>f.write_str(<span class="string">&quot;    #[inline]\n    pub fn &quot;</span>)<span class="question-mark">?</span>;
+                </span>f.write_str(<span class="string">"    #[inline]\n    pub fn "</span>)<span class="question-mark">?</span>;
                 f.write_str(<span class="kw-2">&amp;</span>name)<span class="question-mark">?</span>;
                 <span class="kw">if </span>collides_with_keyword {
-                    f.write_str(<span class="string">&quot;_&quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">"_"</span>)<span class="question-mark">?</span>;
                 }
 
-                f.write_str(<span class="string">&quot;(&amp;self) -&gt; Option&lt;&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"(&amp;self) -&gt; Option&lt;"</span>)<span class="question-mark">?</span>;
                 ApiObjectBuilder::write_wrapped_ty(
                     <span class="self">self</span>.builder.helper_module_prefix,
                     <span class="kw-2">&amp;</span>header.ty_path,
@@ -2028,35 +2028,35 @@
                 )<span class="question-mark">?</span>;
                 <span class="macro">write!</span>(
                     f,
-                    <span class="string">&quot;&gt; {{
+                    <span class="string">"&gt; {{
         self.headers.get({:?}).and_then(|v| String::from_utf8_lossy(v.as_ref()).parse().ok())
-    }}&quot;</span>,
+    }}"</span>,
                     header.name
                 )
             })<span class="question-mark">?</span>;
 
-        f.write_str(<span class="string">&quot;\n}\n&quot;</span>)
+        f.write_str(<span class="string">"\n}\n"</span>)
     }
 
     <span class="doccomment">/// Writes the output type for a `Sendable` implementor and returns
-    /// acceptable media range if it&#39;s &quot;any&quot; type.
+    /// acceptable media range if it's "any" type.
     </span><span class="kw">fn </span>write_output_ty&lt;F&gt;(<span class="kw-2">&amp;mut </span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>F) -&gt; <span class="prelude-ty">Result</span>&lt;<span class="prelude-ty">Option</span>&lt;String&gt;, fmt::Error&gt;
     <span class="kw">where
         </span>F: Write,
     {
         <span class="kw">if </span><span class="self">self</span>.builder.is_list_op {
-            f.write_str(<span class="string">&quot;Vec&lt;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"Vec&lt;"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span><span class="self">self</span>.builder.response.is_file() {
-            <span class="macro">write!</span>(f, <span class="string">&quot;{prefix}util::ResponseStream&lt;&lt;&lt;Client as {prefix}client::ApiClient&gt;::Response as {prefix}client::Response&gt;::Bytes, &lt;&lt;Client as {prefix}client::ApiClient&gt;::Response as {prefix}client::Response&gt;::Error&gt;&quot;</span>,
+            <span class="macro">write!</span>(f, <span class="string">"{prefix}util::ResponseStream&lt;&lt;&lt;Client as {prefix}client::ApiClient&gt;::Response as {prefix}client::Response&gt;::Bytes, &lt;&lt;Client as {prefix}client::ApiClient&gt;::Response as {prefix}client::Response&gt;::Error&gt;"</span>,
                    prefix=<span class="self">self</span>.builder.helper_module_prefix)<span class="question-mark">?</span>;
         } <span class="kw">else if let </span><span class="prelude-val">Some</span>(resp) = <span class="self">self</span>.builder.response.ty_path.as_ref() {
-            <span class="comment">// If we&#39;ve acquired a response type, then write that.
+            <span class="comment">// If we've acquired a response type, then write that.
             </span>f.write_str(resp)<span class="question-mark">?</span>;
         }
 
-        <span class="comment">// If the type has `Any` or if we don&#39;t know what we&#39;re going to get, then
+        <span class="comment">// If the type has `Any` or if we don't know what we're going to get, then
         // assume we have to write `Any` type.
         </span><span class="kw">let </span><span class="kw-2">mut </span>accepted_range = <span class="prelude-val">None</span>;
         <span class="kw">if </span><span class="self">self</span>.builder.needs_any
@@ -2070,14 +2070,14 @@
 
             accepted_range = <span class="prelude-val">Some</span>(range);
             <span class="kw">if </span><span class="self">self</span>.builder.response.ty_path.is_some() {
-                <span class="macro">write!</span>(f, <span class="string">&quot;&lt;{}&gt;&quot;</span>, coder.any_value)<span class="question-mark">?</span>;
+                <span class="macro">write!</span>(f, <span class="string">"&lt;{}&gt;"</span>, coder.any_value)<span class="question-mark">?</span>;
             } <span class="kw">else </span>{
                 f.write_str(<span class="kw-2">&amp;</span>coder.any_value)<span class="question-mark">?</span>;
             }
         }
 
         <span class="kw">if </span><span class="self">self</span>.builder.is_list_op {
-            f.write_str(<span class="string">&quot;&gt;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"&gt;"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="prelude-val">Ok</span>(accepted_range.map(|s| s.to_owned()))
@@ -2085,15 +2085,15 @@
 
     <span class="doccomment">/// Handle field for a path parameter.
     </span><span class="kw">fn </span>handle_path_param(<span class="kw-2">&amp;mut </span><span class="self">self</span>, field: StructField) {
-        <span class="kw">let _ </span>= <span class="macro">write!</span>(<span class="self">self</span>.path_items, <span class="string">&quot;, {}=self.&quot;</span>, <span class="kw-2">&amp;</span>field.name);
+        <span class="kw">let _ </span>= <span class="macro">write!</span>(<span class="self">self</span>.path_items, <span class="string">", {}=self."</span>, <span class="kw-2">&amp;</span>field.name);
         <span class="kw">let </span>name = object::to_snake_case(field.name);
         <span class="kw">if </span><span class="self">self</span>.needs_container {
-            <span class="self">self</span>.path_items.push_str(<span class="string">&quot;inner.&quot;</span>);
+            <span class="self">self</span>.path_items.push_str(<span class="string">"inner."</span>);
         }
 
         <span class="kw">let _ </span>= <span class="macro">write!</span>(
             <span class="self">self</span>.path_items,
-            <span class="string">&quot;param_{name}.as_ref().expect(\&quot;missing parameter {name}?\&quot;)&quot;</span>,
+            <span class="string">"param_{name}.as_ref().expect(\"missing parameter {name}?\")"</span>,
             name = name
         );
     }
@@ -2102,60 +2102,60 @@
     </span><span class="kw">fn </span>handle_header_param(<span class="kw-2">&amp;mut </span><span class="self">self</span>, field: StructField) {
         <span class="kw">let </span>is_required = field.prop.is_required();
         <span class="kw">let </span>name = object::to_snake_case(field.name);
-        <span class="kw">let </span><span class="kw-2">mut </span>param_ref = String::from(<span class="string">&quot;&amp;self.&quot;</span>);
+        <span class="kw">let </span><span class="kw-2">mut </span>param_ref = String::from(<span class="string">"&amp;self."</span>);
         <span class="kw">if </span><span class="self">self</span>.needs_container {
-            param_ref.push_str(<span class="string">&quot;inner.&quot;</span>);
+            param_ref.push_str(<span class="string">"inner."</span>);
         }
 
-        param_ref.push_str(<span class="string">&quot;param_&quot;</span>);
+        param_ref.push_str(<span class="string">"param_"</span>);
         param_ref.push_str(<span class="kw-2">&amp;</span>name);
-        param_ref.push_str(<span class="string">&quot;.as_ref().map(std::string::ToString::to_string)&quot;</span>);
+        param_ref.push_str(<span class="string">".as_ref().map(std::string::ToString::to_string)"</span>);
         <span class="kw">if </span>is_required {
-            <span class="kw">let _ </span>= <span class="macro">write!</span>(param_ref, <span class="string">&quot;.expect(\&quot;missing parameter {}?\&quot;)&quot;</span>, name);
+            <span class="kw">let _ </span>= <span class="macro">write!</span>(param_ref, <span class="string">".expect(\"missing parameter {}?\")"</span>, name);
         }
 
         <span class="kw">if </span>!is_required {
-            <span class="kw">let _ </span>= <span class="macro">write!</span>(<span class="self">self</span>.headers, <span class="string">&quot;\n        if let Some(v) = {} {{&quot;</span>, param_ref);
+            <span class="kw">let _ </span>= <span class="macro">write!</span>(<span class="self">self</span>.headers, <span class="string">"\n        if let Some(v) = {} {{"</span>, param_ref);
         }
 
-        <span class="self">self</span>.headers.push_str(<span class="string">&quot;\n        &quot;</span>);
+        <span class="self">self</span>.headers.push_str(<span class="string">"\n        "</span>);
         <span class="kw">if </span>!is_required {
-            <span class="self">self</span>.headers.push_str(<span class="string">&quot;    &quot;</span>);
+            <span class="self">self</span>.headers.push_str(<span class="string">"    "</span>);
         }
 
         <span class="kw">let _ </span>= <span class="macro">write!</span>(
             <span class="self">self</span>.headers,
-            <span class="string">&quot;req = req.header({:?}, {});&quot;</span>,
+            <span class="string">"req = req.header({:?}, {});"</span>,
             <span class="kw-2">&amp;</span>field.name,
-            <span class="kw">if </span>is_required { <span class="kw-2">&amp;</span>param_ref } <span class="kw">else </span>{ <span class="string">&quot;&amp;v&quot; </span>}
+            <span class="kw">if </span>is_required { <span class="kw-2">&amp;</span>param_ref } <span class="kw">else </span>{ <span class="string">"&amp;v" </span>}
         );
 
         <span class="kw">if </span>!is_required {
-            <span class="self">self</span>.headers.push_str(<span class="string">&quot;\n        }&quot;</span>);
+            <span class="self">self</span>.headers.push_str(<span class="string">"\n        }"</span>);
         }
     }
 
     <span class="doccomment">/// Handle field for a form data parameter.
     </span><span class="kw">fn </span>handle_form_param(<span class="kw-2">&amp;mut </span><span class="self">self</span>, field: StructField) {
         <span class="kw">let </span>name = object::to_snake_case(field.name);
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(CollectionFormat::Multi) = field.delimiting.get(<span class="number">0</span>) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(CollectionFormat::Multi) = field.delimiting.first() {
             <span class="kw">let _ </span>= <span class="macro">write!</span>(
                 <span class="self">self</span>.form,
-                <span class="string">&quot;
+                <span class="string">"
             if let Some(stuff) = self.{}param_{}.as_ref() {{
                 for v in stuff.iter() {{
                     {}({:?}, {}v.to_string());
                 }}
-            }}&quot;</span>,
-                <span class="kw">if </span><span class="self">self</span>.needs_container { <span class="string">&quot;inner.&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>},
+            }}"</span>,
+                <span class="kw">if </span><span class="self">self</span>.needs_container { <span class="string">"inner." </span>} <span class="kw">else </span>{ <span class="string">"" </span>},
                 name,
                 <span class="kw">if </span><span class="self">self</span>.is_multipart {
-                    <span class="string">&quot;form = form.text&quot;
+                    <span class="string">"form = form.text"
                 </span>} <span class="kw">else </span>{
-                    <span class="string">&quot;ser.append_pair&quot;
+                    <span class="string">"ser.append_pair"
                 </span>},
                 <span class="kw-2">&amp;</span>field.name,
-                <span class="kw">if </span><span class="self">self</span>.is_multipart { <span class="string">&quot;&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&amp;&quot; </span>},
+                <span class="kw">if </span><span class="self">self</span>.is_multipart { <span class="string">"" </span>} <span class="kw">else </span>{ <span class="string">"&amp;" </span>},
             );
 
             <span class="kw">return</span>;
@@ -2164,11 +2164,11 @@
         <span class="kw">if </span>field.needs_file {
             <span class="kw">let _ </span>= <span class="macro">write!</span>(
                 <span class="self">self</span>.form,
-                <span class="string">&quot;
+                <span class="string">"
             if let Some(v) = self.{}param_{}.as_ref() {{
                 form = form.file({:?}, v)?;
-            }}&quot;</span>,
-                <span class="kw">if </span><span class="self">self</span>.needs_container { <span class="string">&quot;inner.&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>},
+            }}"</span>,
+                <span class="kw">if </span><span class="self">self</span>.needs_container { <span class="string">"inner." </span>} <span class="kw">else </span>{ <span class="string">"" </span>},
                 name,
                 <span class="kw-2">&amp;</span>field.name,
             );
@@ -2176,37 +2176,37 @@
             <span class="kw">return</span>;
         }
 
-        <span class="self">self</span>.form.push_str(<span class="string">&quot;\n            if let Some(v) = self.&quot;</span>);
+        <span class="self">self</span>.form.push_str(<span class="string">"\n            if let Some(v) = self."</span>);
         <span class="kw">if </span><span class="self">self</span>.needs_container {
-            <span class="self">self</span>.form.push_str(<span class="string">&quot;inner.&quot;</span>);
+            <span class="self">self</span>.form.push_str(<span class="string">"inner."</span>);
         }
 
         <span class="kw">let _ </span>= <span class="macro">write!</span>(
             <span class="self">self</span>.form,
-            <span class="string">&quot;param_{}.as_ref() {{
+            <span class="string">"param_{}.as_ref() {{
                 {}({:?}, {}v.to_string());
-            }}&quot;</span>,
+            }}"</span>,
             name,
             <span class="kw">if </span><span class="self">self</span>.is_multipart {
-                <span class="string">&quot;form = form.text&quot;
+                <span class="string">"form = form.text"
             </span>} <span class="kw">else </span>{
-                <span class="string">&quot;ser.append_pair&quot;
+                <span class="string">"ser.append_pair"
             </span>},
             <span class="kw-2">&amp;</span>field.name,
-            <span class="kw">if </span><span class="self">self</span>.is_multipart { <span class="string">&quot;&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&amp;&quot; </span>},
+            <span class="kw">if </span><span class="self">self</span>.is_multipart { <span class="string">"" </span>} <span class="kw">else </span>{ <span class="string">"&amp;" </span>},
         );
     }
 
     <span class="doccomment">/// Handle field for an URL query parameter.
     </span><span class="kw">fn </span>handle_query_param(<span class="kw-2">&amp;mut </span><span class="self">self</span>, field: StructField) {
         <span class="kw">let </span>name = object::to_snake_case(field.name);
-        <span class="kw">if let </span><span class="prelude-val">Some</span>(CollectionFormat::Multi) = field.delimiting.get(<span class="number">0</span>) {
+        <span class="kw">if let </span><span class="prelude-val">Some</span>(CollectionFormat::Multi) = field.delimiting.first() {
             <span class="self">self</span>.multi_value_query.push(<span class="macro">format!</span>(
-                <span class="string">&quot;
+                <span class="string">"
             &amp;self.{}param_{}.as_ref().map(|v| {{
                 v.iter().map(|v| ({:?}, v.to_string())).collect::&lt;Vec&lt;_&gt;&gt;()
-            }}).unwrap_or_default()&quot;</span>,
-                <span class="kw">if </span><span class="self">self</span>.needs_container { <span class="string">&quot;inner.&quot; </span>} <span class="kw">else </span>{ <span class="string">&quot;&quot; </span>},
+            }}).unwrap_or_default()"</span>,
+                <span class="kw">if </span><span class="self">self</span>.needs_container { <span class="string">"inner." </span>} <span class="kw">else </span>{ <span class="string">"" </span>},
                 name,
                 <span class="kw-2">&amp;</span>field.name,
             ));
@@ -2215,17 +2215,17 @@
         }
 
         <span class="kw">if </span>!<span class="self">self</span>.query.is_empty() {
-            <span class="self">self</span>.query.push(<span class="string">&#39;,&#39;</span>);
+            <span class="self">self</span>.query.push(<span class="string">','</span>);
         }
 
-        <span class="kw">let _ </span>= <span class="macro">write!</span>(<span class="self">self</span>.query, <span class="string">&quot;\n            ({:?}, self.&quot;</span>, <span class="kw-2">&amp;</span>field.name);
+        <span class="kw">let _ </span>= <span class="macro">write!</span>(<span class="self">self</span>.query, <span class="string">"\n            ({:?}, self."</span>, <span class="kw-2">&amp;</span>field.name);
         <span class="kw">if </span><span class="self">self</span>.needs_container {
-            <span class="self">self</span>.query.push_str(<span class="string">&quot;inner.&quot;</span>);
+            <span class="self">self</span>.query.push_str(<span class="string">"inner."</span>);
         }
 
         <span class="kw">let _ </span>= <span class="macro">write!</span>(
             <span class="self">self</span>.query,
-            <span class="string">&quot;param_{name}.as_ref().map(std::string::ToString::to_string))&quot;</span>,
+            <span class="string">"param_{name}.as_ref().map(std::string::ToString::to_string))"</span>,
             name = name
         );
     }
@@ -2235,56 +2235,56 @@
     <span class="kw">where
         </span>F: Write,
     {
-        f.write_str(<span class="string">&quot;\n\n    fn modify(&amp;self, req: Client::Request) -&gt; Result&lt;Client::Request, &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n\n    fn modify(&amp;self, req: Client::Request) -&gt; Result&lt;Client::Request, "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="self">self</span>.builder.helper_module_prefix)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;client::ApiError&lt;Client::Response&gt;&gt; {&quot;</span>)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;\n        use &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"client::ApiError&lt;Client::Response&gt;&gt; {"</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n        use "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="self">self</span>.builder.helper_module_prefix)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;client::Request;&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"client::Request;"</span>)<span class="question-mark">?</span>;
 
         <span class="kw">if </span>!<span class="self">self</span>.headers.is_empty() {
-            f.write_str(<span class="string">&quot;\n        let mut req = req;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        let mut req = req;"</span>)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.headers)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;\n&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;\n        Ok(req&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"\n        Ok(req"</span>)<span class="question-mark">?</span>;
         <span class="kw">if </span><span class="self">self</span>.builder.body_required {
-            f.write_str(<span class="string">&quot;\n        &quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        "</span>)<span class="question-mark">?</span>;
             <span class="kw">if let </span><span class="prelude-val">Some</span>((range, coder)) = <span class="self">self</span>.builder.encoding {
                 <span class="macro">write!</span>(
                     f,
-                    <span class="string">&quot;.header(http::header::CONTENT_TYPE.as_str(), {:?})&quot;</span>,
+                    <span class="string">".header(http::header::CONTENT_TYPE.as_str(), {:?})"</span>,
                     range
                 )<span class="question-mark">?</span>;
 
                 f.write_str(
-                    <span class="string">&quot;\n        .body_bytes({
+                    <span class="string">"\n        .body_bytes({
             let mut vec = vec![];
-            &quot;</span>,
+            "</span>,
                 )<span class="question-mark">?</span>;
                 f.write_str(<span class="kw-2">&amp;</span>coder.encoder_path)<span class="question-mark">?</span>;
-                f.write_str(<span class="string">&quot;(&amp;mut vec, &quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"(&amp;mut vec, "</span>)<span class="question-mark">?</span>;
             } <span class="kw">else </span>{
-                f.write_str(<span class="string">&quot;.json(&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">".json("</span>)<span class="question-mark">?</span>;
             }
 
-            f.write_str(<span class="string">&quot;&amp;self.&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"&amp;self."</span>)<span class="question-mark">?</span>;
             <span class="kw">if </span><span class="self">self</span>.needs_container {
-                f.write_str(<span class="string">&quot;inner.&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"inner."</span>)<span class="question-mark">?</span>;
             }
 
-            f.write_str(<span class="string">&quot;body)&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"body)"</span>)<span class="question-mark">?</span>;
 
             <span class="kw">if </span><span class="self">self</span>.builder.encoding.is_some() {
-                f.write_str(<span class="string">&quot;?;\n            vec\n        })&quot;</span>)<span class="question-mark">?</span>;
+                f.write_str(<span class="string">"?;\n            vec\n        })"</span>)<span class="question-mark">?</span>;
             }
         }
 
         <span class="kw">if let </span><span class="prelude-val">Some</span>(r) = accepted_range {
             <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;\n        .header(http::header::ACCEPT.as_str(), {:?})&quot;</span>,
+                <span class="string">"\n        .header(http::header::ACCEPT.as_str(), {:?})"</span>,
                 r
             )<span class="question-mark">?</span>;
         }
@@ -2292,48 +2292,48 @@
         <span class="kw">if </span>!<span class="self">self</span>.form.is_empty() &amp;&amp; <span class="self">self</span>.is_multipart {
             <span class="macro">write!</span>(
                 f,
-                <span class="string">&quot;
+                <span class="string">"
         .multipart_form_data({{
             use {prefix}client::Form;
-            let mut form = &lt;Client::Request as Request&gt;::Form::new();&quot;</span>,
+            let mut form = &lt;Client::Request as Request&gt;::Form::new();"</span>,
                 prefix = <span class="self">self</span>.builder.helper_module_prefix
             )<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.form)<span class="question-mark">?</span>;
             f.write_str(
-                <span class="string">&quot;
+                <span class="string">"
             form
-        })&quot;</span>,
+        })"</span>,
             )<span class="question-mark">?</span>;
         } <span class="kw">else if </span>!<span class="self">self</span>.form.is_empty() {
             f.write_str(
-                <span class="string">&quot;
+                <span class="string">"
         .body_bytes({
-            let mut ser = url::form_urlencoded::Serializer::new(String::new());&quot;</span>,
+            let mut ser = url::form_urlencoded::Serializer::new(String::new());"</span>,
             )<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.form)<span class="question-mark">?</span>;
             f.write_str(
-                <span class="string">&quot;
-            ser.finish().into_bytes()\n        })&quot;</span>,
+                <span class="string">"
+            ser.finish().into_bytes()\n        })"</span>,
             )<span class="question-mark">?</span>;
             f.write_str(
-                <span class="string">&quot;
-        .header(http::header::CONTENT_TYPE.as_str(), \&quot;application/x-www-form-urlencoded\&quot;)&quot;</span>,
+                <span class="string">"
+        .header(http::header::CONTENT_TYPE.as_str(), \"application/x-www-form-urlencoded\")"</span>,
             )<span class="question-mark">?</span>;
         }
 
         <span class="kw">if </span>!<span class="self">self</span>.query.is_empty() {
-            f.write_str(<span class="string">&quot;\n        .query(&amp;[&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        .query(&amp;["</span>)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.query)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;\n        ])&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        ])"</span>)<span class="question-mark">?</span>;
         }
 
         <span class="kw">for </span>q <span class="kw">in </span><span class="self">self</span>.multi_value_query.drain(..) {
-            f.write_str(<span class="string">&quot;\n        .query({&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        .query({"</span>)<span class="question-mark">?</span>;
             f.write_str(<span class="kw-2">&amp;</span>q)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;\n        })&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"\n        })"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot;)\n    }&quot;</span>)
+        f.write_str(<span class="string">")\n    }"</span>)
     }
 
     <span class="doccomment">/// Writes async `send` method for this operation assuming that the response is a file.
@@ -2343,7 +2343,7 @@
     {
         <span class="macro">write!</span>(
             f,
-            <span class="string">&quot;
+            <span class="string">"
 
     async fn send(&amp;self, client: &amp;Client) -&gt; Result&lt;{prefix}client::ResponseWrapper&lt;Self::Output, Self&gt;, {prefix}client::ApiError&lt;Client::Response&gt;&gt; {{
         use {prefix}client::Response;
@@ -2351,36 +2351,36 @@
         Ok({prefix}client::ResponseWrapper::wrap(resp, |r| async {{
             Ok({prefix}util::ResponseStream(r.stream()))
         }}).await.unwrap())
-    }}&quot;</span>,
+    }}"</span>,
             prefix = <span class="self">self</span>.builder.helper_module_prefix
         )
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>&gt; Display <span class="kw">for </span>ApiObjectImpl&lt;<span class="lifetime">&#39;a</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>&gt; Display <span class="kw">for </span>ApiObjectImpl&lt;<span class="lifetime">'a</span>&gt; {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         <span class="kw">if </span><span class="self">self</span>.builders.is_empty() {
             <span class="kw">return </span><span class="prelude-val">Ok</span>(());
         }
 
-        f.write_str(<span class="string">&quot;impl&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"impl"</span>)<span class="question-mark">?</span>;
         <span class="kw">let </span>needs_any = <span class="self">self</span>.inner.fields().iter().any(|f| f.needs_any);
         <span class="kw">if </span>needs_any {
-            f.write_str(<span class="string">&quot;&lt;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"&lt;"</span>)<span class="question-mark">?</span>;
             f.write_str(ANY_GENERIC_PARAMETER)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;: Default&quot;</span>)<span class="question-mark">?</span>;
-            f.write_str(<span class="string">&quot;&gt;&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">": Default"</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"&gt;"</span>)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" "</span>)<span class="question-mark">?</span>;
         f.write_str(<span class="kw-2">&amp;</span><span class="self">self</span>.inner.name)<span class="question-mark">?</span>;
         <span class="kw">if </span>needs_any {
             ApiObject::write_any_generic(f)<span class="question-mark">?</span>;
         }
 
-        f.write_str(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">" {"</span>)<span class="question-mark">?</span>;
         <span class="self">self</span>.write_builder_methods(f)<span class="question-mark">?</span>;
-        f.write_str(<span class="string">&quot;}\n&quot;</span>)<span class="question-mark">?</span>;
+        f.write_str(<span class="string">"}\n"</span>)<span class="question-mark">?</span>;
 
         <span class="kw">for </span>builder <span class="kw">in </span><span class="kw-2">&amp;*</span><span class="self">self</span>.builders {
             <span class="self">self</span>.write_into_impl(builder, f)<span class="question-mark">?</span>;
@@ -2390,7 +2390,7 @@
     }
 }
 
-<span class="kw">impl</span>&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; Display <span class="kw">for </span>ApiObjectBuilderImpl&lt;<span class="lifetime">&#39;a</span>, <span class="lifetime">&#39;b</span>&gt; {
+<span class="kw">impl</span>&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; Display <span class="kw">for </span>ApiObjectBuilderImpl&lt;<span class="lifetime">'a</span>, <span class="lifetime">'b</span>&gt; {
     <span class="kw">fn </span>fmt(<span class="kw-2">&amp;</span><span class="self">self</span>, f: <span class="kw-2">&amp;mut </span>fmt::Formatter) -&gt; fmt::Result {
         <span class="kw">let </span><span class="kw-2">mut </span>generics = String::new();
         <span class="self">self</span>.<span class="number">0
@@ -2404,19 +2404,19 @@
             .try_for_each(|(i, field)| {
                 <span class="kw">if </span>i == <span class="number">0 </span>{
                     has_fields = <span class="bool-val">true</span>;
-                    f.write_str(<span class="string">&quot;impl&quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">"impl"</span>)<span class="question-mark">?</span>;
                     f.write_str(<span class="kw-2">&amp;</span>generics)<span class="question-mark">?</span>;
-                    f.write_str(<span class="string">&quot; &quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">" "</span>)<span class="question-mark">?</span>;
                     <span class="self">self</span>.<span class="number">0</span>.write_name(f)<span class="question-mark">?</span>;
                     f.write_str(<span class="kw-2">&amp;</span>generics)<span class="question-mark">?</span>;
-                    f.write_str(<span class="string">&quot; {&quot;</span>)<span class="question-mark">?</span>;
+                    f.write_str(<span class="string">" {"</span>)<span class="question-mark">?</span>;
                 }
 
                 <span class="self">self</span>.write_property_method(field, f)
             })<span class="question-mark">?</span>;
 
         <span class="kw">if </span>has_fields {
-            f.write_str(<span class="string">&quot;}\n&quot;</span>)<span class="question-mark">?</span>;
+            f.write_str(<span class="string">"}\n"</span>)<span class="question-mark">?</span>;
         }
 
         SendableCodegen::from(<span class="self">self</span>.<span class="number">0</span>).write_impl_if_needed(f)
