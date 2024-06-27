@@ -25,7 +25,7 @@ jobs:
             experimental: true
             exclude: -A clippy::uninlined-format-args -A clippy::derivable-impls
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
         with:
           submodules: recursive
       - uses: actions-rs/toolchain@v1
@@ -49,7 +49,7 @@ jobs:
           - stable
           - nightly
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v4
       - uses: actions-rs/toolchain@v1
         with:
           components: rustfmt
