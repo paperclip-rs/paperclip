@@ -926,7 +926,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     /// Handle field for a form data parameter.
     fn handle_form_param(&mut self, field: StructField) {
         let name = object::to_snake_case(field.name);
-        if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
+        if let Some(CollectionFormat::Multi) = field.delimiting.first() {
             let _ = write!(
                 self.form,
                 "
@@ -988,7 +988,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     /// Handle field for an URL query parameter.
     fn handle_query_param(&mut self, field: StructField) {
         let name = object::to_snake_case(field.name);
-        if let Some(CollectionFormat::Multi) = field.delimiting.get(0) {
+        if let Some(CollectionFormat::Multi) = field.delimiting.first() {
             self.multi_value_query.push(format!(
                 "
             &self.{}param_{}.as_ref().map(|v| {{

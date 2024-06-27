@@ -60,9 +60,9 @@
 //! raw schema. During resolution, we:
 //!
 //! - walk through the nodes, find `$ref` fields and assign references to
-//! the actual definitions.
+//!   the actual definitions.
 //! - identify anonymous definitions in body parameters and response schemas
-//! and add them to the known map of definitions.
+//!   and add them to the known map of definitions.
 //!
 //! ```rust,no_run
 //! #[cfg(feature = "codegen")] {
