@@ -306,6 +306,8 @@ pub struct Info {
     pub title: String,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub description: Option<String>,
+    #[serde(rename = "termsOfService", skip_serializing_if = "Option::is_none")]
+    pub terms_of_service: Option<String>,
     #[serde(skip_serializing_if = "Option::is_none")]
     pub contact: Option<Contact>,
     #[serde(skip_serializing_if = "Option::is_none")]
