@@ -19,9 +19,9 @@ impl From<v2::DefaultParameterRaw>
                 ))),
             },
             example: None,
-            examples: indexmap::IndexMap::new(),
+            examples: Default::default(),
             explode: None,
-            extensions: indexmap::IndexMap::new(),
+            extensions: Default::default(),
         };
 
         match v2.in_ {
@@ -49,12 +49,12 @@ impl From<v2::DefaultParameterRaw>
                         schema: v2.schema.map(|s| s.into()),
                         ..Default::default()
                     };
-                    let mut map = indexmap::IndexMap::new();
+                    let mut map = openapiv3::RequestBody::default().content;
                     map.insert(v2::SpecFormat::Json.mime().0.to_string(), media);
                     map
                 },
                 required: v2.required,
-                extensions: indexmap::IndexMap::new(),
+                extensions: Default::default(),
             })),
         }
     }

@@ -7,10 +7,10 @@ impl From<v2::Header> for openapiv3::Header {
             style: Default::default(),
             required: false,
             deprecated: None,
-            format: openapiv3::ParameterSchemaOrContent::Content(indexmap::IndexMap::new()),
+            format: openapiv3::ParameterSchemaOrContent::Content(Default::default()),
             example: None,
-            extensions: indexmap::IndexMap::new(),
-            examples: indexmap::IndexMap::new(),
+            extensions: Default::default(),
+            examples: Default::default(),
         }
     }
 }

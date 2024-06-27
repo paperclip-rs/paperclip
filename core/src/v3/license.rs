@@ -5,7 +5,7 @@ impl From<v2::License> for openapiv3::License {
         openapiv3::License {
             name: v2.name.unwrap_or_default(),
             url: v2.url,
-            extensions: indexmap::IndexMap::new(),
+            extensions: Default::default(),
         }
     }
 }

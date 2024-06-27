@@ -13,7 +13,7 @@ impl From<OperationResponse<'_>> for openapiv3::Response {
                 .response
                 .headers
                 .iter()
-                .fold(indexmap::IndexMap::new(), |mut i, b| {
+                .fold(Default::default(), |mut i, b| {
                     i.insert(
                         b.0.to_string(),
                         openapiv3::ReferenceOr::Item(b.1.clone().into()),
@@ -34,7 +34,7 @@ impl From<OperationResponse<'_>> for openapiv3::Response {
                             ..Default::default()
                         };
 
-                        let mut map = indexmap::IndexMap::new();
+                        let mut map = openapiv3::Response::default().content;
                         match v2.operation.produces.as_ref() {
                             Some(range) => {
                                 for mime in range {
@@ -52,11 +52,11 @@ impl From<OperationResponse<'_>> for openapiv3::Response {
                         }
                         map
                     }
-                    None => indexmap::IndexMap::new(),
+                    None => Default::default(),
                 }
             },
-            extensions: indexmap::IndexMap::new(),
-            links: indexmap::IndexMap::new(),
+            extensions: Default::default(),
+            links: Default::default(),
         }
     }
 }
@@ -72,13 +72,13 @@ impl From<OperationEitherResponse<'_>> for openapiv3::ReferenceOr<openapiv3::Res
             Either::Left(reference) => {
                 let response = openapiv3::Response {
                     description: "".to_string(),
-                    headers: indexmap::IndexMap::new(),
+                    headers: Default::default(),
                     content: {
                         let media = openapiv3::MediaType {
                             schema: Some(reference.into()),
                             ..Default::default()
                         };
-                        let mut map = indexmap::IndexMap::new();
+                        let mut map = openapiv3::Response::default().content;
                         match v2.operation.produces.as_ref() {
                             Some(range) => {
                                 for mime in range {
@@ -92,8 +92,8 @@ impl From<OperationEitherResponse<'_>> for openapiv3::ReferenceOr<openapiv3::Res
                         }
                         map
                     },
-                    links: indexmap::IndexMap::new(),
-                    extensions: indexmap::IndexMap::new(),
+                    links: Default::default(),
+                    extensions: Default::default(),
                 };
                 openapiv3::ReferenceOr::Item(response)
             }

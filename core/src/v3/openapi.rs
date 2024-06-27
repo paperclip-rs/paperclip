@@ -17,22 +17,19 @@ impl From<v2::DefaultApiRaw> for openapiv3::OpenAPI {
                 .security_schemes
                 .insert(name, openapiv3::ReferenceOr::Item(scheme.into()));
         }
-        components.responses = v2
-            .responses
-            .iter()
-            .fold(indexmap::IndexMap::new(), |mut i, b| {
-                i.insert(b.0.to_string(), b.1.clone().into());
+        components.responses = v2.responses.iter().fold(Default::default(), |mut i, b| {
+            i.insert(b.0.to_string(), b.1.clone().into());
+            i
+        });
+        spec.extensions = v2
+            .extensions
+            .into_iter()
+            .fold(Default::default(), |mut i, (k, v)| {
+                i.insert(k, v);
                 i
             });
-        spec.extensions =
-            v2.extensions
-                .into_iter()
-                .fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
-                    i.insert(k, v);
-                    i
-                });
         spec.paths = openapiv3::Paths {
-            paths: v2.paths.iter().fold(indexmap::IndexMap::new(), |mut i, b| {
+            paths: v2.paths.iter().fold(Default::default(), |mut i, b| {
                 i.insert(
                     b.0.to_string(),
                     openapiv3::ReferenceOr::Item(b.1.clone().into()),
@@ -42,13 +39,10 @@ impl From<v2::DefaultApiRaw> for openapiv3::OpenAPI {
             ..Default::default()
         };
 
-        components.schemas = v2
-            .definitions
-            .iter()
-            .fold(indexmap::IndexMap::new(), |mut i, b| {
-                i.insert(b.0.to_string(), b.1.clone().into());
-                i
-            });
+        components.schemas = v2.definitions.iter().fold(Default::default(), |mut i, b| {
+            i.insert(b.0.to_string(), b.1.clone().into());
+            i
+        });
         spec.components = Some(components);
 
         spec
@@ -77,7 +71,7 @@ fn openapi3_servers(
                         url: format!("{}://{}{}", scheme_str, host, base.as_deref().unwrap_or("")),
                         description: None,
                         variables: None,
-                        extensions: indexmap::IndexMap::new(),
+                        extensions: Default::default(),
                     }
                 })
                 .collect()
@@ -86,7 +80,7 @@ fn openapi3_servers(
                 url: format!("//{}{}", host, base.as_deref().unwrap_or("")),
                 description: None,
                 variables: None,
-                extensions: indexmap::IndexMap::new(),
+                extensions: Default::default(),
             }]
         }
     } else {
@@ -94,7 +88,7 @@ fn openapi3_servers(
             url: base.unwrap_or_else(|| "/".to_string()),
             description: None,
             variables: None,
-            extensions: indexmap::IndexMap::new(),
+            extensions: Default::default(),
         }]
     }
 }

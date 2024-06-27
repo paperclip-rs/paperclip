@@ -30,7 +30,7 @@ impl From<v2::DefaultSchemaRaw> for openapiv3::ReferenceOr<openapiv3::Schema> {
                         description: v2.description,
                         discriminator: None,
                         default: None,
-                        extensions: indexmap::IndexMap::new(),
+                        extensions: Default::default(),
                     },
                     schema_kind: {
                         if let Some(data_type) = v2.data_type {
@@ -175,12 +175,10 @@ fn v2_data_type_to_v3(
         v2::DataType::Object => {
             openapiv3::SchemaKind::Type(openapiv3::Type::Object(openapiv3::ObjectType {
                 properties: {
-                    properties
-                        .iter()
-                        .fold(indexmap::IndexMap::new(), |mut i, b| {
-                            i.insert(b.0.to_string(), b.1.deref().clone().into());
-                            i
-                        })
+                    properties.iter().fold(Default::default(), |mut i, b| {
+                        i.insert(b.0.to_string(), b.1.deref().clone().into());
+                        i
+                    })
                 },
                 required: required.iter().cloned().collect::<Vec<_>>(),
                 additional_properties: None,

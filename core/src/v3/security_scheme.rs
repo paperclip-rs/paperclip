@@ -1,5 +1,14 @@
 use super::v2;
 
+macro_rules! to_indexmap {
+    ($v2:expr) => {
+        $v2.scopes.iter().fold(Default::default(), |mut i, (k, v)| {
+            i.insert(k.to_string(), v.to_string());
+            i
+        })
+    };
+}
+
 impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
     fn from(v2: v2::SecurityScheme) -> Self {
         match v2.type_.as_str() {
@@ -18,13 +27,6 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                 description: v2.description,
             },
             "oauth2" => {
-                let scopes = v2
-                    .scopes
-                    .iter()
-                    .fold(indexmap::IndexMap::new(), |mut i, (k, v)| {
-                        i.insert(k.clone(), v.clone());
-                        i
-                    });
                 let flow = v2.flow.unwrap_or_default();
                 openapiv3::SecurityScheme::OAuth2 {
                     flows: openapiv3::OAuth2Flows {
@@ -32,7 +34,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             "implicit" => Some(openapiv3::OAuth2Flow::Implicit {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 refresh_url: None,
-                                scopes: scopes.clone(),
+                                scopes: to_indexmap!(v2),
                             }),
                             _ => None,
                         },
@@ -40,7 +42,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             "password" => Some(openapiv3::OAuth2Flow::Password {
                                 refresh_url: None,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
-                                scopes: scopes.clone(),
+                                scopes: to_indexmap!(v2),
                             }),
                             _ => None,
                         },
@@ -48,7 +50,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                             "application" => Some(openapiv3::OAuth2Flow::ClientCredentials {
                                 refresh_url: None,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
-                                scopes: scopes.clone(),
+                                scopes: to_indexmap!(v2),
                             }),
                             _ => None,
                         },
@@ -57,7 +59,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 refresh_url: None,
-                                scopes,
+                                scopes: to_indexmap!(v2),
                             }),
                             _ => None,
                         },

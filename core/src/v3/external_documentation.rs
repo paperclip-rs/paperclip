@@ -5,7 +5,7 @@ impl From<v2::ExternalDocs> for openapiv3::ExternalDocumentation {
         openapiv3::ExternalDocumentation {
             description: v2.description,
             url: v2.url,
-            extensions: indexmap::IndexMap::new(),
+            extensions: Self::default().extensions,
         }
     }
 }

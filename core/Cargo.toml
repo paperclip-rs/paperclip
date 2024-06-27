@@ -38,7 +38,6 @@ actix-web-validator3 = { version = "3.0", optional = true, package = "actix-web-
 validator12 = { version = "0.12", features = ["derive"], optional = true, package = "validator" }
 validator14 = { version = "0.14", features = ["derive"], optional = true, package = "validator" }
 openapiv3 = { version = "1.0.3", optional = true }
-indexmap = { version = "2.0", features = ["serde"], optional = true }
 
 [features]
 # actix-web support
@@ -54,7 +53,7 @@ nightly = ["paperclip-macros/nightly"]
 
 # OpenAPI support (v2 and codegen)
 v2 = ["paperclip-macros/v2"]
-v3 = ["v2", "openapiv3", "indexmap"]
+v3 = ["v2", "openapiv3"]
 codegen = ["v2", "heck", "log"]
 uuid = ["uuid0"]
 uuid0 = ["uuid0_dep"]
