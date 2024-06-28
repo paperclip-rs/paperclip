@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/actix.rs`."><title>actix.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (4bc39f028 2024-06-26)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/actix.rs`."><title>actix.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-dd39b87e5fcfba68.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.81.0-nightly (9c3bc805d 2024-06-27)" data-channel="nightly" data-search-js="search-0fe7219eb170c82e.js" data-settings-js="settings-4313503d2e1961c2.js" ><script src="../../static.files/storage-118b08c4c78b968e.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-20a3ad099b048cf2.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-df360f571f6edeae.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers"><a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
 <a href="#4" id="4">4</a>
@@ -2014,6 +2014,87 @@
 <a href="#2014" id="2014">2014</a>
 <a href="#2015" id="2015">2015</a>
 <a href="#2016" id="2016">2016</a>
+<a href="#2017" id="2017">2017</a>
+<a href="#2018" id="2018">2018</a>
+<a href="#2019" id="2019">2019</a>
+<a href="#2020" id="2020">2020</a>
+<a href="#2021" id="2021">2021</a>
+<a href="#2022" id="2022">2022</a>
+<a href="#2023" id="2023">2023</a>
+<a href="#2024" id="2024">2024</a>
+<a href="#2025" id="2025">2025</a>
+<a href="#2026" id="2026">2026</a>
+<a href="#2027" id="2027">2027</a>
+<a href="#2028" id="2028">2028</a>
+<a href="#2029" id="2029">2029</a>
+<a href="#2030" id="2030">2030</a>
+<a href="#2031" id="2031">2031</a>
+<a href="#2032" id="2032">2032</a>
+<a href="#2033" id="2033">2033</a>
+<a href="#2034" id="2034">2034</a>
+<a href="#2035" id="2035">2035</a>
+<a href="#2036" id="2036">2036</a>
+<a href="#2037" id="2037">2037</a>
+<a href="#2038" id="2038">2038</a>
+<a href="#2039" id="2039">2039</a>
+<a href="#2040" id="2040">2040</a>
+<a href="#2041" id="2041">2041</a>
+<a href="#2042" id="2042">2042</a>
+<a href="#2043" id="2043">2043</a>
+<a href="#2044" id="2044">2044</a>
+<a href="#2045" id="2045">2045</a>
+<a href="#2046" id="2046">2046</a>
+<a href="#2047" id="2047">2047</a>
+<a href="#2048" id="2048">2048</a>
+<a href="#2049" id="2049">2049</a>
+<a href="#2050" id="2050">2050</a>
+<a href="#2051" id="2051">2051</a>
+<a href="#2052" id="2052">2052</a>
+<a href="#2053" id="2053">2053</a>
+<a href="#2054" id="2054">2054</a>
+<a href="#2055" id="2055">2055</a>
+<a href="#2056" id="2056">2056</a>
+<a href="#2057" id="2057">2057</a>
+<a href="#2058" id="2058">2058</a>
+<a href="#2059" id="2059">2059</a>
+<a href="#2060" id="2060">2060</a>
+<a href="#2061" id="2061">2061</a>
+<a href="#2062" id="2062">2062</a>
+<a href="#2063" id="2063">2063</a>
+<a href="#2064" id="2064">2064</a>
+<a href="#2065" id="2065">2065</a>
+<a href="#2066" id="2066">2066</a>
+<a href="#2067" id="2067">2067</a>
+<a href="#2068" id="2068">2068</a>
+<a href="#2069" id="2069">2069</a>
+<a href="#2070" id="2070">2070</a>
+<a href="#2071" id="2071">2071</a>
+<a href="#2072" id="2072">2072</a>
+<a href="#2073" id="2073">2073</a>
+<a href="#2074" id="2074">2074</a>
+<a href="#2075" id="2075">2075</a>
+<a href="#2076" id="2076">2076</a>
+<a href="#2077" id="2077">2077</a>
+<a href="#2078" id="2078">2078</a>
+<a href="#2079" id="2079">2079</a>
+<a href="#2080" id="2080">2080</a>
+<a href="#2081" id="2081">2081</a>
+<a href="#2082" id="2082">2082</a>
+<a href="#2083" id="2083">2083</a>
+<a href="#2084" id="2084">2084</a>
+<a href="#2085" id="2085">2085</a>
+<a href="#2086" id="2086">2086</a>
+<a href="#2087" id="2087">2087</a>
+<a href="#2088" id="2088">2088</a>
+<a href="#2089" id="2089">2089</a>
+<a href="#2090" id="2090">2090</a>
+<a href="#2091" id="2091">2091</a>
+<a href="#2092" id="2092">2092</a>
+<a href="#2093" id="2093">2093</a>
+<a href="#2094" id="2094">2094</a>
+<a href="#2095" id="2095">2095</a>
+<a href="#2096" id="2096">2096</a>
+<a href="#2097" id="2097">2097</a>
 </pre></div><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)
 //! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
@@ -2021,6 +2102,7 @@
 <span class="kw">use </span>http::StatusCode;
 <span class="kw">use </span>lazy_static::lazy_static;
 <span class="kw">use </span>proc_macro::TokenStream;
+<span class="kw">use </span>proc_macro_error::ResultExt;
 <span class="kw">use </span>quote::{quote, ToTokens};
 <span class="kw">use </span>strum_macros::EnumString;
 <span class="kw">use </span>syn::{
@@ -2776,6 +2858,47 @@
     <span class="prelude-val">None
 </span>}
 
+<span class="kw">fn </span>field_extract_f32(nv: MetaNameValue) -&gt; <span class="prelude-ty">Option</span>&lt;proc_macro2::TokenStream&gt; {
+    <span class="kw">let </span>value: <span class="prelude-ty">Result</span>&lt;proc_macro2::TokenStream, String&gt; = <span class="kw">match </span><span class="kw-2">&amp;</span>nv.lit {
+        Lit::Str(s) =&gt; <span class="kw">match </span>s.value().parse::&lt;f32&gt;() {
+            <span class="prelude-val">Ok</span>(s) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> { #s }),
+            <span class="prelude-val">Err</span>(error) =&gt; <span class="prelude-val">Err</span>(error.to_string()),
+        },
+        Lit::Float(f) =&gt; <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> { #f }),
+        Lit::Int(i) =&gt; {
+            <span class="kw">let </span>f: f32 = i.base10_parse().unwrap_or_abort();
+            <span class="prelude-val">Ok</span>(<span class="macro">quote!</span> { #f })
+        }
+        <span class="kw">_ </span>=&gt; {
+            <span class="macro">emit_error!</span>(
+                nv.lit.span().unwrap(),
+                <span class="string">"Expected a string, float or int argument"
+            </span>);
+            <span class="kw">return </span><span class="prelude-val">None</span>;
+        }
+    };
+    <span class="kw">match </span>value {
+        <span class="prelude-val">Ok</span>(value) =&gt; <span class="prelude-val">Some</span>(value),
+        <span class="prelude-val">Err</span>(error) =&gt; {
+            <span class="macro">emit_error!</span>(nv.lit.span().unwrap(), error);
+            <span class="prelude-val">None
+        </span>}
+    }
+}
+
+<span class="kw">fn </span>extract_openapi_f32(attrs: <span class="kw-2">&amp;</span>[Attribute], ident: <span class="kw-2">&amp;</span>str) -&gt; <span class="prelude-ty">Option</span>&lt;proc_macro2::TokenStream&gt; {
+    <span class="kw">let </span>attrs = extract_openapi_attrs(attrs);
+    <span class="kw">for </span>attr <span class="kw">in </span>attrs.flat_map(|attr| attr.into_iter()) {
+        <span class="kw">if let </span>NestedMeta::Meta(Meta::NameValue(nv)) = attr {
+            <span class="kw">if </span>nv.path.is_ident(ident) {
+                <span class="kw">return </span>field_extract_f32(nv);
+            }
+        }
+    }
+
+    <span class="prelude-val">None
+</span>}
+
 <span class="doccomment">/// Actual parser and emitter for `api_v2_schema` macro.
 </span><span class="kw">pub fn </span>emit_v2_definition(input: TokenStream) -&gt; TokenStream {
     <span class="kw">let </span>item_ast = <span class="kw">match </span><span class="kw">crate</span>::expect_struct_or_enum(input) {
@@ -3185,7 +3308,7 @@
 
     <span class="kw">let </span><span class="kw-2">mut </span>header_definitions = <span class="macro">vec!</span>[];
 
-    <span class="kw">let </span>valid_attrs = <span class="macro">vec!</span>[<span class="string">"description"</span>, <span class="string">"name"</span>, <span class="string">"format"</span>];
+    <span class="kw">let </span>valid_attrs = <span class="macro">vec!</span>[<span class="string">"description"</span>, <span class="string">"name"</span>, <span class="string">"format"</span>, <span class="string">"maximum"</span>, <span class="string">"minimum"</span>];
     <span class="kw">let </span>invalid_attr_msg = <span class="macro">format!</span>(
         <span class="string">"Invalid macro attribute. Should be named attribute {:?}"</span>,
         valid_attrs
@@ -3269,23 +3392,26 @@
 
                         <span class="kw">if let </span><span class="prelude-val">Some</span>(attr_name) = attr_name {
                             <span class="kw">if </span>valid_attrs.contains(<span class="kw-2">&amp;</span>attr_name.as_str()) {
-                                <span class="kw">if let </span>Lit::Str(attr_value) = attr_value {
-                                    <span class="kw">if </span>parameter_attrs
-                                        .insert(attr_name.clone(), attr_value.value())
-                                        .is_some()
-                                    {
+                                <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = <span class="kw">match </span>attr_value {
+                                    Lit::Str(attr_value) =&gt; <span class="prelude-val">Some</span>(attr_value.value()),
+                                    Lit::Float(x) =&gt; <span class="prelude-val">Some</span>(x.to_string()),
+                                    Lit::Int(x) =&gt; <span class="prelude-val">Some</span>(x.to_string()),
+                                    <span class="kw">_ </span>=&gt; {
+                                        <span class="macro">emit_warning!</span>(
+                                            span,
+                                            <span class="string">"Invalid value for named attribute: {}"</span>,
+                                            attr_name
+                                        );
+                                        <span class="prelude-val">None
+                                    </span>}
+                                } {
+                                    <span class="kw">if </span>parameter_attrs.insert(attr_name.clone(), value).is_some() {
                                         <span class="macro">emit_warning!</span>(
                                             span,
                                             <span class="string">"Attribute {} defined multiple times."</span>,
                                             attr_name
                                         );
                                     }
-                                } <span class="kw">else </span>{
-                                    <span class="macro">emit_warning!</span>(
-                                        span,
-                                        <span class="string">"Invalid value for named attribute: {}"</span>,
-                                        attr_name
-                                    );
                                 }
                             } <span class="kw">else </span>{
                                 <span class="macro">emit_warning!</span>(span, invalid_attr_msg);
@@ -3341,6 +3467,9 @@
             (quoted_type, quoted_format)
         };
 
+        <span class="kw">let </span>quoted_max = quote_option_str_f32(field, parameter_attrs.get(<span class="string">"maximum"</span>));
+        <span class="kw">let </span>quoted_min = quote_option_str_f32(field, parameter_attrs.get(<span class="string">"minimum"</span>));
+
         <span class="kw">let </span>def_block = <span class="macro">quote!</span> {
             paperclip::v2::models::Parameter::&lt;paperclip::v2::models::DefaultSchemaRaw&gt; {
                 name: #quoted_name.to_owned(),
@@ -3348,6 +3477,8 @@
                 description: #quoted_description,
                 data_type: #quoted_type,
                 format: #quoted_format,
+                maximum: #quoted_max,
+                minimum: #quoted_min,
                 required: <span class="self">Self</span>::required(),
                 ..Default::default()
             }
@@ -3374,6 +3505,20 @@
 <span class="kw">fn </span>quote_option(value: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt;) -&gt; proc_macro2::TokenStream {
     <span class="kw">if let </span><span class="prelude-val">Some</span>(value) = value {
         <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(#value.to_string()) }
+    } <span class="kw">else </span>{
+        <span class="macro">quote!</span> { <span class="prelude-val">None </span>}
+    }
+}
+<span class="kw">fn </span>quote_option_str_f32(field: <span class="kw-2">&amp;</span>Field, value: <span class="prelude-ty">Option</span>&lt;<span class="kw-2">&amp;</span>String&gt;) -&gt; proc_macro2::TokenStream {
+    <span class="kw">if let </span><span class="prelude-val">Some</span>(x) = value {
+        <span class="kw">let </span>x: f32 = <span class="kw">match </span>x.parse() {
+            <span class="prelude-val">Ok</span>(x) =&gt; x,
+            <span class="prelude-val">Err</span>(error) =&gt; {
+                <span class="macro">emit_error!</span>(field.span(), error.to_string());
+                <span class="number">0.0
+            </span>}
+        };
+        <span class="macro">quote!</span> { <span class="prelude-val">Some</span>(#x) }
     } <span class="kw">else </span>{
         <span class="macro">quote!</span> { <span class="prelude-val">None </span>}
     }
@@ -3592,6 +3737,21 @@
             <span class="macro">quote!</span>({})
         };
 
+        <span class="kw">let </span>max = <span class="kw">if let </span><span class="prelude-val">Some</span>(max) = extract_openapi_f32(<span class="kw-2">&amp;</span>field.attrs, <span class="string">"maximum"</span>) {
+            <span class="macro">quote!</span>({
+                s.maximum = <span class="prelude-val">Some</span>(#max);
+            })
+        } <span class="kw">else </span>{
+            <span class="macro">quote!</span>({})
+        };
+        <span class="kw">let </span>min = <span class="kw">if let </span><span class="prelude-val">Some</span>(min) = extract_openapi_f32(<span class="kw-2">&amp;</span>field.attrs, <span class="string">"minimum"</span>) {
+            <span class="macro">quote!</span>({
+                s.minimum = <span class="prelude-val">Some</span>(#min);
+            })
+        } <span class="kw">else </span>{
+            <span class="macro">quote!</span>({})
+        };
+
         <span class="kw">let </span>gen = <span class="kw">if </span>!SerdeFlatten::exists(<span class="kw-2">&amp;</span>field.attrs) {
             <span class="macro">quote!</span>({
                 <span class="kw">let </span><span class="kw-2">mut </span>s = #ty_ref::raw_schema();
@@ -3599,6 +3759,8 @@
                     s.description = <span class="prelude-val">Some</span>(#docs.to_string());
                 }
                 #example;
+                #max;
+                #min;
                 schema.properties.insert(#field_name.into(), s.into());
 
                 <span class="kw">if </span>#ty_ref::required() {
