@@ -1944,7 +1944,9 @@ fn test_serde_flatten() {
                             },
                             "age": {
                               "format": "int32",
-                              "type": "integer"
+                              "type": "integer",
+                              "maximum": 255.0,
+                              "minimum": 0.0,
                             },
                             "description": {
                               "type": "string"
@@ -1971,7 +1973,9 @@ fn test_serde_flatten() {
                             },
                             "age": {
                               "format": "int32",
-                              "type": "integer"
+                              "type": "integer",
+                              "maximum": 255.0,
+                              "minimum": 0.0,
                             },
                             "data": {
                               "type": "string"
@@ -2151,7 +2155,12 @@ fn test_serde_skip() {
     }
 
     #[derive(Deserialize, Serialize, Apiv2Schema)]
-    struct PetUnnamed(#[serde(skip)] bool, bool);
+    struct PetUnnamed(
+        #[serde(skip)]
+        #[allow(dead_code)]
+        bool,
+        bool,
+    );
 
     #[post("/v0/pets")]
     #[api_v2_operation]
@@ -3996,7 +4005,11 @@ fn test_header_parameter_app() {
     }
 
     #[derive(Apiv2Header, Deserialize)]
-    struct RefererHeader(#[openapi(name = "X-Referer-slug")] String);
+    struct RefererHeader(
+        #[openapi(name = "X-Referer-slug")]
+        #[allow(dead_code)]
+        String,
+    );
 
     impl FromRequest for RefererHeader {
         type Error = Error;
@@ -4851,7 +4864,9 @@ fn test_example() {
                         "age": {
                           "description": "7 time yours",
                           "format": "int32",
-                          "type": "integer"
+                          "type": "integer",
+                          "maximum": 255.0,
+                          "minimum": 0.0,
                         },
                         "name": {
                           "description": "Pick a good one.",
