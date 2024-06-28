@@ -286,6 +286,14 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     ));
     gen.extend(quote!(
         #[serde(skip_serializing_if = "Option::is_none")]
+        pub maximum: Option<f32>,
+    ));
+    gen.extend(quote!(
+        #[serde(skip_serializing_if = "Option::is_none")]
+        pub minimum: Option<f32>,
+    ));
+    gen.extend(quote!(
+        #[serde(skip_serializing_if = "Option::is_none")]
         pub example: Option<serde_json::Value>,
     ));
 

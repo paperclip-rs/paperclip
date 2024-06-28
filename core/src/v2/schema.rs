@@ -127,6 +127,14 @@ pub trait TypedData {
     fn format() -> Option<DataTypeFormat> {
         None
     }
+
+    fn max() -> Option<f32> {
+        None
+    }
+
+    fn min() -> Option<f32> {
+        None
+    }
 }
 
 macro_rules! impl_type_simple {
@@ -147,6 +155,22 @@ macro_rules! impl_type_simple {
             }
             fn format() -> Option<DataTypeFormat> {
                 Some($df)
+            }
+        }
+    };
+    ($ty:ty, $dt:expr, $df:expr, $min:expr, $max:expr) => {
+        impl TypedData for $ty {
+            fn data_type() -> DataType {
+                $dt
+            }
+            fn format() -> Option<DataTypeFormat> {
+                Some($df)
+            }
+            fn max() -> Option<f32> {
+                Some($max)
+            }
+            fn min() -> Option<f32> {
+                Some($min)
             }
         }
     };
@@ -174,17 +198,53 @@ impl_type_simple!(PathBuf, DataType::String);
 impl_type_simple!(bool, DataType::Boolean);
 impl_type_simple!(f32, DataType::Number, DataTypeFormat::Float);
 impl_type_simple!(f64, DataType::Number, DataTypeFormat::Double);
-impl_type_simple!(i8, DataType::Integer, DataTypeFormat::Int32);
-impl_type_simple!(i16, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(
+    i8,
+    DataType::Integer,
+    DataTypeFormat::Int32,
+    i8::MIN as f32,
+    i8::MAX as f32
+);
+impl_type_simple!(
+    i16,
+    DataType::Integer,
+    DataTypeFormat::Int32,
+    i16::MIN as f32,
+    i16::MAX as f32
+);
 impl_type_simple!(i32, DataType::Integer, DataTypeFormat::Int32);
-impl_type_simple!(u8, DataType::Integer, DataTypeFormat::Int32);
-impl_type_simple!(u16, DataType::Integer, DataTypeFormat::Int32);
+impl_type_simple!(
+    u8,
+    DataType::Integer,
+    DataTypeFormat::Int32,
+    u8::MIN as f32,
+    u8::MAX as f32
+);
+impl_type_simple!(
+    u16,
+    DataType::Integer,
+    DataTypeFormat::Int32,
+    u16::MIN as f32,
+    u16::MAX as f32
+);
 impl_type_simple!(u32, DataType::Integer, DataTypeFormat::Int32);
 impl_type_simple!(i64, DataType::Integer, DataTypeFormat::Int64);
-impl_type_simple!(i128, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(
+    i128,
+    DataType::Integer,
+    DataTypeFormat::Int64,
+    i128::MIN as f32,
+    i128::MAX as f32
+);
 impl_type_simple!(isize, DataType::Integer, DataTypeFormat::Int64);
 impl_type_simple!(u64, DataType::Integer, DataTypeFormat::Int64);
-impl_type_simple!(u128, DataType::Integer, DataTypeFormat::Int64);
+impl_type_simple!(
+    u128,
+    DataType::Integer,
+    DataTypeFormat::Int64,
+    u128::MIN as f32,
+    u128::MAX as f32
+);
 impl_type_simple!(usize, DataType::Integer, DataTypeFormat::Int64);
 
 #[cfg(feature = "actix-multipart")]
@@ -333,6 +393,8 @@ impl<T: TypedData> Apiv2Schema for T {
         DefaultSchemaRaw {
             data_type: Some(T::data_type()),
             format: T::format(),
+            maximum: T::max(),
+            minimum: T::min(),
             ..Default::default()
         }
     }
