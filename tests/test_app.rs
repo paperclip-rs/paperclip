@@ -3983,6 +3983,8 @@ fn test_header_parameter_app() {
         request_ip: String,
         /// Origin of the request
         origin: String,
+        #[openapi(minimum = 1.0, maximum = 20)]
+        age: u8,
         #[openapi(skip)]
         another_field: String,
     }
@@ -4000,6 +4002,7 @@ fn test_header_parameter_app() {
                 request_ip: "127.1".to_owned(),
                 origin: "test.com".to_owned(),
                 another_field: "".to_owned(),
+                age: 2,
             }))
         }
     }
@@ -4134,6 +4137,15 @@ fn test_header_parameter_app() {
                             "name": "origin",
                             "required": true,
                             "type": "string"
+                          },
+                          {
+                            "format":"int32",
+                            "in":"header",
+                            "name":"age",
+                            "required":true,
+                            "type":"integer",
+                            "minimum": 1.0,
+                            "maximum": 20.0
                           },
                           {
                             "in": "header",
@@ -4789,6 +4801,7 @@ fn test_example() {
         /// Pick a good one.
         name: String,
         /// 7 time yours
+        #[openapi(minimum = 1.0f32, maximum = 122)]
         age: u8,
     }
 
@@ -4865,8 +4878,8 @@ fn test_example() {
                           "description": "7 time yours",
                           "format": "int32",
                           "type": "integer",
-                          "maximum": 255.0,
-                          "minimum": 0.0,
+                          "maximum": 122.0,
+                          "minimum": 1.0,
                         },
                         "name": {
                           "description": "Pick a good one.",
