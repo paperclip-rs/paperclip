@@ -5,6 +5,7 @@ use heck::*;
 use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
+use proc_macro_error::ResultExt;
 use quote::{quote, ToTokens};
 use strum_macros::EnumString;
 use syn::{
@@ -760,6 +761,47 @@ fn extract_example(attrs: &[Attribute]) -> Option<String> {
     None
 }
 
+fn field_extract_f32(nv: MetaNameValue) -> Option<proc_macro2::TokenStream> {
+    let value: Result<proc_macro2::TokenStream, String> = match &nv.lit {
+        Lit::Str(s) => match s.value().parse::<f32>() {
+            Ok(s) => Ok(quote! { #s }),
+            Err(error) => Err(error.to_string()),
+        },
+        Lit::Float(f) => Ok(quote! { #f }),
+        Lit::Int(i) => {
+            let f: f32 = i.base10_parse().unwrap_or_abort();
+            Ok(quote! { #f })
+        }
+        _ => {
+            emit_error!(
+                nv.lit.span().unwrap(),
+                "Expected a string, float or int argument"
+            );
+            return None;
+        }
+    };
+    match value {
+        Ok(value) => Some(value),
+        Err(error) => {
+            emit_error!(nv.lit.span().unwrap(), error);
+            None
+        }
+    }
+}
+
+fn extract_openapi_f32(attrs: &[Attribute], ident: &str) -> Option<proc_macro2::TokenStream> {
+    let attrs = extract_openapi_attrs(attrs);
+    for attr in attrs.flat_map(|attr| attr.into_iter()) {
+        if let NestedMeta::Meta(Meta::NameValue(nv)) = attr {
+            if nv.path.is_ident(ident) {
+                return field_extract_f32(nv);
+            }
+        }
+    }
+
+    None
+}
+
 /// Actual parser and emitter for `api_v2_schema` macro.
 pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let item_ast = match crate::expect_struct_or_enum(input) {
@@ -1169,7 +1211,7 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
 
     let mut header_definitions = vec![];
 
-    let valid_attrs = vec!["description", "name", "format"];
+    let valid_attrs = vec!["description", "name", "format", "maximum", "minimum"];
     let invalid_attr_msg = format!(
         "Invalid macro attribute. Should be named attribute {:?}",
         valid_attrs
@@ -1253,23 +1295,26 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
 
                         if let Some(attr_name) = attr_name {
                             if valid_attrs.contains(&attr_name.as_str()) {
-                                if let Lit::Str(attr_value) = attr_value {
-                                    if parameter_attrs
-                                        .insert(attr_name.clone(), attr_value.value())
-                                        .is_some()
-                                    {
+                                if let Some(value) = match attr_value {
+                                    Lit::Str(attr_value) => Some(attr_value.value()),
+                                    Lit::Float(x) => Some(x.to_string()),
+                                    Lit::Int(x) => Some(x.to_string()),
+                                    _ => {
+                                        emit_warning!(
+                                            span,
+                                            "Invalid value for named attribute: {}",
+                                            attr_name
+                                        );
+                                        None
+                                    }
+                                } {
+                                    if parameter_attrs.insert(attr_name.clone(), value).is_some() {
                                         emit_warning!(
                                             span,
                                             "Attribute {} defined multiple times.",
                                             attr_name
                                         );
                                     }
-                                } else {
-                                    emit_warning!(
-                                        span,
-                                        "Invalid value for named attribute: {}",
-                                        attr_name
-                                    );
                                 }
                             } else {
                                 emit_warning!(span, invalid_attr_msg);
@@ -1325,6 +1370,9 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
             (quoted_type, quoted_format)
         };
 
+        let quoted_max = quote_option_str_f32(field, parameter_attrs.get("maximum"));
+        let quoted_min = quote_option_str_f32(field, parameter_attrs.get("minimum"));
+
         let def_block = quote! {
             paperclip::v2::models::Parameter::<paperclip::v2::models::DefaultSchemaRaw> {
                 name: #quoted_name.to_owned(),
@@ -1332,6 +1380,8 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
                 description: #quoted_description,
                 data_type: #quoted_type,
                 format: #quoted_format,
+                maximum: #quoted_max,
+                minimum: #quoted_min,
                 required: Self::required(),
                 ..Default::default()
             }
@@ -1358,6 +1408,20 @@ pub fn emit_v2_header(input: TokenStream) -> TokenStream {
 fn quote_option(value: Option<&String>) -> proc_macro2::TokenStream {
     if let Some(value) = value {
         quote! { Some(#value.to_string()) }
+    } else {
+        quote! { None }
+    }
+}
+fn quote_option_str_f32(field: &Field, value: Option<&String>) -> proc_macro2::TokenStream {
+    if let Some(x) = value {
+        let x: f32 = match x.parse() {
+            Ok(x) => x,
+            Err(error) => {
+                emit_error!(field.span(), error.to_string());
+                0.0
+            }
+        };
+        quote! { Some(#x) }
     } else {
         quote! { None }
     }
@@ -1576,6 +1640,21 @@ fn handle_field_struct(
             quote!({})
         };
 
+        let max = if let Some(max) = extract_openapi_f32(&field.attrs, "maximum") {
+            quote!({
+                s.maximum = Some(#max);
+            })
+        } else {
+            quote!({})
+        };
+        let min = if let Some(min) = extract_openapi_f32(&field.attrs, "minimum") {
+            quote!({
+                s.minimum = Some(#min);
+            })
+        } else {
+            quote!({})
+        };
+
         let gen = if !SerdeFlatten::exists(&field.attrs) {
             quote!({
                 let mut s = #ty_ref::raw_schema();
@@ -1583,6 +1662,8 @@ fn handle_field_struct(
                     s.description = Some(#docs.to_string());
                 }
                 #example;
+                #max;
+                #min;
                 schema.properties.insert(#field_name.into(), s.into());
 
                 if #ty_ref::required() {
