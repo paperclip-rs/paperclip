@@ -128,7 +128,9 @@ pub(crate) fn non_body_parameter_to_v3_parameter(
                         max_length: v2.max_length.map(|v| v as usize),
                     }))
                 }
-                v2::DataType::Boolean => openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
+                v2::DataType::Boolean => {
+                    openapiv3::SchemaKind::Type(openapiv3::Type::Boolean(Default::default()))
+                }
                 v2::DataType::Array => {
                     openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
                         items: v2.items.as_ref().map(|items| items.clone().into()),
