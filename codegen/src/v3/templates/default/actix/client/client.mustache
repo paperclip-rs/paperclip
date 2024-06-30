@@ -1,0 +1,134 @@
+pub mod configuration;
+
+pub use configuration::Configuration;
+use std::{error, fmt, rc::Rc};
+
+#[derive(Clone)]
+pub struct ApiClient {
+{{#apiInfo}}
+{{#apis}}
+{{#operations}}
+    {{{classFilename}}}: Box<dyn crate::apis::{{{classFilename}}}::actix::client::{{{classname}}}>,
+{{/operations}}
+{{/apis}}
+{{/apiInfo}}
+}
+
+impl ApiClient {
+    pub fn new(configuration: Configuration) -> ApiClient {
+        let rc = Rc::new(configuration);
+
+        ApiClient {
+{{#apiInfo}}
+{{#apis}}
+{{#operations}}
+            {{^-last}}
+            {{{classFilename}}}: Box::new(crate::apis::{{{classFilename}}}::actix::client::{{{classname}}}Client::new(rc.clone())),
+            {{/-last}}
+            {{#-last}}
+            {{{classFilename}}}: Box::new(crate::apis::{{{classFilename}}}::actix::client::{{{classname}}}Client::new(rc)),
+            {{/-last}}
+{{/operations}}
+{{/apis}}
+{{/apiInfo}}
+        }
+    }
+
+{{#apiInfo}}
+{{#apis}}
+{{#operations}}
+    pub fn {{{classFilename}}}(&self) -> &dyn crate::apis::{{{classFilename}}}::actix::client::{{{classname}}} {
+        self.{{{classFilename}}}.as_ref()
+    }
+{{/operations}}
+{{/apis}}
+{{/apiInfo}}
+}
+
+#[derive(Debug, Clone)]
+pub struct ResponseContent<T> {
+    pub status: awc::http::StatusCode,
+    pub error: T,
+}
+
+#[derive(Debug, Clone)]
+pub struct ResponseContentUnexpected {
+    pub status: awc::http::StatusCode,
+    pub text: String,
+}
+
+#[derive(Debug)]
+pub enum Error<T> {
+    Request(awc::error::SendRequestError),
+    Serde(serde_json::Error),
+    SerdeEncoded(serde_urlencoded::ser::Error),
+    PayloadError(awc::error::JsonPayloadError),
+    Io(std::io::Error),
+    ResponseError(ResponseContent<T>),
+    ResponseUnexpected(ResponseContentUnexpected),
+}
+
+impl<T: fmt::Debug> fmt::Display for Error<T> {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        let (module, e) = match self {
+            Error::Request(e) => ("request", e.to_string()),
+            Error::Serde(e) => ("serde", e.to_string()),
+            Error::SerdeEncoded(e) => ("serde", e.to_string()),
+            Error::PayloadError(e) => ("payload", e.to_string()),
+            Error::Io(e) => ("IO", e.to_string()),
+            Error::ResponseError(e) => (
+                "response",
+                format!("status code '{}', content: '{:?}'", e.status, e.error),
+            ),
+            Error::ResponseUnexpected(e) => (
+                "response",
+                format!("status code '{}', text '{}'", e.status, e.text),
+            ),
+        };
+        write!(f, "error in {module}: {e}")
+    }
+}
+
+impl<T: fmt::Debug> error::Error for Error<T> {
+    fn source(&self) -> Option<&(dyn error::Error + 'static)> {
+        Some(match self {
+            Error::Request(e) => e,
+            Error::Serde(e) => e,
+            Error::SerdeEncoded(e) => e,
+            Error::PayloadError(e) => e,
+            Error::Io(e) => e,
+            Error::ResponseError(_) => return None,
+            Error::ResponseUnexpected(_) => return None,
+        })
+    }
+}
+
+impl<T> From<awc::error::SendRequestError> for Error<T> {
+    fn from(e: awc::error::SendRequestError) -> Self {
+        Error::Request(e)
+    }
+}
+
+impl<T> From<awc::error::JsonPayloadError> for Error<T> {
+    fn from(e: awc::error::JsonPayloadError) -> Self {
+        Error::PayloadError(e)
+    }
+}
+
+impl<T> From<serde_json::Error> for Error<T> {
+    fn from(e: serde_json::Error) -> Self {
+        Error::Serde(e)
+    }
+}
+
+impl<T> From<serde_urlencoded::ser::Error> for Error<T> {
+    fn from(e: serde_urlencoded::ser::Error) -> Self {
+        Error::SerdeEncoded(e)
+    }
+}
+
+impl<T> From<std::io::Error> for Error<T> {
+    fn from(e: std::io::Error) -> Self {
+        Error::Io(e)
+    }
+}

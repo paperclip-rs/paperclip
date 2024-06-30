@@ -20,6 +20,7 @@ required-features = ["cli"]
 paperclip-actix = { path = "plugins/actix-web", version = "0.7.0", optional = true }
 paperclip-core = { path = "core", version = "0.7.0" }
 paperclip-macros = { path = "macros", version = "0.6.3", optional = true }
+paperclip-codegen = { path = "codegen", version = "0.1.0", optional = true }
 
 env_logger = { version = "0.8", optional = true }
 git2 = { version = "0.15", optional = true }
@@ -40,7 +41,7 @@ url_dep = { version = ">=1.7,<3", package = "url" }
 thiserror = "1.0"
 anyhow = "1.0"
 once_cell = "1.4"
-openapiv3 = { version = "1.0.3", optional = true }
+openapiv3 = { version = "2.0.0", optional = true }
 
 [dev-dependencies]
 actix-rt1 = { version = "1.0", package = "actix-rt" }
@@ -83,7 +84,8 @@ codegen = ["heck", "http", "log", "regex", "tinytemplate", "paperclip-core/codeg
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 # OpenAPI v2 to v3 support
 v3 = ["openapiv3", "v2", "paperclip-core/v3", "paperclip-actix/v3"]
-
+# Experimental V3 CodeGen
+v3-poc = ["paperclip-codegen", "openapiv3"]
 
 # Features for implementing traits for dependencies.
 actix-multipart = ["paperclip-core/actix-multipart"]
@@ -106,6 +108,7 @@ members = [
     "core",
     "macros",
     "plugins/actix-web",
+    "codegen"
 ]
 
 [[test]]

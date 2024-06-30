@@ -1,0 +1,105 @@
+#[derive(Clone)]
+pub struct Configuration {
+    pub base_path: String,
+    pub user_agent: Option<String>,
+    pub client: awc::Client,
+    pub basic_auth: Option<BasicAuth>,
+    pub oauth_access_token: Option<String>,
+    pub bearer_access_token: Option<String>,
+    pub api_key: Option<ApiKey>,
+    pub trace_requests: bool,
+    // TODO: take an oauth2 token source, similar to the go one
+}
+
+pub type BasicAuth = (String, Option<String>);
+
+#[derive(Debug, Clone)]
+pub struct ApiKey {
+    pub prefix: Option<String>,
+    pub key: String,
+}
+
+/// Configuration creation Error
+#[derive(Debug)]
+pub enum Error {
+    Certificate,
+}
+
+impl Configuration {
+    /// New Configuration
+    pub fn new(
+        uri: &str,
+        timeout: std::time::Duration,
+        bearer_access_token: Option<String>,
+        certificate: Option<&[u8]>,
+        trace_requests: bool,
+    ) -> Result<Self, Error> {
+        let (client, url) = match certificate {
+            Some(bytes) => {
+                let cert_file = &mut std::io::BufReader::new(bytes);
+
+                let mut config = rustls::ClientConfig::new();
+                config
+                    .root_store
+                    .add_pem_file(cert_file)
+                    .map_err(|_| Error::Certificate)?;
+                let connector = awc::Connector::new().rustls(std::sync::Arc::new(config));
+                let client = awc::Client::builder()
+                    .timeout(timeout)
+                    .connector(connector)
+                    .finish();
+
+                (client, format!("https://{uri}"))
+            }
+            None => {
+                let client = awc::Client::builder().timeout(timeout).finish();
+                (client, format!("http://{uri}"))
+            }
+        };
+
+        Ok(Configuration {
+            base_path: url,
+            user_agent: None,
+            client,
+            basic_auth: None,
+            oauth_access_token: None,
+            bearer_access_token,
+            api_key: None,
+            trace_requests,
+        })
+    }
+
+    /// New Configuration with a provided client
+    pub fn new_with_client(
+        url: &str,
+        client: awc::Client,
+        bearer_access_token: Option<String>,
+        trace_requests: bool,
+    ) -> Self {
+        Self {
+            base_path: url.to_string(),
+            user_agent: None,
+            client,
+            basic_auth: None,
+            oauth_access_token: None,
+            bearer_access_token,
+            api_key: None,
+            trace_requests,
+        }
+    }
+}
+
+impl Default for Configuration {
+    fn default() -> Self {
+        Configuration {
+            base_path: "http://localhost/v0".to_owned(),
+            user_agent: Some("OpenAPI-Generator/v0/rust".to_owned()),
+            client: awc::Client::new(),
+            basic_auth: None,
+            oauth_access_token: None,
+            bearer_access_token: None,
+            api_key: None,
+            trace_requests: false,
+        }
+    }
+}

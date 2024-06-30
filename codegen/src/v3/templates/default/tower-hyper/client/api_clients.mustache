@@ -1,0 +1,291 @@
+#![allow(clippy::to_string_in_format_args)]
+
+use crate::clients::tower::{
+    configuration, Error, RequestError, ResponseContent, ResponseContentUnexpected, ResponseError,
+};
+
+use hyper::service::Service;
+use std::sync::Arc;
+use tower::ServiceExt;
+
+pub struct {{{classname}}}Client {
+    configuration: Arc<configuration::Configuration>,
+}
+
+impl {{{classname}}}Client {
+    pub fn new(configuration: Arc<configuration::Configuration>) -> Self {
+        Self {
+            configuration,
+        }
+    }
+}
+impl Clone for {{{classname}}}Client {
+    fn clone(&self) -> Self {
+        Self {
+            configuration: self.configuration.clone()
+        }
+    }
+}
+
+#[async_trait::async_trait]
+#[dyn_clonable::clonable]
+pub trait {{{classname}}}: Clone + Send + Sync {
+    {{#operations}}
+    {{#operation}}
+    {{#description}}
+    /// {{{.}}}
+    {{/description}}
+    {{#notes}}
+    /// {{{.}}}
+    {{/notes}}
+    async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}ResponseContent<{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}>{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>>;
+    {{/operation}}
+    {{/operations}}
+}
+
+/// Same as `{{{classname}}}` but it returns the result body directly.
+pub mod direct {
+    #[async_trait::async_trait]
+    #[dyn_clonable::clonable]
+    pub trait {{{classname}}}: Clone + Send + Sync {
+        {{#operations}}
+        {{#operation}}
+        {{#description}}
+        /// {{{.}}}
+        {{/description}}
+        {{#notes}}
+        /// {{{.}}}
+        {{/notes}}
+        async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, super::Error<crate::models::RestJsonError>>;
+        {{/operation}}
+        {{/operations}}
+    }
+}
+
+#[async_trait::async_trait]
+impl direct::{{{classname}}} for {{{classname}}}Client {
+    {{#operations}}
+    {{#operation}}
+    {{#vendorExtensions.x-group-parameters}}
+    async fn {{{operationId}}}(&self{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}ResponseContent<{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}>{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>> {
+        {{{classname}}}::{{{operationId}}}(self, {{#allParams}}{{#-first}}, params{{/-first}}{{/allParams}}).map(|r| r.into_body())
+    {{/vendorExtensions.x-group-parameters}}
+    {{^vendorExtensions.x-group-parameters}}
+    async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>> {
+    {{/vendorExtensions.x-group-parameters}}
+        {{{classname}}}::{{{operationId}}}(self, {{#allParams}}{{{paramName}}}{{^-last}}, {{/-last}}{{/allParams}}).await.map(|r| r.into_body())
+    }
+    {{/operation}}
+    {{/operations}}
+}
+
+#[async_trait::async_trait]
+impl {{{classname}}} for {{{classname}}}Client {
+    {{#operations}}
+    {{#operation}}
+    {{#vendorExtensions.x-group-parameters}}
+    async fn {{{operationId}}}(&self{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}ResponseContent<{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}>{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>> {
+        // unbox the parameters
+        {{#allParams}}
+        let {{paramName}} = params.{{paramName}};
+        {{/allParams}}
+
+    {{/vendorExtensions.x-group-parameters}}
+    {{^vendorExtensions.x-group-parameters}}
+    async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}ResponseContent<{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}>{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>> {
+    {{/vendorExtensions.x-group-parameters}}
+        let configuration = &self.configuration;
+
+        let local_var_uri_str = format!("{}{{{path}}}", configuration.base_path{{#pathParams}}, {{{baseName}}}={{#isString}}crate::apis::urlencode({{/isString}}{{{paramName}}}{{^required}}.unwrap_or_default(){{/required}}{{#required}}{{#isNullable}}.unwrap_or_default(){{/isNullable}}{{/required}}{{#isArray}}.join(",").as_ref(){{/isArray}}{{#isString}}){{/isString}}{{^isString}}.to_string(){{/isString}}{{/pathParams}});
+        let mut local_var_req_builder = hyper::Request::builder().method(hyper::Method::{{#vendorExtensions}}{{x-httpMethodUpper}}{{/vendorExtensions}});
+
+        {{#hasQueryParams}}
+        let query_params: Option<String> = None;
+        {{#queryParams}}
+        {{#required}}
+        let query_params = match query_params {
+            None => Some(format!("{{{baseName}}}={}", {{{paramName}}}{{#isArray}}{{#items}}{{^isString}}.into_iter().map(|p| p.to_string()).collect::<Vec<String>>(){{/isString}}.join(","){{/items}}{{/isArray}}{{^isArray}}.to_string(){{/isArray}})),
+            Some(previous) => Some(format!("{previous}&{{{baseName}}}={}", {{{paramName}}}{{#isArray}}{{#items}}{{^isString}}.into_iter().map(|p| p.to_string()).collect::<Vec<String>>(){{/isString}}.join(","){{/items}}{{/isArray}}{{^isArray}}.to_string(){{/isArray}}))
+        };
+        {{/required}}
+        {{^required}}
+        let query_params = if let Some(local_var_str) = {{{paramName}}} {
+            match query_params {
+                None => Some(format!("{{{baseName}}}={}", local_var_str{{#isArray}}{{#items}}{{^isString}}.into_iter().map(|p| p.to_string()).collect::<Vec<String>>(){{/isString}}.join(","){{/items}}{{/isArray}}{{^isArray}}.to_string(){{/isArray}})),
+                Some(previous) => Some(format!("{previous}&{{{baseName}}}={}", local_var_str{{#isArray}}{{#items}}{{^isString}}.into_iter().map(|p| p.to_string()).collect::<Vec<String>>(){{/isString}}.join(","){{/items}}{{/isArray}}{{^isArray}}.to_string(){{/isArray}}))
+            }
+        } else {
+            query_params
+        };
+        {{/required}}
+        {{/queryParams}}
+        let local_var_uri_str = match query_params {
+            None => local_var_uri_str,
+            Some(params) => format!("{local_var_uri_str}?{params}")
+        };
+        {{/hasQueryParams}}
+        {{#hasAuthMethods}}
+        {{#authMethods}}
+        {{#isApiKey}}
+        {{#isKeyInQuery}}
+        let local_var_uri_str = if let Some(ref local_var_apikey) = configuration.api_key {
+            let local_var_key = local_var_apikey.key.clone();
+            let local_var_value = match local_var_apikey.prefix {
+                Some(ref local_var_prefix) => format!("{local_var_prefix} {local_var_key}"),
+                None => local_var_key,
+            };
+            {{#hasQueryParams}}
+            let local_var_uri_str = match query_params {
+                None => format!("{local_var_uri_str}?{{{keyParamName}}}={local_var_value}"),
+                Some(_) => format!("{local_var_uri_str}&{{{keyParamName}}}={local_var_value}"),
+            };
+            {{/hasQueryParams}}
+            {{^hasQueryParams}}
+            let local_var_uri_str = format!("{local_var_uri_str}?{{{keyParamName}}}={local_var_value}");
+            {{/hasQueryParams}}
+            local_var_uri_str
+        } else {
+            local_var_uri_str
+        }
+        {{/isKeyInQuery}}
+        {{/isApiKey}}
+        {{/authMethods}}
+        {{/hasAuthMethods}}
+        if let Some(ref local_var_user_agent) = configuration.user_agent {
+            local_var_req_builder = local_var_req_builder.header(hyper::header::USER_AGENT, local_var_user_agent.clone());
+        }
+        {{#hasHeaderParams}}
+        {{#headerParams}}
+        {{#required}}
+        {{^isNullable}}
+        local_var_req_builder = local_var_req_builder.header("{{{baseName}}}", {{{paramName}}}{{#isArray}}.join(","){{/isArray}}{{^isArray}}.to_string(){{/isArray}});
+        {{/isNullable}}
+        {{#isNullable}}
+        match {{{paramName}}} {
+            Some(local_var_param_value) => { local_var_req_builder = local_var_req_builder.insert_header(("{{{baseName}}}", local_var_param_value{{#isArray}}.join(","){{/isArray}}{{^isArray}}.to_string(){{/isArray}})); },
+            None => { local_var_req_builder = local_var_req_builder.insert_header(("{{{baseName}}}", "")); },
+        }
+        {{/isNullable}}
+        {{/required}}
+        {{^required}}
+        if let Some(local_var_param_value) = {{{paramName}}} {
+            local_var_req_builder = local_var_req_builder.header("{{{baseName}}}", local_var_param_value{{#isArray}}.join(","){{/isArray}}{{^isArray}}.to_string(){{/isArray}});
+        }
+        {{/required}}
+        {{/headerParams}}
+        {{/hasHeaderParams}}
+        {{#hasAuthMethods}}
+        {{#authMethods}}
+        {{#isApiKey}}
+        {{#isKeyInHeader}}
+        if let Some(ref local_var_apikey) = configuration.api_key {
+            let local_var_key = local_var_apikey.key.clone();
+            let local_var_value = match local_var_apikey.prefix {
+                Some(ref local_var_prefix) => format!("{local_var_prefix} {local_var_key}"),
+                None => local_var_key,
+            };
+            local_var_req_builder = local_var_req_builder.header("{{{keyParamName}}}", local_var_value);
+        };
+        {{/isKeyInHeader}}
+        {{/isApiKey}}
+        {{#isBasic}}
+        {{#isBasicBasic}}
+        if let Some(ref local_var_auth_conf) = configuration.basic_auth {
+            local_var_req_builder = local_var_req_builder.header(hyper::header::AUTHORIZATION, format!("Basic {local_var_auth_conf}"));
+        };
+        {{/isBasicBasic}}
+        {{#isBasicBearer}}
+        if let Some(ref local_var_token) = configuration.bearer_access_token {
+            local_var_req_builder = local_var_req_builder.header(hyper::header::AUTHORIZATION, format!("Bearer {local_var_token}"));
+        };
+        {{/isBasicBearer}}
+        {{/isBasic}}
+        {{#isOAuth}}
+        if let Some(ref local_var_token) = configuration.oauth_access_token {
+            local_var_req_builder = local_var_req_builder.header(hyper::header::AUTHORIZATION, format!("Bearer {local_var_token}"));
+        };
+        {{/isOAuth}}
+        {{/authMethods}}
+        {{/hasAuthMethods}}
+        {{#isMultipart}}
+        $NOT_SUPPORTED$
+        {{/isMultipart}}
+        {{#hasBodyParam}}
+        {{#bodyParam}}
+        let body = hyper::Body::from(
+            serde_json::to_vec(&{{{paramName}}}).map_err(RequestError::Serde)?,
+        );
+        {{/bodyParam}}
+        {{/hasBodyParam}}
+        {{^hasBodyParam}}
+        let body = hyper::Body::empty();
+        {{/hasBodyParam}}
+        let request = local_var_req_builder.uri(local_var_uri_str).header("content-type", "application/json").body(body).map_err(RequestError::BuildRequest)?;
+
+        let local_var_resp = {
+            let mut client_service = configuration.client_service.lock().await.clone();
+            client_service
+                .ready()
+                .await
+                .map_err(RequestError::NotReady)?
+                .call(request)
+                .await
+                .map_err(RequestError::Request)?
+        };
+        let local_var_status = local_var_resp.status();
+        
+        if local_var_status.is_success() {
+            {{^supportMultipleResponses}}
+            {{^returnType}}
+            Ok(ResponseContent { status: local_var_status, body: () })
+            {{/returnType}}
+            {{#returnType}}
+            let body = hyper::body::to_bytes(local_var_resp.into_body()).await.map_err(|e| ResponseError::PayloadError {
+                status: local_var_status,
+                error: e,
+            })?;
+            let local_var_content: {{{returnType}}} =
+                serde_json::from_slice(&body).map_err(|e| {
+                    ResponseError::Unexpected(ResponseContentUnexpected {
+                        status: local_var_status,
+                        text: e.to_string(),
+                    })
+                })?;
+            Ok(ResponseContent { status: local_var_status, body: local_var_content })
+            {{/returnType}}
+            {{/supportMultipleResponses}}
+            {{#supportMultipleResponses}}
+            let body = hyper::body::to_bytes(local_var_resp.into_body()).await.map_err(|e| ResponseError::PayloadError {
+                    status: local_var_status,
+                    error: e,
+                })?;
+            let local_var_content: ResponseContent<{{{operationIdCamelCase}}}Success> = serde_json::from_slice(&body)?;
+            let local_var_entity: Option<{{{operationIdCamelCase}}}Success> = serde_json::from_str(&local_var_content).ok();
+            let local_var_resp = ResponseContent { status: local_var_status, entity: local_var_entity };
+            Ok(local_var_resp)
+            {{/supportMultipleResponses}}
+        } else {
+            match hyper::body::to_bytes(local_var_resp.into_body()).await {
+                Ok(body) => match serde_json::from_slice::<crate::models::RestJsonError>(&body) {
+                    Ok(error) => Err(Error::Response(ResponseError::Expected(ResponseContent {
+                        status: local_var_status,
+                        body: error,
+                    }))),
+                    Err(_) => Err(Error::Response(ResponseError::Unexpected(
+                        ResponseContentUnexpected {
+                            status: local_var_status,
+                            text: String::from_utf8_lossy(&body).to_string(),
+                        },
+                    ))),
+                },
+                Err(error) => Err(Error::Response(ResponseError::PayloadError {
+                    status: local_var_status,
+                    error,
+                })),
+            }
+            
+        }
+    }
+    {{/operation}}
+    {{/operations}}
+}
