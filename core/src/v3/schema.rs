@@ -163,7 +163,9 @@ fn v2_data_type_to_v3(
                 max_length: None,
             }))
         }
-        v2::DataType::Boolean => openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
+        v2::DataType::Boolean => {
+            openapiv3::SchemaKind::Type(openapiv3::Type::Boolean(Default::default()))
+        }
         v2::DataType::Array => {
             openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
                 items: items.as_ref().map(|items| items.deref().clone().into()),
@@ -323,7 +325,9 @@ impl From<v2::Items> for openapiv3::ReferenceOr<Box<openapiv3::Schema>> {
                         max_length: v2.max_length.map(|v| v as usize),
                     }))
                 }
-                v2::DataType::Boolean => openapiv3::SchemaKind::Type(openapiv3::Type::Boolean {}),
+                v2::DataType::Boolean => {
+                    openapiv3::SchemaKind::Type(openapiv3::Type::Boolean(Default::default()))
+                }
                 v2::DataType::Array => {
                     openapiv3::SchemaKind::Type(openapiv3::Type::Array(openapiv3::ArrayType {
                         items: v2.items.map(|items| items.deref().clone().into()),

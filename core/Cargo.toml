@@ -37,7 +37,7 @@ actix-web-validator2 = { version = "2.2", optional = true, package = "actix-web-
 actix-web-validator3 = { version = "3.0", optional = true, package = "actix-web-validator" }
 validator12 = { version = "0.12", features = ["derive"], optional = true, package = "validator" }
 validator14 = { version = "0.14", features = ["derive"], optional = true, package = "validator" }
-openapiv3 = { version = "1.0.3", optional = true }
+openapiv3 = { version = "2.0", optional = true }
 
 [features]
 # actix-web support
