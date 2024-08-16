@@ -263,29 +263,29 @@ impl_type_simple!(
     DataType::File,
     DataTypeFormat::Binary
 );
-#[cfg(feature = "jiff")]
+#[cfg(feature = "jiff01")]
 impl_type_simple!(jiff::Timestamp, DataType::String, DataTypeFormat::DateTime);
-#[cfg(feature = "jiff")]
+#[cfg(feature = "jiff01")]
 impl_type_simple!(
     jiff::Zoned,
     DataType::String,
     DataTypeFormat::Other //RFC 8536
 );
-#[cfg(feature = "jiff")]
+#[cfg(feature = "jiff01")]
 impl_type_simple!(
     jiff::civil::DateTime,
     DataType::String,
     DataTypeFormat::Other //2024-06-19T15:22:45
 );
-#[cfg(feature = "jiff")]
+#[cfg(feature = "jiff01")]
 impl_type_simple!(jiff::civil::Date, DataType::String, DataTypeFormat::Date);
-#[cfg(feature = "jiff")]
+#[cfg(feature = "jiff01")]
 impl_type_simple!(
     jiff::civil::Time,
     DataType::String,
     DataTypeFormat::Other //15:22:45
 );
-#[cfg(feature = "jiff")]
+#[cfg(feature = "jiff01")]
 impl_type_simple!(
     jiff::Span,
     DataType::String,

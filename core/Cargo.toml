@@ -48,6 +48,7 @@ actix2 = ["actix-base", "actix-web2"]
 actix-base = ["v2", "pin-project-lite"]
 actix3-validator = ["actix-web-validator2", "validator12"]
 actix4-validator = ["actix-web-validator3", "validator14"]
+jiff01 = ["jiff"]
 
 # Enable nightly if nightly compiler can be allowed
 nightly = ["paperclip-macros/nightly"]
