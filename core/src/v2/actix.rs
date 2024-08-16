@@ -280,6 +280,10 @@ mod manual_impl {
     impl_simple!(usize);
     #[cfg(feature = "chrono")]
     impl_simple!(chrono::NaiveDateTime);
+    #[cfg(feature = "jiff01")]
+    impl_simple!(jiff::Timestamp);
+    #[cfg(feature = "jiff01")]
+    impl_simple!(jiff::Zoned);
     #[cfg(feature = "rust_decimal")]
     impl_simple!(rust_decimal::Decimal);
     #[cfg(feature = "url")]
