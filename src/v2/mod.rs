@@ -133,3 +133,31 @@ where
     api.spec_format = fmt;
     Ok(api)
 }
+
+#[cfg(feature = "v3-poc")]
+/// Deserialize the schema from the given reader. Currently, this only supports
+/// JSON and YAML formats.
+pub fn from_reader_v3<R>(mut reader: R) -> Result<openapiv3::OpenAPI, PaperClipError>
+where
+    R: Read,
+{
+    let mut buf = [b' '];
+    while buf[0].is_ascii_whitespace() {
+        reader.read_exact(&mut buf)?;
+    }
+    let reader = buf.as_ref().chain(reader);
+
+    let (api, _fmt) = if buf[0] == b'{' {
+        (
+            serde_json::from_reader::<_, openapiv3::OpenAPI>(reader)?,
+            SpecFormat::Json,
+        )
+    } else {
+        (
+            serde_yaml::from_reader::<_, openapiv3::OpenAPI>(reader)?,
+            SpecFormat::Yaml,
+        )
+    };
+
+    Ok(api)
+}

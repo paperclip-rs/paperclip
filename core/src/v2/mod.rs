@@ -24,9 +24,9 @@ pub use self::{
 pub use paperclip_macros::*;
 
 #[cfg(feature = "codegen")]
-use self::resolver::Resolver;
+pub(crate) use self::resolver::Resolver;
 #[cfg(feature = "codegen")]
-use crate::error::ValidationError;
+pub(crate) use crate::error::ValidationError;
 
 #[cfg(feature = "codegen")]
 impl<S: Schema + Default> ResolvableApi<S> {

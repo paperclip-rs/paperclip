@@ -1,0 +1,201 @@
+#![allow(clippy::vec_init_then_push)]
+
+use crate::clients::actix::{
+    configuration, Error, ResponseContent, ResponseContentUnexpected,
+};
+use actix_web_opentelemetry::ClientExt;
+use std::rc::Rc;
+
+#[derive(Clone)]
+pub struct {{{classname}}}Client {
+    configuration: Rc<configuration::Configuration>,
+}
+
+impl {{{classname}}}Client {
+    pub fn new(configuration: Rc<configuration::Configuration>) -> Self {
+        Self {
+            configuration,
+        }
+    }
+}
+
+#[async_trait::async_trait(?Send)]
+#[dyn_clonable::clonable]
+pub trait {{{classname}}}: Clone {
+    {{#operations}}
+    {{#operation}}
+    {{#description}}
+    /// {{{.}}}
+    {{/description}}
+    {{#notes}}
+    /// {{{.}}}
+    {{/notes}}
+    async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>>;
+    {{/operation}}
+    {{/operations}}
+}
+
+#[async_trait::async_trait(?Send)]
+impl {{{classname}}} for {{{classname}}}Client {
+    {{#operations}}
+    {{#operation}}
+    {{#vendorExtensions.x-group-parameters}}
+    async fn {{{operationId}}}(&self{{#allParams}}{{#-first}}, params: {{{operationIdCamelCase}}}Params{{/-first}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>> {
+        // unbox the parameters
+        {{#allParams}}
+        let {{paramName}} = params.{{paramName}};
+        {{/allParams}}
+
+    {{/vendorExtensions.x-group-parameters}}
+    {{^vendorExtensions.x-group-parameters}}
+    async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>> {
+    {{/vendorExtensions.x-group-parameters}}
+
+        let configuration = &self.configuration;
+        let local_var_client = &configuration.client;
+
+        let local_var_uri_str = format!("{}{{{path}}}", configuration.base_path{{#pathParams}}, {{{baseName}}}={{#isString}}crate::apis::urlencode({{/isString}}{{{paramName}}}{{^required}}.unwrap_or_default(){{/required}}{{#required}}{{#isNullable}}.unwrap_or_default(){{/isNullable}}{{/required}}{{#isArray}}.join(",").as_ref(){{/isArray}}{{#isString}}){{/isString}}{{^isString}}.to_string(){{/isString}}{{/pathParams}});
+        let mut local_var_req_builder = local_var_client.request(awc::http::Method::{{#vendorExtensions}}{{x-httpMethodUpper}}{{/vendorExtensions}}, local_var_uri_str.as_str());
+
+        {{#hasQueryParams}}
+        let mut query_params = vec![];
+        {{#queryParams}}
+        {{#required}}
+        query_params.push(("{{{baseName}}}", {{{paramName}}}{{#isArray}}.into_iter().map(|p| p.to_string()).collect::<Vec<String>>().join(","){{/isArray}}.to_string()));
+        {{/required}}
+        {{^required}}
+        if let Some(ref local_var_str) = {{{paramName}}} {
+            query_params.push(("{{{baseName}}}", local_var_str{{#isArray}}.into_iter().map(|p| p.to_string()).collect::<Vec<String>>().join(","){{/isArray}}.to_string()));
+        }
+        {{/required}}
+        {{/queryParams}}
+        local_var_req_builder = local_var_req_builder.query(&query_params)?;
+        {{/hasQueryParams}}
+        {{#hasAuthMethods}}
+        {{#authMethods}}
+        {{#isApiKey}}
+        {{#isKeyInQuery}}
+        if let Some(ref local_var_apikey) = configuration.api_key {
+            let local_var_key = local_var_apikey.key.clone();
+            let local_var_value = match local_var_apikey.prefix {
+                Some(ref local_var_prefix) => format!("{local_var_prefix} {local_var_key}"),
+                None => local_var_key,
+            };
+            {{^hasQueryParams}}let mut query_params = vec![];{{/hasQueryParams}}
+            query_params.push(("{{{keyParamName}}}", local_var_value));
+            local_var_req_builder = local_var_req_builder.query(&query_params)?;
+        }
+        {{/isKeyInQuery}}
+        {{/isApiKey}}
+        {{/authMethods}}
+        {{/hasAuthMethods}}
+        if let Some(ref local_var_user_agent) = configuration.user_agent {
+            local_var_req_builder = local_var_req_builder.insert_header((awc::http::header::USER_AGENT, local_var_user_agent.clone()));
+        }
+        {{#hasHeaderParams}}
+        {{#headerParams}}
+        {{#required}}
+        {{^isNullable}}
+        local_var_req_builder = local_var_req_builder.insert_header(("{{{baseName}}}", {{{paramName}}}{{#isArray}}.join(","){{/isArray}}.to_string()));
+        {{/isNullable}}
+        {{#isNullable}}
+        match {{{paramName}}} {
+            Some(local_var_param_value) => { local_var_req_builder = local_var_req_builder.insert_header(("{{{baseName}}}", local_var_param_value{{#isArray}}.join(","){{/isArray}}.to_string())); },
+            None => { local_var_req_builder = local_var_req_builder.insert_header(("{{{baseName}}}", "")); },
+        }
+        {{/isNullable}}
+        {{/required}}
+        {{^required}}
+        if let Some(local_var_param_value) = {{{paramName}}} {
+            local_var_req_builder = local_var_req_builder.insert_header(("{{{baseName}}}", local_var_param_value{{#isArray}}.join(","){{/isArray}}.to_string()));
+        }
+        {{/required}}
+        {{/headerParams}}
+        {{/hasHeaderParams}}
+        {{#hasAuthMethods}}
+        {{#authMethods}}
+        {{#isApiKey}}
+        {{#isKeyInHeader}}
+        if let Some(ref local_var_apikey) = configuration.api_key {
+            let local_var_key = local_var_apikey.key.clone();
+            let local_var_value = match local_var_apikey.prefix {
+                Some(ref local_var_prefix) => format!("{local_var_prefix} {local_var_key}"),
+                None => local_var_key,
+            };
+            local_var_req_builder = local_var_req_builder.insert_header(("{{{keyParamName}}}", local_var_value));
+        }
+        {{/isKeyInHeader}}
+        {{/isApiKey}}
+        {{#isBasic}}
+        {{#isBasicBasic}}
+        if let Some(ref local_var_auth_conf) = configuration.basic_auth {
+            local_var_req_builder = local_var_req_builder.basic_auth(local_var_auth_conf.0.to_owned(), local_var_auth_conf.1.to_owned());
+        }
+        {{/isBasicBasic}}
+        {{#isBasicBearer}}
+        if let Some(ref local_var_token) = configuration.bearer_access_token {
+            local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+        }
+        {{/isBasicBearer}}
+        {{/isBasic}}
+        {{#isOAuth}}
+        if let Some(ref local_var_token) = configuration.oauth_access_token {
+            local_var_req_builder = local_var_req_builder.bearer_auth(local_var_token.to_owned());
+        }
+        {{/isOAuth}}
+        {{/authMethods}}
+        {{/hasAuthMethods}}
+        {{#isMultipart}}
+        $NOT_SUPPORTED$
+        {{/isMultipart}}
+        {{#hasBodyParam}}
+        {{#bodyParam}}
+        let mut local_var_resp = if configuration.trace_requests {
+            local_var_req_builder.send_json(&{{{paramName}}}).await
+        } else {
+            local_var_req_builder.trace_request().send_json(&{{{paramName}}}).await
+        }?;
+        {{/bodyParam}}
+        {{/hasBodyParam}}
+        {{^hasBodyParam}}
+        let mut local_var_resp = if configuration.trace_requests {
+            local_var_req_builder.trace_request().send().await
+        } else {
+            local_var_req_builder.send().await
+        }?;
+        {{/hasBodyParam}}
+
+        let local_var_status = local_var_resp.status();
+        
+        if local_var_status.is_success() {
+            {{^supportMultipleResponses}}
+            {{^returnType}}
+            Ok(())
+            {{/returnType}}
+            {{#returnType}}
+            let local_var_content = local_var_resp.json::<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}>().await?;
+            Ok(local_var_content)
+            {{/returnType}}
+            {{/supportMultipleResponses}}
+            {{#supportMultipleResponses}}
+            let local_var_content = local_var_resp.json::<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}>().await?;
+            let local_var_entity: Option<{{{operationIdCamelCase}}}Success> = serde_json::from_str(&local_var_content).ok();
+            let local_var_result = ResponseContent { status: local_var_status, entity: local_var_entity };
+            Ok(local_var_result)
+            {{/supportMultipleResponses}}
+        } else {
+            match local_var_resp.json::<crate::models::RestJsonError>().await {
+                Ok(error) => Err(Error::ResponseError(ResponseContent {
+                    status: local_var_status,
+                    error,
+                })),
+                Err(_) => Err(Error::ResponseUnexpected(ResponseContentUnexpected {
+                    status: local_var_status,
+                    text: local_var_resp.json().await?,
+                })),
+            }
+        }
+    }
+    {{/operation}}
+    {{/operations}}
+}
