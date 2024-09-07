@@ -244,7 +244,7 @@
 
 <span class="doccomment">/// Helper struct for parsing proc-macro input attributes.
 </span><span class="attr">#[derive(Default)]
-</span><span class="kw">struct </span>MacroAttribute(Punctuated&lt;NestedMeta, Comma&gt;);
+</span><span class="kw">struct </span>MacroAttribute(<span class="attr">#[allow(dead_code)] </span>Punctuated&lt;NestedMeta, Comma&gt;);
 
 <span class="kw">impl </span>Parse <span class="kw">for </span>MacroAttribute {
     <span class="kw">fn </span>parse(input: ParseStream) -&gt; syn::Result&lt;<span class="self">Self</span>&gt; {
