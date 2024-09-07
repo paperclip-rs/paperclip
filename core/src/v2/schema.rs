@@ -534,6 +534,16 @@ impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
     }
 }
 
+impl<T: Apiv2Schema, const N: usize> Apiv2Schema for [T; N] {
+    fn raw_schema() -> DefaultSchemaRaw {
+        DefaultSchemaRaw {
+            data_type: Some(DataType::Array),
+            items: Some(T::schema_with_ref().into()),
+            ..Default::default()
+        }
+    }
+}
+
 macro_rules! impl_schema_array {
     ($ty:ty) => {
         impl<T: Apiv2Schema> Apiv2Schema for $ty {
@@ -571,39 +581,6 @@ impl_schema_array!(LinkedList<T>);
 impl_schema_array!(VecDeque<T>);
 impl_schema_array!(BTreeSet<T>);
 impl_schema_array!(BinaryHeap<T>);
-impl_schema_array!([T; 0]);
-impl_schema_array!([T; 1]);
-impl_schema_array!([T; 2]);
-impl_schema_array!([T; 3]);
-impl_schema_array!([T; 4]);
-impl_schema_array!([T; 5]);
-impl_schema_array!([T; 6]);
-impl_schema_array!([T; 7]);
-impl_schema_array!([T; 8]);
-impl_schema_array!([T; 9]);
-impl_schema_array!([T; 10]);
-impl_schema_array!([T; 11]);
-impl_schema_array!([T; 12]);
-impl_schema_array!([T; 13]);
-impl_schema_array!([T; 14]);
-impl_schema_array!([T; 15]);
-impl_schema_array!([T; 16]);
-impl_schema_array!([T; 17]);
-impl_schema_array!([T; 18]);
-impl_schema_array!([T; 19]);
-impl_schema_array!([T; 20]);
-impl_schema_array!([T; 21]);
-impl_schema_array!([T; 22]);
-impl_schema_array!([T; 23]);
-impl_schema_array!([T; 24]);
-impl_schema_array!([T; 25]);
-impl_schema_array!([T; 26]);
-impl_schema_array!([T; 27]);
-impl_schema_array!([T; 28]);
-impl_schema_array!([T; 29]);
-impl_schema_array!([T; 30]);
-impl_schema_array!([T; 31]);
-impl_schema_array!([T; 32]);
 
 impl_schema_map!(HashMap<K, V>);
 impl_schema_map!(BTreeMap<K, V>);
