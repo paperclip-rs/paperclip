@@ -9,7 +9,7 @@ homepage = "https://github.com/paperclip-rs/paperclip"
 repository = "https://github.com/paperclip-rs/paperclip"
 
 [dependencies]
-paperclip-macros = { path = "../macros", version = "0.6.3" }
+paperclip-macros = { path = "../macros", version = "0.6.4" }
 actix-web2 = { version = "2", optional = true, default-features = false, package = "actix-web" }
 actix-web3 = { version = "3", optional = true, default-features = false, package = "actix-web" }
 actix-web4 = { version = "4", optional = true, default-features = false, package = "actix-web" }

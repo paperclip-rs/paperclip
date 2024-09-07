@@ -106,7 +106,7 @@ fn expect_struct_or_enum(ts: TokenStream) -> Result<DeriveInput, TokenStream> {
 
 /// Helper struct for parsing proc-macro input attributes.
 #[derive(Default)]
-struct MacroAttribute(Punctuated<NestedMeta, Comma>);
+struct MacroAttribute(#[allow(dead_code)] Punctuated<NestedMeta, Comma>);
 
 impl Parse for MacroAttribute {
     fn parse(input: ParseStream) -> syn::Result<Self> {
