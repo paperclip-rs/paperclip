@@ -344,7 +344,18 @@
 <a href="#343" id="343">343</a>
 <a href="#344" id="344">344</a>
 <a href="#345" id="345">345</a>
-<a href="#346" id="346">346</a></pre></div><pre class="rust"><code><span class="kw">use super</span>::{invalid_referenceor, v2};
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a>
+<a href="#355" id="355">355</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">crate</span>::v2::models::Either;
+
+<span class="kw">use super</span>::{invalid_referenceor, v2};
 <span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">impl </span>From&lt;v2::DefaultSchemaRaw&gt; <span class="kw">for </span>openapiv3::ReferenceOr&lt;Box&lt;openapiv3::Schema&gt;&gt; {
@@ -386,6 +397,7 @@
                                 <span class="kw-2">&amp;</span>v2.enum_,
                                 <span class="kw-2">&amp;</span>v2.items,
                                 <span class="kw-2">&amp;</span>v2.properties,
+                                <span class="kw-2">&amp;</span>v2.extra_props,
                                 <span class="kw-2">&amp;</span>v2.required,
                             )
                         } <span class="kw">else </span>{
@@ -409,6 +421,7 @@
     enum_: <span class="kw-2">&amp;</span>[serde_json::Value],
     items: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Box&lt;v2::DefaultSchemaRaw&gt;&gt;,
     properties: <span class="kw-2">&amp;</span>std::collections::BTreeMap&lt;String, Box&lt;v2::DefaultSchemaRaw&gt;&gt;,
+    extra_properties: <span class="kw-2">&amp;</span><span class="prelude-ty">Option</span>&lt;Either&lt;bool, Box&lt;v2::DefaultSchemaRaw&gt;&gt;&gt;,
     required: <span class="kw-2">&amp;</span>std::collections::BTreeSet&lt;String&gt;,
 ) -&gt; openapiv3::SchemaKind {
     <span class="kw">match </span>data_type {
@@ -527,7 +540,12 @@
                     })
                 },
                 required: required.iter().cloned().collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-                additional_properties: <span class="prelude-val">None</span>,
+                additional_properties: extra_properties.as_ref().map(|e| <span class="kw">match </span>e {
+                    Either::Right(box_schema) =&gt; openapiv3::AdditionalProperties::Schema(Box::new(
+                        box_schema.deref().clone().into(),
+                    )),
+                    Either::Left(v) =&gt; openapiv3::AdditionalProperties::Any(<span class="kw-2">*</span>v),
+                }),
                 min_properties: <span class="prelude-val">None</span>,
                 max_properties: <span class="prelude-val">None</span>,
             }))
