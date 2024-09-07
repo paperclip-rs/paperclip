@@ -4,9 +4,19 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
-## [0.9.0] - Unreleased
+## [0.9.0] - 2024-09-07
 ### Fixed
 - Support latest openapiv3 and indexmap. [PR#507](https://github.com/paperclip-rs/paperclip/pull/507)
+- Clippy useless vec lint. [PR#511](https://github.com/paperclip-rs/paperclip/pull/511)
+- Add lint ignores to paperclip unit struct. [PR#514](https://github.com/paperclip-rs/paperclip/pull/514)
+- Fix map conversion for openapiv3. [PR#529](https://github.com/paperclip-rs/paperclip/pull/529)
+
+# Added
+- Add TermsOfService to the openapi spec. [PR#522](https://github.com/paperclip-rs/paperclip/pull/522)
+- Add max/min for integers. [PR#523](https://github.com/paperclip-rs/paperclip/pull/523)
+- Parse max/min attributes on fields. [PR#524](https://github.com/paperclip-rs/paperclip/pull/524)
+- Add support for jiff via feature flag. [PR#526](https://github.com/paperclip-rs/paperclip/pull/526)
+- Support generic array size. [PR#527](https://github.com/paperclip-rs/paperclip/pull/527)
 
 ## [0.8.2] - 2023-09-27
 ### Fixed
