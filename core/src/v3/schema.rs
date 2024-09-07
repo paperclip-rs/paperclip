@@ -1,3 +1,5 @@
+use crate::v2::models::Either;
+
 use super::{invalid_referenceor, v2};
 use std::ops::Deref;
 
@@ -40,6 +42,7 @@ impl From<v2::DefaultSchemaRaw> for openapiv3::ReferenceOr<openapiv3::Schema> {
                                 &v2.enum_,
                                 &v2.items,
                                 &v2.properties,
+                                &v2.extra_props,
                                 &v2.required,
                             )
                         } else {
@@ -63,6 +66,7 @@ fn v2_data_type_to_v3(
     enum_: &[serde_json::Value],
     items: &Option<Box<v2::DefaultSchemaRaw>>,
     properties: &std::collections::BTreeMap<String, Box<v2::DefaultSchemaRaw>>,
+    extra_properties: &Option<Either<bool, Box<v2::DefaultSchemaRaw>>>,
     required: &std::collections::BTreeSet<String>,
 ) -> openapiv3::SchemaKind {
     match data_type {
@@ -181,7 +185,12 @@ fn v2_data_type_to_v3(
                     })
                 },
                 required: required.iter().cloned().collect::<Vec<_>>(),
-                additional_properties: None,
+                additional_properties: extra_properties.as_ref().map(|e| match e {
+                    Either::Right(box_schema) => openapiv3::AdditionalProperties::Schema(Box::new(
+                        box_schema.deref().clone().into(),
+                    )),
+                    Either::Left(v) => openapiv3::AdditionalProperties::Any(*v),
+                }),
                 min_properties: None,
                 max_properties: None,
             }))

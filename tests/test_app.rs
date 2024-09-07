@@ -4672,6 +4672,7 @@ where
     ret
 }
 
+#[track_caller]
 fn check_json(resp: reqwest::blocking::Response, expected: serde_json::Value) {
     assert_eq!(resp.status().as_u16(), 200);
     let json = resp.json::<serde_json::Value>().expect("json error");
