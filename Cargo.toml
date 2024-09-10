@@ -1,6 +1,6 @@
 [package]
 name = "paperclip"
-version = "0.9.0"
+version = "0.9.1"
 edition = "2018"
 description = "OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
 documentation = "https://paperclip-rs.github.io/paperclip/paperclip"
@@ -17,9 +17,9 @@ path = "src/bin/main.rs"
 required-features = ["cli"]
 
 [dependencies]
-paperclip-actix = { path = "plugins/actix-web", version = "0.7.0", optional = true }
-paperclip-core = { path = "core", version = "0.7.0" }
-paperclip-macros = { path = "macros", version = "0.6.3", optional = true }
+paperclip-actix = { path = "plugins/actix-web", version = "0.7.1", optional = true }
+paperclip-core = { path = "core", version = "0.7.1" }
+paperclip-macros = { path = "macros", version = "0.6.5", optional = true }
 
 env_logger = { version = "0.8", optional = true }
 git2 = { version = "0.15", optional = true }
