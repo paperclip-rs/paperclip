@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/actix.rs`."><title>actix.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-405f8b29f52305f8.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0-nightly (26b5599e4 2024-09-06)" data-channel="nightly" data-search-js="search-a99f1315e7cc5121.js" data-settings-js="settings-7e3bb6c46e92e77c.js" ><script src="../../static.files/storage-29b1d5a9048d38fe.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-14659ec02b58af51.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-40f72c9259523cb3.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `macros/src/actix.rs`."><title>actix.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../static.files/rustdoc-405f8b29f52305f8.css"><meta name="rustdoc-vars" data-root-path="../../" data-static-root-path="../../static.files/" data-current-crate="paperclip_macros" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0-nightly (c2f74c3f9 2024-09-09)" data-channel="nightly" data-search-js="search-0cfde64e8ad3a7fe.js" data-settings-js="settings-7e3bb6c46e92e77c.js" ><script src="../../static.files/storage-29b1d5a9048d38fe.js"></script><script defer src="../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../src-files.js"></script><script defer src="../../static.files/main-14659ec02b58af51.js"></script><noscript><link rel="stylesheet" href="../../static.files/noscript-40f72c9259523cb3.css"></noscript><link rel="alternate icon" type="image/png" href="../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -2095,7 +2095,15 @@
 <a href="#2094" id="2094">2094</a>
 <a href="#2095" id="2095">2095</a>
 <a href="#2096" id="2096">2096</a>
-<a href="#2097" id="2097">2097</a></pre></div><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)
+<a href="#2097" id="2097">2097</a>
+<a href="#2098" id="2098">2098</a>
+<a href="#2099" id="2099">2099</a>
+<a href="#2100" id="2100">2100</a>
+<a href="#2101" id="2101">2101</a>
+<a href="#2102" id="2102">2102</a>
+<a href="#2103" id="2103">2103</a>
+<a href="#2104" id="2104">2104</a>
+<a href="#2105" id="2105">2105</a></pre></div><pre class="rust"><code><span class="doccomment">//! Convenience macros for the [actix-web](https://github.com/paperclip-rs/paperclip/tree/master/plugins/actix-web)
 //! OpenAPI plugin (exposed by paperclip with `actix` feature).
 
 </span><span class="kw">use </span>heck::<span class="kw-2">*</span>;
@@ -3540,7 +3548,9 @@
 
 <span class="kw">fn </span>get_field_type(field: <span class="kw-2">&amp;</span>Field) -&gt; <span class="prelude-ty">Option</span>&lt;proc_macro2::TokenStream&gt; {
     <span class="kw">match </span>field.ty {
-        Type::Path(<span class="kw">_</span>) | Type::Reference(<span class="kw">_</span>) =&gt; <span class="prelude-val">Some</span>(address_type_for_fn_call(<span class="kw-2">&amp;</span>field.ty)),
+        Type::Path(<span class="kw">_</span>) | Type::Reference(<span class="kw">_</span>) | Type::Array(<span class="kw">_</span>) =&gt; {
+            <span class="prelude-val">Some</span>(address_type_for_fn_call(<span class="kw-2">&amp;</span>field.ty))
+        }
         <span class="kw">_ </span>=&gt; {
             <span class="macro">emit_warning!</span>(
                 field.ty.span().unwrap(),
@@ -3588,7 +3598,10 @@
                 <span class="kw">continue</span>;
             }
 
-            <span class="kw">let </span>ty_ref = get_field_type(field);
+            <span class="kw">let </span>ty_ref = <span class="kw">match </span>get_field_type(field) {
+                <span class="prelude-val">Some</span>(ty_ref) =&gt; ty_ref,
+                <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
+            };
 
             <span class="kw">let </span>docs = extract_documentation(<span class="kw-2">&amp;</span>field.attrs);
             <span class="kw">let </span>docs = docs.trim();
@@ -3723,7 +3736,10 @@
             field_name = prop.rename(<span class="kw-2">&amp;</span>field_name);
         }
 
-        <span class="kw">let </span>ty_ref = get_field_type(field);
+        <span class="kw">let </span>ty_ref = <span class="kw">match </span>get_field_type(field) {
+            <span class="prelude-val">Some</span>(ty_ref) =&gt; ty_ref,
+            <span class="prelude-val">None </span>=&gt; <span class="kw">continue</span>,
+        };
 
         <span class="kw">let </span>docs = extract_documentation(<span class="kw-2">&amp;</span>field.attrs);
         <span class="kw">let </span>docs = docs.trim();
@@ -3826,7 +3842,7 @@
 /// `Vec::&lt;T&gt;::foo`. Something similar applies to `str`. This function takes
 /// care of that special treatment.
 </span><span class="kw">fn </span>address_type_for_fn_call(old_ty: <span class="kw-2">&amp;</span>Type) -&gt; proc_macro2::TokenStream {
-    <span class="kw">if let </span>Type::Reference(<span class="kw">_</span>) = old_ty {
+    <span class="kw">if </span><span class="macro">matches!</span>(old_ty, Type::Reference(<span class="kw">_</span>) | Type::Array(<span class="kw">_</span>)) {
         <span class="kw">return </span><span class="macro">quote!</span>(&lt;(#old_ty)&gt;);
     }
 
