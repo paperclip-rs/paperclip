@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.1] - 2024-09-10
+### Fixed
+- Support array field type. [PR#531](https://github.com/paperclip-rs/paperclip/pull/531)
+
 ## [0.9.0] - 2024-09-07
 ### Fixed
 - Support latest openapiv3 and indexmap. [PR#507](https://github.com/paperclip-rs/paperclip/pull/507)
