@@ -1443,7 +1443,9 @@ fn add_optional_impl(name: &Ident, generics: &Generics) -> proc_macro2::TokenStr
 
 fn get_field_type(field: &Field) -> Option<proc_macro2::TokenStream> {
     match field.ty {
-        Type::Path(_) | Type::Reference(_) => Some(address_type_for_fn_call(&field.ty)),
+        Type::Path(_) | Type::Reference(_) | Type::Array(_) => {
+            Some(address_type_for_fn_call(&field.ty))
+        }
         _ => {
             emit_warning!(
                 field.ty.span().unwrap(),
@@ -1491,7 +1493,10 @@ fn handle_unnamed_field_struct(
                 continue;
             }
 
-            let ty_ref = get_field_type(field);
+            let ty_ref = match get_field_type(field) {
+                Some(ty_ref) => ty_ref,
+                None => continue,
+            };
 
             let docs = extract_documentation(&field.attrs);
             let docs = docs.trim();
@@ -1626,7 +1631,10 @@ fn handle_field_struct(
             field_name = prop.rename(&field_name);
         }
 
-        let ty_ref = get_field_type(field);
+        let ty_ref = match get_field_type(field) {
+            Some(ty_ref) => ty_ref,
+            None => continue,
+        };
 
         let docs = extract_documentation(&field.attrs);
         let docs = docs.trim();
@@ -1729,7 +1737,7 @@ fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::To
 /// `Vec::<T>::foo`. Something similar applies to `str`. This function takes
 /// care of that special treatment.
 fn address_type_for_fn_call(old_ty: &Type) -> proc_macro2::TokenStream {
-    if let Type::Reference(_) = old_ty {
+    if matches!(old_ty, Type::Reference(_) | Type::Array(_)) {
         return quote!(<(#old_ty)>);
     }
 

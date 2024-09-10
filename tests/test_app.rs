@@ -5518,3 +5518,80 @@ fn test_wrap() {
         },
     );
 }
+
+#[test]
+fn test_array() {
+    #[derive(Deserialize, Serialize, Apiv2Schema)]
+    /// Pets are awesome!
+    struct Pet {
+        /// Names of other pet friends!
+        friends: [String; 4],
+    }
+
+    #[api_v2_operation]
+    fn echo_pets() -> impl Future<Output = Result<web::Json<Vec<Pet>>, Error>> {
+        fut_ok(web::Json(vec![]))
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(web::resource("/pets").route(web::get().to(echo_pets)))
+                .with_json_spec_at("/api/spec")
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            check_json(
+                resp,
+                json!({
+                  "definitions": {
+                    "Pet": {
+                      "description": "Pets are awesome!",
+                      "properties": {
+                        "friends": {
+                          "description": "Names of other pet friends!",
+                          "type": "array",
+                          "items": {
+                            "type": "string",
+                          }
+                        }
+                      },
+                      "required": [
+                        "friends"
+                      ],
+                      "type": "object"
+                    }
+                  },
+                  "info": {
+                    "title": "",
+                    "version": ""
+                  },
+                  "paths": {
+                    "/pets": {
+                      "get": {
+                        "responses": {
+                          "200": {
+                            "description": "OK",
+                            "schema": {
+                              "items": {
+                                "$ref": "#/definitions/Pet"
+                              },
+                              "type": "array"
+                            }
+                          }
+                        }
+                      }
+                    }
+                  },
+                  "swagger": "2.0"
+                }),
+            );
+        },
+    );
+}
