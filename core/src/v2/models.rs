@@ -31,9 +31,10 @@ static PATH_TEMPLATE_REGEX: Lazy<Regex> =
 const SPECIAL_HEADERS: &[&str] = &["content-type", "accept", "authorization"];
 
 /// OpenAPI version.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq)]
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Eq, PartialEq)]
 pub enum Version {
     #[serde(rename = "2.0")]
+    #[default]
     V2,
 }
 
@@ -253,8 +254,9 @@ pub struct Api<P, R, S> {
 }
 
 /// The format used by spec (JSON/YAML).
-#[derive(Debug, Clone, Copy, PartialEq, Eq)]
+#[derive(Debug, Default, Clone, Copy, PartialEq, Eq)]
 pub enum SpecFormat {
+    #[default]
     Json,
     Yaml,
 }
@@ -664,20 +666,22 @@ where
 }
 
 /// The location of the parameter.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "camelCase")]
 pub enum ParameterIn {
     Query,
     Header,
     Path,
     FormData,
+    #[default]
     Body,
 }
 
 /// Possible formats for array values in parameter.
-#[derive(Clone, Copy, Debug, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
+#[derive(Clone, Copy, Debug, Default, Serialize, Deserialize, Eq, PartialEq, Ord, PartialOrd)]
 #[serde(rename_all = "lowercase")]
 pub enum CollectionFormat {
+    #[default]
     Csv,
     Ssv,
     Tsv,
@@ -939,14 +943,6 @@ where
     }
 }
 
-/* Common trait impls */
-
-impl Default for SpecFormat {
-    fn default() -> Self {
-        SpecFormat::Json
-    }
-}
-
 #[cfg(feature = "actix-base")]
 impl From<&Method> for HttpMethod {
     fn from(method: &Method) -> HttpMethod {
@@ -1029,25 +1025,6 @@ impl<S> Clone for Resolvable<S> {
 impl Display for HttpMethod {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         write!(f, "{:?}", self)
-    }
-}
-
-impl Default for Version {
-    fn default() -> Self {
-        Version::V2
-    }
-}
-
-impl Default for CollectionFormat {
-    fn default() -> Self {
-        CollectionFormat::Csv
-    }
-}
-
-/// **NOTE:** This is just a stub. This is usually set explicitly.
-impl Default for ParameterIn {
-    fn default() -> Self {
-        ParameterIn::Body
     }
 }
 
