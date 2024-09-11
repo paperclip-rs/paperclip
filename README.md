@@ -16,14 +16,36 @@ It's currently under active development and may not be ready for production use 
 
 You may be interested in:
 
- - [Examples and Usage](https://paperclip-rs.github.io/paperclip).
- - [Features being worked on](https://github.com/paperclip-rs/paperclip/projects).
- - [API documentation](https://paperclip-rs.github.io/paperclip/paperclip).
+- [Examples and Usage](https://paperclip-rs.github.io/paperclip).
+- [Features being worked on](https://github.com/paperclip-rs/paperclip/projects).
+- [API documentation](https://paperclip-rs.github.io/paperclip/paperclip).
 
 ## Developing locally
 
- - Make sure you have [`rustup`](https://rustup.rs/) installed. `cd` into this repository and run `make prepare` to setup your environment.
- - Now run `make` to build and run the tests.
+- Clone the repository along with its submodules using the following command:
+
+  ```bash
+   git clone --recurse-submodules git@github.com:paperclip-rs/paperclip.git
+   ```
+
+- Make sure you have [`rustup`](https://rustup.rs/) installed.
+- Then move to repository:
+
+  ```bash
+  cd paperclip
+  ```
+
+- Run the setup environment routine
+
+  ```bash
+  make prepare
+  ```
+
+- Build the project and run tests:
+
+  ```bash
+  make
+  ```
 
 ## Contributing
 
@@ -39,8 +61,8 @@ This project follows the [Rust Code of Conduct](https://www.rust-lang.org/polici
 
 Licensed under either of
 
-- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or http://www.apache.org/licenses/LICENSE-2.0)
-- MIT license ([LICENSE-MIT](LICENSE-MIT) or http://opensource.org/licenses/MIT)
+- Apache License, Version 2.0 ([LICENSE-APACHE](LICENSE-APACHE) or <http://www.apache.org/licenses/LICENSE-2.0>)
+- MIT license ([LICENSE-MIT](LICENSE-MIT) or <http://opensource.org/licenses/MIT>)
 
 at your option.
 

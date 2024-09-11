@@ -12,6 +12,7 @@ prepare:
 	rustup component add rustfmt
 	rustup component add clippy
 	rustup toolchain install nightly --allow-downgrade -c rustfmt clippy
+	git submodule update --init --recursive
 
 check:
 	cargo +nightly fmt --all
