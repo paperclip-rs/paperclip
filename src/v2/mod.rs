@@ -102,6 +102,7 @@ pub use paperclip_core::{
     v2::{
         models::{self, DefaultSchema, ResolvableApi},
         schema::{self, Schema},
+        serde_json,
     },
 };
 

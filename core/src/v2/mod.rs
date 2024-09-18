@@ -22,6 +22,7 @@ pub use self::{
     schema::Schema,
 };
 pub use paperclip_macros::*;
+pub use serde_json;
 
 #[cfg(feature = "codegen")]
 use self::resolver::Resolver;
