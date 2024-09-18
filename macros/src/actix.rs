@@ -819,7 +819,7 @@ pub fn emit_v2_definition(input: TokenStream) -> TokenStream {
     let example = if let Some(example) = extract_example(&item_ast.attrs) {
         // allow to parse escaped json string or single str value
         quote!(
-            serde_json::from_str::<serde_json::Value>(#example).ok().or_else(|| Some(#example.into()))
+            paperclip::v2::serde_json::from_str::<paperclip::v2::serde_json::Value>(#example).ok().or_else(|| Some(#example.into()))
         )
     } else {
         quote!(None)
@@ -1642,7 +1642,7 @@ fn handle_field_struct(
         let example = if let Some(example) = extract_example(&field.attrs) {
             // allow to parse escaped json string or single str value
             quote!({
-                s.example = serde_json::from_str::<serde_json::Value>(#example).ok().or_else(|| Some(#example.into()));
+                s.example = paperclip::v2::serde_json::from_str::<paperclip::v2::serde_json::Value>(#example).ok().or_else(|| Some(#example.into()));
             })
         } else {
             quote!({})
@@ -1727,7 +1727,7 @@ fn handle_enum(e: &DataEnum, serde: &SerdeProps, props_gen: &mut proc_macro2::To
         }
 
         props_gen.extend(quote!(
-            schema.enum_.push(serde_json::json!(#name));
+            schema.enum_.push(paperclip::v2::serde_json::json!(#name));
         ));
     }
 }

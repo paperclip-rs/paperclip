@@ -175,7 +175,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn enum_variants(&self) -> Option<&[serde_json::Value]> {
+            fn enum_variants(&self) -> Option<&[paperclip::v2::serde_json::Value]> {
                 if self.enum_.is_empty() {
                     return None
                 } else {
@@ -294,7 +294,7 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     ));
     gen.extend(quote!(
         #[serde(skip_serializing_if = "Option::is_none")]
-        pub example: Option<serde_json::Value>,
+        pub example: Option<paperclip::v2::serde_json::Value>,
     ));
 
     gen.extend(quote!(
@@ -313,7 +313,7 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
 
     gen.extend(quote!(
         #[serde(default, rename = "enum", skip_serializing_if = "Vec::is_empty")]
-        pub enum_: Vec<serde_json::Value>,
+        pub enum_: Vec<paperclip::v2::serde_json::Value>,
     ));
 
     gen.extend(quote!(
