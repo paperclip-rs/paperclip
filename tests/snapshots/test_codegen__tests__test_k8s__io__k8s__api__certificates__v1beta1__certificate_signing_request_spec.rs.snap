@@ -7,7 +7,7 @@ expression: data
 #[derive(Debug, Default, Clone, Serialize, Deserialize)]
 pub struct CertificateSigningRequestSpec {
     /// Extra information about the requesting user. See user.Info interface for details.
-    pub extra: Option<std::collections::BTreeMap<String, Vec<String>>>,
+    pub extra: Option<paperclip::v2::PropertiesMap<String, Vec<String>>>,
     /// Group information about the requesting user. See user.Info interface for details.
     pub groups: Option<Vec<String>>,
     /// Base64-encoded PKCS#10 CSR data
@@ -49,7 +49,7 @@ impl<Request> CertificateSigningRequestSpecBuilder<Request> {
     /// Extra information about the requesting user. See user.Info interface for details.
     #[inline]
     pub fn extra(mut self, value: impl Iterator<Item = (String, impl Iterator<Item = impl Into<String>>)>) -> Self {
-        self.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>().into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.extra = Some(value.map(|(key, value)| (key, value.map(|value| value.into()).collect::<Vec<_>>().into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 

@@ -1,8 +1,11 @@
 //! Traits used for code and spec generation.
 
-use super::models::{
-    DataType, DataTypeFormat, DefaultOperationRaw, DefaultSchemaRaw, Either, Resolvable,
-    SecurityScheme,
+use super::{
+    models::{
+        DataType, DataTypeFormat, DefaultOperationRaw, DefaultSchemaRaw, Either, Resolvable,
+        SecurityScheme,
+    },
+    PropertiesMap,
 };
 
 use std::collections::{BTreeMap, BTreeSet};
@@ -39,10 +42,10 @@ pub trait Schema: Sized {
     fn additional_properties_mut(&mut self) -> Option<&mut Either<bool, Resolvable<Self>>>;
 
     /// Map of names and schema for properties, if it's an object (`properties` field)
-    fn properties(&self) -> Option<&BTreeMap<String, Resolvable<Self>>>;
+    fn properties(&self) -> Option<&PropertiesMap<String, Resolvable<Self>>>;
 
     /// Mutable access to `properties` field.
-    fn properties_mut(&mut self) -> Option<&mut BTreeMap<String, Resolvable<Self>>>;
+    fn properties_mut(&mut self) -> Option<&mut PropertiesMap<String, Resolvable<Self>>>;
 
     /// Returns the required properties (if any) for this object.
     fn required_properties(&self) -> Option<&BTreeSet<String>>;

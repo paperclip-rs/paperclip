@@ -11,9 +11,9 @@ pub struct ConfigMap {
     pub api_version: Option<String>,
     /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
     #[serde(rename = "binaryData")]
-    pub binary_data: Option<std::collections::BTreeMap<String, String>>,
+    pub binary_data: Option<paperclip::v2::PropertiesMap<String, String>>,
     /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
-    pub data: Option<std::collections::BTreeMap<String, String>>,
+    pub data: Option<paperclip::v2::PropertiesMap<String, String>>,
     /// Kind is a string value representing the REST resource this object represents. Servers may infer this from the endpoint the client submits requests to. Cannot be updated. In CamelCase. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#types-kinds
     pub kind: Option<String>,
     /// Standard object's metadata. More info: https://git.k8s.io/community/contributors/devel/api-conventions.md#metadata
@@ -94,14 +94,14 @@ impl ConfigMapBuilder {
     /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
     #[inline]
     pub fn binary_data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
-        self.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
     /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
     #[inline]
     pub fn data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
-        self.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
@@ -176,14 +176,14 @@ impl<Namespace> ConfigMapPostBuilder<Namespace> {
     /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
     #[inline]
     pub fn binary_data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
-        self.inner.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.inner.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
     /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
     #[inline]
     pub fn data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
-        self.inner.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.inner.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
@@ -363,14 +363,14 @@ impl<Name, Namespace> ConfigMapPutBuilder1<Name, Namespace> {
     /// BinaryData contains the binary data. Each key must consist of alphanumeric characters, '-', '_' or '.'. BinaryData can contain byte sequences that are not in the UTF-8 range. The keys stored in BinaryData must not overlap with the ones in the Data field, this is enforced during validation process. Using this field will require 1.10+ apiserver and kubelet.
     #[inline]
     pub fn binary_data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
-        self.inner.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.inner.body.binary_data = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
     /// Data contains the configuration data. Each key must consist of alphanumeric characters, '-', '_' or '.'. Values with non-UTF-8 byte sequences must use the BinaryData field. The keys stored in Data must not overlap with the keys in the BinaryData field, this is enforced during validation process.
     #[inline]
     pub fn data(mut self, value: impl Iterator<Item = (String, impl Into<String>)>) -> Self {
-        self.inner.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.inner.body.data = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 

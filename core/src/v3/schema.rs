@@ -1,4 +1,4 @@
-use crate::v2::models::Either;
+use crate::v2::{models::Either, PropertiesMap};
 
 use super::{invalid_referenceor, v2};
 use std::ops::Deref;
@@ -65,7 +65,7 @@ fn v2_data_type_to_v3(
     format: &Option<v2::DataTypeFormat>,
     enum_: &[serde_json::Value],
     items: &Option<Box<v2::DefaultSchemaRaw>>,
-    properties: &std::collections::BTreeMap<String, Box<v2::DefaultSchemaRaw>>,
+    properties: &PropertiesMap<String, Box<v2::DefaultSchemaRaw>>,
     extra_properties: &Option<Either<bool, Box<v2::DefaultSchemaRaw>>>,
     required: &std::collections::BTreeSet<String>,
 ) -> openapiv3::SchemaKind {

@@ -13,7 +13,7 @@ pub struct Pet<Any> {
     pub photo_urls: Option<Vec<String>>,
     pub tags: Option<Vec<crate::tag::Tag>>,
     #[serde(flatten)]
-    pub other_fields: Option<std::collections::BTreeMap<String, Any>>,
+    pub other_fields: Option<paperclip::v2::PropertiesMap<String, Any>>,
 }
 
 impl<Any: Default> Pet<Any> {
@@ -107,7 +107,7 @@ impl<Id, Name, Any> PetBuilder<Id, Name, Any> {
 
     #[inline]
     pub fn other_fields(mut self, value: impl Iterator<Item = (String, impl Into<Any>)>) -> Self {
-        self.body.other_fields = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.other_fields = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 }
@@ -189,7 +189,7 @@ impl<XAuth, Id, Name, Any> PetPostBuilder<XAuth, Id, Name, Any> {
 
     #[inline]
     pub fn other_fields(mut self, value: impl Iterator<Item = (String, impl Into<Any>)>) -> Self {
-        self.inner.body.other_fields = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.inner.body.other_fields = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 }

@@ -76,6 +76,7 @@ actix-base = ["v2", "paperclip-macros/actix"]
 swagger-ui = ["paperclip-actix/swagger-ui"]
 rapidoc = ["paperclip-actix/rapidoc"]
 path-in-definition = ["paperclip-macros/path-in-definition"]
+preserve_order = ["paperclip-core/preserve_order"]
 
 # OpenAPI support (v2 and codegen)
 cli = ["env_logger", "structopt", "git2", "v2", "codegen"]
