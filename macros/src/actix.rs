@@ -5,7 +5,6 @@ use heck::*;
 use http::StatusCode;
 use lazy_static::lazy_static;
 use proc_macro::TokenStream;
-use proc_macro_error::ResultExt;
 use quote::{quote, ToTokens};
 use strum_macros::EnumString;
 use syn::{
@@ -769,7 +768,9 @@ fn field_extract_f32(nv: MetaNameValue) -> Option<proc_macro2::TokenStream> {
         },
         Lit::Float(f) => Ok(quote! { #f }),
         Lit::Int(i) => {
-            let f: f32 = i.base10_parse().unwrap_or_abort();
+            let f: f32 = i
+                .base10_parse()
+                .unwrap_or_else(|e| abort!(i.span(), "{}", e));
             Ok(quote! { #f })
         }
         _ => {
