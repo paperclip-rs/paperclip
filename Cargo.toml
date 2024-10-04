@@ -22,7 +22,7 @@ paperclip-core = { path = "core", version = "0.7.1" }
 paperclip-macros = { path = "macros", version = "0.6.5", optional = true }
 
 env_logger = { version = "0.8", optional = true }
-git2 = { version = "0.15", optional = true }
+git2 = { version = "0.16", optional = true }
 heck = { version = "0.4", optional = true }
 http = { version = "0.2", optional = true }
 itertools = "0.10"
