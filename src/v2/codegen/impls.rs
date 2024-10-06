@@ -470,7 +470,7 @@ where
     /// Builds the method parameter type using the actual field type.
     ///
     /// For example, if a field is `Vec<T>`, then we replace it (in builder method)
-    /// with `impl Iterator<Item=Into<T>>`, and if we had `BTreeMap<String, T>`,
+    /// with `impl Iterator<Item=Into<T>>`, and if we had `PropertiesMap<String, T>`,
     /// then we replace it with `impl Iterator<Item = (String, T)>` and
     /// we do this... recursively.
     // FIXME: Investigate if there's a better way.
@@ -489,7 +489,7 @@ where
                 f.write_str("impl Iterator<Item = ")?;
                 self.write_builder_ty(&ty[i + 1..ty.len() - 1], req, needs_any, f)?;
                 f.write_str(">")?;
-            } else if ty[..i].ends_with("std::collections::BTreeMap") {
+            } else if ty[..i].ends_with("paperclip::v2::PropertiesMap") {
                 f.write_str("impl Iterator<Item = (String, ")?;
                 self.write_builder_ty(&ty[i + 9..ty.len() - 1], req, needs_any, f)?;
                 f.write_str(")>")?;
@@ -546,10 +546,10 @@ where
                 f.write_str("value.map(|value| ")?;
                 Self::write_value_map(&ty[i + 1..ty.len() - 1], f)?;
                 f.write_str(").collect::<Vec<_>>()")?;
-            } else if ty[..i].ends_with("std::collections::BTreeMap") {
+            } else if ty[..i].ends_with("paperclip::v2::PropertiesMap") {
                 f.write_str("value.map(|(key, value)| (key, ")?;
                 Self::write_value_map(&ty[i + 9..ty.len() - 1], f)?;
-                f.write_str(")).collect::<std::collections::BTreeMap<_, _>>()")?;
+                f.write_str(")).collect::<paperclip::v2::PropertiesMap<_, _>>()")?;
             }
         } else {
             f.write_str("value")?;

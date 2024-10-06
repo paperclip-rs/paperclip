@@ -222,8 +222,8 @@ pub struct ObjectField {
     /// Required fields of the "deepest" child type in the given definition.
     ///
     /// Now, what do I mean by "deepest"? For example, if we had `Vec<Vec<Vec<T>>>`
-    /// or `Vec<BTreeMap<String, Vec<BTreeMap<String, T>>>>`, then "deepest" child
-    /// type is T (as long as it's not a `Vec` or `BTreeMap`).
+    /// or `Vec<PropertiesMap<String, Vec<PropertiesMap<String, T>>>>`, then "deepest" child
+    /// type is T (as long as it's not a `Vec` or `PropertiesMap`).
     ///
     /// To understand why we're doing this, see `ApiObjectBuilderImpl::write_builder_ty`
     /// and `ApiObjectBuilderImpl::write_value_map` functions.
@@ -315,7 +315,7 @@ impl ApiObject {
             if ty[..i].ends_with("Vec") {
                 f.write_str(&ty[..=i])?;
                 Self::write_field_with_any(&ty[i + 1..ty.len() - 1], f)?;
-            } else if ty[..i].ends_with("std::collections::BTreeMap") {
+            } else if ty[..i].ends_with("paperclip::v2::PropertiesMap") {
                 f.write_str(&ty[..i + 9])?;
                 Self::write_field_with_any(&ty[i + 9..ty.len() - 1], f)?;
             } else {

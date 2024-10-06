@@ -5203,6 +5203,88 @@ fn test_schema_with_generics() {
 }
 
 #[test]
+fn test_schema_properties_order() {
+    /// A good boy/girl.
+    #[derive(Apiv2Schema, Deserialize, Serialize)]
+    struct Dog {
+        /// Pick a good one.
+        name: String,
+        /// Be sure to chip them!
+        id: usize,
+        /// To each their own preferred one.
+        breed: String,
+    }
+
+    #[post("/echo")]
+    #[api_v2_operation]
+    async fn echo(body: web::Json<Dog>) -> Result<web::Json<Dog>, Error> {
+        Ok(body)
+    }
+
+    run_and_check_app(
+        || {
+            App::new()
+                .wrap_api()
+                .service(echo)
+                .with_raw_json_spec(|app, spec| {
+                    app.route(
+                        "/api/spec",
+                        web::get().to(move || {
+                            #[cfg(feature = "actix4")]
+                            {
+                                let spec = spec.clone();
+                                async move {
+                                    paperclip::actix::HttpResponseWrapper(
+                                        actix_web::HttpResponse::Ok().json(&spec),
+                                    )
+                                }
+                            }
+
+                            #[cfg(not(feature = "actix4"))]
+                            actix_web::HttpResponse::Ok().json(&spec)
+                        }),
+                    )
+                })
+                .build()
+        },
+        |addr| {
+            let resp = CLIENT
+                .get(&format!("http://{}/api/spec", addr))
+                .send()
+                .expect("request failed?");
+
+            assert_eq!(resp.status().as_u16(), 200);
+            let json = resp.json::<serde_json::Value>().expect("json error");
+
+            let properties = json
+                .as_object()
+                .expect("schema is not an object")
+                .get("definitions")
+                .expect("schema does not have definitions")
+                .as_object()
+                .expect("definitions is not an object")
+                .get("Dog")
+                .expect("no dog definition")
+                .as_object()
+                .expect("dog definition is not an object")
+                .get("properties")
+                .expect("no dog properties")
+                .as_object()
+                .expect("dog properties is not an object")
+                .keys()
+                .collect::<Vec<_>>();
+
+            #[cfg(feature = "preserve_order")]
+            let expected = ["name", "id", "breed"];
+            #[cfg(not(feature = "preserve_order"))]
+            let expected = ["breed", "id", "name"];
+
+            assert_eq!(properties, expected);
+        },
+    );
+}
+
+#[test]
 #[cfg(feature = "path-in-definition")]
 fn test_module_path_in_definition_name() {
     use paperclip::actix::{api_v2_operation, web, OpenApiExt};

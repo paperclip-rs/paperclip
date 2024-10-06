@@ -29,6 +29,11 @@ use self::resolver::Resolver;
 #[cfg(feature = "codegen")]
 use crate::error::ValidationError;
 
+#[cfg(feature = "preserve_order")]
+pub type PropertiesMap<K, V> = indexmap::IndexMap<K, V>;
+#[cfg(not(feature = "preserve_order"))]
+pub type PropertiesMap<K, V> = std::collections::BTreeMap<K, V>;
+
 #[cfg(feature = "codegen")]
 impl<S: Schema + Default> ResolvableApi<S> {
     /// Consumes this API schema, resolves the references and returns
