@@ -125,6 +125,7 @@ impl From<v2::Operation<v2::DefaultParameterRaw, v2::DefaultResponseRaw>> for op
             },
             servers: vec![],
             extensions: Default::default(),
+            callbacks: Default::default(),
         }
     }
 }
