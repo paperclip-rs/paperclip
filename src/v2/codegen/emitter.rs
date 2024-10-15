@@ -549,7 +549,7 @@ where
         self.emit_struct(def, ctx)
     }
 
-    /// Checks if the given definition is a simple map and returns the corresponding `BTreeMap`.
+    /// Checks if the given definition is a simple map and returns the corresponding `PropertiesMap`.
     fn try_emit_map(
         &self,
         def: &E::Definition,
@@ -565,7 +565,7 @@ where
                 let ty = self
                     .build_def(&schema, ctx.clone().define(false))?
                     .known_type();
-                let map = format!("std::collections::BTreeMap<String, {}>", ty);
+                let map = format!("paperclip::v2::PropertiesMap<String, {}>", ty);
                 Ok(EmittedUnit::Known(map))
             }
             _ => Ok(EmittedUnit::None),
@@ -673,7 +673,7 @@ where
             if let Some(Either::Left(true)) = def.additional_properties() {
                 obj.fields_mut().push(ObjectField {
                     name: EXTRA_PROPS_FIELD.into(),
-                    ty_path: "std::collections::BTreeMap<String, Any>".into(),
+                    ty_path: "paperclip::v2::PropertiesMap<String, Any>".into(),
                     description: None,
                     is_required: false,
                     needs_any: true,

@@ -19,8 +19,8 @@ pub struct JsonSchemaProps<Any> {
     #[serde(rename = "anyOf")]
     pub any_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
     pub default: Option<Any>,
-    pub definitions: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
-    pub dependencies: Option<std::collections::BTreeMap<String, Any>>,
+    pub definitions: Option<paperclip::v2::PropertiesMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub dependencies: Option<paperclip::v2::PropertiesMap<String, Any>>,
     pub description: Option<String>,
     #[serde(rename = "enum")]
     pub enum_: Option<Vec<Any>>,
@@ -56,8 +56,8 @@ pub struct JsonSchemaProps<Any> {
     pub one_of: Option<Vec<crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
     pub pattern: Option<String>,
     #[serde(rename = "patternProperties")]
-    pub pattern_properties: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
-    pub properties: Option<std::collections::BTreeMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub pattern_properties: Option<paperclip::v2::PropertiesMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
+    pub properties: Option<paperclip::v2::PropertiesMap<String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>>>,
     pub required: Option<Vec<String>>,
     pub title: Option<String>,
     #[serde(rename = "type")]
@@ -151,13 +151,13 @@ impl<Any> JsonSchemaPropsBuilder<Any> {
 
     #[inline]
     pub fn definitions(mut self, value: impl Iterator<Item = (String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>)>) -> Self {
-        self.body.definitions = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.definitions = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
     #[inline]
     pub fn dependencies(mut self, value: impl Iterator<Item = (String, impl Into<Any>)>) -> Self {
-        self.body.dependencies = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.dependencies = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
@@ -295,13 +295,13 @@ impl<Any> JsonSchemaPropsBuilder<Any> {
 
     #[inline]
     pub fn pattern_properties(mut self, value: impl Iterator<Item = (String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>)>) -> Self {
-        self.body.pattern_properties = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.pattern_properties = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 
     #[inline]
     pub fn properties(mut self, value: impl Iterator<Item = (String, crate::codegen::io::k8s::apiextensions_apiserver::pkg::apis::apiextensions::v1beta1::json_schema_props::JsonSchemaProps<Any>)>) -> Self {
-        self.body.properties = Some(value.map(|(key, value)| (key, value.into())).collect::<std::collections::BTreeMap<_, _>>().into());
+        self.body.properties = Some(value.map(|(key, value)| (key, value.into())).collect::<paperclip::v2::PropertiesMap<_, _>>().into());
         self
     }
 

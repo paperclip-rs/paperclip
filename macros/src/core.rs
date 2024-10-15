@@ -148,7 +148,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn properties(&self) -> Option<&std::collections::BTreeMap<String, paperclip::v2::models::Resolvable<Self>>> {
+            fn properties(&self) -> Option<&paperclip::v2::PropertiesMap<String, paperclip::v2::models::Resolvable<Self>>> {
                 if self.properties.is_empty() {
                     None
                 } else {
@@ -157,7 +157,7 @@ pub fn emit_v2_schema_struct(input: TokenStream) -> TokenStream {
             }
 
             #[inline]
-            fn properties_mut(&mut self) -> Option<&mut std::collections::BTreeMap<String, paperclip::v2::models::Resolvable<Self>>> {
+            fn properties_mut(&mut self) -> Option<&mut paperclip::v2::PropertiesMap<String, paperclip::v2::models::Resolvable<Self>>> {
                 if self.properties.is_empty() {
                     None
                 } else {
@@ -298,8 +298,8 @@ fn schema_fields(name: &Ident, is_ref: bool) -> proc_macro2::TokenStream {
     ));
 
     gen.extend(quote!(
-        #[serde(default, skip_serializing_if = "std::collections::BTreeMap::is_empty")]
-        pub properties: std::collections::BTreeMap<String,
+        #[serde(default, skip_serializing_if = "paperclip::v2::PropertiesMap::is_empty")]
+        pub properties: paperclip::v2::PropertiesMap<String,
     ));
     add_self(&mut gen);
     gen.extend(quote!(>,));
