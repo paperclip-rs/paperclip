@@ -1,0 +1,68 @@
+name: Publish Bins
+on:
+  push:
+    branches:
+      - test
+    
+  # release:
+  #   types: [published]
+jobs:
+  paperclip-bins:
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            target: x86_64-unknown-linux-musl
+          - os: ubuntu-latest
+            target: aarch64-unknown-linux-musl
+          - os: macos-14
+            target: x86_64-apple-darwin
+          - os: macos-13
+            target: aarch64-apple-darwin
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          submodules: recursive
+      - name: Install Rust
+        uses: dtolnay/rust-toolchain@stable
+        with:
+          targets: ${{ matrix.target }}
+      - name: Build
+        uses: actions-rs/cargo@v1
+        with:
+          use-cross: true
+          command: build
+          args: --bins --verbose --release --features "cli" -p paperclip -p paperclip-codegen --target ${{ matrix.target }}
+      - name: Ls
+        run: |
+          ls -l target/${{ matrix.target }}/release
+      - uses: actions/upload-artifact@v4
+        with:
+          name: paperclip-${{ matrix.target }}
+          path: |
+            ./target/${{ matrix.target }}/release/paperclip
+            ./target/${{ matrix.target }}/release/paperclip-codegen
+          if-no-files-found: error
+      # - name: Build archive
+      #   shell: bash
+      #   run: |
+      #     # Replace with the name of your binary
+      #     binary_name="<BINARY_NAME>"
+      
+      #     dirname="$binary_name-${{ env.VERSION }}-${{ matrix.target }}"
+      #     mkdir "$dirname"
+      #     if [ "${{ matrix.os }}" = "windows-latest" ]; then
+      #       mv "target/${{ matrix.target }}/release/$binary_name.exe" "$dirname"
+      #     else
+      #       mv "target/${{ matrix.target }}/release/$binary_name" "$dirname"
+      #     fi
+      
+      #     if [ "${{ matrix.os }}" = "windows-latest" ]; then
+      #       7z a "$dirname.zip" "$dirname"
+      #       echo "ASSET=$dirname.zip" >> $GITHUB_ENV
+      #     else
+      #       tar -czf "$dirname.tar.gz" "$dirname"
+      #       echo "ASSET=$dirname.tar.gz" >> $GITHUB_ENV
+      #     fi
