@@ -152,5 +152,6 @@ fn main() {
     env_logger::init();
     if let Err(e) = parse_args_and_run() {
         eprintln!("{}", e);
+        std::process::exit(1);
     }
 }
