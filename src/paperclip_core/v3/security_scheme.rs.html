@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/security_scheme.rs`."><title>security_scheme.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-46f98efaafac5295.ttf.woff2,FiraSans-Regular-018c141bf0843ffd.woff2,FiraSans-Medium-8f9a781e4970d388.woff2,SourceCodePro-Regular-562dcc5011b6de7d.ttf.woff2,SourceCodePro-Semibold-d899c5a5c4aeb14a.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-76eba96aa4d2e634.css"><link rel="stylesheet" href="../../../static.files/rustdoc-b0742ba02757f159.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.83.0-nightly (6b9676b45 2024-10-12)" data-channel="nightly" data-search-js="search-e056c65ede92db13.js" data-settings-js="settings-805db61a62df4bd2.js" ><script src="../../../static.files/storage-1d39b6787ed640ff.js"></script><script defer src="../../../static.files/src-script-e66d777a5a92e9b2.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-f070b9041d14864c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-0111fcff984fae8f.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-422f7d1d52889060.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-2c020d218678b618.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_core/v3/</div>security_scheme.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `core/src/v3/security_scheme.rs`."><title>security_scheme.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_core" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (da935398d 2024-10-19)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_core/v3/</div>security_scheme.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -78,7 +78,16 @@
 <a href="#77" id="77">77</a>
 <a href="#78" id="78">78</a>
 <a href="#79" id="79">79</a>
-<a href="#80" id="80">80</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
+<a href="#80" id="80">80</a>
+<a href="#81" id="81">81</a>
+<a href="#82" id="82">82</a>
+<a href="#83" id="83">83</a>
+<a href="#84" id="84">84</a>
+<a href="#85" id="85">85</a>
+<a href="#86" id="86">86</a>
+<a href="#87" id="87">87</a>
+<a href="#88" id="88">88</a>
+<a href="#89" id="89">89</a></pre></div><pre class="rust"><code><span class="kw">use </span><span class="kw">super</span>::v2;
 
 <span class="macro">macro_rules!</span> to_indexmap {
     (<span class="macro-nonterminal">$v2</span>:expr) =&gt; {
@@ -96,6 +105,7 @@
                 scheme: <span class="string">"basic"</span>.to_string(),
                 bearer_format: <span class="prelude-val">None</span>,
                 description: v2.description,
+                extensions: Default::default(),
             },
             <span class="string">"apiKey" </span>=&gt; openapiv3::SecurityScheme::APIKey {
                 location: <span class="kw">match </span>v2.in_.unwrap_or_default().as_str() {
@@ -105,46 +115,53 @@
                 },
                 name: v2.name.unwrap_or_default(),
                 description: v2.description,
+                extensions: Default::default(),
             },
             <span class="string">"oauth2" </span>=&gt; {
                 <span class="kw">let </span>flow = v2.flow.unwrap_or_default();
                 openapiv3::SecurityScheme::OAuth2 {
                     flows: openapiv3::OAuth2Flows {
                         implicit: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">"implicit" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::Implicit {
+                            <span class="string">"implicit" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::ImplicitOAuth2Flow {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 refresh_url: <span class="prelude-val">None</span>,
                                 scopes: <span class="macro">to_indexmap!</span>(v2),
+                                extensions: Default::default(),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
                         password: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">"password" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::Password {
+                            <span class="string">"password" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::PasswordOAuth2Flow {
                                 refresh_url: <span class="prelude-val">None</span>,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 scopes: <span class="macro">to_indexmap!</span>(v2),
+                                extensions: Default::default(),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
                         client_credentials: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">"application" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::ClientCredentials {
+                            <span class="string">"application" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::ClientCredentialsOAuth2Flow {
                                 refresh_url: <span class="prelude-val">None</span>,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 scopes: <span class="macro">to_indexmap!</span>(v2),
+                                extensions: Default::default(),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
                         authorization_code: <span class="kw">match </span>flow.as_str() {
-                            <span class="string">"accessCode" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::OAuth2Flow::AuthorizationCode {
+                            <span class="string">"accessCode" </span>=&gt; <span class="prelude-val">Some</span>(openapiv3::AuthorizationCodeOAuth2Flow {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 refresh_url: <span class="prelude-val">None</span>,
                                 scopes: <span class="macro">to_indexmap!</span>(v2),
+                                extensions: Default::default(),
                             }),
                             <span class="kw">_ </span>=&gt; <span class="prelude-val">None</span>,
                         },
+                        extensions: Default::default(),
                     },
                     description: v2.description,
+                    extensions: Default::default(),
                 }
             }
             type_ =&gt; {
@@ -153,6 +170,7 @@
                     scheme: <span class="string">"invalid"</span>.to_string(),
                     bearer_format: <span class="prelude-val">None</span>,
                     description: v2.description,
+                    extensions: Default::default(),
                 }
             }
         }
