@@ -16,6 +16,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                 scheme: "basic".to_string(),
                 bearer_format: None,
                 description: v2.description,
+                extensions: Default::default(),
             },
             "apiKey" => openapiv3::SecurityScheme::APIKey {
                 location: match v2.in_.unwrap_or_default().as_str() {
@@ -25,46 +26,53 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                 },
                 name: v2.name.unwrap_or_default(),
                 description: v2.description,
+                extensions: Default::default(),
             },
             "oauth2" => {
                 let flow = v2.flow.unwrap_or_default();
                 openapiv3::SecurityScheme::OAuth2 {
                     flows: openapiv3::OAuth2Flows {
                         implicit: match flow.as_str() {
-                            "implicit" => Some(openapiv3::OAuth2Flow::Implicit {
+                            "implicit" => Some(openapiv3::ImplicitOAuth2Flow {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 refresh_url: None,
                                 scopes: to_indexmap!(v2),
+                                extensions: Default::default(),
                             }),
                             _ => None,
                         },
                         password: match flow.as_str() {
-                            "password" => Some(openapiv3::OAuth2Flow::Password {
+                            "password" => Some(openapiv3::PasswordOAuth2Flow {
                                 refresh_url: None,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 scopes: to_indexmap!(v2),
+                                extensions: Default::default(),
                             }),
                             _ => None,
                         },
                         client_credentials: match flow.as_str() {
-                            "application" => Some(openapiv3::OAuth2Flow::ClientCredentials {
+                            "application" => Some(openapiv3::ClientCredentialsOAuth2Flow {
                                 refresh_url: None,
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 scopes: to_indexmap!(v2),
+                                extensions: Default::default(),
                             }),
                             _ => None,
                         },
                         authorization_code: match flow.as_str() {
-                            "accessCode" => Some(openapiv3::OAuth2Flow::AuthorizationCode {
+                            "accessCode" => Some(openapiv3::AuthorizationCodeOAuth2Flow {
                                 authorization_url: v2.auth_url.clone().unwrap_or_default(),
                                 token_url: v2.token_url.clone().unwrap_or_default(),
                                 refresh_url: None,
                                 scopes: to_indexmap!(v2),
+                                extensions: Default::default(),
                             }),
                             _ => None,
                         },
+                        extensions: Default::default(),
                     },
                     description: v2.description,
+                    extensions: Default::default(),
                 }
             }
             type_ => {
@@ -73,6 +81,7 @@ impl From<v2::SecurityScheme> for openapiv3::SecurityScheme {
                     scheme: "invalid".to_string(),
                     bearer_format: None,
                     description: v2.description,
+                    extensions: Default::default(),
                 }
             }
         }
