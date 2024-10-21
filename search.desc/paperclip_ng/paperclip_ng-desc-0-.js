@@ -1,0 +1,1 @@
+searchState.loadedDescShard("paperclip_ng", 0, "OpenApiV3 code generator.\nReturns the argument unchanged.\nReturns the argument unchanged.\nCalls <code>U::from(self)</code>.\nCalls <code>U::from(self)</code>.\nCreates a new OpenApi V3 Generator.\nRun the OpenApi V3 Code Generator.")

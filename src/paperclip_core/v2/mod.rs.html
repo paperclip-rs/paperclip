@@ -95,9 +95,9 @@
 <span class="kw">pub use </span>serde_json;
 
 <span class="attr">#[cfg(feature = <span class="string">"codegen"</span>)]
-</span><span class="kw">use </span><span class="self">self</span>::resolver::Resolver;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span><span class="self">self</span>::resolver::Resolver;
 <span class="attr">#[cfg(feature = <span class="string">"codegen"</span>)]
-</span><span class="kw">use </span><span class="kw">crate</span>::error::ValidationError;
+</span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">use </span><span class="kw">crate</span>::error::ValidationError;
 
 <span class="attr">#[cfg(feature = <span class="string">"codegen"</span>)]
 </span><span class="kw">impl</span>&lt;S: Schema + Default&gt; ResolvableApi&lt;S&gt; {
