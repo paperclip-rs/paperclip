@@ -1,6 +1,6 @@
 [package]
 name = "paperclip"
-version = "0.9.2"
+version = "0.9.3"
 edition = "2018"
 description = "OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
 documentation = "https://paperclip-rs.github.io/paperclip/paperclip"

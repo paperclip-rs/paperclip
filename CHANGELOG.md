@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.3] - 2024-10-21
+### Added
+- Experimental openapiv3 cli codegen. [PR#506](https://github.com/paperclip-rs/paperclip/pull/506)
+
 ## [0.9.2] - 2024-10-13
 ### Fixed
 - Switch to pro-macro-error2. [PR#545](https://github.com/paperclip-rs/paperclip/pull/545)
