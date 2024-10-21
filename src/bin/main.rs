@@ -1,4 +1,5 @@
 use anyhow::Error;
+
 use paperclip::{
     v2::{
         self,
@@ -14,6 +15,11 @@ use std::{
     path::PathBuf,
 };
 
+#[cfg(feature = "cli-ng")]
+use heck::ToSnakeCase;
+#[cfg(feature = "cli-ng")]
+use paperclip_ng::v3_03 as v3;
+
 fn parse_version(s: &str) -> Result<OApiVersion, Error> {
     match s {
         "v2" => Ok(OApiVersion::V2),
@@ -26,6 +32,11 @@ fn parse_spec(s: &str) -> Result<ResolvableApi<DefaultSchema>, Error> {
     let fd = File::open(s)?;
     Ok(v2::from_reader(fd)?)
 }
+#[cfg(feature = "cli-ng")]
+fn parse_spec_v3(s: &str) -> Result<openapiv3::OpenAPI, Error> {
+    let fd = File::open(s)?;
+    Ok(v2::from_reader_v3(fd)?)
+}
 
 #[derive(Debug)]
 enum OApiVersion {
@@ -36,8 +47,8 @@ enum OApiVersion {
 #[derive(Debug, StructOpt)]
 struct Opt {
     /// Path to OpenAPI spec in JSON/YAML format (also supports publicly accessible URLs).
-    #[structopt(parse(try_from_str = parse_spec))]
-    spec: ResolvableApi<DefaultSchema>,
+    #[structopt(long)]
+    spec: std::path::PathBuf,
     /// OpenAPI version (e.g., v2).
     #[structopt(long = "api", parse(try_from_str = parse_version))]
     api: OApiVersion,
@@ -47,6 +58,14 @@ struct Opt {
     /// Emit CLI target instead.
     #[structopt(long = "cli")]
     cli: bool,
+    #[cfg(feature = "cli-ng")]
+    /// Don't Render models.
+    #[structopt(long)]
+    no_models: bool,
+    #[cfg(feature = "cli-ng")]
+    /// Don't Render operations.
+    #[structopt(long)]
+    no_ops: bool,
     /// Do not make the crate a root crate.
     #[structopt(long = "no-root")]
     no_root: bool,
@@ -57,19 +76,55 @@ struct Opt {
     /// Version (defaults to 0.1.0)
     #[structopt(long = "version")]
     pub version: Option<String>,
+    #[cfg(feature = "cli-ng")]
+    /// The Edition of the crate.
+    #[structopt(long = "edition", default_value = "2018")]
+    pub edition: String,
+    #[cfg(feature = "cli-ng")]
+    /// Use custom templates (mustache) files, rather than the builtin ones.
+    /// The root dir in this path must be the template name, example: default.
+    #[structopt(short = "t", long = "templates", parse(from_os_str))]
+    templates: Option<PathBuf>,
 }
 
 fn parse_args_and_run() -> Result<(), Error> {
-    let opt = Opt::from_args();
+    let opt: Opt = Opt::from_args();
+
+    if let Some(o) = &opt.output {
+        fs::create_dir_all(o)?;
+    }
+
+    #[cfg(feature = "cli-ng")]
+    if let OApiVersion::V3 = opt.api {
+        let spec = parse_spec_v3(opt.spec.to_string_lossy().as_ref())?;
+        let name = opt.name.map(Ok::<String, Error>).unwrap_or_else(|| {
+            Ok(fs::canonicalize(std::path::Path::new("."))?
+                .file_name()
+                .ok_or(PaperClipError::InvalidCodegenDirectory)?
+                .to_string_lossy()
+                .into_owned()
+                .to_snake_case())
+        })?;
+        let info = v3::PackageInfo {
+            libname: name.to_snake_case(),
+            name,
+            version: opt.version.unwrap_or_else(|| "0.1.0".into()),
+            edition: opt.edition,
+        };
+        v3::OpenApiV3::new(spec, opt.templates, opt.output, info)?
+            .run(!opt.no_models, !opt.no_ops)?;
+        return Ok(());
+    }
+
+    #[cfg(not(feature = "cli-ng"))]
     if let OApiVersion::V3 = opt.api {
         return Err(PaperClipError::UnsupportedOpenAPIVersion.into());
     }
 
-    let spec = opt.spec.resolve()?;
+    let spec = parse_spec(&opt.spec.to_string_lossy())?.resolve()?;
     let mut state = EmitterState::default();
 
     if let Some(o) = opt.output {
-        fs::create_dir_all(&o)?;
         state.working_dir = o;
     }
 
@@ -97,5 +152,6 @@ fn main() {
     env_logger::init();
     if let Err(e) = parse_args_and_run() {
         eprintln!("{}", e);
+        std::process::exit(1);
     }
 }

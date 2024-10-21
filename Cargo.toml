@@ -1,6 +1,6 @@
 [package]
 name = "paperclip"
-version = "0.9.2"
+version = "0.9.3"
 edition = "2018"
 description = "OpenAPI tooling library for type-safe compile-time checked HTTP APIs"
 documentation = "https://paperclip-rs.github.io/paperclip/paperclip"
@@ -20,9 +20,10 @@ required-features = ["cli"]
 paperclip-actix = { path = "plugins/actix-web", version = "0.7.2", optional = true }
 paperclip-core = { path = "core", version = "0.7.2" }
 paperclip-macros = { path = "macros", version = "0.7.0", optional = true }
+paperclip-ng = { path = "cli-ng", version = "0.1.0", optional = true }
 
 env_logger = { version = "0.8", optional = true }
-git2 = { version = "0.15", optional = true }
+git2 = { version = "0.15", default-features = false, optional = true }
 heck = { version = "0.4", optional = true }
 http = { version = "0.2", optional = true }
 itertools = "0.10"
@@ -83,7 +84,8 @@ codegen = ["heck", "http", "log", "regex", "tinytemplate", "paperclip-core/codeg
 v2 = ["paperclip-macros/v2", "paperclip-core/v2"]
 # OpenAPI v2 to v3 support
 v3 = ["openapiv3-paper", "v2", "paperclip-core/v3", "paperclip-actix/v3"]
-
+# Experimental V3 CodeGen
+cli-ng = ["cli", "paperclip-ng", "openapiv3-paper"]
 
 # Features for implementing traits for dependencies.
 actix-multipart = ["paperclip-core/actix-multipart"]
@@ -107,6 +109,7 @@ members = [
     "core",
     "macros",
     "plugins/actix-web",
+    "cli-ng"
 ]
 
 [[test]]

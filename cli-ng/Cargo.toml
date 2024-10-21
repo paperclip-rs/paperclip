@@ -1,0 +1,27 @@
+[package]
+name = "paperclip-ng"
+version = "0.1.0"
+edition = "2018"
+license = "MIT OR Apache-2.0"
+keywords = [ "openapi", "openapiv3", "cli", "codegen" ]
+description = "Experimental OpenAPI V3.0.3 Code Generator"
+homepage = "https://github.com/paperclip-rs/paperclip"
+repository = "https://github.com/paperclip-rs/paperclip"
+
+[[bin]]
+name = "paperclip-ng"
+path = "src/bin/cli/main.rs"
+
+[dependencies]
+ramhorns = { version = "1.0", default-features = false, features = ["indexes"] }
+ramhorns-derive = { version = "1.0" }
+openapiv3-paper = { version = "2.0" }
+heck = { version = "0.4" }
+itertools = { version = "0.10" }
+
+env_logger = "0.8"
+log = { version = "0.4", features = ["kv_unstable"] }
+structopt = { version = "0.3" }
+serde_json = "1.0"
+serde_yaml = "0.9"
+thiserror = "1.0"
