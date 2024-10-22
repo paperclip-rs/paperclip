@@ -12,3 +12,4 @@ _book/
 .vscode/
 .idea/
 /rust-toolchain.toml
+testgen/

@@ -77,6 +77,9 @@ struct SupportingTpl<'a> {
     package_version: &'a str,
     package_libname: &'a str,
     package_edition: &'a str,
+    // todo: should be configurable.
+    api_doc_path: &'a str,
+    model_doc_path: &'a str,
 }
 #[derive(Clone, Content)]
 #[ramhorns(rename_all = "camelCase")]
@@ -244,6 +247,8 @@ impl OpenApiV3 {
                 package_version: self.package_info.version.as_str(),
                 package_libname: self.package_info.libname.as_str(),
                 package_edition: self.package_info.edition.as_str(),
+                api_doc_path: "docs/apis/",
+                model_doc_path: "docs/models/",
             },
         )?;
 
