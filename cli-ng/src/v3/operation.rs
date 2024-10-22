@@ -86,7 +86,11 @@ pub(crate) struct Operation {
 
     operation_id_original: Option<String>,
     operation_id_camel_case: Option<String>,
+    operation_id_lower_case: Option<String>,
     support_multiple_responses: bool,
+
+    api_doc_path: &'static str,
+    model_doc_path: &'static str,
 }
 
 fn query_param(api: &OpenApiV3, value: &openapiv3::Parameter) -> Option<Parameter> {
@@ -205,6 +209,10 @@ impl Operation {
             summary: operation.summary.clone(),
             tags: operation.tags.clone(),
             is_deprecated: Some(operation.deprecated),
+            operation_id_lower_case: operation
+                .operation_id
+                .as_ref()
+                .map(|o| o.to_lowercase()),
             operation_id_camel_case: operation
                 .operation_id
                 .as_ref()
@@ -225,6 +233,8 @@ impl Operation {
             return_type: return_model.data_type(),
             has_auth_methods: operation.security.is_some(),
             vendor_extensions,
+            api_doc_path: "docs/apis/",
+            model_doc_path: "docs/models/",
             ..Default::default()
         }
     }

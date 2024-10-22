@@ -219,39 +219,39 @@ pub(super) fn default_templates(
         // Actix
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/actix/client/api_clients.mustache"),
-            "apis",
+            "src/apis",
             "actix/client/mod.rs",
         ),
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/actix/server/handlers.mustache"),
-            "apis",
+            "src/apis",
             "actix/server/handlers.rs",
         ),
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/actix/mod.mustache"),
-            "apis",
+            "src/apis",
             "actix/mod.rs",
         ),
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/actix/server/api.mustache"),
-            "apis",
+            "src/apis",
             "actix/server/mod.rs",
         ),
         // Tower-hyper
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/tower-hyper/mod.mustache"),
-            "apis",
+            "src/apis",
             "tower/mod.rs",
         ),
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/tower-hyper/client/api_clients.mustache"),
-            "apis",
+            "src/apis",
             "tower/client/mod.rs",
         ),
         // Common
         ApiTemplateFile::new(
             path_or_builtin!(tpl_path, "default/mod.mustache"),
-            "apis",
+            "src/apis",
             "mod.rs",
         ),
         ApiTemplateFile::new(
@@ -265,7 +265,7 @@ pub(super) fn default_templates(
     let model_templates = vec![
         ModelTemplateFile::new(
             path_or_builtin!(tpl_path, "default/model.mustache"),
-            "models",
+            "src/models",
             ".rs",
         ),
         ModelTemplateFile::new(
@@ -278,7 +278,7 @@ pub(super) fn default_templates(
     let supporting_templates = vec![
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/model_mod.mustache"),
-            "models",
+            "src/models",
             "mod.rs",
         ),
         SuppTemplateFile::new(
@@ -286,37 +286,37 @@ pub(super) fn default_templates(
                 tpl_path,
                 "default/tower-hyper/client/configuration.mustache"
             ),
-            "clients/tower",
+            "src/clients/tower",
             "configuration.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/tower-hyper/client/client.mustache"),
-            "clients/tower",
+            "src/clients/tower",
             "mod.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/tower-hyper/client/body.mustache"),
-            "clients/tower",
+            "src/clients/tower",
             "body.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/api_mod.mustache"),
-            "apis",
+            "src/apis",
             "mod.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/mod_clients.mustache"),
-            "clients",
+            "src/clients",
             "mod.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/lib.mustache"),
-            "",
-            "mod.rs",
+            "src/",
+            "lib.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/actix/server/api_mod.mustache"),
-            "apis",
+            "src/apis",
             "actix_server.rs",
         ),
         SuppTemplateFile::new(
@@ -331,8 +331,13 @@ pub(super) fn default_templates(
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/openapi.mustache"),
-            "apis",
+            "src/apis",
             "openapi.yaml",
+        ),
+        SuppTemplateFile::new(
+            path_or_builtin!(tpl_path, "default/README.mustache"),
+            "",
+            "README.md",
         ),
     ];
     Ok((api_templates, model_templates, supporting_templates))
