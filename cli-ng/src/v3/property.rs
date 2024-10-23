@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt::Display, ops::Deref, rc::Rc};
+use std::{collections::HashMap, convert::TryInto, fmt::Display, ops::Deref, rc::Rc};
 
 use heck::{ToSnakeCase, ToUpperCamelCase};
 use ramhorns_derive::Content;
@@ -92,7 +92,7 @@ impl PropertyDataType {
         self.set_if_unresolved(Self::Enum(name.to_string(), data_type.to_string()));
     }
     fn set_any(&mut self) {
-        self.set_if_unresolved(Self::Any);
+        *self = Self::Any;
     }
     fn set_if_unresolved(&mut self, to: Self) {
         if !matches!(self, Self::Resolved(_, _)) {
@@ -169,7 +169,6 @@ pub(crate) struct Property {
     data_format: String,
     /// The type_ coming from component schema.
     type_: String,
-    unescaped_description: String,
 
     /// Booleans for is_$-like type checking.
     is_string: bool,
@@ -190,6 +189,7 @@ pub(crate) struct Property {
     is_primitive_type: bool,
     is_boolean: bool,
     is_uuid: bool,
+    is_uri: bool,
     is_any_type: bool,
     is_enum: bool,
     is_array: bool,
@@ -290,10 +290,7 @@ impl Property {
         self.is_nullable = data.nullable;
         self.is_deprecated = data.deprecated;
         self.title = data.title.clone();
-        self.description = data
-            .description
-            .as_ref()
-            .map(|s| s.escape_default().to_string().replace("\\n", " "));
+        self.description = data.description.as_ref().map(|s| s.replace('\n', " "));
         self.example = data.example.as_ref().map(ToString::to_string);
         self
     }
@@ -347,6 +344,8 @@ impl Property {
     fn with_data_type_any(mut self, is_add_props: bool) -> Self {
         self.data_type.set_any();
         self.is_any_type = true;
+        self.is_model = false;
+        self.is_container = true;
         self.additional_properties_is_any_type = is_add_props;
         self
     }
@@ -403,7 +402,12 @@ impl Property {
     ) -> Self {
         let name = name.unwrap_or_default();
         let type_ = type_.unwrap_or_default();
-        trace!("PropertyFromSchema: {}/{}", name, type_);
+        trace!(
+            "PropertyFromSchema: {}/{}/{}",
+            name,
+            type_,
+            Self::schema_kind_str(schema)
+        );
         let prop = Property::from(&schema.schema_data)
             .with_name(name)
             .with_parent(&parent)
@@ -411,6 +415,17 @@ impl Property {
             .with_component_model(root.contains_schema(type_));
 
         prop.with_kind(root, schema, &schema.schema_kind, parent, name, type_)
+    }
+
+    fn schema_kind_str(schema: &openapiv3::Schema) -> &str {
+        match &schema.schema_kind {
+            openapiv3::SchemaKind::Type(_) => "type",
+            openapiv3::SchemaKind::OneOf { .. } => "oneOf",
+            openapiv3::SchemaKind::AllOf { .. } => "allOf",
+            openapiv3::SchemaKind::AnyOf { .. } => "anyOf",
+            openapiv3::SchemaKind::Not { .. } => "not",
+            openapiv3::SchemaKind::Any(..) => "any",
+        }
     }
 
     fn with_kind(
@@ -523,6 +538,7 @@ impl Property {
                     }
                     openapiv3::VariantOrUnknownOrEmpty::Unknown(format) => match format.as_str() {
                         "uuid" => data_type.resolve("uuid::Uuid"),
+                        "uri" => data_type.resolve("url::Url"),
                         _ => data_type.resolve_format("String", format),
                     },
                     openapiv3::VariantOrUnknownOrEmpty::Empty => {
@@ -540,7 +556,7 @@ impl Property {
             }
             PropertyDataType::Boolean => data_type.resolve("bool"),
             PropertyDataType::Integer(type_) => {
-                let (signed, bits, format) = match type_.format {
+                let (signed, mut bits, format) = match type_.format {
                     openapiv3::VariantOrUnknownOrEmpty::Item(item) => match item {
                         openapiv3::IntegerFormat::Int32 => (true, 32, Some("int32".into())),
                         openapiv3::IntegerFormat::Int64 => (true, 64, Some("int64".into())),
@@ -557,6 +573,12 @@ impl Property {
                     _ => (true, 0, None),
                 };
                 let signed = type_.minimum.map(|m| m < 0).unwrap_or(signed);
+                if let Some(max) = type_.maximum {
+                    let r_bits = floor_log2(max.try_into().unwrap());
+                    if bits == 0 || bits > r_bits {
+                        bits = r_bits;
+                    }
+                }
 
                 // no format specified
                 let bits = if bits == 0 {
@@ -730,9 +752,17 @@ impl Property {
     pub fn is_uuid(&self) -> bool {
         self.is_uuid
     }
+    /// Check if the property is a string uri.
+    pub fn is_uri(&self) -> bool {
+        self.is_uri
+    }
     /// Check if the property is a container.
     pub fn is_container(&self) -> bool {
         self.is_container
+    }
+    /// Check if the property is of any type.
+    pub fn is_any_type(&self) -> bool {
+        self.is_any_type
     }
     /// Check if the property is a primitive type.
     pub fn is_primitive_type(&self) -> bool {
@@ -767,8 +797,6 @@ impl Property {
     fn with_anyobj(mut self, root: &super::OpenApiV3, by: &openapiv3::AnySchema) -> Self {
         self.min_properties = by.min_properties;
         self.max_properties = by.max_properties;
-
-        self.is_model = true;
 
         let vars = by
             .properties
@@ -813,6 +841,7 @@ impl Property {
             .filter(|o| o.required.len() == 1)
             .for_each(|o| vars_.retain(|v| v.name != o.required[0]));
 
+        self.is_model = true;
         self.one_of = vec![self.clone()];
         self
     }
@@ -940,6 +969,7 @@ impl Property {
             },
             openapiv3::VariantOrUnknownOrEmpty::Unknown(format) => match format.as_str() {
                 "uuid" => self.is_uuid = true,
+                "uri" => self.is_string = true,
                 "date" => self.is_date = true,
                 "date-time" => self.is_date_time = true,
                 _ => {
@@ -963,6 +993,7 @@ impl Property {
                 .collect::<Vec<_>>();
 
             self.is_model = true;
+            self.is_string = false;
             self.allowable_values.insert("enumVars".into(), enum_vars);
             self.data_type.set_enum(&self.name, &self.type_);
         } else {
@@ -978,4 +1009,8 @@ impl Property {
 pub(crate) struct EnumValue {
     name: String,
     value: String,
+}
+
+fn floor_log2(x: u64) -> u64 {
+    65 - (x.leading_zeros() as u64)
 }

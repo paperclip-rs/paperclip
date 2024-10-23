@@ -101,12 +101,14 @@ struct OperationsTpl<'a> {
 pub(super) struct OperationsApiTpl<'a> {
     classname: &'a str,
     class_filename: &'a str,
+    has_auth_methods: bool,
 
     operations: OperationsTpl<'a>,
 }
 pub(super) struct OperationsApi {
     classname: String,
     class_filename: String,
+    has_auth_methods: bool,
 
     operations: Vec<Operation>,
 }
@@ -122,6 +124,7 @@ impl OpenApiV3 {
             .map(|o| OperationsApiTpl {
                 classname: o.classname(),
                 class_filename: o.class_filename(),
+                has_auth_methods: o.has_auth_methods,
                 operations: OperationsTpl {
                     operation: &o.operations,
                 },
@@ -327,9 +330,16 @@ impl OpenApiV3 {
             .api
             .operations()
             .map(|(path, method, operation)| Operation::new(self, path, method, operation))
+            .sorted_by(Self::sort_op_id)
             .collect::<Vec<Operation>>();
 
         Ok(operation)
+    }
+    fn sort_op_id(a: &Operation, b: &Operation) -> std::cmp::Ordering {
+        a.operation_id_original
+            .clone()
+            .unwrap_or_default()
+            .cmp(&b.operation_id_original.clone().unwrap())
     }
     fn apis(&self, operations: &Vec<Operation>) -> Result<Vec<OperationsApi>, std::io::Error> {
         let mut tags = std::collections::HashMap::<String, OperationsApi>::new();
@@ -490,6 +500,7 @@ impl From<&Operation> for OperationsApi {
             class_filename: src.class_filename().into(),
             classname: src.classname().into(),
             operations: vec![src.clone()],
+            has_auth_methods: src.has_auth_methods,
         }
     }
 }
