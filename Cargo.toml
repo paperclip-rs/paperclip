@@ -20,7 +20,7 @@ required-features = ["cli"]
 paperclip-actix = { path = "plugins/actix-web", version = "0.7.2", optional = true }
 paperclip-core = { path = "core", version = "0.7.2" }
 paperclip-macros = { path = "macros", version = "0.7.0", optional = true }
-paperclip-ng = { path = "cli-ng", version = "0.1.0", optional = true }
+paperclip-ng = { path = "cli-ng", version = "0.1.1", optional = true }
 
 env_logger = { version = "0.8", optional = true }
 git2 = { version = "0.15", default-features = false, optional = true }
