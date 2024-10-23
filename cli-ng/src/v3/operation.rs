@@ -3,6 +3,7 @@ use std::collections::HashMap;
 use super::{OpenApiV3, Parameter, Property};
 
 use heck::{ToLowerCamelCase, ToSnakeCase, ToUpperCamelCase};
+use itertools::Itertools;
 use ramhorns_derive::Content;
 
 use log::debug;
@@ -38,7 +39,7 @@ pub(crate) struct Operation {
 
     path: String,
     operation_id: Option<String>,
-    return_type: String,
+    return_type: Option<String>,
     return_format: String,
     http_method: String,
     return_base_type: String,
@@ -54,8 +55,6 @@ pub(crate) struct Operation {
     has_produces: bool,
     prioritized_content_types: Vec<std::collections::HashMap<String, String>>,
 
-    body_param: Parameter,
-
     all_params: Vec<Parameter>,
     has_params: bool,
     path_params: Vec<Parameter>,
@@ -64,6 +63,8 @@ pub(crate) struct Operation {
     has_query_params: bool,
     header_params: Vec<Parameter>,
     has_header_params: bool,
+    has_body_param: bool,
+    body_param: Option<Parameter>,
     implicit_headers_params: Vec<Parameter>,
     has_implicit_headers_params: bool,
     form_params: Vec<Parameter>,
@@ -72,8 +73,8 @@ pub(crate) struct Operation {
     has_required_params: bool,
     optional_params: Vec<Parameter>,
     has_optional_params: bool,
-    auth_methods: Vec<Parameter>,
-    has_auth_methods: bool,
+    auth_methods: Vec<AuthMethod>,
+    pub(crate) has_auth_methods: bool,
 
     tags: Vec<String>,
     responses: Vec<()>,
@@ -84,10 +85,12 @@ pub(crate) struct Operation {
 
     vendor_extensions: HashMap<String, String>,
 
-    operation_id_original: Option<String>,
+    pub(crate) operation_id_original: Option<String>,
     operation_id_camel_case: Option<String>,
     operation_id_lower_case: Option<String>,
     support_multiple_responses: bool,
+
+    description: Option<String>,
 
     api_doc_path: &'static str,
     model_doc_path: &'static str,
@@ -120,6 +123,9 @@ fn header_param(api: &OpenApiV3, value: &openapiv3::Parameter) -> Option<Paramet
         }
         _ => None,
     }
+}
+fn body_param(api: &OpenApiV3, value: &openapiv3::RequestBody) -> Option<Parameter> {
+    Parameter::from_body(api, value)
 }
 
 impl Operation {
@@ -165,22 +171,33 @@ impl Operation {
                     openapiv3::ReferenceOr::Item(item) => path_param(root, item),
                 }
             })
+            .sorted_by(|a, b| b.required().cmp(&a.required()))
             .collect::<Vec<_>>();
+        let body_param = operation.request_body.as_ref().and_then(|p| {
+            match p {
+                // todo: need to handle this
+                openapiv3::ReferenceOr::Reference { .. } => todo!(),
+                openapiv3::ReferenceOr::Item(item) => body_param(root, item),
+            }
+        });
 
         let mut ext_path = path.to_string();
         for param in &path_params {
             if param.data_format() == "url" {
-                //info!("path: {path}");
-                //info!("path_params: {param:?}");
                 ext_path = path.replace(param.name(), &format!("{}:.*", param.base_name()));
                 vendor_extensions.insert("x-actix-query-string".into(), "true".into());
             }
         }
         vendor_extensions.insert("x-actixPath".into(), ext_path);
 
-        let all_params = query_params
+        let all_params = path_params
             .iter()
-            .chain(&path_params)
+            .chain(
+                query_params
+                    .iter()
+                    .sorted_by(|a, b| b.required().cmp(&a.required())),
+            )
+            .chain(&body_param)
             .cloned()
             .collect::<Vec<_>>();
         // todo: support multiple responses
@@ -204,15 +221,13 @@ impl Operation {
             None => (String::new(), String::new()),
         };
         Self {
+            description: operation.description.as_ref().map(|d| d.replace('\n', " ")),
             classname: class,
             class_filename: class_file,
             summary: operation.summary.clone(),
             tags: operation.tags.clone(),
             is_deprecated: Some(operation.deprecated),
-            operation_id_lower_case: operation
-                .operation_id
-                .as_ref()
-                .map(|o| o.to_lowercase()),
+            operation_id_lower_case: operation.operation_id.as_ref().map(|o| o.to_lowercase()),
             operation_id_camel_case: operation
                 .operation_id
                 .as_ref()
@@ -227,11 +242,42 @@ impl Operation {
             query_params,
             header_params: vec![],
             has_header_params: false,
+            has_body_param: body_param.is_some(),
+            body_param,
             path: path.to_string(),
             http_method: method.to_upper_camel_case(),
             support_multiple_responses: false,
-            return_type: return_model.data_type(),
+            return_type: {
+                let data_type = return_model.data_type();
+                if data_type == "()" {
+                    None
+                } else {
+                    Some(data_type)
+                }
+            },
             has_auth_methods: operation.security.is_some(),
+            auth_methods: match &operation.security {
+                None => vec![],
+                Some(sec) => sec
+                    .iter()
+                    .flat_map(|a| {
+                        a.iter()
+                            .map(|(key, _)| match key.as_str() {
+                                "JWT" => AuthMethod {
+                                    scheme: "JWT".to_string(),
+                                    is_basic: true,
+                                    is_basic_bearer: true,
+                                },
+                                scheme => AuthMethod {
+                                    scheme: scheme.to_string(),
+                                    is_basic: false,
+                                    is_basic_bearer: false,
+                                },
+                            })
+                            .collect::<Vec<_>>()
+                    })
+                    .collect::<Vec<_>>(),
+            },
             vendor_extensions,
             api_doc_path: "docs/apis/",
             model_doc_path: "docs/models/",
@@ -250,4 +296,13 @@ impl Operation {
     pub fn class_filename(&self) -> &str {
         &self.class_filename
     }
+}
+
+#[derive(Default, Content, Clone, Debug)]
+#[ramhorns(rename_all = "camelCase")]
+struct AuthMethod {
+    scheme: String,
+
+    is_basic: bool,
+    is_basic_bearer: bool,
 }

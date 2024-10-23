@@ -282,12 +282,22 @@ pub(super) fn default_templates(
             "mod.rs",
         ),
         SuppTemplateFile::new(
+            path_or_builtin!(tpl_path, "default/actix/client/configuration.mustache"),
+            "src/clients/actix",
+            "configuration.rs",
+        ),
+        SuppTemplateFile::new(
             path_or_builtin!(
                 tpl_path,
                 "default/tower-hyper/client/configuration.mustache"
             ),
             "src/clients/tower",
             "configuration.rs",
+        ),
+        SuppTemplateFile::new(
+            path_or_builtin!(tpl_path, "default/actix/client/client.mustache"),
+            "src/clients/actix",
+            "mod.rs",
         ),
         SuppTemplateFile::new(
             path_or_builtin!(tpl_path, "default/tower-hyper/client/client.mustache"),

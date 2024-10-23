@@ -33,10 +33,10 @@ pub trait {{{classname}}}: Clone + Send + Sync {
     {{#operations}}
     {{#operation}}
     {{#description}}
-    /// {{{.}}}
+    /// {{{description}}}
     {{/description}}
     {{#notes}}
-    /// {{{.}}}
+    /// {{{notes}}}
     {{/notes}}
     async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}ResponseContent<{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}>{{/supportMultipleResponses}}, Error<crate::models::RestJsonError>>;
     {{/operation}}
@@ -51,10 +51,10 @@ pub mod direct {
         {{#operations}}
         {{#operation}}
         {{#description}}
-        /// {{{.}}}
+        /// {{{description}}}
         {{/description}}
         {{#notes}}
-        /// {{{.}}}
+        /// {{{notes}}}
         {{/notes}}
         async fn {{{operationId}}}(&self, {{#allParams}}{{{paramName}}}: {{^required}}Option<{{/required}}{{#required}}{{#isNullable}}Option<{{/isNullable}}{{/required}}{{#isString}}{{#isArray}}Vec<{{/isArray}}&str{{#isArray}}>{{/isArray}}{{/isString}}{{#isUuid}}{{#isArray}}Vec<{{/isArray}}&uuid::Uuid{{#isArray}}>{{/isArray}}{{/isUuid}}{{^isString}}{{^isUuid}}{{^isPrimitiveType}}{{^isContainer}}crate::models::{{/isContainer}}{{/isPrimitiveType}}{{{dataType}}}{{/isUuid}}{{/isString}}{{^required}}>{{/required}}{{#required}}{{#isNullable}}>{{/isNullable}}{{/required}}{{^-last}}, {{/-last}}{{/allParams}}) -> Result<{{#supportMultipleResponses}}ResponseContent<{{{operationIdCamelCase}}}Success>{{/supportMultipleResponses}}{{^supportMultipleResponses}}{{^returnType}}(){{/returnType}}{{#returnType}}{{{returnType}}}{{/returnType}}{{/supportMultipleResponses}}, super::Error<crate::models::RestJsonError>>;
         {{/operation}}
@@ -233,7 +233,7 @@ impl {{{classname}}} for {{{classname}}}Client {
                 .map_err(RequestError::Request)?
         };
         let local_var_status = local_var_resp.status();
-        
+
         if local_var_status.is_success() {
             {{^supportMultipleResponses}}
             {{^returnType}}
@@ -283,7 +283,7 @@ impl {{{classname}}} for {{{classname}}}Client {
                     error,
                 })),
             }
-            
+
         }
     }
     {{/operation}}
