@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (da935398d 2024-10-19)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (86d69c705 2024-10-22)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -518,7 +518,23 @@
 <a href="#517" id="517">517</a>
 <a href="#518" id="518">518</a>
 <a href="#519" id="519">519</a>
-<a href="#520" id="520">520</a></pre></div><pre class="rust"><code><span class="kw">mod </span>operation;
+<a href="#520" id="520">520</a>
+<a href="#521" id="521">521</a>
+<a href="#522" id="522">522</a>
+<a href="#523" id="523">523</a>
+<a href="#524" id="524">524</a>
+<a href="#525" id="525">525</a>
+<a href="#526" id="526">526</a>
+<a href="#527" id="527">527</a>
+<a href="#528" id="528">528</a>
+<a href="#529" id="529">529</a>
+<a href="#530" id="530">530</a>
+<a href="#531" id="531">531</a>
+<a href="#532" id="532">532</a>
+<a href="#533" id="533">533</a>
+<a href="#534" id="534">534</a>
+<a href="#535" id="535">535</a>
+<a href="#536" id="536">536</a></pre></div><pre class="rust"><code><span class="kw">mod </span>operation;
 <span class="kw">mod </span>parameter;
 <span class="kw">mod </span>property;
 <span class="kw">mod </span>templates;
@@ -597,6 +613,9 @@
     package_version: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
     package_libname: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
     package_edition: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    <span class="comment">// todo: should be configurable.
+    </span>api_doc_path: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    model_doc_path: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
 }
 <span class="attr">#[derive(Clone, Content)]
 #[ramhorns(rename_all = <span class="string">"camelCase"</span>)]
@@ -618,12 +637,14 @@
 </span><span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>OperationsApiTpl&lt;<span class="lifetime">'a</span>&gt; {
     classname: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
     class_filename: <span class="kw-2">&amp;</span><span class="lifetime">'a </span>str,
+    has_auth_methods: bool,
 
     operations: OperationsTpl&lt;<span class="lifetime">'a</span>&gt;,
 }
 <span class="kw">pub</span>(<span class="kw">super</span>) <span class="kw">struct </span>OperationsApi {
     classname: String,
     class_filename: String,
+    has_auth_methods: bool,
 
     operations: Vec&lt;Operation&gt;,
 }
@@ -639,6 +660,7 @@
             .map(|o| OperationsApiTpl {
                 classname: o.classname(),
                 class_filename: o.class_filename(),
+                has_auth_methods: o.has_auth_methods,
                 operations: OperationsTpl {
                     operation: <span class="kw-2">&amp;</span>o.operations,
                 },
@@ -764,6 +786,8 @@
                 package_version: <span class="self">self</span>.package_info.version.as_str(),
                 package_libname: <span class="self">self</span>.package_info.libname.as_str(),
                 package_edition: <span class="self">self</span>.package_info.edition.as_str(),
+                api_doc_path: <span class="string">"docs/apis/"</span>,
+                model_doc_path: <span class="string">"docs/models/"</span>,
             },
         )<span class="question-mark">?</span>;
 
@@ -842,9 +866,16 @@
             </span>.api
             .operations()
             .map(|(path, method, operation)| Operation::new(<span class="self">self</span>, path, method, operation))
+            .sorted_by(<span class="self">Self</span>::sort_op_id)
             .collect::&lt;Vec&lt;Operation&gt;&gt;();
 
         <span class="prelude-val">Ok</span>(operation)
+    }
+    <span class="kw">fn </span>sort_op_id(a: <span class="kw-2">&amp;</span>Operation, b: <span class="kw-2">&amp;</span>Operation) -&gt; std::cmp::Ordering {
+        a.operation_id_original
+            .clone()
+            .unwrap_or_default()
+            .cmp(<span class="kw-2">&amp;</span>b.operation_id_original.clone().unwrap())
     }
     <span class="kw">fn </span>apis(<span class="kw-2">&amp;</span><span class="self">self</span>, operations: <span class="kw-2">&amp;</span>Vec&lt;Operation&gt;) -&gt; <span class="prelude-ty">Result</span>&lt;Vec&lt;OperationsApi&gt;, std::io::Error&gt; {
         <span class="kw">let </span><span class="kw-2">mut </span>tags = std::collections::HashMap::&lt;String, OperationsApi&gt;::new();
@@ -1005,6 +1036,7 @@
             class_filename: src.class_filename().into(),
             classname: src.classname().into(),
             operations: <span class="macro">vec!</span>[src.clone()],
+            has_auth_methods: src.has_auth_methods,
         }
     }
 }

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/templates/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (da935398d 2024-10-19)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../../static.files/storage-59e33391.js"></script><script defer src="../../../../static.files/src-script-56102188.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/templates/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/templates/mod.rs`."><title>mod.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../../" data-static-root-path="../../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (86d69c705 2024-10-22)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../../static.files/storage-59e33391.js"></script><script defer src="../../../../static.files/src-script-56102188.js"></script><script defer src="../../../../src-files.js"></script><script defer src="../../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/templates/</div>mod.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -337,7 +337,22 @@
 <a href="#336" id="336">336</a>
 <a href="#337" id="337">337</a>
 <a href="#338" id="338">338</a>
-<a href="#339" id="339">339</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
+<a href="#339" id="339">339</a>
+<a href="#340" id="340">340</a>
+<a href="#341" id="341">341</a>
+<a href="#342" id="342">342</a>
+<a href="#343" id="343">343</a>
+<a href="#344" id="344">344</a>
+<a href="#345" id="345">345</a>
+<a href="#346" id="346">346</a>
+<a href="#347" id="347">347</a>
+<a href="#348" id="348">348</a>
+<a href="#349" id="349">349</a>
+<a href="#350" id="350">350</a>
+<a href="#351" id="351">351</a>
+<a href="#352" id="352">352</a>
+<a href="#353" id="353">353</a>
+<a href="#354" id="354">354</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::ops::Deref;
 
 <span class="kw">use </span><span class="kw">crate</span>::v3::{OperationsApiTpl, Property};
 <span class="kw">use </span>heck::{ToPascalCase, ToSnakeCase};
@@ -558,39 +573,39 @@
         <span class="comment">// Actix
         </span>ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/client/api_clients.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"actix/client/mod.rs"</span>,
         ),
         ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/server/handlers.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"actix/server/handlers.rs"</span>,
         ),
         ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/mod.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"actix/mod.rs"</span>,
         ),
         ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/server/api.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"actix/server/mod.rs"</span>,
         ),
         <span class="comment">// Tower-hyper
         </span>ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/tower-hyper/mod.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"tower/mod.rs"</span>,
         ),
         ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/tower-hyper/client/api_clients.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"tower/client/mod.rs"</span>,
         ),
         <span class="comment">// Common
         </span>ApiTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/mod.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"mod.rs"</span>,
         ),
         ApiTemplateFile::new(
@@ -604,7 +619,7 @@
     <span class="kw">let </span>model_templates = <span class="macro">vec!</span>[
         ModelTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/model.mustache"</span>),
-            <span class="string">"models"</span>,
+            <span class="string">"src/models"</span>,
             <span class="string">".rs"</span>,
         ),
         ModelTemplateFile::new(
@@ -617,45 +632,55 @@
     <span class="kw">let </span>supporting_templates = <span class="macro">vec!</span>[
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/model_mod.mustache"</span>),
-            <span class="string">"models"</span>,
+            <span class="string">"src/models"</span>,
             <span class="string">"mod.rs"</span>,
+        ),
+        SuppTemplateFile::new(
+            <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/client/configuration.mustache"</span>),
+            <span class="string">"src/clients/actix"</span>,
+            <span class="string">"configuration.rs"</span>,
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(
                 tpl_path,
                 <span class="string">"default/tower-hyper/client/configuration.mustache"
             </span>),
-            <span class="string">"clients/tower"</span>,
+            <span class="string">"src/clients/tower"</span>,
             <span class="string">"configuration.rs"</span>,
         ),
         SuppTemplateFile::new(
+            <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/client/client.mustache"</span>),
+            <span class="string">"src/clients/actix"</span>,
+            <span class="string">"mod.rs"</span>,
+        ),
+        SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/tower-hyper/client/client.mustache"</span>),
-            <span class="string">"clients/tower"</span>,
+            <span class="string">"src/clients/tower"</span>,
             <span class="string">"mod.rs"</span>,
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/tower-hyper/client/body.mustache"</span>),
-            <span class="string">"clients/tower"</span>,
+            <span class="string">"src/clients/tower"</span>,
             <span class="string">"body.rs"</span>,
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/api_mod.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"mod.rs"</span>,
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/mod_clients.mustache"</span>),
-            <span class="string">"clients"</span>,
+            <span class="string">"src/clients"</span>,
             <span class="string">"mod.rs"</span>,
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/lib.mustache"</span>),
-            <span class="string">""</span>,
-            <span class="string">"mod.rs"</span>,
+            <span class="string">"src/"</span>,
+            <span class="string">"lib.rs"</span>,
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/actix/server/api_mod.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"actix_server.rs"</span>,
         ),
         SuppTemplateFile::new(
@@ -670,8 +695,13 @@
         ),
         SuppTemplateFile::new(
             <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/openapi.mustache"</span>),
-            <span class="string">"apis"</span>,
+            <span class="string">"src/apis"</span>,
             <span class="string">"openapi.yaml"</span>,
+        ),
+        SuppTemplateFile::new(
+            <span class="macro">path_or_builtin!</span>(tpl_path, <span class="string">"default/README.mustache"</span>),
+            <span class="string">""</span>,
+            <span class="string">"README.md"</span>,
         ),
     ];
     <span class="prelude-val">Ok</span>((api_templates, model_templates, supporting_templates))

@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/property.rs`."><title>property.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (da935398d 2024-10-19)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/</div>property.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/property.rs`."><title>property.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-a5dc3bae.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.84.0-nightly (86d69c705 2024-10-22)" data-channel="nightly" data-search-js="search-c5a66128.js" data-settings-js="settings-0f613d39.js" ><script src="../../../static.files/storage-59e33391.js"></script><script defer src="../../../static.files/src-script-56102188.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-5f194d8c.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/</div>property.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap"><div data-nosnippet><pre class="src-line-numbers">
 <a href="#1" id="1">1</a>
 <a href="#2" id="2">2</a>
 <a href="#3" id="3">3</a>
@@ -979,7 +979,42 @@
 <a href="#978" id="978">978</a>
 <a href="#979" id="979">979</a>
 <a href="#980" id="980">980</a>
-<a href="#981" id="981">981</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::HashMap, fmt::Display, ops::Deref, rc::Rc};
+<a href="#981" id="981">981</a>
+<a href="#982" id="982">982</a>
+<a href="#983" id="983">983</a>
+<a href="#984" id="984">984</a>
+<a href="#985" id="985">985</a>
+<a href="#986" id="986">986</a>
+<a href="#987" id="987">987</a>
+<a href="#988" id="988">988</a>
+<a href="#989" id="989">989</a>
+<a href="#990" id="990">990</a>
+<a href="#991" id="991">991</a>
+<a href="#992" id="992">992</a>
+<a href="#993" id="993">993</a>
+<a href="#994" id="994">994</a>
+<a href="#995" id="995">995</a>
+<a href="#996" id="996">996</a>
+<a href="#997" id="997">997</a>
+<a href="#998" id="998">998</a>
+<a href="#999" id="999">999</a>
+<a href="#1000" id="1000">1000</a>
+<a href="#1001" id="1001">1001</a>
+<a href="#1002" id="1002">1002</a>
+<a href="#1003" id="1003">1003</a>
+<a href="#1004" id="1004">1004</a>
+<a href="#1005" id="1005">1005</a>
+<a href="#1006" id="1006">1006</a>
+<a href="#1007" id="1007">1007</a>
+<a href="#1008" id="1008">1008</a>
+<a href="#1009" id="1009">1009</a>
+<a href="#1010" id="1010">1010</a>
+<a href="#1011" id="1011">1011</a>
+<a href="#1012" id="1012">1012</a>
+<a href="#1013" id="1013">1013</a>
+<a href="#1014" id="1014">1014</a>
+<a href="#1015" id="1015">1015</a>
+<a href="#1016" id="1016">1016</a></pre></div><pre class="rust"><code><span class="kw">use </span>std::{collections::HashMap, convert::TryInto, fmt::Display, ops::Deref, rc::Rc};
 
 <span class="kw">use </span>heck::{ToSnakeCase, ToUpperCamelCase};
 <span class="kw">use </span>ramhorns_derive::Content;
@@ -1073,7 +1108,7 @@
         <span class="self">self</span>.set_if_unresolved(<span class="self">Self</span>::Enum(name.to_string(), data_type.to_string()));
     }
     <span class="kw">fn </span>set_any(<span class="kw-2">&amp;mut </span><span class="self">self</span>) {
-        <span class="self">self</span>.set_if_unresolved(<span class="self">Self</span>::Any);
+        <span class="kw-2">*</span><span class="self">self </span>= <span class="self">Self</span>::Any;
     }
     <span class="kw">fn </span>set_if_unresolved(<span class="kw-2">&amp;mut </span><span class="self">self</span>, to: <span class="self">Self</span>) {
         <span class="kw">if </span>!<span class="macro">matches!</span>(<span class="self">self</span>, <span class="self">Self</span>::Resolved(<span class="kw">_</span>, <span class="kw">_</span>)) {
@@ -1150,7 +1185,6 @@
     data_format: String,
     <span class="doccomment">/// The type_ coming from component schema.
     </span>type_: String,
-    unescaped_description: String,
 
     <span class="doccomment">/// Booleans for is_$-like type checking.
     </span>is_string: bool,
@@ -1171,6 +1205,7 @@
     is_primitive_type: bool,
     is_boolean: bool,
     is_uuid: bool,
+    is_uri: bool,
     is_any_type: bool,
     is_enum: bool,
     is_array: bool,
@@ -1271,10 +1306,7 @@
         <span class="self">self</span>.is_nullable = data.nullable;
         <span class="self">self</span>.is_deprecated = data.deprecated;
         <span class="self">self</span>.title = data.title.clone();
-        <span class="self">self</span>.description = data
-            .description
-            .as_ref()
-            .map(|s| s.escape_default().to_string().replace(<span class="string">"\\n"</span>, <span class="string">" "</span>));
+        <span class="self">self</span>.description = data.description.as_ref().map(|s| s.replace(<span class="string">'\n'</span>, <span class="string">" "</span>));
         <span class="self">self</span>.example = data.example.as_ref().map(ToString::to_string);
         <span class="self">self
     </span>}
@@ -1328,6 +1360,8 @@
     </span><span class="kw">fn </span>with_data_type_any(<span class="kw-2">mut </span><span class="self">self</span>, is_add_props: bool) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.data_type.set_any();
         <span class="self">self</span>.is_any_type = <span class="bool-val">true</span>;
+        <span class="self">self</span>.is_model = <span class="bool-val">false</span>;
+        <span class="self">self</span>.is_container = <span class="bool-val">true</span>;
         <span class="self">self</span>.additional_properties_is_any_type = is_add_props;
         <span class="self">self
     </span>}
@@ -1384,7 +1418,12 @@
     ) -&gt; <span class="self">Self </span>{
         <span class="kw">let </span>name = name.unwrap_or_default();
         <span class="kw">let </span>type_ = type_.unwrap_or_default();
-        <span class="macro">trace!</span>(<span class="string">"PropertyFromSchema: {}/{}"</span>, name, type_);
+        <span class="macro">trace!</span>(
+            <span class="string">"PropertyFromSchema: {}/{}/{}"</span>,
+            name,
+            type_,
+            <span class="self">Self</span>::schema_kind_str(schema)
+        );
         <span class="kw">let </span>prop = Property::from(<span class="kw-2">&amp;</span>schema.schema_data)
             .with_name(name)
             .with_parent(<span class="kw-2">&amp;</span>parent)
@@ -1392,6 +1431,17 @@
             .with_component_model(root.contains_schema(type_));
 
         prop.with_kind(root, schema, <span class="kw-2">&amp;</span>schema.schema_kind, parent, name, type_)
+    }
+
+    <span class="kw">fn </span>schema_kind_str(schema: <span class="kw-2">&amp;</span>openapiv3::Schema) -&gt; <span class="kw-2">&amp;</span>str {
+        <span class="kw">match </span><span class="kw-2">&amp;</span>schema.schema_kind {
+            openapiv3::SchemaKind::Type(<span class="kw">_</span>) =&gt; <span class="string">"type"</span>,
+            openapiv3::SchemaKind::OneOf { .. } =&gt; <span class="string">"oneOf"</span>,
+            openapiv3::SchemaKind::AllOf { .. } =&gt; <span class="string">"allOf"</span>,
+            openapiv3::SchemaKind::AnyOf { .. } =&gt; <span class="string">"anyOf"</span>,
+            openapiv3::SchemaKind::Not { .. } =&gt; <span class="string">"not"</span>,
+            openapiv3::SchemaKind::Any(..) =&gt; <span class="string">"any"</span>,
+        }
     }
 
     <span class="kw">fn </span>with_kind(
@@ -1504,6 +1554,7 @@
                     }
                     openapiv3::VariantOrUnknownOrEmpty::Unknown(format) =&gt; <span class="kw">match </span>format.as_str() {
                         <span class="string">"uuid" </span>=&gt; data_type.resolve(<span class="string">"uuid::Uuid"</span>),
+                        <span class="string">"uri" </span>=&gt; data_type.resolve(<span class="string">"url::Url"</span>),
                         <span class="kw">_ </span>=&gt; data_type.resolve_format(<span class="string">"String"</span>, format),
                     },
                     openapiv3::VariantOrUnknownOrEmpty::Empty =&gt; {
@@ -1521,7 +1572,7 @@
             }
             PropertyDataType::Boolean =&gt; data_type.resolve(<span class="string">"bool"</span>),
             PropertyDataType::Integer(type_) =&gt; {
-                <span class="kw">let </span>(signed, bits, format) = <span class="kw">match </span>type_.format {
+                <span class="kw">let </span>(signed, <span class="kw-2">mut </span>bits, format) = <span class="kw">match </span>type_.format {
                     openapiv3::VariantOrUnknownOrEmpty::Item(item) =&gt; <span class="kw">match </span>item {
                         openapiv3::IntegerFormat::Int32 =&gt; (<span class="bool-val">true</span>, <span class="number">32</span>, <span class="prelude-val">Some</span>(<span class="string">"int32"</span>.into())),
                         openapiv3::IntegerFormat::Int64 =&gt; (<span class="bool-val">true</span>, <span class="number">64</span>, <span class="prelude-val">Some</span>(<span class="string">"int64"</span>.into())),
@@ -1538,6 +1589,12 @@
                     <span class="kw">_ </span>=&gt; (<span class="bool-val">true</span>, <span class="number">0</span>, <span class="prelude-val">None</span>),
                 };
                 <span class="kw">let </span>signed = type_.minimum.map(|m| m &lt; <span class="number">0</span>).unwrap_or(signed);
+                <span class="kw">if let </span><span class="prelude-val">Some</span>(max) = type_.maximum {
+                    <span class="kw">let </span>r_bits = floor_log2(max.try_into().unwrap());
+                    <span class="kw">if </span>bits == <span class="number">0 </span>|| bits &gt; r_bits {
+                        bits = r_bits;
+                    }
+                }
 
                 <span class="comment">// no format specified
                 </span><span class="kw">let </span>bits = <span class="kw">if </span>bits == <span class="number">0 </span>{
@@ -1711,9 +1768,17 @@
     </span><span class="kw">pub fn </span>is_uuid(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.is_uuid
     }
+    <span class="doccomment">/// Check if the property is a string uri.
+    </span><span class="kw">pub fn </span>is_uri(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.is_uri
+    }
     <span class="doccomment">/// Check if the property is a container.
     </span><span class="kw">pub fn </span>is_container(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
         <span class="self">self</span>.is_container
+    }
+    <span class="doccomment">/// Check if the property is of any type.
+    </span><span class="kw">pub fn </span>is_any_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
+        <span class="self">self</span>.is_any_type
     }
     <span class="doccomment">/// Check if the property is a primitive type.
     </span><span class="kw">pub fn </span>is_primitive_type(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; bool {
@@ -1748,8 +1813,6 @@
     <span class="kw">fn </span>with_anyobj(<span class="kw-2">mut </span><span class="self">self</span>, root: <span class="kw-2">&amp;</span><span class="kw">super</span>::OpenApiV3, by: <span class="kw-2">&amp;</span>openapiv3::AnySchema) -&gt; <span class="self">Self </span>{
         <span class="self">self</span>.min_properties = by.min_properties;
         <span class="self">self</span>.max_properties = by.max_properties;
-
-        <span class="self">self</span>.is_model = <span class="bool-val">true</span>;
 
         <span class="kw">let </span>vars = by
             .properties
@@ -1794,6 +1857,7 @@
             .filter(|o| o.required.len() == <span class="number">1</span>)
             .for_each(|o| vars_.retain(|v| v.name != o.required[<span class="number">0</span>]));
 
+        <span class="self">self</span>.is_model = <span class="bool-val">true</span>;
         <span class="self">self</span>.one_of = <span class="macro">vec!</span>[<span class="self">self</span>.clone()];
         <span class="self">self
     </span>}
@@ -1921,6 +1985,7 @@
             },
             openapiv3::VariantOrUnknownOrEmpty::Unknown(format) =&gt; <span class="kw">match </span>format.as_str() {
                 <span class="string">"uuid" </span>=&gt; <span class="self">self</span>.is_uuid = <span class="bool-val">true</span>,
+                <span class="string">"uri" </span>=&gt; <span class="self">self</span>.is_string = <span class="bool-val">true</span>,
                 <span class="string">"date" </span>=&gt; <span class="self">self</span>.is_date = <span class="bool-val">true</span>,
                 <span class="string">"date-time" </span>=&gt; <span class="self">self</span>.is_date_time = <span class="bool-val">true</span>,
                 <span class="kw">_ </span>=&gt; {
@@ -1944,6 +2009,7 @@
                 .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
 
             <span class="self">self</span>.is_model = <span class="bool-val">true</span>;
+            <span class="self">self</span>.is_string = <span class="bool-val">false</span>;
             <span class="self">self</span>.allowable_values.insert(<span class="string">"enumVars"</span>.into(), enum_vars);
             <span class="self">self</span>.data_type.set_enum(<span class="kw-2">&amp;</span><span class="self">self</span>.name, <span class="kw-2">&amp;</span><span class="self">self</span>.type_);
         } <span class="kw">else </span>{
@@ -1959,5 +2025,9 @@
 </span><span class="kw">pub</span>(<span class="kw">crate</span>) <span class="kw">struct </span>EnumValue {
     name: String,
     value: String,
+}
+
+<span class="kw">fn </span>floor_log2(x: u64) -&gt; u64 {
+    <span class="number">65 </span>- (x.leading_zeros() <span class="kw">as </span>u64)
 }
 </code></pre></div></section></main></body></html>
