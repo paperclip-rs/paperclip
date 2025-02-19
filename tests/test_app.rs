@@ -63,7 +63,7 @@ use std::{
     thread,
 };
 
-static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(|| reqwest::blocking::Client::new());
+static CLIENT: Lazy<reqwest::blocking::Client> = Lazy::new(reqwest::blocking::Client::new);
 static PORTS: Lazy<Mutex<HashSet<u16>>> = Lazy::new(|| Mutex::new(HashSet::new()));
 
 use uuid0_dev::Uuid;
@@ -4621,8 +4621,8 @@ where
     });
 
     let addr = rx.recv().unwrap();
-    let ret = check(addr);
-    ret
+
+    check(addr)
 }
 
 #[cfg(not(feature = "actix4"))]
@@ -4684,8 +4684,7 @@ fn check_json(resp: reqwest::blocking::Response, expected: serde_json::Value) {
 
  right: {}
 ",
-            json.to_string(),
-            expected.to_string()
+            json, expected
         )
     }
 }

@@ -364,7 +364,7 @@ struct CodegenEmitter<'a, E>(&'a E)
 where
     Self: Sized;
 
-impl<'a, E> Deref for CodegenEmitter<'a, E> {
+impl<E> Deref for CodegenEmitter<'_, E> {
     type Target = E;
 
     fn deref(&self) -> &E {
@@ -372,7 +372,7 @@ impl<'a, E> Deref for CodegenEmitter<'a, E> {
     }
 }
 
-impl<'a, E> CodegenEmitter<'a, E>
+impl<E> CodegenEmitter<'_, E>
 where
     E: Emitter,
     E::Definition: Debug,
@@ -721,7 +721,7 @@ struct RequirementCollector<'a, E: Emitter> {
     template_params: HashSet<String>,
 }
 
-impl<'a, E> RequirementCollector<'a, E>
+impl<E> RequirementCollector<'_, E>
 where
     E: Emitter,
     E::Definition: Debug,

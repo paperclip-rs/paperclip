@@ -1,4 +1,4 @@
-{ profile ? "stable", date ? "2023-08-03", oxalica ? "99df490", rustup ? true }:
+{ profile ? "stable", date ? "2025-02-19", oxalica ? "75b2271c", rustup ? true }:
 let
   oxalica_overlay = builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/${oxalica}.tar.gz";
   pkgs = import <nixpkgs> {
