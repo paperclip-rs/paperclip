@@ -176,13 +176,13 @@ macro_rules! impl_type_simple {
     };
 }
 
-impl<'a> TypedData for &'a str {
+impl TypedData for &str {
     fn data_type() -> DataType {
         DataType::String
     }
 }
 
-impl<'a, T: TypedData> TypedData for &'a T {
+impl<T: TypedData> TypedData for &T {
     fn data_type() -> DataType {
         T::data_type()
     }
@@ -528,7 +528,7 @@ impl<T: Apiv2Schema + Clone> Apiv2Schema for std::borrow::Cow<'_, T> {
     }
 }
 
-impl<'a, T: Apiv2Schema> Apiv2Schema for &'a [T] {
+impl<T: Apiv2Schema> Apiv2Schema for &[T] {
     fn raw_schema() -> DefaultSchemaRaw {
         Vec::<T>::raw_schema()
     }

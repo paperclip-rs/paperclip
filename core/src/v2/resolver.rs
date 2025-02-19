@@ -115,11 +115,11 @@ where
             }
         };
 
-        if let Some(inner) = schema.items_mut().take() {
+        if let Some(inner) = schema.items_mut() {
             return self.resolve_definitions(inner);
         }
 
-        if let Some(props) = schema.properties_mut().take() {
+        if let Some(props) = schema.properties_mut() {
             props.iter_mut().try_for_each(|(k, s)| {
                 log::trace!("Resolving property {:?}", k);
                 self.resolve_definitions(s)
@@ -128,7 +128,6 @@ where
 
         if let Some(props) = schema
             .additional_properties_mut()
-            .take()
             .and_then(|s| s.right_mut())
         {
             self.resolve_definitions(props)?;

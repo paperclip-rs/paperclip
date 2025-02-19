@@ -118,7 +118,7 @@ impl ApiObject {
     }
 }
 
-impl<'a> ApiObjectImpl<'a> {
+impl ApiObjectImpl<'_> {
     /// Writes the required "clap" subcommand for this object in YAML.
     pub(super) fn write_clap_yaml<F>(&self, f: &mut F) -> fmt::Result
     where
@@ -348,7 +348,7 @@ impl<'a> ApiObjectImpl<'a> {
 /// Represents the API object builder impl.
 pub struct ApiObjectBuilderImpl<'a, 'b>(&'a ApiObjectBuilder<'b>);
 
-impl<'a> ApiObjectBuilder<'a> {
+impl ApiObjectBuilder<'_> {
     /// Returns a struct representing the impl for this builder.
     pub fn impl_repr(&self) -> ApiObjectBuilderImpl<'_, '_> {
         ApiObjectBuilderImpl(self)
@@ -692,7 +692,7 @@ impl<'a, 'b> From<&'a ApiObjectBuilder<'b>> for SendableCodegen<'a, 'b> {
     }
 }
 
-impl<'a, 'b> SendableCodegen<'a, 'b> {
+impl SendableCodegen<'_, '_> {
     /// Determine and write `Sendable` impl (if it's needed for this builder).
     fn write_impl_if_needed<F>(mut self, f: &mut F) -> fmt::Result
     where
@@ -1145,7 +1145,7 @@ impl<'a, 'b> SendableCodegen<'a, 'b> {
     }
 }
 
-impl<'a> Display for ApiObjectImpl<'a> {
+impl Display for ApiObjectImpl<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         if self.builders.is_empty() {
             return Ok(());
@@ -1178,7 +1178,7 @@ impl<'a> Display for ApiObjectImpl<'a> {
     }
 }
 
-impl<'a, 'b> Display for ApiObjectBuilderImpl<'a, 'b> {
+impl Display for ApiObjectBuilderImpl<'_, '_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         let mut generics = String::new();
         self.0

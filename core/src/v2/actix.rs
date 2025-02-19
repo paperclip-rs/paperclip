@@ -254,8 +254,8 @@ impl_empty!(HttpRequest, HttpResponse, Bytes, Payload);
 mod manual_impl {
     use super::OperationModifier;
 
-    impl<'a> OperationModifier for &'a str {}
-    impl<'a, T: OperationModifier> OperationModifier for &'a [T] {}
+    impl OperationModifier for &str {}
+    impl<T: OperationModifier> OperationModifier for &[T] {}
 
     macro_rules! impl_simple({ $ty:ty } => {
         impl OperationModifier for $ty {}

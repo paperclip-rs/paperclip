@@ -771,7 +771,7 @@ impl<'a> ApiObjectBuilder<'a> {
     }
 }
 
-impl<'a> Display for ApiObjectBuilder<'a> {
+impl Display for ApiObjectBuilder<'_> {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
         f.write_str("/// Builder ")?;
         if let (Some(name), Some(m)) = (self.constructor_fn_name(), self.method) {
