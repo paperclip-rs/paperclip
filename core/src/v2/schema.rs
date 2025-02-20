@@ -195,6 +195,12 @@ impl<T: TypedData> TypedData for &T {
 impl_type_simple!(char, DataType::String);
 impl_type_simple!(String, DataType::String);
 impl_type_simple!(PathBuf, DataType::String);
+#[cfg(feature = "camino")]
+impl_type_simple!(
+    camino::Utf8PathBuf,
+    DataType::String,
+    DataTypeFormat::Binary
+);
 impl_type_simple!(bool, DataType::Boolean);
 impl_type_simple!(f32, DataType::Number, DataTypeFormat::Float);
 impl_type_simple!(f64, DataType::Number, DataTypeFormat::Double);
