@@ -16,19 +16,18 @@ prepare:
 
 check:
 	cargo +nightly fmt --all
-	cargo clippy --all --features "actix4" -- -D clippy::all
+	cargo clippy --all --features "actix4 cli cli-ng chrono url uuid swagger-ui v3" -- -D clippy::all -A clippy::derivable-impls
 
 check_nightly:
 	cargo +nightly fmt --all
-	cargo +nightly clippy --all --features "actix4" -- -D clippy::all
+	cargo +nightly clippy --all --features "actix4 cli cli-ng chrono url uuid swagger-ui v3" -- -D clippy::all
 
 doc:
 	cargo doc --all --all-features --no-deps
 
 build:
 	cargo build
-	cargo build --features actix4
-	cargo build --features "cli cli-ng"
+	cargo build --features "actix4 cli cli-ng chrono url uuid swagger-ui v3"
 
 test:
 	cargo test --all --features "actix4 cli chrono uuid swagger-ui rapidoc actix4-validator"

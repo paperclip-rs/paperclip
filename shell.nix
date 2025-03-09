@@ -1,4 +1,4 @@
-{ profile ? "stable", date ? "2025-02-19", oxalica ? "75b2271c", rustup ? true }:
+{ profile ? "stable", date ? "2025-02-20", oxalica ? "d95582a9", rustup ? true }:
 let
   oxalica_overlay = builtins.fetchTarball "https://github.com/oxalica/rust-overlay/archive/${oxalica}.tar.gz";
   pkgs = import <nixpkgs> {
@@ -12,6 +12,7 @@ pkgs.mkShell {
     openssl
     pkg-config
     libiconv
+    git
   ] ++ pkgs.lib.optional (!rustup) rust
   ++ pkgs.lib.optional (system == "aarch64-darwin") darwin.apple_sdk.frameworks.Security;
   shellHook = ''
