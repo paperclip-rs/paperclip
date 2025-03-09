@@ -89,7 +89,7 @@ fn _schema_contains_any<'a, S: Schema>(schema: &'a S, mut nodes: Vec<&'a str>) -
     }
 
     if let Some(name) = schema.name() {
-        if nodes.iter().any(|&n| n == name) {
+        if nodes.contains(&name) {
             return false; // We've encountered a cycle.
         } else {
             nodes.push(name);
