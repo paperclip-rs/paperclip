@@ -26,8 +26,8 @@ doc:
 	cargo doc --all --all-features --no-deps
 
 build:
-	cargo build
-	cargo build --features "actix4 cli cli-ng chrono url uuid swagger-ui v3"
+	cargo build --all
+	cargo build --all --features "actix4 cli cli-ng chrono url uuid swagger-ui v3"
 
 test:
 	cargo test --all --features "actix4 cli chrono uuid swagger-ui rapidoc actix4-validator"

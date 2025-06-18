@@ -183,8 +183,10 @@ impl Operation {
 
         let mut ext_path = path.to_string();
         for param in &path_params {
-            if param.data_format() == "url" {
-                ext_path = path.replace(param.name(), &format!("{}:.*", param.base_name()));
+            if param.vendor_extension("x-actix-tail-match") == Some("true") {
+                ext_path = ext_path.replace(param.name(), &format!("{}:.*", param.base_name()));
+            } else if param.data_format() == "url" {
+                ext_path = ext_path.replace(param.name(), &format!("{}:.*", param.base_name()));
                 vendor_extensions.insert("x-actix-query-string".into(), "true".into());
             }
         }
