@@ -178,4 +178,8 @@ impl Parameter {
     pub fn required(&self) -> bool {
         self.required
     }
+    /// Returns version extension by key.
+    pub fn vendor_extension(&self, key: &str) -> Option<&str> {
+        self.vendor_extensions.get(key).map(|x| x.as_str())
+    }
 }
