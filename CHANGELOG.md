@@ -4,10 +4,14 @@ All notable changes to this project will be documented in this file.
 The format is based on [Keep a Changelog](https://keepachangelog.com/en/1.0.0/),
 and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
+## [0.9.6] - 2025-06-18
+### Added
+- Enable actix "tail match" using vendor extension. [PR#555](https://github.com/paperclip-rs/paperclip/pull/555)
+
 ## [0.9.5] - 2025-03-10
 ### Added
 - Support for camino. [PR#551](https://github.com/paperclip-rs/paperclip/pull/551)
-- Support jiff 0.2. [PR#549](https://github.com/paperclip-rs/paperclip/pull/549) 
+- Support jiff 0.2. [PR#549](https://github.com/paperclip-rs/paperclip/pull/549)
 
 ## [0.9.4] - 2024-10-23
 ### Fixed
