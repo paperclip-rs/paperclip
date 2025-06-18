@@ -1,4 +1,4 @@
-<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/operation.rs`."><title>operation.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-916cea96.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.87.0-nightly (3ea711f17 2025-03-09)" data-channel="nightly" data-search-js="search-e7298875.js" data-settings-js="settings-d72f25bb.js" ><script src="../../../static.files/storage-d8ac8691.js"></script><script defer src="../../../static.files/src-script-b8d3f215.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-a7bf3405.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-893ab5e7.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/</div>operation.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span>std::collections::HashMap;
+<!DOCTYPE html><html lang="en"><head><meta charset="utf-8"><meta name="viewport" content="width=device-width, initial-scale=1.0"><meta name="generator" content="rustdoc"><meta name="description" content="Source of the Rust file `cli-ng/src/v3/operation.rs`."><title>operation.rs - source</title><script>if(window.location.protocol!=="file:")document.head.insertAdjacentHTML("beforeend","SourceSerif4-Regular-6b053e98.ttf.woff2,FiraSans-Italic-81dc35de.woff2,FiraSans-Regular-0fe48ade.woff2,FiraSans-MediumItalic-ccf7e434.woff2,FiraSans-Medium-e1aa3f0a.woff2,SourceCodePro-Regular-8badfe75.ttf.woff2,SourceCodePro-Semibold-aa29a496.ttf.woff2".split(",").map(f=>`<link rel="preload" as="font" type="font/woff2" crossorigin href="../../../static.files/${f}">`).join(""))</script><link rel="stylesheet" href="../../../static.files/normalize-9960930a.css"><link rel="stylesheet" href="../../../static.files/rustdoc-84e720fa.css"><meta name="rustdoc-vars" data-root-path="../../../" data-static-root-path="../../../static.files/" data-current-crate="paperclip_ng" data-themes="" data-resource-suffix="" data-rustdoc-version="1.89.0-nightly (f3db63916 2025-06-17)" data-channel="nightly" data-search-js="search-f7877310.js" data-settings-js="settings-5514c975.js" ><script src="../../../static.files/storage-4e99c027.js"></script><script defer src="../../../static.files/src-script-63605ae7.js"></script><script defer src="../../../src-files.js"></script><script defer src="../../../static.files/main-fd3af306.js"></script><noscript><link rel="stylesheet" href="../../../static.files/noscript-32bb7600.css"></noscript><link rel="alternate icon" type="image/png" href="../../../static.files/favicon-32x32-6580c154.png"><link rel="icon" type="image/svg+xml" href="../../../static.files/favicon-044be391.svg"></head><body class="rustdoc src"><!--[if lte IE 11]><div class="warning">This old browser is unsupported and will most likely display funky things.</div><![endif]--><nav class="sidebar"><div class="src-sidebar-title"><h2>Files</h2></div></nav><div class="sidebar-resizer" title="Drag to resize sidebar"></div><main><rustdoc-search></rustdoc-search><section id="main-content" class="content"><div class="main-heading"><h1><div class="sub-heading">paperclip_ng/v3/</div>operation.rs</h1><rustdoc-toolbar></rustdoc-toolbar></div><div class="example-wrap digits-3"><pre class="rust"><code><a href=#1 id=1 data-nosnippet>1</a><span class="kw">use </span>std::collections::HashMap;
 <a href=#2 id=2 data-nosnippet>2</a>
 <a href=#3 id=3 data-nosnippet>3</a><span class="kw">use super</span>::{OpenApiV3, Parameter, Property};
 <a href=#4 id=4 data-nosnippet>4</a>
@@ -183,126 +183,128 @@
 <a href=#183 id=183 data-nosnippet>183</a>
 <a href=#184 id=184 data-nosnippet>184</a>        <span class="kw">let </span><span class="kw-2">mut </span>ext_path = path.to_string();
 <a href=#185 id=185 data-nosnippet>185</a>        <span class="kw">for </span>param <span class="kw">in </span><span class="kw-2">&amp;</span>path_params {
-<a href=#186 id=186 data-nosnippet>186</a>            <span class="kw">if </span>param.data_format() == <span class="string">"url" </span>{
-<a href=#187 id=187 data-nosnippet>187</a>                ext_path = path.replace(param.name(), <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}:.*"</span>, param.base_name()));
-<a href=#188 id=188 data-nosnippet>188</a>                vendor_extensions.insert(<span class="string">"x-actix-query-string"</span>.into(), <span class="string">"true"</span>.into());
-<a href=#189 id=189 data-nosnippet>189</a>            }
-<a href=#190 id=190 data-nosnippet>190</a>        }
-<a href=#191 id=191 data-nosnippet>191</a>        vendor_extensions.insert(<span class="string">"x-actixPath"</span>.into(), ext_path);
-<a href=#192 id=192 data-nosnippet>192</a>
-<a href=#193 id=193 data-nosnippet>193</a>        <span class="kw">let </span>all_params = path_params
-<a href=#194 id=194 data-nosnippet>194</a>            .iter()
-<a href=#195 id=195 data-nosnippet>195</a>            .chain(
-<a href=#196 id=196 data-nosnippet>196</a>                query_params
-<a href=#197 id=197 data-nosnippet>197</a>                    .iter()
-<a href=#198 id=198 data-nosnippet>198</a>                    .sorted_by(|a, b| b.required().cmp(<span class="kw-2">&amp;</span>a.required())),
-<a href=#199 id=199 data-nosnippet>199</a>            )
-<a href=#200 id=200 data-nosnippet>200</a>            .chain(<span class="kw-2">&amp;</span>body_param)
-<a href=#201 id=201 data-nosnippet>201</a>            .cloned()
-<a href=#202 id=202 data-nosnippet>202</a>            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
-<a href=#203 id=203 data-nosnippet>203</a>        <span class="comment">// todo: support multiple responses
-<a href=#204 id=204 data-nosnippet>204</a>        </span><span class="kw">let </span>return_model = <span class="kw">match </span>operation
-<a href=#205 id=205 data-nosnippet>205</a>            .responses
-<a href=#206 id=206 data-nosnippet>206</a>            .responses
-<a href=#207 id=207 data-nosnippet>207</a>            .get(<span class="kw-2">&amp;</span>openapiv3::StatusCode::Code(<span class="number">200</span>))
-<a href=#208 id=208 data-nosnippet>208</a>            .or(operation
-<a href=#209 id=209 data-nosnippet>209</a>                .responses
-<a href=#210 id=210 data-nosnippet>210</a>                .responses
-<a href=#211 id=211 data-nosnippet>211</a>                .get(<span class="kw-2">&amp;</span>openapiv3::StatusCode::Code(<span class="number">204</span>)))
-<a href=#212 id=212 data-nosnippet>212</a>        {
-<a href=#213 id=213 data-nosnippet>213</a>            <span class="prelude-val">Some</span>(ref_or) =&gt; root.resolve_reference_or_resp(<span class="string">"application/json"</span>, ref_or),
-<a href=#214 id=214 data-nosnippet>214</a>            <span class="prelude-val">None </span>=&gt; <span class="macro">todo!</span>(),
-<a href=#215 id=215 data-nosnippet>215</a>        };
-<a href=#216 id=216 data-nosnippet>216</a>        <span class="comment">// todo: should we post process after all operations are processed?
-<a href=#217 id=217 data-nosnippet>217</a>        </span><span class="kw">let </span>return_model = return_model.post_process_data_type();
-<a href=#218 id=218 data-nosnippet>218</a>        <span class="kw">let </span>(class, class_file) = <span class="kw">match </span>operation.tags.first() {
-<a href=#219 id=219 data-nosnippet>219</a>            <span class="prelude-val">Some</span>(class) =&gt; (class.clone(), <span class="macro">format!</span>(<span class="string">"{class}_api"</span>).to_snake_case()),
-<a href=#220 id=220 data-nosnippet>220</a>            <span class="comment">// How should this be handled? Shuld it be required? What if there's more than 1 tag?
-<a href=#221 id=221 data-nosnippet>221</a>            </span><span class="prelude-val">None </span>=&gt; (String::new(), String::new()),
-<a href=#222 id=222 data-nosnippet>222</a>        };
-<a href=#223 id=223 data-nosnippet>223</a>        <span class="self">Self </span>{
-<a href=#224 id=224 data-nosnippet>224</a>            description: operation.description.as_ref().map(|d| d.replace(<span class="string">'\n'</span>, <span class="string">" "</span>)),
-<a href=#225 id=225 data-nosnippet>225</a>            classname: class,
-<a href=#226 id=226 data-nosnippet>226</a>            class_filename: class_file,
-<a href=#227 id=227 data-nosnippet>227</a>            summary: operation.summary.clone(),
-<a href=#228 id=228 data-nosnippet>228</a>            tags: operation.tags.clone(),
-<a href=#229 id=229 data-nosnippet>229</a>            is_deprecated: <span class="prelude-val">Some</span>(operation.deprecated),
-<a href=#230 id=230 data-nosnippet>230</a>            operation_id_lower_case: operation.operation_id.as_ref().map(|o| o.to_lowercase()),
-<a href=#231 id=231 data-nosnippet>231</a>            operation_id_camel_case: operation
-<a href=#232 id=232 data-nosnippet>232</a>                .operation_id
-<a href=#233 id=233 data-nosnippet>233</a>                .as_ref()
-<a href=#234 id=234 data-nosnippet>234</a>                .map(|o| o.to_lower_camel_case()),
-<a href=#235 id=235 data-nosnippet>235</a>            operation_id: operation.operation_id.clone(),
-<a href=#236 id=236 data-nosnippet>236</a>            operation_id_original: operation.operation_id.clone(),
-<a href=#237 id=237 data-nosnippet>237</a>            has_params: !all_params.is_empty(),
-<a href=#238 id=238 data-nosnippet>238</a>            all_params,
-<a href=#239 id=239 data-nosnippet>239</a>            has_path_params: !path_params.is_empty(),
-<a href=#240 id=240 data-nosnippet>240</a>            path_params,
-<a href=#241 id=241 data-nosnippet>241</a>            has_query_params: !query_params.is_empty(),
-<a href=#242 id=242 data-nosnippet>242</a>            query_params,
-<a href=#243 id=243 data-nosnippet>243</a>            header_params: <span class="macro">vec!</span>[],
-<a href=#244 id=244 data-nosnippet>244</a>            has_header_params: <span class="bool-val">false</span>,
-<a href=#245 id=245 data-nosnippet>245</a>            has_body_param: body_param.is_some(),
-<a href=#246 id=246 data-nosnippet>246</a>            body_param,
-<a href=#247 id=247 data-nosnippet>247</a>            path: path.to_string(),
-<a href=#248 id=248 data-nosnippet>248</a>            http_method: method.to_upper_camel_case(),
-<a href=#249 id=249 data-nosnippet>249</a>            support_multiple_responses: <span class="bool-val">false</span>,
-<a href=#250 id=250 data-nosnippet>250</a>            return_type: {
-<a href=#251 id=251 data-nosnippet>251</a>                <span class="kw">let </span>data_type = return_model.data_type();
-<a href=#252 id=252 data-nosnippet>252</a>                <span class="kw">if </span>data_type == <span class="string">"()" </span>{
-<a href=#253 id=253 data-nosnippet>253</a>                    <span class="prelude-val">None
-<a href=#254 id=254 data-nosnippet>254</a>                </span>} <span class="kw">else </span>{
-<a href=#255 id=255 data-nosnippet>255</a>                    <span class="prelude-val">Some</span>(data_type)
-<a href=#256 id=256 data-nosnippet>256</a>                }
-<a href=#257 id=257 data-nosnippet>257</a>            },
-<a href=#258 id=258 data-nosnippet>258</a>            has_auth_methods: operation.security.is_some(),
-<a href=#259 id=259 data-nosnippet>259</a>            auth_methods: <span class="kw">match </span><span class="kw-2">&amp;</span>operation.security {
-<a href=#260 id=260 data-nosnippet>260</a>                <span class="prelude-val">None </span>=&gt; <span class="macro">vec!</span>[],
-<a href=#261 id=261 data-nosnippet>261</a>                <span class="prelude-val">Some</span>(sec) =&gt; sec
-<a href=#262 id=262 data-nosnippet>262</a>                    .iter()
-<a href=#263 id=263 data-nosnippet>263</a>                    .flat_map(|a| {
-<a href=#264 id=264 data-nosnippet>264</a>                        a.iter()
-<a href=#265 id=265 data-nosnippet>265</a>                            .map(|(key, <span class="kw">_</span>)| <span class="kw">match </span>key.as_str() {
-<a href=#266 id=266 data-nosnippet>266</a>                                <span class="string">"JWT" </span>=&gt; AuthMethod {
-<a href=#267 id=267 data-nosnippet>267</a>                                    scheme: <span class="string">"JWT"</span>.to_string(),
-<a href=#268 id=268 data-nosnippet>268</a>                                    is_basic: <span class="bool-val">true</span>,
-<a href=#269 id=269 data-nosnippet>269</a>                                    is_basic_bearer: <span class="bool-val">true</span>,
-<a href=#270 id=270 data-nosnippet>270</a>                                },
-<a href=#271 id=271 data-nosnippet>271</a>                                scheme =&gt; AuthMethod {
-<a href=#272 id=272 data-nosnippet>272</a>                                    scheme: scheme.to_string(),
-<a href=#273 id=273 data-nosnippet>273</a>                                    is_basic: <span class="bool-val">false</span>,
-<a href=#274 id=274 data-nosnippet>274</a>                                    is_basic_bearer: <span class="bool-val">false</span>,
-<a href=#275 id=275 data-nosnippet>275</a>                                },
-<a href=#276 id=276 data-nosnippet>276</a>                            })
-<a href=#277 id=277 data-nosnippet>277</a>                            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
-<a href=#278 id=278 data-nosnippet>278</a>                    })
-<a href=#279 id=279 data-nosnippet>279</a>                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
-<a href=#280 id=280 data-nosnippet>280</a>            },
-<a href=#281 id=281 data-nosnippet>281</a>            vendor_extensions,
-<a href=#282 id=282 data-nosnippet>282</a>            api_doc_path: <span class="string">"docs/apis/"</span>,
-<a href=#283 id=283 data-nosnippet>283</a>            model_doc_path: <span class="string">"docs/models/"</span>,
-<a href=#284 id=284 data-nosnippet>284</a>            ..Default::default()
-<a href=#285 id=285 data-nosnippet>285</a>        }
-<a href=#286 id=286 data-nosnippet>286</a>    }
-<a href=#287 id=287 data-nosnippet>287</a>    <span class="doccomment">/// Get a reference to the operation tags list.
-<a href=#288 id=288 data-nosnippet>288</a>    </span><span class="kw">pub fn </span>tags(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Vec&lt;String&gt; {
-<a href=#289 id=289 data-nosnippet>289</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.tags
-<a href=#290 id=290 data-nosnippet>290</a>    }
-<a href=#291 id=291 data-nosnippet>291</a>    <span class="doccomment">/// Get a reference to the operation class name.
-<a href=#292 id=292 data-nosnippet>292</a>    </span><span class="kw">pub fn </span>classname(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-<a href=#293 id=293 data-nosnippet>293</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.classname
-<a href=#294 id=294 data-nosnippet>294</a>    }
-<a href=#295 id=295 data-nosnippet>295</a>    <span class="doccomment">/// Get a reference to the operation class filename.
-<a href=#296 id=296 data-nosnippet>296</a>    </span><span class="kw">pub fn </span>class_filename(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
-<a href=#297 id=297 data-nosnippet>297</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.class_filename
-<a href=#298 id=298 data-nosnippet>298</a>    }
-<a href=#299 id=299 data-nosnippet>299</a>}
-<a href=#300 id=300 data-nosnippet>300</a>
-<a href=#301 id=301 data-nosnippet>301</a><span class="attr">#[derive(Default, Content, Clone, Debug)]
-<a href=#302 id=302 data-nosnippet>302</a>#[ramhorns(rename_all = <span class="string">"camelCase"</span>)]
-<a href=#303 id=303 data-nosnippet>303</a></span><span class="kw">struct </span>AuthMethod {
-<a href=#304 id=304 data-nosnippet>304</a>    scheme: String,
-<a href=#305 id=305 data-nosnippet>305</a>
-<a href=#306 id=306 data-nosnippet>306</a>    is_basic: bool,
-<a href=#307 id=307 data-nosnippet>307</a>    is_basic_bearer: bool,
-<a href=#308 id=308 data-nosnippet>308</a>}</code></pre></div></section></main></body></html>
+<a href=#186 id=186 data-nosnippet>186</a>            <span class="kw">if </span>param.vendor_extension(<span class="string">"x-actix-tail-match"</span>) == <span class="prelude-val">Some</span>(<span class="string">"true"</span>) {
+<a href=#187 id=187 data-nosnippet>187</a>                ext_path = ext_path.replace(param.name(), <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}:.*"</span>, param.base_name()));
+<a href=#188 id=188 data-nosnippet>188</a>            } <span class="kw">else if </span>param.data_format() == <span class="string">"url" </span>{
+<a href=#189 id=189 data-nosnippet>189</a>                ext_path = ext_path.replace(param.name(), <span class="kw-2">&amp;</span><span class="macro">format!</span>(<span class="string">"{}:.*"</span>, param.base_name()));
+<a href=#190 id=190 data-nosnippet>190</a>                vendor_extensions.insert(<span class="string">"x-actix-query-string"</span>.into(), <span class="string">"true"</span>.into());
+<a href=#191 id=191 data-nosnippet>191</a>            }
+<a href=#192 id=192 data-nosnippet>192</a>        }
+<a href=#193 id=193 data-nosnippet>193</a>        vendor_extensions.insert(<span class="string">"x-actixPath"</span>.into(), ext_path);
+<a href=#194 id=194 data-nosnippet>194</a>
+<a href=#195 id=195 data-nosnippet>195</a>        <span class="kw">let </span>all_params = path_params
+<a href=#196 id=196 data-nosnippet>196</a>            .iter()
+<a href=#197 id=197 data-nosnippet>197</a>            .chain(
+<a href=#198 id=198 data-nosnippet>198</a>                query_params
+<a href=#199 id=199 data-nosnippet>199</a>                    .iter()
+<a href=#200 id=200 data-nosnippet>200</a>                    .sorted_by(|a, b| b.required().cmp(<span class="kw-2">&amp;</span>a.required())),
+<a href=#201 id=201 data-nosnippet>201</a>            )
+<a href=#202 id=202 data-nosnippet>202</a>            .chain(<span class="kw-2">&amp;</span>body_param)
+<a href=#203 id=203 data-nosnippet>203</a>            .cloned()
+<a href=#204 id=204 data-nosnippet>204</a>            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;();
+<a href=#205 id=205 data-nosnippet>205</a>        <span class="comment">// todo: support multiple responses
+<a href=#206 id=206 data-nosnippet>206</a>        </span><span class="kw">let </span>return_model = <span class="kw">match </span>operation
+<a href=#207 id=207 data-nosnippet>207</a>            .responses
+<a href=#208 id=208 data-nosnippet>208</a>            .responses
+<a href=#209 id=209 data-nosnippet>209</a>            .get(<span class="kw-2">&amp;</span>openapiv3::StatusCode::Code(<span class="number">200</span>))
+<a href=#210 id=210 data-nosnippet>210</a>            .or(operation
+<a href=#211 id=211 data-nosnippet>211</a>                .responses
+<a href=#212 id=212 data-nosnippet>212</a>                .responses
+<a href=#213 id=213 data-nosnippet>213</a>                .get(<span class="kw-2">&amp;</span>openapiv3::StatusCode::Code(<span class="number">204</span>)))
+<a href=#214 id=214 data-nosnippet>214</a>        {
+<a href=#215 id=215 data-nosnippet>215</a>            <span class="prelude-val">Some</span>(ref_or) =&gt; root.resolve_reference_or_resp(<span class="string">"application/json"</span>, ref_or),
+<a href=#216 id=216 data-nosnippet>216</a>            <span class="prelude-val">None </span>=&gt; <span class="macro">todo!</span>(),
+<a href=#217 id=217 data-nosnippet>217</a>        };
+<a href=#218 id=218 data-nosnippet>218</a>        <span class="comment">// todo: should we post process after all operations are processed?
+<a href=#219 id=219 data-nosnippet>219</a>        </span><span class="kw">let </span>return_model = return_model.post_process_data_type();
+<a href=#220 id=220 data-nosnippet>220</a>        <span class="kw">let </span>(class, class_file) = <span class="kw">match </span>operation.tags.first() {
+<a href=#221 id=221 data-nosnippet>221</a>            <span class="prelude-val">Some</span>(class) =&gt; (class.clone(), <span class="macro">format!</span>(<span class="string">"{class}_api"</span>).to_snake_case()),
+<a href=#222 id=222 data-nosnippet>222</a>            <span class="comment">// How should this be handled? Shuld it be required? What if there's more than 1 tag?
+<a href=#223 id=223 data-nosnippet>223</a>            </span><span class="prelude-val">None </span>=&gt; (String::new(), String::new()),
+<a href=#224 id=224 data-nosnippet>224</a>        };
+<a href=#225 id=225 data-nosnippet>225</a>        <span class="self">Self </span>{
+<a href=#226 id=226 data-nosnippet>226</a>            description: operation.description.as_ref().map(|d| d.replace(<span class="string">'\n'</span>, <span class="string">" "</span>)),
+<a href=#227 id=227 data-nosnippet>227</a>            classname: class,
+<a href=#228 id=228 data-nosnippet>228</a>            class_filename: class_file,
+<a href=#229 id=229 data-nosnippet>229</a>            summary: operation.summary.clone(),
+<a href=#230 id=230 data-nosnippet>230</a>            tags: operation.tags.clone(),
+<a href=#231 id=231 data-nosnippet>231</a>            is_deprecated: <span class="prelude-val">Some</span>(operation.deprecated),
+<a href=#232 id=232 data-nosnippet>232</a>            operation_id_lower_case: operation.operation_id.as_ref().map(|o| o.to_lowercase()),
+<a href=#233 id=233 data-nosnippet>233</a>            operation_id_camel_case: operation
+<a href=#234 id=234 data-nosnippet>234</a>                .operation_id
+<a href=#235 id=235 data-nosnippet>235</a>                .as_ref()
+<a href=#236 id=236 data-nosnippet>236</a>                .map(|o| o.to_lower_camel_case()),
+<a href=#237 id=237 data-nosnippet>237</a>            operation_id: operation.operation_id.clone(),
+<a href=#238 id=238 data-nosnippet>238</a>            operation_id_original: operation.operation_id.clone(),
+<a href=#239 id=239 data-nosnippet>239</a>            has_params: !all_params.is_empty(),
+<a href=#240 id=240 data-nosnippet>240</a>            all_params,
+<a href=#241 id=241 data-nosnippet>241</a>            has_path_params: !path_params.is_empty(),
+<a href=#242 id=242 data-nosnippet>242</a>            path_params,
+<a href=#243 id=243 data-nosnippet>243</a>            has_query_params: !query_params.is_empty(),
+<a href=#244 id=244 data-nosnippet>244</a>            query_params,
+<a href=#245 id=245 data-nosnippet>245</a>            header_params: <span class="macro">vec!</span>[],
+<a href=#246 id=246 data-nosnippet>246</a>            has_header_params: <span class="bool-val">false</span>,
+<a href=#247 id=247 data-nosnippet>247</a>            has_body_param: body_param.is_some(),
+<a href=#248 id=248 data-nosnippet>248</a>            body_param,
+<a href=#249 id=249 data-nosnippet>249</a>            path: path.to_string(),
+<a href=#250 id=250 data-nosnippet>250</a>            http_method: method.to_upper_camel_case(),
+<a href=#251 id=251 data-nosnippet>251</a>            support_multiple_responses: <span class="bool-val">false</span>,
+<a href=#252 id=252 data-nosnippet>252</a>            return_type: {
+<a href=#253 id=253 data-nosnippet>253</a>                <span class="kw">let </span>data_type = return_model.data_type();
+<a href=#254 id=254 data-nosnippet>254</a>                <span class="kw">if </span>data_type == <span class="string">"()" </span>{
+<a href=#255 id=255 data-nosnippet>255</a>                    <span class="prelude-val">None
+<a href=#256 id=256 data-nosnippet>256</a>                </span>} <span class="kw">else </span>{
+<a href=#257 id=257 data-nosnippet>257</a>                    <span class="prelude-val">Some</span>(data_type)
+<a href=#258 id=258 data-nosnippet>258</a>                }
+<a href=#259 id=259 data-nosnippet>259</a>            },
+<a href=#260 id=260 data-nosnippet>260</a>            has_auth_methods: operation.security.is_some(),
+<a href=#261 id=261 data-nosnippet>261</a>            auth_methods: <span class="kw">match </span><span class="kw-2">&amp;</span>operation.security {
+<a href=#262 id=262 data-nosnippet>262</a>                <span class="prelude-val">None </span>=&gt; <span class="macro">vec!</span>[],
+<a href=#263 id=263 data-nosnippet>263</a>                <span class="prelude-val">Some</span>(sec) =&gt; sec
+<a href=#264 id=264 data-nosnippet>264</a>                    .iter()
+<a href=#265 id=265 data-nosnippet>265</a>                    .flat_map(|a| {
+<a href=#266 id=266 data-nosnippet>266</a>                        a.iter()
+<a href=#267 id=267 data-nosnippet>267</a>                            .map(|(key, <span class="kw">_</span>)| <span class="kw">match </span>key.as_str() {
+<a href=#268 id=268 data-nosnippet>268</a>                                <span class="string">"JWT" </span>=&gt; AuthMethod {
+<a href=#269 id=269 data-nosnippet>269</a>                                    scheme: <span class="string">"JWT"</span>.to_string(),
+<a href=#270 id=270 data-nosnippet>270</a>                                    is_basic: <span class="bool-val">true</span>,
+<a href=#271 id=271 data-nosnippet>271</a>                                    is_basic_bearer: <span class="bool-val">true</span>,
+<a href=#272 id=272 data-nosnippet>272</a>                                },
+<a href=#273 id=273 data-nosnippet>273</a>                                scheme =&gt; AuthMethod {
+<a href=#274 id=274 data-nosnippet>274</a>                                    scheme: scheme.to_string(),
+<a href=#275 id=275 data-nosnippet>275</a>                                    is_basic: <span class="bool-val">false</span>,
+<a href=#276 id=276 data-nosnippet>276</a>                                    is_basic_bearer: <span class="bool-val">false</span>,
+<a href=#277 id=277 data-nosnippet>277</a>                                },
+<a href=#278 id=278 data-nosnippet>278</a>                            })
+<a href=#279 id=279 data-nosnippet>279</a>                            .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;()
+<a href=#280 id=280 data-nosnippet>280</a>                    })
+<a href=#281 id=281 data-nosnippet>281</a>                    .collect::&lt;Vec&lt;<span class="kw">_</span>&gt;&gt;(),
+<a href=#282 id=282 data-nosnippet>282</a>            },
+<a href=#283 id=283 data-nosnippet>283</a>            vendor_extensions,
+<a href=#284 id=284 data-nosnippet>284</a>            api_doc_path: <span class="string">"docs/apis/"</span>,
+<a href=#285 id=285 data-nosnippet>285</a>            model_doc_path: <span class="string">"docs/models/"</span>,
+<a href=#286 id=286 data-nosnippet>286</a>            ..Default::default()
+<a href=#287 id=287 data-nosnippet>287</a>        }
+<a href=#288 id=288 data-nosnippet>288</a>    }
+<a href=#289 id=289 data-nosnippet>289</a>    <span class="doccomment">/// Get a reference to the operation tags list.
+<a href=#290 id=290 data-nosnippet>290</a>    </span><span class="kw">pub fn </span>tags(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>Vec&lt;String&gt; {
+<a href=#291 id=291 data-nosnippet>291</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.tags
+<a href=#292 id=292 data-nosnippet>292</a>    }
+<a href=#293 id=293 data-nosnippet>293</a>    <span class="doccomment">/// Get a reference to the operation class name.
+<a href=#294 id=294 data-nosnippet>294</a>    </span><span class="kw">pub fn </span>classname(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+<a href=#295 id=295 data-nosnippet>295</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.classname
+<a href=#296 id=296 data-nosnippet>296</a>    }
+<a href=#297 id=297 data-nosnippet>297</a>    <span class="doccomment">/// Get a reference to the operation class filename.
+<a href=#298 id=298 data-nosnippet>298</a>    </span><span class="kw">pub fn </span>class_filename(<span class="kw-2">&amp;</span><span class="self">self</span>) -&gt; <span class="kw-2">&amp;</span>str {
+<a href=#299 id=299 data-nosnippet>299</a>        <span class="kw-2">&amp;</span><span class="self">self</span>.class_filename
+<a href=#300 id=300 data-nosnippet>300</a>    }
+<a href=#301 id=301 data-nosnippet>301</a>}
+<a href=#302 id=302 data-nosnippet>302</a>
+<a href=#303 id=303 data-nosnippet>303</a><span class="attr">#[derive(Default, Content, Clone, Debug)]
+<a href=#304 id=304 data-nosnippet>304</a>#[ramhorns(rename_all = <span class="string">"camelCase"</span>)]
+<a href=#305 id=305 data-nosnippet>305</a></span><span class="kw">struct </span>AuthMethod {
+<a href=#306 id=306 data-nosnippet>306</a>    scheme: String,
+<a href=#307 id=307 data-nosnippet>307</a>
+<a href=#308 id=308 data-nosnippet>308</a>    is_basic: bool,
+<a href=#309 id=309 data-nosnippet>309</a>    is_basic_bearer: bool,
+<a href=#310 id=310 data-nosnippet>310</a>}</code></pre></div></section></main></body></html>
