@@ -82,18 +82,14 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                 // `impl Responder` is a special case because we have to add another wrapper.
                 // FIXME: Better way to deal with this?
                 is_responder = true;
-                *ty = Box::new(
-                    syn::parse2(quote!(
-                        impl std::future::Future<Output=paperclip::actix::ResponderWrapper<#ty>>
-                    ))
-                    .expect("parsing impl trait"),
-                );
+                *ty = syn::parse2(quote!(
+                    impl std::future::Future<Output=paperclip::actix::ResponderWrapper<#ty>>
+                ))
+                .expect("parsing impl trait");
             } else if !is_impl_trait {
                 // Any handler that's not returning an impl trait should return an `impl Future`
-                *ty = Box::new(
-                    syn::parse2(quote!(impl std::future::Future<Output=#ty>))
-                        .expect("parsing impl trait"),
-                );
+                *ty = syn::parse2(quote!(impl std::future::Future<Output=#ty>))
+                    .expect("parsing impl trait");
             }
 
             if let Type::ImplTrait(imp) = &**ty {
@@ -101,10 +97,8 @@ pub fn emit_v2_operation(attrs: TokenStream, input: TokenStream) -> TokenStream 
                     dyn_token: Some(Token![dyn](default_span)),
                     bounds: imp.bounds.clone(),
                 };
-                *ty = Box::new(
-                    syn::parse2(quote!(#ty + paperclip::v2::schema::Apiv2Operation))
-                        .expect("parsing impl trait"),
-                );
+                *ty = syn::parse2(quote!(#ty + paperclip::v2::schema::Apiv2Operation))
+                    .expect("parsing impl trait");
 
                 if !is_responder {
                     // NOTE: We're only using the box "type" to generate the operation data, we're not boxing

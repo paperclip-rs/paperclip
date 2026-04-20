@@ -101,6 +101,8 @@ impl PropertyDataType {
     }
 }
 
+// todo: bump msrv and fixup
+#[allow(clippy::derivable_impls)]
 impl Default for PropertyDataType {
     fn default() -> Self {
         Self::Unknown
