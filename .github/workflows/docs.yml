@@ -14,7 +14,7 @@ jobs:
         rust:
           - nightly
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           submodules: recursive
       - uses: actions-rs/toolchain@v1
@@ -34,7 +34,7 @@ jobs:
           cp -r book/_book/* target/doc/
 
       - name: Deploy to GitHub Pages
-        uses: peaceiris/actions-gh-pages@v3
+        uses: peaceiris/actions-gh-pages@v4
         with:
           personal_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: ./target/doc
