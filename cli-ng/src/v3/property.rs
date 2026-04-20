@@ -271,6 +271,8 @@ pub(crate) struct Property {
 
     /// The parent property of this property, if this property is defined "inline" as an Item or a class member or item.
     parent: Option<Rc<Property>>,
+
+    vendor_extensions: HashMap<String, String>,
 }
 
 impl Display for Property {
@@ -294,6 +296,11 @@ impl Property {
         self.title = data.title.clone();
         self.description = data.description.as_ref().map(|s| s.replace('\n', " "));
         self.example = data.example.as_ref().map(ToString::to_string);
+        self.vendor_extensions = data
+            .extensions
+            .iter()
+            .map(|(k, v)| (k.clone(), v.to_string()))
+            .collect();
         self
     }
     /// Set wether the property is a model or not.
