@@ -15,7 +15,7 @@ jobs:
             target: aarch64-unknown-linux-musl
           - os: macos-14
             target: x86_64-apple-darwin
-          - os: macos-13
+          - os: macos-15
             target: aarch64-apple-darwin
     steps:
       - uses: actions/checkout@v6
