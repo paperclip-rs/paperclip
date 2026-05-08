@@ -51,7 +51,7 @@ where
 
     match resp \{
         Ok(r) => Ok(r),
-        Err(ApiError::Failure(_, _, r)) => Ok(r.into_inner()),
+        Err(ApiError::Failure(_, _, r)) => Ok(r),
         Err(e) => return Err(e.into()),
     }
 }
